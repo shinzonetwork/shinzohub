@@ -99,7 +99,7 @@ actor:
   doc: my actor
           `
 
-	var creator = "cosmos1gue5de6a8fdff0jut08vw5sg9pk6rr00cstakj"
+	var creator = "source19djduggm345yf2dn0y0jqqgkr5q0pt234dkyvd"
 	var timestamp = prototypes.TimestampNow()
 
 	return &types.MsgCreatePolicy{

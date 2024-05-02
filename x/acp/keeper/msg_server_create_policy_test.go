@@ -3,14 +3,15 @@ package keeper
 import (
 	"testing"
 
-	prototypes "github.com/cosmos/gogoproto/types"
+	"github.com/cosmos/cosmos-sdk/crypto/keys/secp256k1"
 	"github.com/stretchr/testify/require"
 
 	"github.com/sourcenetwork/sourcehub/x/acp/policy"
+	"github.com/sourcenetwork/sourcehub/x/acp/testutil"
 	"github.com/sourcenetwork/sourcehub/x/acp/types"
 )
 
-func TestValidPolicyIsCreated(t *testing.T) {
+func TestMsgCreatePolicy_ValidPolicyIsCreated(t *testing.T) {
 	policyStr := `
 name: policy
 description: ok
@@ -36,8 +37,13 @@ actor:
   doc: my actor
           `
 
-	var creator = "cosmos1gue5de6a8fdff0jut08vw5sg9pk6rr00cstakj"
-	var timestamp = prototypes.TimestampNow()
+	ctx, msgServer, accKeeper := setupMsgServer(t)
+
+	key := secp256k1.GenPrivKeyFromSecret(nil).PubKey()
+	accKeeper.NewAccount(key)
+	creator := "cosmos1346fyal5a9xxwlygkqmkkqf7g3q3zwzpdmkam8"
+
+	_ = accKeeper.GenAccount().GetAddress().String()
 
 	msg := types.MsgCreatePolicy{
 		Creator:      creator,
@@ -45,13 +51,12 @@ actor:
 		MarshalType:  types.PolicyMarshalingType_SHORT_YAML,
 		CreationTime: timestamp,
 	}
-
-	msgServer, ctx := setupMsgServer(t)
 	resp, err := msgServer.CreatePolicy(ctx, &msg)
 
 	require.Nil(t, err)
+
 	require.Equal(t, resp.Policy, &types.Policy{
-		Id:           "4f4bb16253a15448c1a3a2a67fdb4f4652f3ebf90c4326db53200b8d50c89ba6",
+		Id:           "4419a8abb886c641bc794b9b3289bc2118ab177542129627b6b05d540de03e46",
 		Name:         "policy",
 		Description:  "ok",
 		CreationTime: timestamp,
@@ -114,9 +119,16 @@ actor:
 			Doc:  "my actor",
 		},
 	})
+
+	event := &types.EventPolicyCreated{
+		Creator:    creator,
+		PolicyId:   "4419a8abb886c641bc794b9b3289bc2118ab177542129627b6b05d540de03e46",
+		PolicyName: "policy",
+	}
+	testutil.AssertEventEmmited(t, ctx, event)
 }
 
-func TestPolicyResourcesRequiresOwnerRelation(t *testing.T) {
+func TestMsgCreatePolicy_PolicyResourcesRequiresOwnerRelation(t *testing.T) {
 	pol := `
 name: policy
 description: ok
@@ -125,12 +137,55 @@ resources:
     relations: 
       reader:
     permissions: 
+  foo:
+    relations:
+      owner:
+    permissions:
 `
 
-	msgServer, ctx := setupMsgServer(t)
+	ctx, msgServer, accKeeper := setupMsgServer(t)
+	creator := accKeeper.GenAccount().GetAddress().String()
 	msg := types.NewMsgCreatePolicyNow(creator, pol, types.PolicyMarshalingType_SHORT_YAML)
 	resp, err := msgServer.CreatePolicy(ctx, msg)
 
 	require.Nil(t, resp)
 	require.ErrorIs(t, err, policy.ErrResourceMissingOwnerRelation)
+}
+
+func TestMsgCreatePolicy_ManagementReferencingUndefinedRelationReturnsError(t *testing.T) {
+	pol := `
+name: policy
+description: ok
+resources:
+  file:
+    relations: 
+      owner:
+      admin:
+        manages:
+          - deleter
+    permissions: 
+`
+
+	ctx, msgServer, accKeeper := setupMsgServer(t)
+	creator := accKeeper.GenAccount().GetAddress().String()
+
+	msg := types.NewMsgCreatePolicyNow(creator, pol, types.PolicyMarshalingType_SHORT_YAML)
+	resp, err := msgServer.CreatePolicy(ctx, msg)
+
+	require.Nil(t, resp)
+	require.ErrorIs(t, err, policy.ErrInvalidManagementRule)
+}
+
+func TestMsgCreatePolicy_InvalidCreatorAddressCausesError(t *testing.T) {
+	pol := `
+name: policy
+resources:
+`
+
+	ctx, msgServer, _ := setupMsgServer(t)
+	msg := types.NewMsgCreatePolicyNow("creator", pol, types.PolicyMarshalingType_SHORT_YAML)
+	resp, err := msgServer.CreatePolicy(ctx, msg)
+
+	require.Nil(t, resp)
+	require.ErrorIs(t, err, policy.ErrInvalidCreator)
 }

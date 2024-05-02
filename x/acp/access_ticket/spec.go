@@ -12,17 +12,17 @@ import (
 	"github.com/sourcenetwork/sourcehub/x/acp/types"
 )
 
-func NewAccessTicketSpec(serv *abciService, registry did.Registry) AccessTicketSpec {
+func NewAccessTicketSpec(serv *abciService, resolver did.Resolver) AccessTicketSpec {
 	return AccessTicketSpec{
 		abciService: serv,
-		registry:    registry,
+		resolver:    resolver,
 		marshaler:   Marshaler{},
 	}
 }
 
 type AccessTicketSpec struct {
 	abciService *abciService
-	registry    did.Registry
+	resolver    did.Resolver
 	keyBuilder  keyBuilder
 	signer      signer
 	marshaler   Marshaler
@@ -44,8 +44,13 @@ func (s *AccessTicketSpec) SatisfiesRaw(ctx context.Context, ticket *types.Acces
 		return err
 	}
 
-	did := ticket.Decision.ActorDid
-	pkey, err := s.registry.ResolveKey(did)
+	didStr := ticket.Decision.Actor
+	doc, err := s.resolver.Resolve(ctx, didStr)
+	if err != nil {
+		return err
+	}
+
+	pkey, err := did.ExtractVerificationKey(doc)
 	if err != nil {
 		return err
 	}

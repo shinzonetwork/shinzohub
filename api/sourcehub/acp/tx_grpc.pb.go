@@ -26,6 +26,7 @@ const (
 	Msg_RegisterObject_FullMethodName     = "/sourcehub.acp.Msg/RegisterObject"
 	Msg_UnregisterObject_FullMethodName   = "/sourcehub.acp.Msg/UnregisterObject"
 	Msg_CheckAccess_FullMethodName        = "/sourcehub.acp.Msg/CheckAccess"
+	Msg_PolicyCmd_FullMethodName          = "/sourcehub.acp.Msg/PolicyCmd"
 )
 
 // MsgClient is the client API for Msg service.
@@ -68,10 +69,12 @@ type MsgClient interface {
 	// is an "ownership hijack".
 	UnregisterObject(ctx context.Context, in *MsgUnregisterObject, opts ...grpc.CallOption) (*MsgUnregisterObjectResponse, error)
 	// CheckAccess executes an Access Request for an User and stores the result of the evaluation in SourceHub.
-	//
 	// The resulting evaluation is used to generate a cryptographic proof that the given Access Request
 	// was valid at a particular block height.
 	CheckAccess(ctx context.Context, in *MsgCheckAccess, opts ...grpc.CallOption) (*MsgCheckAccessResponse, error)
+	// PolicyCmd is a wrapper for a Command which is executed within the Context of a Policy.
+	// The Command is signed by the Actor issuing it.
+	PolicyCmd(ctx context.Context, in *MsgPolicyCmd, opts ...grpc.CallOption) (*MsgPolicyCmdResponse, error)
 }
 
 type msgClient struct {
@@ -145,6 +148,15 @@ func (c *msgClient) CheckAccess(ctx context.Context, in *MsgCheckAccess, opts ..
 	return out, nil
 }
 
+func (c *msgClient) PolicyCmd(ctx context.Context, in *MsgPolicyCmd, opts ...grpc.CallOption) (*MsgPolicyCmdResponse, error) {
+	out := new(MsgPolicyCmdResponse)
+	err := c.cc.Invoke(ctx, Msg_PolicyCmd_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // MsgServer is the server API for Msg service.
 // All implementations must embed UnimplementedMsgServer
 // for forward compatibility
@@ -185,10 +197,12 @@ type MsgServer interface {
 	// is an "ownership hijack".
 	UnregisterObject(context.Context, *MsgUnregisterObject) (*MsgUnregisterObjectResponse, error)
 	// CheckAccess executes an Access Request for an User and stores the result of the evaluation in SourceHub.
-	//
 	// The resulting evaluation is used to generate a cryptographic proof that the given Access Request
 	// was valid at a particular block height.
 	CheckAccess(context.Context, *MsgCheckAccess) (*MsgCheckAccessResponse, error)
+	// PolicyCmd is a wrapper for a Command which is executed within the Context of a Policy.
+	// The Command is signed by the Actor issuing it.
+	PolicyCmd(context.Context, *MsgPolicyCmd) (*MsgPolicyCmdResponse, error)
 	mustEmbedUnimplementedMsgServer()
 }
 
@@ -216,6 +230,9 @@ func (UnimplementedMsgServer) UnregisterObject(context.Context, *MsgUnregisterOb
 }
 func (UnimplementedMsgServer) CheckAccess(context.Context, *MsgCheckAccess) (*MsgCheckAccessResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CheckAccess not implemented")
+}
+func (UnimplementedMsgServer) PolicyCmd(context.Context, *MsgPolicyCmd) (*MsgPolicyCmdResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method PolicyCmd not implemented")
 }
 func (UnimplementedMsgServer) mustEmbedUnimplementedMsgServer() {}
 
@@ -356,6 +373,24 @@ func _Msg_CheckAccess_Handler(srv interface{}, ctx context.Context, dec func(int
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Msg_PolicyCmd_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(MsgPolicyCmd)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MsgServer).PolicyCmd(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Msg_PolicyCmd_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MsgServer).PolicyCmd(ctx, req.(*MsgPolicyCmd))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Msg_ServiceDesc is the grpc.ServiceDesc for Msg service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -390,6 +425,10 @@ var Msg_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "CheckAccess",
 			Handler:    _Msg_CheckAccess_Handler,
+		},
+		{
+			MethodName: "PolicyCmd",
+			Handler:    _Msg_PolicyCmd_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

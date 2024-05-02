@@ -2,7 +2,9 @@ package keeper
 
 import (
 	"context"
+	"crypto"
 	"testing"
+	"time"
 
 	"cosmossdk.io/log"
 	"cosmossdk.io/store"
@@ -17,21 +19,22 @@ import (
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
 	prototypes "github.com/cosmos/gogoproto/types"
+	"github.com/stretchr/testify/require"
 
+	"github.com/sourcenetwork/sourcehub/x/acp/did"
+	"github.com/sourcenetwork/sourcehub/x/acp/policy_cmd"
 	"github.com/sourcenetwork/sourcehub/x/acp/testutil"
 	"github.com/sourcenetwork/sourcehub/x/acp/types"
-	"github.com/stretchr/testify/require"
 )
 
-var creator = "cosmos1gue5de6a8fdff0jut08vw5sg9pk6rr00cstakj"
-var timestamp = prototypes.TimestampNow()
+var timestamp, _ = prototypes.TimestampProto(time.Date(2024, time.January, 1, 0, 0, 0, 0, time.UTC))
 
-func setupMsgServer(t *testing.T) (types.MsgServer, context.Context) {
-	keeper, ctx := setupKeeper(t)
-	return NewMsgServerImpl(keeper), ctx
+func setupMsgServer(t *testing.T) (sdk.Context, types.MsgServer, *testutil.AccountKeeperStub) {
+	ctx, keeper, accK := setupKeeper(t)
+	return ctx, NewMsgServerImpl(keeper), accK
 }
 
-func setupKeeper(t *testing.T) (Keeper, context.Context) {
+func setupKeeper(t *testing.T) (sdk.Context, Keeper, *testutil.AccountKeeperStub) {
 	storeKey := storetypes.NewKVStoreKey(types.StoreKey)
 
 	db := dbm.NewMemDB()
@@ -43,18 +46,42 @@ func setupKeeper(t *testing.T) (Keeper, context.Context) {
 	cdc := codec.NewProtoCodec(registry)
 	authority := authtypes.NewModuleAddress(govtypes.ModuleName)
 
+	accKeeper := &testutil.AccountKeeperStub{}
+	accKeeper.GenAccount()
+
 	keeper := NewKeeper(
 		cdc,
 		runtime.NewKVStoreService(storeKey),
 		log.NewNopLogger(),
 		authority.String(),
-		&testutil.AccountKeeperStub{},
+		accKeeper,
 	)
 
 	ctx := sdk.NewContext(stateStore, cmtproto.Header{}, false, log.NewNopLogger())
+	ctx = ctx.WithEventManager(sdk.NewEventManager())
 
 	// Initialize params
 	keeper.SetParams(ctx, types.DefaultParams())
 
-	return keeper, ctx
+	return ctx, keeper, accKeeper
 }
+
+func mustGenerateActor() (string, crypto.Signer) {
+	bob, bobSigner, err := did.ProduceDID()
+	if err != nil {
+		panic(err)
+	}
+	return bob, bobSigner
+}
+
+var _ policy_cmd.LogicalClock = (*logicalClockImpl)(nil)
+
+type logicalClockImpl struct{}
+
+func (c *logicalClockImpl) GetTimestampNow(context.Context) (uint64, error) {
+	return 1, nil
+}
+
+var logicalClock logicalClockImpl
+
+var params types.Params = types.DefaultParams()
