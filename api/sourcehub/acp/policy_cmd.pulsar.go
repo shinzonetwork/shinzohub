@@ -3,14 +3,15 @@ package acp
 
 import (
 	fmt "fmt"
+	io "io"
+	reflect "reflect"
+	sync "sync"
+
 	runtime "github.com/cosmos/cosmos-proto/runtime"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoiface "google.golang.org/protobuf/runtime/protoiface"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	timestamppb "google.golang.org/protobuf/types/known/timestamppb"
-	io "io"
-	reflect "reflect"
-	sync "sync"
 )
 
 var (
@@ -518,7 +519,7 @@ var (
 	md_PolicyCmdPayload                         protoreflect.MessageDescriptor
 	fd_PolicyCmdPayload_actor                   protoreflect.FieldDescriptor
 	fd_PolicyCmdPayload_issued_height           protoreflect.FieldDescriptor
-	fd_PolicyCmdPayload_expiration_height       protoreflect.FieldDescriptor
+	fd_PolicyCmdPayload_expiration_delta        protoreflect.FieldDescriptor
 	fd_PolicyCmdPayload_creation_time           protoreflect.FieldDescriptor
 	fd_PolicyCmdPayload_policy_id               protoreflect.FieldDescriptor
 	fd_PolicyCmdPayload_set_relationship_cmd    protoreflect.FieldDescriptor
@@ -532,7 +533,7 @@ func init() {
 	md_PolicyCmdPayload = File_sourcehub_acp_policy_cmd_proto.Messages().ByName("PolicyCmdPayload")
 	fd_PolicyCmdPayload_actor = md_PolicyCmdPayload.Fields().ByName("actor")
 	fd_PolicyCmdPayload_issued_height = md_PolicyCmdPayload.Fields().ByName("issued_height")
-	fd_PolicyCmdPayload_expiration_height = md_PolicyCmdPayload.Fields().ByName("expiration_height")
+	fd_PolicyCmdPayload_expiration_delta = md_PolicyCmdPayload.Fields().ByName("expiration_delta")
 	fd_PolicyCmdPayload_creation_time = md_PolicyCmdPayload.Fields().ByName("creation_time")
 	fd_PolicyCmdPayload_policy_id = md_PolicyCmdPayload.Fields().ByName("policy_id")
 	fd_PolicyCmdPayload_set_relationship_cmd = md_PolicyCmdPayload.Fields().ByName("set_relationship_cmd")
@@ -618,9 +619,9 @@ func (x *fastReflection_PolicyCmdPayload) Range(f func(protoreflect.FieldDescrip
 			return
 		}
 	}
-	if x.ExpirationHeight != uint64(0) {
-		value := protoreflect.ValueOfUint64(x.ExpirationHeight)
-		if !f(fd_PolicyCmdPayload_expiration_height, value) {
+	if x.ExpirationDelta != uint64(0) {
+		value := protoreflect.ValueOfUint64(x.ExpirationDelta)
+		if !f(fd_PolicyCmdPayload_expiration_delta, value) {
 			return
 		}
 	}
@@ -683,8 +684,8 @@ func (x *fastReflection_PolicyCmdPayload) Has(fd protoreflect.FieldDescriptor) b
 		return x.Actor != ""
 	case "sourcehub.acp.PolicyCmdPayload.issued_height":
 		return x.IssuedHeight != uint64(0)
-	case "sourcehub.acp.PolicyCmdPayload.expiration_height":
-		return x.ExpirationHeight != uint64(0)
+	case "sourcehub.acp.PolicyCmdPayload.expiration_delta":
+		return x.ExpirationDelta != uint64(0)
 	case "sourcehub.acp.PolicyCmdPayload.creation_time":
 		return x.CreationTime != nil
 	case "sourcehub.acp.PolicyCmdPayload.policy_id":
@@ -741,8 +742,8 @@ func (x *fastReflection_PolicyCmdPayload) Clear(fd protoreflect.FieldDescriptor)
 		x.Actor = ""
 	case "sourcehub.acp.PolicyCmdPayload.issued_height":
 		x.IssuedHeight = uint64(0)
-	case "sourcehub.acp.PolicyCmdPayload.expiration_height":
-		x.ExpirationHeight = uint64(0)
+	case "sourcehub.acp.PolicyCmdPayload.expiration_delta":
+		x.ExpirationDelta = uint64(0)
 	case "sourcehub.acp.PolicyCmdPayload.creation_time":
 		x.CreationTime = nil
 	case "sourcehub.acp.PolicyCmdPayload.policy_id":
@@ -777,8 +778,8 @@ func (x *fastReflection_PolicyCmdPayload) Get(descriptor protoreflect.FieldDescr
 	case "sourcehub.acp.PolicyCmdPayload.issued_height":
 		value := x.IssuedHeight
 		return protoreflect.ValueOfUint64(value)
-	case "sourcehub.acp.PolicyCmdPayload.expiration_height":
-		value := x.ExpirationHeight
+	case "sourcehub.acp.PolicyCmdPayload.expiration_delta":
+		value := x.ExpirationDelta
 		return protoreflect.ValueOfUint64(value)
 	case "sourcehub.acp.PolicyCmdPayload.creation_time":
 		value := x.CreationTime
@@ -842,8 +843,8 @@ func (x *fastReflection_PolicyCmdPayload) Set(fd protoreflect.FieldDescriptor, v
 		x.Actor = value.Interface().(string)
 	case "sourcehub.acp.PolicyCmdPayload.issued_height":
 		x.IssuedHeight = value.Uint()
-	case "sourcehub.acp.PolicyCmdPayload.expiration_height":
-		x.ExpirationHeight = value.Uint()
+	case "sourcehub.acp.PolicyCmdPayload.expiration_delta":
+		x.ExpirationDelta = value.Uint()
 	case "sourcehub.acp.PolicyCmdPayload.creation_time":
 		x.CreationTime = value.Message().Interface().(*timestamppb.Timestamp)
 	case "sourcehub.acp.PolicyCmdPayload.policy_id":
@@ -953,8 +954,8 @@ func (x *fastReflection_PolicyCmdPayload) Mutable(fd protoreflect.FieldDescripto
 		panic(fmt.Errorf("field actor of message sourcehub.acp.PolicyCmdPayload is not mutable"))
 	case "sourcehub.acp.PolicyCmdPayload.issued_height":
 		panic(fmt.Errorf("field issued_height of message sourcehub.acp.PolicyCmdPayload is not mutable"))
-	case "sourcehub.acp.PolicyCmdPayload.expiration_height":
-		panic(fmt.Errorf("field expiration_height of message sourcehub.acp.PolicyCmdPayload is not mutable"))
+	case "sourcehub.acp.PolicyCmdPayload.expiration_delta":
+		panic(fmt.Errorf("field expiration_delta of message sourcehub.acp.PolicyCmdPayload is not mutable"))
 	case "sourcehub.acp.PolicyCmdPayload.policy_id":
 		panic(fmt.Errorf("field policy_id of message sourcehub.acp.PolicyCmdPayload is not mutable"))
 	default:
@@ -974,7 +975,7 @@ func (x *fastReflection_PolicyCmdPayload) NewField(fd protoreflect.FieldDescript
 		return protoreflect.ValueOfString("")
 	case "sourcehub.acp.PolicyCmdPayload.issued_height":
 		return protoreflect.ValueOfUint64(uint64(0))
-	case "sourcehub.acp.PolicyCmdPayload.expiration_height":
+	case "sourcehub.acp.PolicyCmdPayload.expiration_delta":
 		return protoreflect.ValueOfUint64(uint64(0))
 	case "sourcehub.acp.PolicyCmdPayload.creation_time":
 		m := new(timestamppb.Timestamp)
@@ -1083,8 +1084,8 @@ func (x *fastReflection_PolicyCmdPayload) ProtoMethods() *protoiface.Methods {
 		if x.IssuedHeight != 0 {
 			n += 1 + runtime.Sov(uint64(x.IssuedHeight))
 		}
-		if x.ExpirationHeight != 0 {
-			n += 1 + runtime.Sov(uint64(x.ExpirationHeight))
+		if x.ExpirationDelta != 0 {
+			n += 1 + runtime.Sov(uint64(x.ExpirationDelta))
 		}
 		if x.CreationTime != nil {
 			l = options.Size(x.CreationTime)
@@ -1224,8 +1225,8 @@ func (x *fastReflection_PolicyCmdPayload) ProtoMethods() *protoiface.Methods {
 			i--
 			dAtA[i] = 0x22
 		}
-		if x.ExpirationHeight != 0 {
-			i = runtime.EncodeVarint(dAtA, i, uint64(x.ExpirationHeight))
+		if x.ExpirationDelta != 0 {
+			i = runtime.EncodeVarint(dAtA, i, uint64(x.ExpirationDelta))
 			i--
 			dAtA[i] = 0x18
 		}
@@ -1343,9 +1344,9 @@ func (x *fastReflection_PolicyCmdPayload) ProtoMethods() *protoiface.Methods {
 				}
 			case 3:
 				if wireType != 0 {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field ExpirationHeight", wireType)
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field ExpirationDelta", wireType)
 				}
-				x.ExpirationHeight = 0
+				x.ExpirationDelta = 0
 				for shift := uint(0); ; shift += 7 {
 					if shift >= 64 {
 						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
@@ -1355,7 +1356,7 @@ func (x *fastReflection_PolicyCmdPayload) ProtoMethods() *protoiface.Methods {
 					}
 					b := dAtA[iNdEx]
 					iNdEx++
-					x.ExpirationHeight |= uint64(b&0x7F) << shift
+					x.ExpirationDelta |= uint64(b&0x7F) << shift
 					if b < 0x80 {
 						break
 					}
@@ -3346,12 +3347,14 @@ func (x *fastReflection_UnregisterObjectCmd) ProtoMethods() *protoiface.Methods 
 var (
 	md_SetRelationshipCmdResult                protoreflect.MessageDescriptor
 	fd_SetRelationshipCmdResult_record_existed protoreflect.FieldDescriptor
+	fd_SetRelationshipCmdResult_record         protoreflect.FieldDescriptor
 )
 
 func init() {
 	file_sourcehub_acp_policy_cmd_proto_init()
 	md_SetRelationshipCmdResult = File_sourcehub_acp_policy_cmd_proto.Messages().ByName("SetRelationshipCmdResult")
 	fd_SetRelationshipCmdResult_record_existed = md_SetRelationshipCmdResult.Fields().ByName("record_existed")
+	fd_SetRelationshipCmdResult_record = md_SetRelationshipCmdResult.Fields().ByName("record")
 }
 
 var _ protoreflect.Message = (*fastReflection_SetRelationshipCmdResult)(nil)
@@ -3425,6 +3428,12 @@ func (x *fastReflection_SetRelationshipCmdResult) Range(f func(protoreflect.Fiel
 			return
 		}
 	}
+	if x.Record != nil {
+		value := protoreflect.ValueOfMessage(x.Record.ProtoReflect())
+		if !f(fd_SetRelationshipCmdResult_record, value) {
+			return
+		}
+	}
 }
 
 // Has reports whether a field is populated.
@@ -3442,6 +3451,8 @@ func (x *fastReflection_SetRelationshipCmdResult) Has(fd protoreflect.FieldDescr
 	switch fd.FullName() {
 	case "sourcehub.acp.SetRelationshipCmdResult.record_existed":
 		return x.RecordExisted != false
+	case "sourcehub.acp.SetRelationshipCmdResult.record":
+		return x.Record != nil
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: sourcehub.acp.SetRelationshipCmdResult"))
@@ -3460,6 +3471,8 @@ func (x *fastReflection_SetRelationshipCmdResult) Clear(fd protoreflect.FieldDes
 	switch fd.FullName() {
 	case "sourcehub.acp.SetRelationshipCmdResult.record_existed":
 		x.RecordExisted = false
+	case "sourcehub.acp.SetRelationshipCmdResult.record":
+		x.Record = nil
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: sourcehub.acp.SetRelationshipCmdResult"))
@@ -3479,6 +3492,9 @@ func (x *fastReflection_SetRelationshipCmdResult) Get(descriptor protoreflect.Fi
 	case "sourcehub.acp.SetRelationshipCmdResult.record_existed":
 		value := x.RecordExisted
 		return protoreflect.ValueOfBool(value)
+	case "sourcehub.acp.SetRelationshipCmdResult.record":
+		value := x.Record
+		return protoreflect.ValueOfMessage(value.ProtoReflect())
 	default:
 		if descriptor.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: sourcehub.acp.SetRelationshipCmdResult"))
@@ -3501,6 +3517,8 @@ func (x *fastReflection_SetRelationshipCmdResult) Set(fd protoreflect.FieldDescr
 	switch fd.FullName() {
 	case "sourcehub.acp.SetRelationshipCmdResult.record_existed":
 		x.RecordExisted = value.Bool()
+	case "sourcehub.acp.SetRelationshipCmdResult.record":
+		x.Record = value.Message().Interface().(*RelationshipRecord)
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: sourcehub.acp.SetRelationshipCmdResult"))
@@ -3521,6 +3539,11 @@ func (x *fastReflection_SetRelationshipCmdResult) Set(fd protoreflect.FieldDescr
 // Mutable is a mutating operation and unsafe for concurrent use.
 func (x *fastReflection_SetRelationshipCmdResult) Mutable(fd protoreflect.FieldDescriptor) protoreflect.Value {
 	switch fd.FullName() {
+	case "sourcehub.acp.SetRelationshipCmdResult.record":
+		if x.Record == nil {
+			x.Record = new(RelationshipRecord)
+		}
+		return protoreflect.ValueOfMessage(x.Record.ProtoReflect())
 	case "sourcehub.acp.SetRelationshipCmdResult.record_existed":
 		panic(fmt.Errorf("field record_existed of message sourcehub.acp.SetRelationshipCmdResult is not mutable"))
 	default:
@@ -3538,6 +3561,9 @@ func (x *fastReflection_SetRelationshipCmdResult) NewField(fd protoreflect.Field
 	switch fd.FullName() {
 	case "sourcehub.acp.SetRelationshipCmdResult.record_existed":
 		return protoreflect.ValueOfBool(false)
+	case "sourcehub.acp.SetRelationshipCmdResult.record":
+		m := new(RelationshipRecord)
+		return protoreflect.ValueOfMessage(m.ProtoReflect())
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: sourcehub.acp.SetRelationshipCmdResult"))
@@ -3610,6 +3636,10 @@ func (x *fastReflection_SetRelationshipCmdResult) ProtoMethods() *protoiface.Met
 		if x.RecordExisted {
 			n += 2
 		}
+		if x.Record != nil {
+			l = options.Size(x.Record)
+			n += 1 + l + runtime.Sov(uint64(l))
+		}
 		if x.unknownFields != nil {
 			n += len(x.unknownFields)
 		}
@@ -3638,6 +3668,20 @@ func (x *fastReflection_SetRelationshipCmdResult) ProtoMethods() *protoiface.Met
 		if x.unknownFields != nil {
 			i -= len(x.unknownFields)
 			copy(dAtA[i:], x.unknownFields)
+		}
+		if x.Record != nil {
+			encoded, err := options.Marshal(x.Record)
+			if err != nil {
+				return protoiface.MarshalOutput{
+					NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+					Buf:               input.Buf,
+				}, err
+			}
+			i -= len(encoded)
+			copy(dAtA[i:], encoded)
+			i = runtime.EncodeVarint(dAtA, i, uint64(len(encoded)))
+			i--
+			dAtA[i] = 0x12
 		}
 		if x.RecordExisted {
 			i--
@@ -3718,6 +3762,42 @@ func (x *fastReflection_SetRelationshipCmdResult) ProtoMethods() *protoiface.Met
 					}
 				}
 				x.RecordExisted = bool(v != 0)
+			case 2:
+				if wireType != 2 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field Record", wireType)
+				}
+				var msglen int
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					msglen |= int(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				if msglen < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				postIndex := iNdEx + msglen
+				if postIndex < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if postIndex > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				if x.Record == nil {
+					x.Record = &RelationshipRecord{}
+				}
+				if err := options.Unmarshal(dAtA[iNdEx:postIndex], x.Record); err != nil {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, err
+				}
+				iNdEx = postIndex
 			default:
 				iNdEx = preIndex
 				skippy, err := runtime.Skip(dAtA[iNdEx:])
@@ -5104,792 +5184,6 @@ func (x *fastReflection_UnregisterObjectCmdResult) ProtoMethods() *protoiface.Me
 	}
 }
 
-var (
-	md_PolicyCmdResult                            protoreflect.MessageDescriptor
-	fd_PolicyCmdResult_set_relationship_result    protoreflect.FieldDescriptor
-	fd_PolicyCmdResult_delete_relationship_result protoreflect.FieldDescriptor
-	fd_PolicyCmdResult_register_object_result     protoreflect.FieldDescriptor
-	fd_PolicyCmdResult_unregister_object_result   protoreflect.FieldDescriptor
-)
-
-func init() {
-	file_sourcehub_acp_policy_cmd_proto_init()
-	md_PolicyCmdResult = File_sourcehub_acp_policy_cmd_proto.Messages().ByName("PolicyCmdResult")
-	fd_PolicyCmdResult_set_relationship_result = md_PolicyCmdResult.Fields().ByName("set_relationship_result")
-	fd_PolicyCmdResult_delete_relationship_result = md_PolicyCmdResult.Fields().ByName("delete_relationship_result")
-	fd_PolicyCmdResult_register_object_result = md_PolicyCmdResult.Fields().ByName("register_object_result")
-	fd_PolicyCmdResult_unregister_object_result = md_PolicyCmdResult.Fields().ByName("unregister_object_result")
-}
-
-var _ protoreflect.Message = (*fastReflection_PolicyCmdResult)(nil)
-
-type fastReflection_PolicyCmdResult PolicyCmdResult
-
-func (x *PolicyCmdResult) ProtoReflect() protoreflect.Message {
-	return (*fastReflection_PolicyCmdResult)(x)
-}
-
-func (x *PolicyCmdResult) slowProtoReflect() protoreflect.Message {
-	mi := &file_sourcehub_acp_policy_cmd_proto_msgTypes[10]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-var _fastReflection_PolicyCmdResult_messageType fastReflection_PolicyCmdResult_messageType
-var _ protoreflect.MessageType = fastReflection_PolicyCmdResult_messageType{}
-
-type fastReflection_PolicyCmdResult_messageType struct{}
-
-func (x fastReflection_PolicyCmdResult_messageType) Zero() protoreflect.Message {
-	return (*fastReflection_PolicyCmdResult)(nil)
-}
-func (x fastReflection_PolicyCmdResult_messageType) New() protoreflect.Message {
-	return new(fastReflection_PolicyCmdResult)
-}
-func (x fastReflection_PolicyCmdResult_messageType) Descriptor() protoreflect.MessageDescriptor {
-	return md_PolicyCmdResult
-}
-
-// Descriptor returns message descriptor, which contains only the protobuf
-// type information for the message.
-func (x *fastReflection_PolicyCmdResult) Descriptor() protoreflect.MessageDescriptor {
-	return md_PolicyCmdResult
-}
-
-// Type returns the message type, which encapsulates both Go and protobuf
-// type information. If the Go type information is not needed,
-// it is recommended that the message descriptor be used instead.
-func (x *fastReflection_PolicyCmdResult) Type() protoreflect.MessageType {
-	return _fastReflection_PolicyCmdResult_messageType
-}
-
-// New returns a newly allocated and mutable empty message.
-func (x *fastReflection_PolicyCmdResult) New() protoreflect.Message {
-	return new(fastReflection_PolicyCmdResult)
-}
-
-// Interface unwraps the message reflection interface and
-// returns the underlying ProtoMessage interface.
-func (x *fastReflection_PolicyCmdResult) Interface() protoreflect.ProtoMessage {
-	return (*PolicyCmdResult)(x)
-}
-
-// Range iterates over every populated field in an undefined order,
-// calling f for each field descriptor and value encountered.
-// Range returns immediately if f returns false.
-// While iterating, mutating operations may only be performed
-// on the current field descriptor.
-func (x *fastReflection_PolicyCmdResult) Range(f func(protoreflect.FieldDescriptor, protoreflect.Value) bool) {
-	if x.Result != nil {
-		switch o := x.Result.(type) {
-		case *PolicyCmdResult_SetRelationshipResult:
-			v := o.SetRelationshipResult
-			value := protoreflect.ValueOfMessage(v.ProtoReflect())
-			if !f(fd_PolicyCmdResult_set_relationship_result, value) {
-				return
-			}
-		case *PolicyCmdResult_DeleteRelationshipResult:
-			v := o.DeleteRelationshipResult
-			value := protoreflect.ValueOfMessage(v.ProtoReflect())
-			if !f(fd_PolicyCmdResult_delete_relationship_result, value) {
-				return
-			}
-		case *PolicyCmdResult_RegisterObjectResult:
-			v := o.RegisterObjectResult
-			value := protoreflect.ValueOfMessage(v.ProtoReflect())
-			if !f(fd_PolicyCmdResult_register_object_result, value) {
-				return
-			}
-		case *PolicyCmdResult_UnregisterObjectResult:
-			v := o.UnregisterObjectResult
-			value := protoreflect.ValueOfMessage(v.ProtoReflect())
-			if !f(fd_PolicyCmdResult_unregister_object_result, value) {
-				return
-			}
-		}
-	}
-}
-
-// Has reports whether a field is populated.
-//
-// Some fields have the property of nullability where it is possible to
-// distinguish between the default value of a field and whether the field
-// was explicitly populated with the default value. Singular message fields,
-// member fields of a oneof, and proto2 scalar fields are nullable. Such
-// fields are populated only if explicitly set.
-//
-// In other cases (aside from the nullable cases above),
-// a proto3 scalar field is populated if it contains a non-zero value, and
-// a repeated field is populated if it is non-empty.
-func (x *fastReflection_PolicyCmdResult) Has(fd protoreflect.FieldDescriptor) bool {
-	switch fd.FullName() {
-	case "sourcehub.acp.PolicyCmdResult.set_relationship_result":
-		if x.Result == nil {
-			return false
-		} else if _, ok := x.Result.(*PolicyCmdResult_SetRelationshipResult); ok {
-			return true
-		} else {
-			return false
-		}
-	case "sourcehub.acp.PolicyCmdResult.delete_relationship_result":
-		if x.Result == nil {
-			return false
-		} else if _, ok := x.Result.(*PolicyCmdResult_DeleteRelationshipResult); ok {
-			return true
-		} else {
-			return false
-		}
-	case "sourcehub.acp.PolicyCmdResult.register_object_result":
-		if x.Result == nil {
-			return false
-		} else if _, ok := x.Result.(*PolicyCmdResult_RegisterObjectResult); ok {
-			return true
-		} else {
-			return false
-		}
-	case "sourcehub.acp.PolicyCmdResult.unregister_object_result":
-		if x.Result == nil {
-			return false
-		} else if _, ok := x.Result.(*PolicyCmdResult_UnregisterObjectResult); ok {
-			return true
-		} else {
-			return false
-		}
-	default:
-		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: sourcehub.acp.PolicyCmdResult"))
-		}
-		panic(fmt.Errorf("message sourcehub.acp.PolicyCmdResult does not contain field %s", fd.FullName()))
-	}
-}
-
-// Clear clears the field such that a subsequent Has call reports false.
-//
-// Clearing an extension field clears both the extension type and value
-// associated with the given field number.
-//
-// Clear is a mutating operation and unsafe for concurrent use.
-func (x *fastReflection_PolicyCmdResult) Clear(fd protoreflect.FieldDescriptor) {
-	switch fd.FullName() {
-	case "sourcehub.acp.PolicyCmdResult.set_relationship_result":
-		x.Result = nil
-	case "sourcehub.acp.PolicyCmdResult.delete_relationship_result":
-		x.Result = nil
-	case "sourcehub.acp.PolicyCmdResult.register_object_result":
-		x.Result = nil
-	case "sourcehub.acp.PolicyCmdResult.unregister_object_result":
-		x.Result = nil
-	default:
-		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: sourcehub.acp.PolicyCmdResult"))
-		}
-		panic(fmt.Errorf("message sourcehub.acp.PolicyCmdResult does not contain field %s", fd.FullName()))
-	}
-}
-
-// Get retrieves the value for a field.
-//
-// For unpopulated scalars, it returns the default value, where
-// the default value of a bytes scalar is guaranteed to be a copy.
-// For unpopulated composite types, it returns an empty, read-only view
-// of the value; to obtain a mutable reference, use Mutable.
-func (x *fastReflection_PolicyCmdResult) Get(descriptor protoreflect.FieldDescriptor) protoreflect.Value {
-	switch descriptor.FullName() {
-	case "sourcehub.acp.PolicyCmdResult.set_relationship_result":
-		if x.Result == nil {
-			return protoreflect.ValueOfMessage((*SetRelationshipCmdResult)(nil).ProtoReflect())
-		} else if v, ok := x.Result.(*PolicyCmdResult_SetRelationshipResult); ok {
-			return protoreflect.ValueOfMessage(v.SetRelationshipResult.ProtoReflect())
-		} else {
-			return protoreflect.ValueOfMessage((*SetRelationshipCmdResult)(nil).ProtoReflect())
-		}
-	case "sourcehub.acp.PolicyCmdResult.delete_relationship_result":
-		if x.Result == nil {
-			return protoreflect.ValueOfMessage((*DeleteRelationshipCmdResult)(nil).ProtoReflect())
-		} else if v, ok := x.Result.(*PolicyCmdResult_DeleteRelationshipResult); ok {
-			return protoreflect.ValueOfMessage(v.DeleteRelationshipResult.ProtoReflect())
-		} else {
-			return protoreflect.ValueOfMessage((*DeleteRelationshipCmdResult)(nil).ProtoReflect())
-		}
-	case "sourcehub.acp.PolicyCmdResult.register_object_result":
-		if x.Result == nil {
-			return protoreflect.ValueOfMessage((*RegisterObjectCmdResult)(nil).ProtoReflect())
-		} else if v, ok := x.Result.(*PolicyCmdResult_RegisterObjectResult); ok {
-			return protoreflect.ValueOfMessage(v.RegisterObjectResult.ProtoReflect())
-		} else {
-			return protoreflect.ValueOfMessage((*RegisterObjectCmdResult)(nil).ProtoReflect())
-		}
-	case "sourcehub.acp.PolicyCmdResult.unregister_object_result":
-		if x.Result == nil {
-			return protoreflect.ValueOfMessage((*UnregisterObjectCmdResult)(nil).ProtoReflect())
-		} else if v, ok := x.Result.(*PolicyCmdResult_UnregisterObjectResult); ok {
-			return protoreflect.ValueOfMessage(v.UnregisterObjectResult.ProtoReflect())
-		} else {
-			return protoreflect.ValueOfMessage((*UnregisterObjectCmdResult)(nil).ProtoReflect())
-		}
-	default:
-		if descriptor.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: sourcehub.acp.PolicyCmdResult"))
-		}
-		panic(fmt.Errorf("message sourcehub.acp.PolicyCmdResult does not contain field %s", descriptor.FullName()))
-	}
-}
-
-// Set stores the value for a field.
-//
-// For a field belonging to a oneof, it implicitly clears any other field
-// that may be currently set within the same oneof.
-// For extension fields, it implicitly stores the provided ExtensionType.
-// When setting a composite type, it is unspecified whether the stored value
-// aliases the source's memory in any way. If the composite value is an
-// empty, read-only value, then it panics.
-//
-// Set is a mutating operation and unsafe for concurrent use.
-func (x *fastReflection_PolicyCmdResult) Set(fd protoreflect.FieldDescriptor, value protoreflect.Value) {
-	switch fd.FullName() {
-	case "sourcehub.acp.PolicyCmdResult.set_relationship_result":
-		cv := value.Message().Interface().(*SetRelationshipCmdResult)
-		x.Result = &PolicyCmdResult_SetRelationshipResult{SetRelationshipResult: cv}
-	case "sourcehub.acp.PolicyCmdResult.delete_relationship_result":
-		cv := value.Message().Interface().(*DeleteRelationshipCmdResult)
-		x.Result = &PolicyCmdResult_DeleteRelationshipResult{DeleteRelationshipResult: cv}
-	case "sourcehub.acp.PolicyCmdResult.register_object_result":
-		cv := value.Message().Interface().(*RegisterObjectCmdResult)
-		x.Result = &PolicyCmdResult_RegisterObjectResult{RegisterObjectResult: cv}
-	case "sourcehub.acp.PolicyCmdResult.unregister_object_result":
-		cv := value.Message().Interface().(*UnregisterObjectCmdResult)
-		x.Result = &PolicyCmdResult_UnregisterObjectResult{UnregisterObjectResult: cv}
-	default:
-		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: sourcehub.acp.PolicyCmdResult"))
-		}
-		panic(fmt.Errorf("message sourcehub.acp.PolicyCmdResult does not contain field %s", fd.FullName()))
-	}
-}
-
-// Mutable returns a mutable reference to a composite type.
-//
-// If the field is unpopulated, it may allocate a composite value.
-// For a field belonging to a oneof, it implicitly clears any other field
-// that may be currently set within the same oneof.
-// For extension fields, it implicitly stores the provided ExtensionType
-// if not already stored.
-// It panics if the field does not contain a composite type.
-//
-// Mutable is a mutating operation and unsafe for concurrent use.
-func (x *fastReflection_PolicyCmdResult) Mutable(fd protoreflect.FieldDescriptor) protoreflect.Value {
-	switch fd.FullName() {
-	case "sourcehub.acp.PolicyCmdResult.set_relationship_result":
-		if x.Result == nil {
-			value := &SetRelationshipCmdResult{}
-			oneofValue := &PolicyCmdResult_SetRelationshipResult{SetRelationshipResult: value}
-			x.Result = oneofValue
-			return protoreflect.ValueOfMessage(value.ProtoReflect())
-		}
-		switch m := x.Result.(type) {
-		case *PolicyCmdResult_SetRelationshipResult:
-			return protoreflect.ValueOfMessage(m.SetRelationshipResult.ProtoReflect())
-		default:
-			value := &SetRelationshipCmdResult{}
-			oneofValue := &PolicyCmdResult_SetRelationshipResult{SetRelationshipResult: value}
-			x.Result = oneofValue
-			return protoreflect.ValueOfMessage(value.ProtoReflect())
-		}
-	case "sourcehub.acp.PolicyCmdResult.delete_relationship_result":
-		if x.Result == nil {
-			value := &DeleteRelationshipCmdResult{}
-			oneofValue := &PolicyCmdResult_DeleteRelationshipResult{DeleteRelationshipResult: value}
-			x.Result = oneofValue
-			return protoreflect.ValueOfMessage(value.ProtoReflect())
-		}
-		switch m := x.Result.(type) {
-		case *PolicyCmdResult_DeleteRelationshipResult:
-			return protoreflect.ValueOfMessage(m.DeleteRelationshipResult.ProtoReflect())
-		default:
-			value := &DeleteRelationshipCmdResult{}
-			oneofValue := &PolicyCmdResult_DeleteRelationshipResult{DeleteRelationshipResult: value}
-			x.Result = oneofValue
-			return protoreflect.ValueOfMessage(value.ProtoReflect())
-		}
-	case "sourcehub.acp.PolicyCmdResult.register_object_result":
-		if x.Result == nil {
-			value := &RegisterObjectCmdResult{}
-			oneofValue := &PolicyCmdResult_RegisterObjectResult{RegisterObjectResult: value}
-			x.Result = oneofValue
-			return protoreflect.ValueOfMessage(value.ProtoReflect())
-		}
-		switch m := x.Result.(type) {
-		case *PolicyCmdResult_RegisterObjectResult:
-			return protoreflect.ValueOfMessage(m.RegisterObjectResult.ProtoReflect())
-		default:
-			value := &RegisterObjectCmdResult{}
-			oneofValue := &PolicyCmdResult_RegisterObjectResult{RegisterObjectResult: value}
-			x.Result = oneofValue
-			return protoreflect.ValueOfMessage(value.ProtoReflect())
-		}
-	case "sourcehub.acp.PolicyCmdResult.unregister_object_result":
-		if x.Result == nil {
-			value := &UnregisterObjectCmdResult{}
-			oneofValue := &PolicyCmdResult_UnregisterObjectResult{UnregisterObjectResult: value}
-			x.Result = oneofValue
-			return protoreflect.ValueOfMessage(value.ProtoReflect())
-		}
-		switch m := x.Result.(type) {
-		case *PolicyCmdResult_UnregisterObjectResult:
-			return protoreflect.ValueOfMessage(m.UnregisterObjectResult.ProtoReflect())
-		default:
-			value := &UnregisterObjectCmdResult{}
-			oneofValue := &PolicyCmdResult_UnregisterObjectResult{UnregisterObjectResult: value}
-			x.Result = oneofValue
-			return protoreflect.ValueOfMessage(value.ProtoReflect())
-		}
-	default:
-		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: sourcehub.acp.PolicyCmdResult"))
-		}
-		panic(fmt.Errorf("message sourcehub.acp.PolicyCmdResult does not contain field %s", fd.FullName()))
-	}
-}
-
-// NewField returns a new value that is assignable to the field
-// for the given descriptor. For scalars, this returns the default value.
-// For lists, maps, and messages, this returns a new, empty, mutable value.
-func (x *fastReflection_PolicyCmdResult) NewField(fd protoreflect.FieldDescriptor) protoreflect.Value {
-	switch fd.FullName() {
-	case "sourcehub.acp.PolicyCmdResult.set_relationship_result":
-		value := &SetRelationshipCmdResult{}
-		return protoreflect.ValueOfMessage(value.ProtoReflect())
-	case "sourcehub.acp.PolicyCmdResult.delete_relationship_result":
-		value := &DeleteRelationshipCmdResult{}
-		return protoreflect.ValueOfMessage(value.ProtoReflect())
-	case "sourcehub.acp.PolicyCmdResult.register_object_result":
-		value := &RegisterObjectCmdResult{}
-		return protoreflect.ValueOfMessage(value.ProtoReflect())
-	case "sourcehub.acp.PolicyCmdResult.unregister_object_result":
-		value := &UnregisterObjectCmdResult{}
-		return protoreflect.ValueOfMessage(value.ProtoReflect())
-	default:
-		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: sourcehub.acp.PolicyCmdResult"))
-		}
-		panic(fmt.Errorf("message sourcehub.acp.PolicyCmdResult does not contain field %s", fd.FullName()))
-	}
-}
-
-// WhichOneof reports which field within the oneof is populated,
-// returning nil if none are populated.
-// It panics if the oneof descriptor does not belong to this message.
-func (x *fastReflection_PolicyCmdResult) WhichOneof(d protoreflect.OneofDescriptor) protoreflect.FieldDescriptor {
-	switch d.FullName() {
-	case "sourcehub.acp.PolicyCmdResult.result":
-		if x.Result == nil {
-			return nil
-		}
-		switch x.Result.(type) {
-		case *PolicyCmdResult_SetRelationshipResult:
-			return x.Descriptor().Fields().ByName("set_relationship_result")
-		case *PolicyCmdResult_DeleteRelationshipResult:
-			return x.Descriptor().Fields().ByName("delete_relationship_result")
-		case *PolicyCmdResult_RegisterObjectResult:
-			return x.Descriptor().Fields().ByName("register_object_result")
-		case *PolicyCmdResult_UnregisterObjectResult:
-			return x.Descriptor().Fields().ByName("unregister_object_result")
-		}
-	default:
-		panic(fmt.Errorf("%s is not a oneof field in sourcehub.acp.PolicyCmdResult", d.FullName()))
-	}
-	panic("unreachable")
-}
-
-// GetUnknown retrieves the entire list of unknown fields.
-// The caller may only mutate the contents of the RawFields
-// if the mutated bytes are stored back into the message with SetUnknown.
-func (x *fastReflection_PolicyCmdResult) GetUnknown() protoreflect.RawFields {
-	return x.unknownFields
-}
-
-// SetUnknown stores an entire list of unknown fields.
-// The raw fields must be syntactically valid according to the wire format.
-// An implementation may panic if this is not the case.
-// Once stored, the caller must not mutate the content of the RawFields.
-// An empty RawFields may be passed to clear the fields.
-//
-// SetUnknown is a mutating operation and unsafe for concurrent use.
-func (x *fastReflection_PolicyCmdResult) SetUnknown(fields protoreflect.RawFields) {
-	x.unknownFields = fields
-}
-
-// IsValid reports whether the message is valid.
-//
-// An invalid message is an empty, read-only value.
-//
-// An invalid message often corresponds to a nil pointer of the concrete
-// message type, but the details are implementation dependent.
-// Validity is not part of the protobuf data model, and may not
-// be preserved in marshaling or other operations.
-func (x *fastReflection_PolicyCmdResult) IsValid() bool {
-	return x != nil
-}
-
-// ProtoMethods returns optional fastReflectionFeature-path implementations of various operations.
-// This method may return nil.
-//
-// The returned methods type is identical to
-// "google.golang.org/protobuf/runtime/protoiface".Methods.
-// Consult the protoiface package documentation for details.
-func (x *fastReflection_PolicyCmdResult) ProtoMethods() *protoiface.Methods {
-	size := func(input protoiface.SizeInput) protoiface.SizeOutput {
-		x := input.Message.Interface().(*PolicyCmdResult)
-		if x == nil {
-			return protoiface.SizeOutput{
-				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
-				Size:              0,
-			}
-		}
-		options := runtime.SizeInputToOptions(input)
-		_ = options
-		var n int
-		var l int
-		_ = l
-		switch x := x.Result.(type) {
-		case *PolicyCmdResult_SetRelationshipResult:
-			if x == nil {
-				break
-			}
-			l = options.Size(x.SetRelationshipResult)
-			n += 1 + l + runtime.Sov(uint64(l))
-		case *PolicyCmdResult_DeleteRelationshipResult:
-			if x == nil {
-				break
-			}
-			l = options.Size(x.DeleteRelationshipResult)
-			n += 1 + l + runtime.Sov(uint64(l))
-		case *PolicyCmdResult_RegisterObjectResult:
-			if x == nil {
-				break
-			}
-			l = options.Size(x.RegisterObjectResult)
-			n += 1 + l + runtime.Sov(uint64(l))
-		case *PolicyCmdResult_UnregisterObjectResult:
-			if x == nil {
-				break
-			}
-			l = options.Size(x.UnregisterObjectResult)
-			n += 1 + l + runtime.Sov(uint64(l))
-		}
-		if x.unknownFields != nil {
-			n += len(x.unknownFields)
-		}
-		return protoiface.SizeOutput{
-			NoUnkeyedLiterals: input.NoUnkeyedLiterals,
-			Size:              n,
-		}
-	}
-
-	marshal := func(input protoiface.MarshalInput) (protoiface.MarshalOutput, error) {
-		x := input.Message.Interface().(*PolicyCmdResult)
-		if x == nil {
-			return protoiface.MarshalOutput{
-				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
-				Buf:               input.Buf,
-			}, nil
-		}
-		options := runtime.MarshalInputToOptions(input)
-		_ = options
-		size := options.Size(x)
-		dAtA := make([]byte, size)
-		i := len(dAtA)
-		_ = i
-		var l int
-		_ = l
-		if x.unknownFields != nil {
-			i -= len(x.unknownFields)
-			copy(dAtA[i:], x.unknownFields)
-		}
-		switch x := x.Result.(type) {
-		case *PolicyCmdResult_SetRelationshipResult:
-			encoded, err := options.Marshal(x.SetRelationshipResult)
-			if err != nil {
-				return protoiface.MarshalOutput{
-					NoUnkeyedLiterals: input.NoUnkeyedLiterals,
-					Buf:               input.Buf,
-				}, err
-			}
-			i -= len(encoded)
-			copy(dAtA[i:], encoded)
-			i = runtime.EncodeVarint(dAtA, i, uint64(len(encoded)))
-			i--
-			dAtA[i] = 0xa
-		case *PolicyCmdResult_DeleteRelationshipResult:
-			encoded, err := options.Marshal(x.DeleteRelationshipResult)
-			if err != nil {
-				return protoiface.MarshalOutput{
-					NoUnkeyedLiterals: input.NoUnkeyedLiterals,
-					Buf:               input.Buf,
-				}, err
-			}
-			i -= len(encoded)
-			copy(dAtA[i:], encoded)
-			i = runtime.EncodeVarint(dAtA, i, uint64(len(encoded)))
-			i--
-			dAtA[i] = 0x12
-		case *PolicyCmdResult_RegisterObjectResult:
-			encoded, err := options.Marshal(x.RegisterObjectResult)
-			if err != nil {
-				return protoiface.MarshalOutput{
-					NoUnkeyedLiterals: input.NoUnkeyedLiterals,
-					Buf:               input.Buf,
-				}, err
-			}
-			i -= len(encoded)
-			copy(dAtA[i:], encoded)
-			i = runtime.EncodeVarint(dAtA, i, uint64(len(encoded)))
-			i--
-			dAtA[i] = 0x1a
-		case *PolicyCmdResult_UnregisterObjectResult:
-			encoded, err := options.Marshal(x.UnregisterObjectResult)
-			if err != nil {
-				return protoiface.MarshalOutput{
-					NoUnkeyedLiterals: input.NoUnkeyedLiterals,
-					Buf:               input.Buf,
-				}, err
-			}
-			i -= len(encoded)
-			copy(dAtA[i:], encoded)
-			i = runtime.EncodeVarint(dAtA, i, uint64(len(encoded)))
-			i--
-			dAtA[i] = 0x22
-		}
-		if input.Buf != nil {
-			input.Buf = append(input.Buf, dAtA...)
-		} else {
-			input.Buf = dAtA
-		}
-		return protoiface.MarshalOutput{
-			NoUnkeyedLiterals: input.NoUnkeyedLiterals,
-			Buf:               input.Buf,
-		}, nil
-	}
-	unmarshal := func(input protoiface.UnmarshalInput) (protoiface.UnmarshalOutput, error) {
-		x := input.Message.Interface().(*PolicyCmdResult)
-		if x == nil {
-			return protoiface.UnmarshalOutput{
-				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
-				Flags:             input.Flags,
-			}, nil
-		}
-		options := runtime.UnmarshalInputToOptions(input)
-		_ = options
-		dAtA := input.Buf
-		l := len(dAtA)
-		iNdEx := 0
-		for iNdEx < l {
-			preIndex := iNdEx
-			var wire uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
-				}
-				if iNdEx >= l {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				wire |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			fieldNum := int32(wire >> 3)
-			wireType := int(wire & 0x7)
-			if wireType == 4 {
-				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: PolicyCmdResult: wiretype end group for non-group")
-			}
-			if fieldNum <= 0 {
-				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: PolicyCmdResult: illegal tag %d (wire type %d)", fieldNum, wire)
-			}
-			switch fieldNum {
-			case 1:
-				if wireType != 2 {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field SetRelationshipResult", wireType)
-				}
-				var msglen int
-				for shift := uint(0); ; shift += 7 {
-					if shift >= 64 {
-						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
-					}
-					if iNdEx >= l {
-						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
-					}
-					b := dAtA[iNdEx]
-					iNdEx++
-					msglen |= int(b&0x7F) << shift
-					if b < 0x80 {
-						break
-					}
-				}
-				if msglen < 0 {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
-				}
-				postIndex := iNdEx + msglen
-				if postIndex < 0 {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
-				}
-				if postIndex > l {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
-				}
-				v := &SetRelationshipCmdResult{}
-				if err := options.Unmarshal(dAtA[iNdEx:postIndex], v); err != nil {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, err
-				}
-				x.Result = &PolicyCmdResult_SetRelationshipResult{v}
-				iNdEx = postIndex
-			case 2:
-				if wireType != 2 {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field DeleteRelationshipResult", wireType)
-				}
-				var msglen int
-				for shift := uint(0); ; shift += 7 {
-					if shift >= 64 {
-						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
-					}
-					if iNdEx >= l {
-						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
-					}
-					b := dAtA[iNdEx]
-					iNdEx++
-					msglen |= int(b&0x7F) << shift
-					if b < 0x80 {
-						break
-					}
-				}
-				if msglen < 0 {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
-				}
-				postIndex := iNdEx + msglen
-				if postIndex < 0 {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
-				}
-				if postIndex > l {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
-				}
-				v := &DeleteRelationshipCmdResult{}
-				if err := options.Unmarshal(dAtA[iNdEx:postIndex], v); err != nil {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, err
-				}
-				x.Result = &PolicyCmdResult_DeleteRelationshipResult{v}
-				iNdEx = postIndex
-			case 3:
-				if wireType != 2 {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field RegisterObjectResult", wireType)
-				}
-				var msglen int
-				for shift := uint(0); ; shift += 7 {
-					if shift >= 64 {
-						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
-					}
-					if iNdEx >= l {
-						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
-					}
-					b := dAtA[iNdEx]
-					iNdEx++
-					msglen |= int(b&0x7F) << shift
-					if b < 0x80 {
-						break
-					}
-				}
-				if msglen < 0 {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
-				}
-				postIndex := iNdEx + msglen
-				if postIndex < 0 {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
-				}
-				if postIndex > l {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
-				}
-				v := &RegisterObjectCmdResult{}
-				if err := options.Unmarshal(dAtA[iNdEx:postIndex], v); err != nil {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, err
-				}
-				x.Result = &PolicyCmdResult_RegisterObjectResult{v}
-				iNdEx = postIndex
-			case 4:
-				if wireType != 2 {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field UnregisterObjectResult", wireType)
-				}
-				var msglen int
-				for shift := uint(0); ; shift += 7 {
-					if shift >= 64 {
-						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
-					}
-					if iNdEx >= l {
-						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
-					}
-					b := dAtA[iNdEx]
-					iNdEx++
-					msglen |= int(b&0x7F) << shift
-					if b < 0x80 {
-						break
-					}
-				}
-				if msglen < 0 {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
-				}
-				postIndex := iNdEx + msglen
-				if postIndex < 0 {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
-				}
-				if postIndex > l {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
-				}
-				v := &UnregisterObjectCmdResult{}
-				if err := options.Unmarshal(dAtA[iNdEx:postIndex], v); err != nil {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, err
-				}
-				x.Result = &PolicyCmdResult_UnregisterObjectResult{v}
-				iNdEx = postIndex
-			default:
-				iNdEx = preIndex
-				skippy, err := runtime.Skip(dAtA[iNdEx:])
-				if err != nil {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, err
-				}
-				if (skippy < 0) || (iNdEx+skippy) < 0 {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
-				}
-				if (iNdEx + skippy) > l {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
-				}
-				if !options.DiscardUnknown {
-					x.unknownFields = append(x.unknownFields, dAtA[iNdEx:iNdEx+skippy]...)
-				}
-				iNdEx += skippy
-			}
-		}
-
-		if iNdEx > l {
-			return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
-		}
-		return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, nil
-	}
-	return &protoiface.Methods{
-		NoUnkeyedLiterals: struct{}{},
-		Flags:             protoiface.SupportMarshalDeterministic | protoiface.SupportUnmarshalDiscardUnknown,
-		Size:              size,
-		Marshal:           marshal,
-		Unmarshal:         unmarshal,
-		Merge:             nil,
-		CheckInitialized:  nil,
-	}
-}
-
 // Code generated by protoc-gen-go. DO NOT EDIT.
 // versions:
 // 	protoc-gen-go v1.27.0
@@ -5963,9 +5257,9 @@ type PolicyCmdPayload struct {
 	Actor string `protobuf:"bytes,1,opt,name=actor,proto3" json:"actor,omitempty"`
 	// issued_height is the SourceHub block height of when the Payload was created
 	IssuedHeight uint64 `protobuf:"varint,2,opt,name=issued_height,json=issuedHeight,proto3" json:"issued_height,omitempty"`
-	// expiration_height is the SourceHub block height at which this Command Payload is no longer valid.
+	// expiration_delta specifies the maximum number of blocks from the issued height during which the Command Payload will be accepted.
 	// This field is mandatory and is used to prevent replay attacks
-	ExpirationHeight uint64 `protobuf:"varint,3,opt,name=expiration_height,json=expirationHeight,proto3" json:"expiration_height,omitempty"`
+	ExpirationDelta uint64 `protobuf:"varint,3,opt,name=expiration_delta,json=expirationDelta,proto3" json:"expiration_delta,omitempty"`
 	// creation_time contains a client generated timestamp for the creation of the command.
 	// This is used only as metadata and isn't trusted
 	CreationTime *timestamppb.Timestamp `protobuf:"bytes,4,opt,name=creation_time,json=creationTime,proto3" json:"creation_time,omitempty"`
@@ -6014,9 +5308,9 @@ func (x *PolicyCmdPayload) GetIssuedHeight() uint64 {
 	return 0
 }
 
-func (x *PolicyCmdPayload) GetExpirationHeight() uint64 {
+func (x *PolicyCmdPayload) GetExpirationDelta() uint64 {
 	if x != nil {
-		return x.ExpirationHeight
+		return x.ExpirationDelta
 	}
 	return 0
 }
@@ -6249,7 +5543,8 @@ type SetRelationshipCmdResult struct {
 	unknownFields protoimpl.UnknownFields
 
 	// Indicates whether the given Relationship previously existed, ie the Tx was a no op
-	RecordExisted bool `protobuf:"varint,1,opt,name=record_existed,json=recordExisted,proto3" json:"record_existed,omitempty"`
+	RecordExisted bool                `protobuf:"varint,1,opt,name=record_existed,json=recordExisted,proto3" json:"record_existed,omitempty"`
+	Record        *RelationshipRecord `protobuf:"bytes,2,opt,name=record,proto3" json:"record,omitempty"`
 }
 
 func (x *SetRelationshipCmdResult) Reset() {
@@ -6277,6 +5572,13 @@ func (x *SetRelationshipCmdResult) GetRecordExisted() bool {
 		return x.RecordExisted
 	}
 	return false
+}
+
+func (x *SetRelationshipCmdResult) GetRecord() *RelationshipRecord {
+	if x != nil {
+		return x.Record
+	}
+	return nil
 }
 
 // DeleteRelationshipCmdResult removes a Relationship in a Policy
@@ -6403,103 +5705,6 @@ func (x *UnregisterObjectCmdResult) GetRelationshipsRemoved() uint64 {
 	return 0
 }
 
-type PolicyCmdResult struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-
-	// Types that are assignable to Result:
-	//
-	//	*PolicyCmdResult_SetRelationshipResult
-	//	*PolicyCmdResult_DeleteRelationshipResult
-	//	*PolicyCmdResult_RegisterObjectResult
-	//	*PolicyCmdResult_UnregisterObjectResult
-	Result isPolicyCmdResult_Result `protobuf_oneof:"result"`
-}
-
-func (x *PolicyCmdResult) Reset() {
-	*x = PolicyCmdResult{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_sourcehub_acp_policy_cmd_proto_msgTypes[10]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *PolicyCmdResult) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*PolicyCmdResult) ProtoMessage() {}
-
-// Deprecated: Use PolicyCmdResult.ProtoReflect.Descriptor instead.
-func (*PolicyCmdResult) Descriptor() ([]byte, []int) {
-	return file_sourcehub_acp_policy_cmd_proto_rawDescGZIP(), []int{10}
-}
-
-func (x *PolicyCmdResult) GetResult() isPolicyCmdResult_Result {
-	if x != nil {
-		return x.Result
-	}
-	return nil
-}
-
-func (x *PolicyCmdResult) GetSetRelationshipResult() *SetRelationshipCmdResult {
-	if x, ok := x.GetResult().(*PolicyCmdResult_SetRelationshipResult); ok {
-		return x.SetRelationshipResult
-	}
-	return nil
-}
-
-func (x *PolicyCmdResult) GetDeleteRelationshipResult() *DeleteRelationshipCmdResult {
-	if x, ok := x.GetResult().(*PolicyCmdResult_DeleteRelationshipResult); ok {
-		return x.DeleteRelationshipResult
-	}
-	return nil
-}
-
-func (x *PolicyCmdResult) GetRegisterObjectResult() *RegisterObjectCmdResult {
-	if x, ok := x.GetResult().(*PolicyCmdResult_RegisterObjectResult); ok {
-		return x.RegisterObjectResult
-	}
-	return nil
-}
-
-func (x *PolicyCmdResult) GetUnregisterObjectResult() *UnregisterObjectCmdResult {
-	if x, ok := x.GetResult().(*PolicyCmdResult_UnregisterObjectResult); ok {
-		return x.UnregisterObjectResult
-	}
-	return nil
-}
-
-type isPolicyCmdResult_Result interface {
-	isPolicyCmdResult_Result()
-}
-
-type PolicyCmdResult_SetRelationshipResult struct {
-	SetRelationshipResult *SetRelationshipCmdResult `protobuf:"bytes,1,opt,name=set_relationship_result,json=setRelationshipResult,proto3,oneof"`
-}
-
-type PolicyCmdResult_DeleteRelationshipResult struct {
-	DeleteRelationshipResult *DeleteRelationshipCmdResult `protobuf:"bytes,2,opt,name=delete_relationship_result,json=deleteRelationshipResult,proto3,oneof"`
-}
-
-type PolicyCmdResult_RegisterObjectResult struct {
-	RegisterObjectResult *RegisterObjectCmdResult `protobuf:"bytes,3,opt,name=register_object_result,json=registerObjectResult,proto3,oneof"`
-}
-
-type PolicyCmdResult_UnregisterObjectResult struct {
-	UnregisterObjectResult *UnregisterObjectCmdResult `protobuf:"bytes,4,opt,name=unregister_object_result,json=unregisterObjectResult,proto3,oneof"`
-}
-
-func (*PolicyCmdResult_SetRelationshipResult) isPolicyCmdResult_Result() {}
-
-func (*PolicyCmdResult_DeleteRelationshipResult) isPolicyCmdResult_Result() {}
-
-func (*PolicyCmdResult_RegisterObjectResult) isPolicyCmdResult_Result() {}
-
-func (*PolicyCmdResult_UnregisterObjectResult) isPolicyCmdResult_Result() {}
-
 var File_sourcehub_acp_policy_cmd_proto protoreflect.FileDescriptor
 
 var file_sourcehub_acp_policy_cmd_proto_rawDesc = []byte{
@@ -6516,125 +5721,101 @@ var file_sourcehub_acp_policy_cmd_proto_rawDesc = []byte{
 	0x75, 0x62, 0x2e, 0x61, 0x63, 0x70, 0x2e, 0x50, 0x6f, 0x6c, 0x69, 0x63, 0x79, 0x43, 0x6d, 0x64,
 	0x50, 0x61, 0x79, 0x6c, 0x6f, 0x61, 0x64, 0x52, 0x07, 0x70, 0x61, 0x79, 0x6c, 0x6f, 0x61, 0x64,
 	0x12, 0x1c, 0x0a, 0x09, 0x73, 0x69, 0x67, 0x6e, 0x61, 0x74, 0x75, 0x72, 0x65, 0x18, 0x02, 0x20,
-	0x01, 0x28, 0x0c, 0x52, 0x09, 0x73, 0x69, 0x67, 0x6e, 0x61, 0x74, 0x75, 0x72, 0x65, 0x22, 0xc4,
+	0x01, 0x28, 0x0c, 0x52, 0x09, 0x73, 0x69, 0x67, 0x6e, 0x61, 0x74, 0x75, 0x72, 0x65, 0x22, 0xc2,
 	0x04, 0x0a, 0x10, 0x50, 0x6f, 0x6c, 0x69, 0x63, 0x79, 0x43, 0x6d, 0x64, 0x50, 0x61, 0x79, 0x6c,
 	0x6f, 0x61, 0x64, 0x12, 0x14, 0x0a, 0x05, 0x61, 0x63, 0x74, 0x6f, 0x72, 0x18, 0x01, 0x20, 0x01,
 	0x28, 0x09, 0x52, 0x05, 0x61, 0x63, 0x74, 0x6f, 0x72, 0x12, 0x23, 0x0a, 0x0d, 0x69, 0x73, 0x73,
 	0x75, 0x65, 0x64, 0x5f, 0x68, 0x65, 0x69, 0x67, 0x68, 0x74, 0x18, 0x02, 0x20, 0x01, 0x28, 0x04,
-	0x52, 0x0c, 0x69, 0x73, 0x73, 0x75, 0x65, 0x64, 0x48, 0x65, 0x69, 0x67, 0x68, 0x74, 0x12, 0x2b,
-	0x0a, 0x11, 0x65, 0x78, 0x70, 0x69, 0x72, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x5f, 0x68, 0x65, 0x69,
-	0x67, 0x68, 0x74, 0x18, 0x03, 0x20, 0x01, 0x28, 0x04, 0x52, 0x10, 0x65, 0x78, 0x70, 0x69, 0x72,
-	0x61, 0x74, 0x69, 0x6f, 0x6e, 0x48, 0x65, 0x69, 0x67, 0x68, 0x74, 0x12, 0x3f, 0x0a, 0x0d, 0x63,
-	0x72, 0x65, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x5f, 0x74, 0x69, 0x6d, 0x65, 0x18, 0x04, 0x20, 0x01,
-	0x28, 0x0b, 0x32, 0x1a, 0x2e, 0x67, 0x6f, 0x6f, 0x67, 0x6c, 0x65, 0x2e, 0x70, 0x72, 0x6f, 0x74,
-	0x6f, 0x62, 0x75, 0x66, 0x2e, 0x54, 0x69, 0x6d, 0x65, 0x73, 0x74, 0x61, 0x6d, 0x70, 0x52, 0x0c,
-	0x63, 0x72, 0x65, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x54, 0x69, 0x6d, 0x65, 0x12, 0x1b, 0x0a, 0x09,
-	0x70, 0x6f, 0x6c, 0x69, 0x63, 0x79, 0x5f, 0x69, 0x64, 0x18, 0x05, 0x20, 0x01, 0x28, 0x09, 0x52,
-	0x08, 0x70, 0x6f, 0x6c, 0x69, 0x63, 0x79, 0x49, 0x64, 0x12, 0x55, 0x0a, 0x14, 0x73, 0x65, 0x74,
-	0x5f, 0x72, 0x65, 0x6c, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x73, 0x68, 0x69, 0x70, 0x5f, 0x63, 0x6d,
-	0x64, 0x18, 0x06, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x21, 0x2e, 0x73, 0x6f, 0x75, 0x72, 0x63, 0x65,
-	0x68, 0x75, 0x62, 0x2e, 0x61, 0x63, 0x70, 0x2e, 0x53, 0x65, 0x74, 0x52, 0x65, 0x6c, 0x61, 0x74,
-	0x69, 0x6f, 0x6e, 0x73, 0x68, 0x69, 0x70, 0x43, 0x6d, 0x64, 0x48, 0x00, 0x52, 0x12, 0x73, 0x65,
-	0x74, 0x52, 0x65, 0x6c, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x73, 0x68, 0x69, 0x70, 0x43, 0x6d, 0x64,
-	0x12, 0x5e, 0x0a, 0x17, 0x64, 0x65, 0x6c, 0x65, 0x74, 0x65, 0x5f, 0x72, 0x65, 0x6c, 0x61, 0x74,
-	0x69, 0x6f, 0x6e, 0x73, 0x68, 0x69, 0x70, 0x5f, 0x63, 0x6d, 0x64, 0x18, 0x07, 0x20, 0x01, 0x28,
-	0x0b, 0x32, 0x24, 0x2e, 0x73, 0x6f, 0x75, 0x72, 0x63, 0x65, 0x68, 0x75, 0x62, 0x2e, 0x61, 0x63,
-	0x70, 0x2e, 0x44, 0x65, 0x6c, 0x65, 0x74, 0x65, 0x52, 0x65, 0x6c, 0x61, 0x74, 0x69, 0x6f, 0x6e,
-	0x73, 0x68, 0x69, 0x70, 0x43, 0x6d, 0x64, 0x48, 0x00, 0x52, 0x15, 0x64, 0x65, 0x6c, 0x65, 0x74,
-	0x65, 0x52, 0x65, 0x6c, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x73, 0x68, 0x69, 0x70, 0x43, 0x6d, 0x64,
-	0x12, 0x52, 0x0a, 0x13, 0x72, 0x65, 0x67, 0x69, 0x73, 0x74, 0x65, 0x72, 0x5f, 0x6f, 0x62, 0x6a,
-	0x65, 0x63, 0x74, 0x5f, 0x63, 0x6d, 0x64, 0x18, 0x08, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x20, 0x2e,
-	0x73, 0x6f, 0x75, 0x72, 0x63, 0x65, 0x68, 0x75, 0x62, 0x2e, 0x61, 0x63, 0x70, 0x2e, 0x52, 0x65,
-	0x67, 0x69, 0x73, 0x74, 0x65, 0x72, 0x4f, 0x62, 0x6a, 0x65, 0x63, 0x74, 0x43, 0x6d, 0x64, 0x48,
-	0x00, 0x52, 0x11, 0x72, 0x65, 0x67, 0x69, 0x73, 0x74, 0x65, 0x72, 0x4f, 0x62, 0x6a, 0x65, 0x63,
-	0x74, 0x43, 0x6d, 0x64, 0x12, 0x58, 0x0a, 0x15, 0x75, 0x6e, 0x72, 0x65, 0x67, 0x69, 0x73, 0x74,
-	0x65, 0x72, 0x5f, 0x6f, 0x62, 0x6a, 0x65, 0x63, 0x74, 0x5f, 0x63, 0x6d, 0x64, 0x18, 0x09, 0x20,
-	0x01, 0x28, 0x0b, 0x32, 0x22, 0x2e, 0x73, 0x6f, 0x75, 0x72, 0x63, 0x65, 0x68, 0x75, 0x62, 0x2e,
-	0x61, 0x63, 0x70, 0x2e, 0x55, 0x6e, 0x72, 0x65, 0x67, 0x69, 0x73, 0x74, 0x65, 0x72, 0x4f, 0x62,
-	0x6a, 0x65, 0x63, 0x74, 0x43, 0x6d, 0x64, 0x48, 0x00, 0x52, 0x13, 0x75, 0x6e, 0x72, 0x65, 0x67,
-	0x69, 0x73, 0x74, 0x65, 0x72, 0x4f, 0x62, 0x6a, 0x65, 0x63, 0x74, 0x43, 0x6d, 0x64, 0x42, 0x05,
-	0x0a, 0x03, 0x63, 0x6d, 0x64, 0x22, 0x55, 0x0a, 0x12, 0x53, 0x65, 0x74, 0x52, 0x65, 0x6c, 0x61,
-	0x74, 0x69, 0x6f, 0x6e, 0x73, 0x68, 0x69, 0x70, 0x43, 0x6d, 0x64, 0x12, 0x3f, 0x0a, 0x0c, 0x72,
-	0x65, 0x6c, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x73, 0x68, 0x69, 0x70, 0x18, 0x01, 0x20, 0x01, 0x28,
-	0x0b, 0x32, 0x1b, 0x2e, 0x73, 0x6f, 0x75, 0x72, 0x63, 0x65, 0x68, 0x75, 0x62, 0x2e, 0x61, 0x63,
-	0x70, 0x2e, 0x52, 0x65, 0x6c, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x73, 0x68, 0x69, 0x70, 0x52, 0x0c,
-	0x72, 0x65, 0x6c, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x73, 0x68, 0x69, 0x70, 0x22, 0x58, 0x0a, 0x15,
+	0x52, 0x0c, 0x69, 0x73, 0x73, 0x75, 0x65, 0x64, 0x48, 0x65, 0x69, 0x67, 0x68, 0x74, 0x12, 0x29,
+	0x0a, 0x10, 0x65, 0x78, 0x70, 0x69, 0x72, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x5f, 0x64, 0x65, 0x6c,
+	0x74, 0x61, 0x18, 0x03, 0x20, 0x01, 0x28, 0x04, 0x52, 0x0f, 0x65, 0x78, 0x70, 0x69, 0x72, 0x61,
+	0x74, 0x69, 0x6f, 0x6e, 0x44, 0x65, 0x6c, 0x74, 0x61, 0x12, 0x3f, 0x0a, 0x0d, 0x63, 0x72, 0x65,
+	0x61, 0x74, 0x69, 0x6f, 0x6e, 0x5f, 0x74, 0x69, 0x6d, 0x65, 0x18, 0x04, 0x20, 0x01, 0x28, 0x0b,
+	0x32, 0x1a, 0x2e, 0x67, 0x6f, 0x6f, 0x67, 0x6c, 0x65, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62,
+	0x75, 0x66, 0x2e, 0x54, 0x69, 0x6d, 0x65, 0x73, 0x74, 0x61, 0x6d, 0x70, 0x52, 0x0c, 0x63, 0x72,
+	0x65, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x54, 0x69, 0x6d, 0x65, 0x12, 0x1b, 0x0a, 0x09, 0x70, 0x6f,
+	0x6c, 0x69, 0x63, 0x79, 0x5f, 0x69, 0x64, 0x18, 0x05, 0x20, 0x01, 0x28, 0x09, 0x52, 0x08, 0x70,
+	0x6f, 0x6c, 0x69, 0x63, 0x79, 0x49, 0x64, 0x12, 0x55, 0x0a, 0x14, 0x73, 0x65, 0x74, 0x5f, 0x72,
+	0x65, 0x6c, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x73, 0x68, 0x69, 0x70, 0x5f, 0x63, 0x6d, 0x64, 0x18,
+	0x06, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x21, 0x2e, 0x73, 0x6f, 0x75, 0x72, 0x63, 0x65, 0x68, 0x75,
+	0x62, 0x2e, 0x61, 0x63, 0x70, 0x2e, 0x53, 0x65, 0x74, 0x52, 0x65, 0x6c, 0x61, 0x74, 0x69, 0x6f,
+	0x6e, 0x73, 0x68, 0x69, 0x70, 0x43, 0x6d, 0x64, 0x48, 0x00, 0x52, 0x12, 0x73, 0x65, 0x74, 0x52,
+	0x65, 0x6c, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x73, 0x68, 0x69, 0x70, 0x43, 0x6d, 0x64, 0x12, 0x5e,
+	0x0a, 0x17, 0x64, 0x65, 0x6c, 0x65, 0x74, 0x65, 0x5f, 0x72, 0x65, 0x6c, 0x61, 0x74, 0x69, 0x6f,
+	0x6e, 0x73, 0x68, 0x69, 0x70, 0x5f, 0x63, 0x6d, 0x64, 0x18, 0x07, 0x20, 0x01, 0x28, 0x0b, 0x32,
+	0x24, 0x2e, 0x73, 0x6f, 0x75, 0x72, 0x63, 0x65, 0x68, 0x75, 0x62, 0x2e, 0x61, 0x63, 0x70, 0x2e,
 	0x44, 0x65, 0x6c, 0x65, 0x74, 0x65, 0x52, 0x65, 0x6c, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x73, 0x68,
-	0x69, 0x70, 0x43, 0x6d, 0x64, 0x12, 0x3f, 0x0a, 0x0c, 0x72, 0x65, 0x6c, 0x61, 0x74, 0x69, 0x6f,
-	0x6e, 0x73, 0x68, 0x69, 0x70, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x1b, 0x2e, 0x73, 0x6f,
-	0x75, 0x72, 0x63, 0x65, 0x68, 0x75, 0x62, 0x2e, 0x61, 0x63, 0x70, 0x2e, 0x52, 0x65, 0x6c, 0x61,
-	0x74, 0x69, 0x6f, 0x6e, 0x73, 0x68, 0x69, 0x70, 0x52, 0x0c, 0x72, 0x65, 0x6c, 0x61, 0x74, 0x69,
-	0x6f, 0x6e, 0x73, 0x68, 0x69, 0x70, 0x22, 0x42, 0x0a, 0x11, 0x52, 0x65, 0x67, 0x69, 0x73, 0x74,
-	0x65, 0x72, 0x4f, 0x62, 0x6a, 0x65, 0x63, 0x74, 0x43, 0x6d, 0x64, 0x12, 0x2d, 0x0a, 0x06, 0x6f,
-	0x62, 0x6a, 0x65, 0x63, 0x74, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x15, 0x2e, 0x73, 0x6f,
-	0x75, 0x72, 0x63, 0x65, 0x68, 0x75, 0x62, 0x2e, 0x61, 0x63, 0x70, 0x2e, 0x4f, 0x62, 0x6a, 0x65,
-	0x63, 0x74, 0x52, 0x06, 0x6f, 0x62, 0x6a, 0x65, 0x63, 0x74, 0x22, 0x44, 0x0a, 0x13, 0x55, 0x6e,
-	0x72, 0x65, 0x67, 0x69, 0x73, 0x74, 0x65, 0x72, 0x4f, 0x62, 0x6a, 0x65, 0x63, 0x74, 0x43, 0x6d,
-	0x64, 0x12, 0x2d, 0x0a, 0x06, 0x6f, 0x62, 0x6a, 0x65, 0x63, 0x74, 0x18, 0x01, 0x20, 0x01, 0x28,
-	0x0b, 0x32, 0x15, 0x2e, 0x73, 0x6f, 0x75, 0x72, 0x63, 0x65, 0x68, 0x75, 0x62, 0x2e, 0x61, 0x63,
-	0x70, 0x2e, 0x4f, 0x62, 0x6a, 0x65, 0x63, 0x74, 0x52, 0x06, 0x6f, 0x62, 0x6a, 0x65, 0x63, 0x74,
-	0x22, 0x41, 0x0a, 0x18, 0x53, 0x65, 0x74, 0x52, 0x65, 0x6c, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x73,
-	0x68, 0x69, 0x70, 0x43, 0x6d, 0x64, 0x52, 0x65, 0x73, 0x75, 0x6c, 0x74, 0x12, 0x25, 0x0a, 0x0e,
-	0x72, 0x65, 0x63, 0x6f, 0x72, 0x64, 0x5f, 0x65, 0x78, 0x69, 0x73, 0x74, 0x65, 0x64, 0x18, 0x01,
-	0x20, 0x01, 0x28, 0x08, 0x52, 0x0d, 0x72, 0x65, 0x63, 0x6f, 0x72, 0x64, 0x45, 0x78, 0x69, 0x73,
-	0x74, 0x65, 0x64, 0x22, 0x40, 0x0a, 0x1b, 0x44, 0x65, 0x6c, 0x65, 0x74, 0x65, 0x52, 0x65, 0x6c,
-	0x61, 0x74, 0x69, 0x6f, 0x6e, 0x73, 0x68, 0x69, 0x70, 0x43, 0x6d, 0x64, 0x52, 0x65, 0x73, 0x75,
-	0x6c, 0x74, 0x12, 0x21, 0x0a, 0x0c, 0x72, 0x65, 0x63, 0x6f, 0x72, 0x64, 0x5f, 0x66, 0x6f, 0x75,
-	0x6e, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x08, 0x52, 0x0b, 0x72, 0x65, 0x63, 0x6f, 0x72, 0x64,
-	0x46, 0x6f, 0x75, 0x6e, 0x64, 0x22, 0x8f, 0x01, 0x0a, 0x17, 0x52, 0x65, 0x67, 0x69, 0x73, 0x74,
-	0x65, 0x72, 0x4f, 0x62, 0x6a, 0x65, 0x63, 0x74, 0x43, 0x6d, 0x64, 0x52, 0x65, 0x73, 0x75, 0x6c,
-	0x74, 0x12, 0x39, 0x0a, 0x06, 0x72, 0x65, 0x73, 0x75, 0x6c, 0x74, 0x18, 0x01, 0x20, 0x01, 0x28,
-	0x0e, 0x32, 0x21, 0x2e, 0x73, 0x6f, 0x75, 0x72, 0x63, 0x65, 0x68, 0x75, 0x62, 0x2e, 0x61, 0x63,
-	0x70, 0x2e, 0x52, 0x65, 0x67, 0x69, 0x73, 0x74, 0x72, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x52, 0x65,
-	0x73, 0x75, 0x6c, 0x74, 0x52, 0x06, 0x72, 0x65, 0x73, 0x75, 0x6c, 0x74, 0x12, 0x39, 0x0a, 0x06,
-	0x72, 0x65, 0x63, 0x6f, 0x72, 0x64, 0x18, 0x02, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x21, 0x2e, 0x73,
-	0x6f, 0x75, 0x72, 0x63, 0x65, 0x68, 0x75, 0x62, 0x2e, 0x61, 0x63, 0x70, 0x2e, 0x52, 0x65, 0x6c,
-	0x61, 0x74, 0x69, 0x6f, 0x6e, 0x73, 0x68, 0x69, 0x70, 0x52, 0x65, 0x63, 0x6f, 0x72, 0x64, 0x52,
-	0x06, 0x72, 0x65, 0x63, 0x6f, 0x72, 0x64, 0x22, 0x66, 0x0a, 0x19, 0x55, 0x6e, 0x72, 0x65, 0x67,
-	0x69, 0x73, 0x74, 0x65, 0x72, 0x4f, 0x62, 0x6a, 0x65, 0x63, 0x74, 0x43, 0x6d, 0x64, 0x52, 0x65,
-	0x73, 0x75, 0x6c, 0x74, 0x12, 0x14, 0x0a, 0x05, 0x66, 0x6f, 0x75, 0x6e, 0x64, 0x18, 0x01, 0x20,
-	0x01, 0x28, 0x08, 0x52, 0x05, 0x66, 0x6f, 0x75, 0x6e, 0x64, 0x12, 0x33, 0x0a, 0x15, 0x72, 0x65,
-	0x6c, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x73, 0x68, 0x69, 0x70, 0x73, 0x5f, 0x72, 0x65, 0x6d, 0x6f,
-	0x76, 0x65, 0x64, 0x18, 0x02, 0x20, 0x01, 0x28, 0x04, 0x52, 0x14, 0x72, 0x65, 0x6c, 0x61, 0x74,
-	0x69, 0x6f, 0x6e, 0x73, 0x68, 0x69, 0x70, 0x73, 0x52, 0x65, 0x6d, 0x6f, 0x76, 0x65, 0x64, 0x22,
-	0xb0, 0x03, 0x0a, 0x0f, 0x50, 0x6f, 0x6c, 0x69, 0x63, 0x79, 0x43, 0x6d, 0x64, 0x52, 0x65, 0x73,
-	0x75, 0x6c, 0x74, 0x12, 0x61, 0x0a, 0x17, 0x73, 0x65, 0x74, 0x5f, 0x72, 0x65, 0x6c, 0x61, 0x74,
-	0x69, 0x6f, 0x6e, 0x73, 0x68, 0x69, 0x70, 0x5f, 0x72, 0x65, 0x73, 0x75, 0x6c, 0x74, 0x18, 0x01,
-	0x20, 0x01, 0x28, 0x0b, 0x32, 0x27, 0x2e, 0x73, 0x6f, 0x75, 0x72, 0x63, 0x65, 0x68, 0x75, 0x62,
-	0x2e, 0x61, 0x63, 0x70, 0x2e, 0x53, 0x65, 0x74, 0x52, 0x65, 0x6c, 0x61, 0x74, 0x69, 0x6f, 0x6e,
-	0x73, 0x68, 0x69, 0x70, 0x43, 0x6d, 0x64, 0x52, 0x65, 0x73, 0x75, 0x6c, 0x74, 0x48, 0x00, 0x52,
-	0x15, 0x73, 0x65, 0x74, 0x52, 0x65, 0x6c, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x73, 0x68, 0x69, 0x70,
-	0x52, 0x65, 0x73, 0x75, 0x6c, 0x74, 0x12, 0x6a, 0x0a, 0x1a, 0x64, 0x65, 0x6c, 0x65, 0x74, 0x65,
-	0x5f, 0x72, 0x65, 0x6c, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x73, 0x68, 0x69, 0x70, 0x5f, 0x72, 0x65,
-	0x73, 0x75, 0x6c, 0x74, 0x18, 0x02, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x2a, 0x2e, 0x73, 0x6f, 0x75,
-	0x72, 0x63, 0x65, 0x68, 0x75, 0x62, 0x2e, 0x61, 0x63, 0x70, 0x2e, 0x44, 0x65, 0x6c, 0x65, 0x74,
-	0x65, 0x52, 0x65, 0x6c, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x73, 0x68, 0x69, 0x70, 0x43, 0x6d, 0x64,
-	0x52, 0x65, 0x73, 0x75, 0x6c, 0x74, 0x48, 0x00, 0x52, 0x18, 0x64, 0x65, 0x6c, 0x65, 0x74, 0x65,
-	0x52, 0x65, 0x6c, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x73, 0x68, 0x69, 0x70, 0x52, 0x65, 0x73, 0x75,
-	0x6c, 0x74, 0x12, 0x5e, 0x0a, 0x16, 0x72, 0x65, 0x67, 0x69, 0x73, 0x74, 0x65, 0x72, 0x5f, 0x6f,
-	0x62, 0x6a, 0x65, 0x63, 0x74, 0x5f, 0x72, 0x65, 0x73, 0x75, 0x6c, 0x74, 0x18, 0x03, 0x20, 0x01,
-	0x28, 0x0b, 0x32, 0x26, 0x2e, 0x73, 0x6f, 0x75, 0x72, 0x63, 0x65, 0x68, 0x75, 0x62, 0x2e, 0x61,
-	0x63, 0x70, 0x2e, 0x52, 0x65, 0x67, 0x69, 0x73, 0x74, 0x65, 0x72, 0x4f, 0x62, 0x6a, 0x65, 0x63,
-	0x74, 0x43, 0x6d, 0x64, 0x52, 0x65, 0x73, 0x75, 0x6c, 0x74, 0x48, 0x00, 0x52, 0x14, 0x72, 0x65,
-	0x67, 0x69, 0x73, 0x74, 0x65, 0x72, 0x4f, 0x62, 0x6a, 0x65, 0x63, 0x74, 0x52, 0x65, 0x73, 0x75,
-	0x6c, 0x74, 0x12, 0x64, 0x0a, 0x18, 0x75, 0x6e, 0x72, 0x65, 0x67, 0x69, 0x73, 0x74, 0x65, 0x72,
-	0x5f, 0x6f, 0x62, 0x6a, 0x65, 0x63, 0x74, 0x5f, 0x72, 0x65, 0x73, 0x75, 0x6c, 0x74, 0x18, 0x04,
-	0x20, 0x01, 0x28, 0x0b, 0x32, 0x28, 0x2e, 0x73, 0x6f, 0x75, 0x72, 0x63, 0x65, 0x68, 0x75, 0x62,
-	0x2e, 0x61, 0x63, 0x70, 0x2e, 0x55, 0x6e, 0x72, 0x65, 0x67, 0x69, 0x73, 0x74, 0x65, 0x72, 0x4f,
-	0x62, 0x6a, 0x65, 0x63, 0x74, 0x43, 0x6d, 0x64, 0x52, 0x65, 0x73, 0x75, 0x6c, 0x74, 0x48, 0x00,
-	0x52, 0x16, 0x75, 0x6e, 0x72, 0x65, 0x67, 0x69, 0x73, 0x74, 0x65, 0x72, 0x4f, 0x62, 0x6a, 0x65,
-	0x63, 0x74, 0x52, 0x65, 0x73, 0x75, 0x6c, 0x74, 0x42, 0x08, 0x0a, 0x06, 0x72, 0x65, 0x73, 0x75,
-	0x6c, 0x74, 0x42, 0x98, 0x01, 0x0a, 0x11, 0x63, 0x6f, 0x6d, 0x2e, 0x73, 0x6f, 0x75, 0x72, 0x63,
-	0x65, 0x68, 0x75, 0x62, 0x2e, 0x61, 0x63, 0x70, 0x42, 0x0e, 0x50, 0x6f, 0x6c, 0x69, 0x63, 0x79,
-	0x43, 0x6d, 0x64, 0x50, 0x72, 0x6f, 0x74, 0x6f, 0x50, 0x01, 0x5a, 0x1e, 0x63, 0x6f, 0x73, 0x6d,
-	0x6f, 0x73, 0x73, 0x64, 0x6b, 0x2e, 0x69, 0x6f, 0x2f, 0x61, 0x70, 0x69, 0x2f, 0x73, 0x6f, 0x75,
-	0x72, 0x63, 0x65, 0x68, 0x75, 0x62, 0x2f, 0x61, 0x63, 0x70, 0xa2, 0x02, 0x03, 0x53, 0x41, 0x58,
-	0xaa, 0x02, 0x0d, 0x53, 0x6f, 0x75, 0x72, 0x63, 0x65, 0x68, 0x75, 0x62, 0x2e, 0x41, 0x63, 0x70,
-	0xca, 0x02, 0x0d, 0x53, 0x6f, 0x75, 0x72, 0x63, 0x65, 0x68, 0x75, 0x62, 0x5c, 0x41, 0x63, 0x70,
-	0xe2, 0x02, 0x19, 0x53, 0x6f, 0x75, 0x72, 0x63, 0x65, 0x68, 0x75, 0x62, 0x5c, 0x41, 0x63, 0x70,
-	0x5c, 0x47, 0x50, 0x42, 0x4d, 0x65, 0x74, 0x61, 0x64, 0x61, 0x74, 0x61, 0xea, 0x02, 0x0e, 0x53,
-	0x6f, 0x75, 0x72, 0x63, 0x65, 0x68, 0x75, 0x62, 0x3a, 0x3a, 0x41, 0x63, 0x70, 0x62, 0x06, 0x70,
-	0x72, 0x6f, 0x74, 0x6f, 0x33,
+	0x69, 0x70, 0x43, 0x6d, 0x64, 0x48, 0x00, 0x52, 0x15, 0x64, 0x65, 0x6c, 0x65, 0x74, 0x65, 0x52,
+	0x65, 0x6c, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x73, 0x68, 0x69, 0x70, 0x43, 0x6d, 0x64, 0x12, 0x52,
+	0x0a, 0x13, 0x72, 0x65, 0x67, 0x69, 0x73, 0x74, 0x65, 0x72, 0x5f, 0x6f, 0x62, 0x6a, 0x65, 0x63,
+	0x74, 0x5f, 0x63, 0x6d, 0x64, 0x18, 0x08, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x20, 0x2e, 0x73, 0x6f,
+	0x75, 0x72, 0x63, 0x65, 0x68, 0x75, 0x62, 0x2e, 0x61, 0x63, 0x70, 0x2e, 0x52, 0x65, 0x67, 0x69,
+	0x73, 0x74, 0x65, 0x72, 0x4f, 0x62, 0x6a, 0x65, 0x63, 0x74, 0x43, 0x6d, 0x64, 0x48, 0x00, 0x52,
+	0x11, 0x72, 0x65, 0x67, 0x69, 0x73, 0x74, 0x65, 0x72, 0x4f, 0x62, 0x6a, 0x65, 0x63, 0x74, 0x43,
+	0x6d, 0x64, 0x12, 0x58, 0x0a, 0x15, 0x75, 0x6e, 0x72, 0x65, 0x67, 0x69, 0x73, 0x74, 0x65, 0x72,
+	0x5f, 0x6f, 0x62, 0x6a, 0x65, 0x63, 0x74, 0x5f, 0x63, 0x6d, 0x64, 0x18, 0x09, 0x20, 0x01, 0x28,
+	0x0b, 0x32, 0x22, 0x2e, 0x73, 0x6f, 0x75, 0x72, 0x63, 0x65, 0x68, 0x75, 0x62, 0x2e, 0x61, 0x63,
+	0x70, 0x2e, 0x55, 0x6e, 0x72, 0x65, 0x67, 0x69, 0x73, 0x74, 0x65, 0x72, 0x4f, 0x62, 0x6a, 0x65,
+	0x63, 0x74, 0x43, 0x6d, 0x64, 0x48, 0x00, 0x52, 0x13, 0x75, 0x6e, 0x72, 0x65, 0x67, 0x69, 0x73,
+	0x74, 0x65, 0x72, 0x4f, 0x62, 0x6a, 0x65, 0x63, 0x74, 0x43, 0x6d, 0x64, 0x42, 0x05, 0x0a, 0x03,
+	0x63, 0x6d, 0x64, 0x22, 0x55, 0x0a, 0x12, 0x53, 0x65, 0x74, 0x52, 0x65, 0x6c, 0x61, 0x74, 0x69,
+	0x6f, 0x6e, 0x73, 0x68, 0x69, 0x70, 0x43, 0x6d, 0x64, 0x12, 0x3f, 0x0a, 0x0c, 0x72, 0x65, 0x6c,
+	0x61, 0x74, 0x69, 0x6f, 0x6e, 0x73, 0x68, 0x69, 0x70, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32,
+	0x1b, 0x2e, 0x73, 0x6f, 0x75, 0x72, 0x63, 0x65, 0x68, 0x75, 0x62, 0x2e, 0x61, 0x63, 0x70, 0x2e,
+	0x52, 0x65, 0x6c, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x73, 0x68, 0x69, 0x70, 0x52, 0x0c, 0x72, 0x65,
+	0x6c, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x73, 0x68, 0x69, 0x70, 0x22, 0x58, 0x0a, 0x15, 0x44, 0x65,
+	0x6c, 0x65, 0x74, 0x65, 0x52, 0x65, 0x6c, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x73, 0x68, 0x69, 0x70,
+	0x43, 0x6d, 0x64, 0x12, 0x3f, 0x0a, 0x0c, 0x72, 0x65, 0x6c, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x73,
+	0x68, 0x69, 0x70, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x1b, 0x2e, 0x73, 0x6f, 0x75, 0x72,
+	0x63, 0x65, 0x68, 0x75, 0x62, 0x2e, 0x61, 0x63, 0x70, 0x2e, 0x52, 0x65, 0x6c, 0x61, 0x74, 0x69,
+	0x6f, 0x6e, 0x73, 0x68, 0x69, 0x70, 0x52, 0x0c, 0x72, 0x65, 0x6c, 0x61, 0x74, 0x69, 0x6f, 0x6e,
+	0x73, 0x68, 0x69, 0x70, 0x22, 0x42, 0x0a, 0x11, 0x52, 0x65, 0x67, 0x69, 0x73, 0x74, 0x65, 0x72,
+	0x4f, 0x62, 0x6a, 0x65, 0x63, 0x74, 0x43, 0x6d, 0x64, 0x12, 0x2d, 0x0a, 0x06, 0x6f, 0x62, 0x6a,
+	0x65, 0x63, 0x74, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x15, 0x2e, 0x73, 0x6f, 0x75, 0x72,
+	0x63, 0x65, 0x68, 0x75, 0x62, 0x2e, 0x61, 0x63, 0x70, 0x2e, 0x4f, 0x62, 0x6a, 0x65, 0x63, 0x74,
+	0x52, 0x06, 0x6f, 0x62, 0x6a, 0x65, 0x63, 0x74, 0x22, 0x44, 0x0a, 0x13, 0x55, 0x6e, 0x72, 0x65,
+	0x67, 0x69, 0x73, 0x74, 0x65, 0x72, 0x4f, 0x62, 0x6a, 0x65, 0x63, 0x74, 0x43, 0x6d, 0x64, 0x12,
+	0x2d, 0x0a, 0x06, 0x6f, 0x62, 0x6a, 0x65, 0x63, 0x74, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32,
+	0x15, 0x2e, 0x73, 0x6f, 0x75, 0x72, 0x63, 0x65, 0x68, 0x75, 0x62, 0x2e, 0x61, 0x63, 0x70, 0x2e,
+	0x4f, 0x62, 0x6a, 0x65, 0x63, 0x74, 0x52, 0x06, 0x6f, 0x62, 0x6a, 0x65, 0x63, 0x74, 0x22, 0x7c,
+	0x0a, 0x18, 0x53, 0x65, 0x74, 0x52, 0x65, 0x6c, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x73, 0x68, 0x69,
+	0x70, 0x43, 0x6d, 0x64, 0x52, 0x65, 0x73, 0x75, 0x6c, 0x74, 0x12, 0x25, 0x0a, 0x0e, 0x72, 0x65,
+	0x63, 0x6f, 0x72, 0x64, 0x5f, 0x65, 0x78, 0x69, 0x73, 0x74, 0x65, 0x64, 0x18, 0x01, 0x20, 0x01,
+	0x28, 0x08, 0x52, 0x0d, 0x72, 0x65, 0x63, 0x6f, 0x72, 0x64, 0x45, 0x78, 0x69, 0x73, 0x74, 0x65,
+	0x64, 0x12, 0x39, 0x0a, 0x06, 0x72, 0x65, 0x63, 0x6f, 0x72, 0x64, 0x18, 0x02, 0x20, 0x01, 0x28,
+	0x0b, 0x32, 0x21, 0x2e, 0x73, 0x6f, 0x75, 0x72, 0x63, 0x65, 0x68, 0x75, 0x62, 0x2e, 0x61, 0x63,
+	0x70, 0x2e, 0x52, 0x65, 0x6c, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x73, 0x68, 0x69, 0x70, 0x52, 0x65,
+	0x63, 0x6f, 0x72, 0x64, 0x52, 0x06, 0x72, 0x65, 0x63, 0x6f, 0x72, 0x64, 0x22, 0x40, 0x0a, 0x1b,
+	0x44, 0x65, 0x6c, 0x65, 0x74, 0x65, 0x52, 0x65, 0x6c, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x73, 0x68,
+	0x69, 0x70, 0x43, 0x6d, 0x64, 0x52, 0x65, 0x73, 0x75, 0x6c, 0x74, 0x12, 0x21, 0x0a, 0x0c, 0x72,
+	0x65, 0x63, 0x6f, 0x72, 0x64, 0x5f, 0x66, 0x6f, 0x75, 0x6e, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28,
+	0x08, 0x52, 0x0b, 0x72, 0x65, 0x63, 0x6f, 0x72, 0x64, 0x46, 0x6f, 0x75, 0x6e, 0x64, 0x22, 0x8f,
+	0x01, 0x0a, 0x17, 0x52, 0x65, 0x67, 0x69, 0x73, 0x74, 0x65, 0x72, 0x4f, 0x62, 0x6a, 0x65, 0x63,
+	0x74, 0x43, 0x6d, 0x64, 0x52, 0x65, 0x73, 0x75, 0x6c, 0x74, 0x12, 0x39, 0x0a, 0x06, 0x72, 0x65,
+	0x73, 0x75, 0x6c, 0x74, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0e, 0x32, 0x21, 0x2e, 0x73, 0x6f, 0x75,
+	0x72, 0x63, 0x65, 0x68, 0x75, 0x62, 0x2e, 0x61, 0x63, 0x70, 0x2e, 0x52, 0x65, 0x67, 0x69, 0x73,
+	0x74, 0x72, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x52, 0x65, 0x73, 0x75, 0x6c, 0x74, 0x52, 0x06, 0x72,
+	0x65, 0x73, 0x75, 0x6c, 0x74, 0x12, 0x39, 0x0a, 0x06, 0x72, 0x65, 0x63, 0x6f, 0x72, 0x64, 0x18,
+	0x02, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x21, 0x2e, 0x73, 0x6f, 0x75, 0x72, 0x63, 0x65, 0x68, 0x75,
+	0x62, 0x2e, 0x61, 0x63, 0x70, 0x2e, 0x52, 0x65, 0x6c, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x73, 0x68,
+	0x69, 0x70, 0x52, 0x65, 0x63, 0x6f, 0x72, 0x64, 0x52, 0x06, 0x72, 0x65, 0x63, 0x6f, 0x72, 0x64,
+	0x22, 0x66, 0x0a, 0x19, 0x55, 0x6e, 0x72, 0x65, 0x67, 0x69, 0x73, 0x74, 0x65, 0x72, 0x4f, 0x62,
+	0x6a, 0x65, 0x63, 0x74, 0x43, 0x6d, 0x64, 0x52, 0x65, 0x73, 0x75, 0x6c, 0x74, 0x12, 0x14, 0x0a,
+	0x05, 0x66, 0x6f, 0x75, 0x6e, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x08, 0x52, 0x05, 0x66, 0x6f,
+	0x75, 0x6e, 0x64, 0x12, 0x33, 0x0a, 0x15, 0x72, 0x65, 0x6c, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x73,
+	0x68, 0x69, 0x70, 0x73, 0x5f, 0x72, 0x65, 0x6d, 0x6f, 0x76, 0x65, 0x64, 0x18, 0x02, 0x20, 0x01,
+	0x28, 0x04, 0x52, 0x14, 0x72, 0x65, 0x6c, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x73, 0x68, 0x69, 0x70,
+	0x73, 0x52, 0x65, 0x6d, 0x6f, 0x76, 0x65, 0x64, 0x42, 0x98, 0x01, 0x0a, 0x11, 0x63, 0x6f, 0x6d,
+	0x2e, 0x73, 0x6f, 0x75, 0x72, 0x63, 0x65, 0x68, 0x75, 0x62, 0x2e, 0x61, 0x63, 0x70, 0x42, 0x0e,
+	0x50, 0x6f, 0x6c, 0x69, 0x63, 0x79, 0x43, 0x6d, 0x64, 0x50, 0x72, 0x6f, 0x74, 0x6f, 0x50, 0x01,
+	0x5a, 0x1e, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x73, 0x64, 0x6b, 0x2e, 0x69, 0x6f, 0x2f, 0x61,
+	0x70, 0x69, 0x2f, 0x73, 0x6f, 0x75, 0x72, 0x63, 0x65, 0x68, 0x75, 0x62, 0x2f, 0x61, 0x63, 0x70,
+	0xa2, 0x02, 0x03, 0x53, 0x41, 0x58, 0xaa, 0x02, 0x0d, 0x53, 0x6f, 0x75, 0x72, 0x63, 0x65, 0x68,
+	0x75, 0x62, 0x2e, 0x41, 0x63, 0x70, 0xca, 0x02, 0x0d, 0x53, 0x6f, 0x75, 0x72, 0x63, 0x65, 0x68,
+	0x75, 0x62, 0x5c, 0x41, 0x63, 0x70, 0xe2, 0x02, 0x19, 0x53, 0x6f, 0x75, 0x72, 0x63, 0x65, 0x68,
+	0x75, 0x62, 0x5c, 0x41, 0x63, 0x70, 0x5c, 0x47, 0x50, 0x42, 0x4d, 0x65, 0x74, 0x61, 0x64, 0x61,
+	0x74, 0x61, 0xea, 0x02, 0x0e, 0x53, 0x6f, 0x75, 0x72, 0x63, 0x65, 0x68, 0x75, 0x62, 0x3a, 0x3a,
+	0x41, 0x63, 0x70, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
 }
 
 var (
@@ -6649,7 +5830,7 @@ func file_sourcehub_acp_policy_cmd_proto_rawDescGZIP() []byte {
 	return file_sourcehub_acp_policy_cmd_proto_rawDescData
 }
 
-var file_sourcehub_acp_policy_cmd_proto_msgTypes = make([]protoimpl.MessageInfo, 11)
+var file_sourcehub_acp_policy_cmd_proto_msgTypes = make([]protoimpl.MessageInfo, 10)
 var file_sourcehub_acp_policy_cmd_proto_goTypes = []interface{}{
 	(*SignedPolicyCmd)(nil),             // 0: sourcehub.acp.SignedPolicyCmd
 	(*PolicyCmdPayload)(nil),            // 1: sourcehub.acp.PolicyCmdPayload
@@ -6661,35 +5842,31 @@ var file_sourcehub_acp_policy_cmd_proto_goTypes = []interface{}{
 	(*DeleteRelationshipCmdResult)(nil), // 7: sourcehub.acp.DeleteRelationshipCmdResult
 	(*RegisterObjectCmdResult)(nil),     // 8: sourcehub.acp.RegisterObjectCmdResult
 	(*UnregisterObjectCmdResult)(nil),   // 9: sourcehub.acp.UnregisterObjectCmdResult
-	(*PolicyCmdResult)(nil),             // 10: sourcehub.acp.PolicyCmdResult
-	(*timestamppb.Timestamp)(nil),       // 11: google.protobuf.Timestamp
-	(*Relationship)(nil),                // 12: sourcehub.acp.Relationship
-	(*Object)(nil),                      // 13: sourcehub.acp.Object
+	(*timestamppb.Timestamp)(nil),       // 10: google.protobuf.Timestamp
+	(*Relationship)(nil),                // 11: sourcehub.acp.Relationship
+	(*Object)(nil),                      // 12: sourcehub.acp.Object
+	(*RelationshipRecord)(nil),          // 13: sourcehub.acp.RelationshipRecord
 	(RegistrationResult)(0),             // 14: sourcehub.acp.RegistrationResult
-	(*RelationshipRecord)(nil),          // 15: sourcehub.acp.RelationshipRecord
 }
 var file_sourcehub_acp_policy_cmd_proto_depIdxs = []int32{
 	1,  // 0: sourcehub.acp.SignedPolicyCmd.payload:type_name -> sourcehub.acp.PolicyCmdPayload
-	11, // 1: sourcehub.acp.PolicyCmdPayload.creation_time:type_name -> google.protobuf.Timestamp
+	10, // 1: sourcehub.acp.PolicyCmdPayload.creation_time:type_name -> google.protobuf.Timestamp
 	2,  // 2: sourcehub.acp.PolicyCmdPayload.set_relationship_cmd:type_name -> sourcehub.acp.SetRelationshipCmd
 	3,  // 3: sourcehub.acp.PolicyCmdPayload.delete_relationship_cmd:type_name -> sourcehub.acp.DeleteRelationshipCmd
 	4,  // 4: sourcehub.acp.PolicyCmdPayload.register_object_cmd:type_name -> sourcehub.acp.RegisterObjectCmd
 	5,  // 5: sourcehub.acp.PolicyCmdPayload.unregister_object_cmd:type_name -> sourcehub.acp.UnregisterObjectCmd
-	12, // 6: sourcehub.acp.SetRelationshipCmd.relationship:type_name -> sourcehub.acp.Relationship
-	12, // 7: sourcehub.acp.DeleteRelationshipCmd.relationship:type_name -> sourcehub.acp.Relationship
-	13, // 8: sourcehub.acp.RegisterObjectCmd.object:type_name -> sourcehub.acp.Object
-	13, // 9: sourcehub.acp.UnregisterObjectCmd.object:type_name -> sourcehub.acp.Object
-	14, // 10: sourcehub.acp.RegisterObjectCmdResult.result:type_name -> sourcehub.acp.RegistrationResult
-	15, // 11: sourcehub.acp.RegisterObjectCmdResult.record:type_name -> sourcehub.acp.RelationshipRecord
-	6,  // 12: sourcehub.acp.PolicyCmdResult.set_relationship_result:type_name -> sourcehub.acp.SetRelationshipCmdResult
-	7,  // 13: sourcehub.acp.PolicyCmdResult.delete_relationship_result:type_name -> sourcehub.acp.DeleteRelationshipCmdResult
-	8,  // 14: sourcehub.acp.PolicyCmdResult.register_object_result:type_name -> sourcehub.acp.RegisterObjectCmdResult
-	9,  // 15: sourcehub.acp.PolicyCmdResult.unregister_object_result:type_name -> sourcehub.acp.UnregisterObjectCmdResult
-	16, // [16:16] is the sub-list for method output_type
-	16, // [16:16] is the sub-list for method input_type
-	16, // [16:16] is the sub-list for extension type_name
-	16, // [16:16] is the sub-list for extension extendee
-	0,  // [0:16] is the sub-list for field type_name
+	11, // 6: sourcehub.acp.SetRelationshipCmd.relationship:type_name -> sourcehub.acp.Relationship
+	11, // 7: sourcehub.acp.DeleteRelationshipCmd.relationship:type_name -> sourcehub.acp.Relationship
+	12, // 8: sourcehub.acp.RegisterObjectCmd.object:type_name -> sourcehub.acp.Object
+	12, // 9: sourcehub.acp.UnregisterObjectCmd.object:type_name -> sourcehub.acp.Object
+	13, // 10: sourcehub.acp.SetRelationshipCmdResult.record:type_name -> sourcehub.acp.RelationshipRecord
+	14, // 11: sourcehub.acp.RegisterObjectCmdResult.result:type_name -> sourcehub.acp.RegistrationResult
+	13, // 12: sourcehub.acp.RegisterObjectCmdResult.record:type_name -> sourcehub.acp.RelationshipRecord
+	13, // [13:13] is the sub-list for method output_type
+	13, // [13:13] is the sub-list for method input_type
+	13, // [13:13] is the sub-list for extension type_name
+	13, // [13:13] is the sub-list for extension extendee
+	0,  // [0:13] is the sub-list for field type_name
 }
 
 func init() { file_sourcehub_acp_policy_cmd_proto_init() }
@@ -6819,18 +5996,6 @@ func file_sourcehub_acp_policy_cmd_proto_init() {
 				return nil
 			}
 		}
-		file_sourcehub_acp_policy_cmd_proto_msgTypes[10].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*PolicyCmdResult); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
 	}
 	file_sourcehub_acp_policy_cmd_proto_msgTypes[1].OneofWrappers = []interface{}{
 		(*PolicyCmdPayload_SetRelationshipCmd)(nil),
@@ -6838,19 +6003,13 @@ func file_sourcehub_acp_policy_cmd_proto_init() {
 		(*PolicyCmdPayload_RegisterObjectCmd)(nil),
 		(*PolicyCmdPayload_UnregisterObjectCmd)(nil),
 	}
-	file_sourcehub_acp_policy_cmd_proto_msgTypes[10].OneofWrappers = []interface{}{
-		(*PolicyCmdResult_SetRelationshipResult)(nil),
-		(*PolicyCmdResult_DeleteRelationshipResult)(nil),
-		(*PolicyCmdResult_RegisterObjectResult)(nil),
-		(*PolicyCmdResult_UnregisterObjectResult)(nil),
-	}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_sourcehub_acp_policy_cmd_proto_rawDesc,
 			NumEnums:      0,
-			NumMessages:   11,
+			NumMessages:   10,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

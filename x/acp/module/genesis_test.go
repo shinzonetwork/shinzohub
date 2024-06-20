@@ -5,7 +5,7 @@ import (
 
 	keepertest "github.com/sourcenetwork/sourcehub/testutil/keeper"
 	"github.com/sourcenetwork/sourcehub/testutil/nullify"
-	"github.com/sourcenetwork/sourcehub/x/acp/module"
+	acp "github.com/sourcenetwork/sourcehub/x/acp/module"
 	"github.com/sourcenetwork/sourcehub/x/acp/types"
 	"github.com/stretchr/testify/require"
 )

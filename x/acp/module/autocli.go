@@ -61,12 +61,18 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 					Skip:      true, // skipped because authority gated
 				},
 				{
-			RpcMethod: "PolicyCmd",
-			Use: "policy-cmd",
-			Short: "Send a policy-cmd tx",
-			PositionalArgs: []*autocliv1.PositionalArgDescriptor{},
-		},
-		// this line is used by ignite scaffolding # autocli/tx
+					RpcMethod:      "PolicyCmd",
+					Use:            "policy-cmd",
+					Short:          "Send a policy-cmd tx",
+					PositionalArgs: []*autocliv1.PositionalArgDescriptor{},
+				},
+				{
+					RpcMethod:      "BearerPolicyCmd",
+					Use:            "bearer-policy-cmd",
+					Short:          "Send a BearerPolicyCmd tx",
+					PositionalArgs: []*autocliv1.PositionalArgDescriptor{},
+				},
+				// this line is used by ignite scaffolding # autocli/tx
 			},
 		},
 	}

@@ -3,11 +3,11 @@ package simulation
 import (
 	"math/rand"
 
-	"github.com/sourcenetwork/sourcehub/x/acp/keeper"
-	"github.com/sourcenetwork/sourcehub/x/acp/types"
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	simtypes "github.com/cosmos/cosmos-sdk/types/simulation"
+	"github.com/sourcenetwork/sourcehub/x/acp/keeper"
+	"github.com/sourcenetwork/sourcehub/x/acp/types"
 )
 
 func SimulateMsgPolicyCmd(

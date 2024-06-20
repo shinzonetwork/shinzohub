@@ -8,6 +8,7 @@ package acp
 
 import (
 	context "context"
+
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
@@ -27,6 +28,7 @@ const (
 	Msg_UnregisterObject_FullMethodName   = "/sourcehub.acp.Msg/UnregisterObject"
 	Msg_CheckAccess_FullMethodName        = "/sourcehub.acp.Msg/CheckAccess"
 	Msg_PolicyCmd_FullMethodName          = "/sourcehub.acp.Msg/PolicyCmd"
+	Msg_BearerPolicyCmd_FullMethodName    = "/sourcehub.acp.Msg/BearerPolicyCmd"
 )
 
 // MsgClient is the client API for Msg service.
@@ -46,21 +48,9 @@ type MsgClient interface {
 	// DelereRelationship removes a Relationship from a Policy.
 	// If the Relationship was not found in a Policy, this Msg is a no-op.
 	DeleteRelationship(ctx context.Context, in *MsgDeleteRelationship, opts ...grpc.CallOption) (*MsgDeleteRelationshipResponse, error)
-	// RegisterObject creates a special kind of Relationship within a Policy which ties
-	// the msg's Actor as the owner of the msg's Object.
-	// The Owner has complete control over the set of subjects that are related to their Object,
-	// giving them autonomy to share the object and revoke acces to the object,
-	// much like owners in a Discretionary Access Control model.
-	//
 	// Attempting to register a previously registered Object is an error,
 	// Object IDs are therefore assumed to be unique within a Policy.
 	RegisterObject(ctx context.Context, in *MsgRegisterObject, opts ...grpc.CallOption) (*MsgRegisterObjectResponse, error)
-	// UnregisterObject let's an Object's Owner effectively "unshare" their Object.
-	// This method wipes all Relationships referencing the given Object.
-	//
-	// A caveat is that after removing the Relationships, a record of the original Object owner
-	// is maintained to prevent an "ownership hijack" attack.
-	//
 	// Suppose Bob owns object Foo, which is shared with Bob but not Eve.
 	// Eve wants to access Foo but was not given permission to, they could "hijack" Bob's object by waiting for Bob to Unregister Foo,
 	// then submitting a RegisterObject Msg, effectively becoming Foo's new owner.
@@ -75,6 +65,7 @@ type MsgClient interface {
 	// PolicyCmd is a wrapper for a Command which is executed within the Context of a Policy.
 	// The Command is signed by the Actor issuing it.
 	PolicyCmd(ctx context.Context, in *MsgPolicyCmd, opts ...grpc.CallOption) (*MsgPolicyCmdResponse, error)
+	BearerPolicyCmd(ctx context.Context, in *MsgBearerPolicyCmd, opts ...grpc.CallOption) (*MsgBearerPolicyCmdResponse, error)
 }
 
 type msgClient struct {
@@ -157,6 +148,15 @@ func (c *msgClient) PolicyCmd(ctx context.Context, in *MsgPolicyCmd, opts ...grp
 	return out, nil
 }
 
+func (c *msgClient) BearerPolicyCmd(ctx context.Context, in *MsgBearerPolicyCmd, opts ...grpc.CallOption) (*MsgBearerPolicyCmdResponse, error) {
+	out := new(MsgBearerPolicyCmdResponse)
+	err := c.cc.Invoke(ctx, Msg_BearerPolicyCmd_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // MsgServer is the server API for Msg service.
 // All implementations must embed UnimplementedMsgServer
 // for forward compatibility
@@ -174,21 +174,9 @@ type MsgServer interface {
 	// DelereRelationship removes a Relationship from a Policy.
 	// If the Relationship was not found in a Policy, this Msg is a no-op.
 	DeleteRelationship(context.Context, *MsgDeleteRelationship) (*MsgDeleteRelationshipResponse, error)
-	// RegisterObject creates a special kind of Relationship within a Policy which ties
-	// the msg's Actor as the owner of the msg's Object.
-	// The Owner has complete control over the set of subjects that are related to their Object,
-	// giving them autonomy to share the object and revoke acces to the object,
-	// much like owners in a Discretionary Access Control model.
-	//
 	// Attempting to register a previously registered Object is an error,
 	// Object IDs are therefore assumed to be unique within a Policy.
 	RegisterObject(context.Context, *MsgRegisterObject) (*MsgRegisterObjectResponse, error)
-	// UnregisterObject let's an Object's Owner effectively "unshare" their Object.
-	// This method wipes all Relationships referencing the given Object.
-	//
-	// A caveat is that after removing the Relationships, a record of the original Object owner
-	// is maintained to prevent an "ownership hijack" attack.
-	//
 	// Suppose Bob owns object Foo, which is shared with Bob but not Eve.
 	// Eve wants to access Foo but was not given permission to, they could "hijack" Bob's object by waiting for Bob to Unregister Foo,
 	// then submitting a RegisterObject Msg, effectively becoming Foo's new owner.
@@ -203,6 +191,7 @@ type MsgServer interface {
 	// PolicyCmd is a wrapper for a Command which is executed within the Context of a Policy.
 	// The Command is signed by the Actor issuing it.
 	PolicyCmd(context.Context, *MsgPolicyCmd) (*MsgPolicyCmdResponse, error)
+	BearerPolicyCmd(context.Context, *MsgBearerPolicyCmd) (*MsgBearerPolicyCmdResponse, error)
 	mustEmbedUnimplementedMsgServer()
 }
 
@@ -233,6 +222,9 @@ func (UnimplementedMsgServer) CheckAccess(context.Context, *MsgCheckAccess) (*Ms
 }
 func (UnimplementedMsgServer) PolicyCmd(context.Context, *MsgPolicyCmd) (*MsgPolicyCmdResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method PolicyCmd not implemented")
+}
+func (UnimplementedMsgServer) BearerPolicyCmd(context.Context, *MsgBearerPolicyCmd) (*MsgBearerPolicyCmdResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method BearerPolicyCmd not implemented")
 }
 func (UnimplementedMsgServer) mustEmbedUnimplementedMsgServer() {}
 
@@ -391,6 +383,24 @@ func _Msg_PolicyCmd_Handler(srv interface{}, ctx context.Context, dec func(inter
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Msg_BearerPolicyCmd_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(MsgBearerPolicyCmd)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MsgServer).BearerPolicyCmd(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Msg_BearerPolicyCmd_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MsgServer).BearerPolicyCmd(ctx, req.(*MsgBearerPolicyCmd))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Msg_ServiceDesc is the grpc.ServiceDesc for Msg service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -429,6 +439,10 @@ var Msg_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "PolicyCmd",
 			Handler:    _Msg_PolicyCmd_Handler,
+		},
+		{
+			MethodName: "BearerPolicyCmd",
+			Handler:    _Msg_BearerPolicyCmd_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

@@ -4,8 +4,8 @@ import (
 	"testing"
 
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
-	"github.com/stretchr/testify/require"
 	"github.com/sourcenetwork/sourcehub/testutil/sample"
+	"github.com/stretchr/testify/require"
 )
 
 func TestMsgPolicyCmd_ValidateBasic(t *testing.T) {

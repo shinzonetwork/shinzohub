@@ -8,3 +8,4 @@ release/
 *.log
 build
 cover.out
+.env
