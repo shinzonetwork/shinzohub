@@ -85,7 +85,7 @@ func (z *Zanzi) SetRelationship(ctx context.Context, policy *types.Policy, rec *
 
 	response, err := serv.SetRelationship(ctx, req)
 	if err != nil {
-		return false, fmt.Errorf("SetRelationship: %w", err)
+		return false, fmt.Errorf("SetRelationship: %w: %w", err, types.ErrAcpInput)
 	}
 
 	return RecordFound(response.RecordOverwritten), nil
@@ -154,7 +154,7 @@ func (z *Zanzi) FilterRelationships(ctx context.Context, policy *types.Policy, s
 
 	resp, err := serv.FindRelationshipRecords(ctx, &req)
 	if err != nil {
-		return nil, fmt.Errorf("FilterRelationships: %v", err)
+		return nil, fmt.Errorf("FilterRelationships: %w: %v", types.ErrAcpInput, err)
 	}
 
 	records, err := utils.MapFailableSlice(resp.Result.Records, relationshipMapper.FromZanziRelationship)

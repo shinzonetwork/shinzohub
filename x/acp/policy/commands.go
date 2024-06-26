@@ -6,6 +6,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	prototypes "github.com/cosmos/gogoproto/types"
 
+	hubtypes "github.com/sourcenetwork/sourcehub/types"
 	"github.com/sourcenetwork/sourcehub/x/acp/auth_engine"
 	"github.com/sourcenetwork/sourcehub/x/acp/types"
 )
@@ -55,7 +56,7 @@ func (c *CreatePolicyCommand) Execute(ctx sdk.Context, accountKeeper types.Accou
 }
 
 func (c *CreatePolicyCommand) getAccountSequenceNumber(ctx sdk.Context, accountKeeper types.AccountKeeper) (uint64, error) {
-	addr, err := sdk.AccAddressFromBech32(c.Creator)
+	addr, err := hubtypes.AccAddressFromBech32(c.Creator)
 	if err != nil {
 		return 0, fmt.Errorf("%w: %v", ErrInvalidCreator, err)
 	}

@@ -44,7 +44,7 @@ func registrationSpec(registration *types.Registration) error {
 	}
 
 	if registration.Object.Id == "" {
-		return fmt.Errorf("invalid registration: object id required")
+		return fmt.Errorf("invalid registration: object id required: %w", types.ErrAcpInput)
 	}
 
 	if err := did.IsValidDID(registration.Actor.Id); err != nil {

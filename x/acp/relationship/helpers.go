@@ -18,7 +18,7 @@ func QueryOwnerRelationship(ctx context.Context, engine auth_engine.AuthEngine, 
 
 	records, err := engine.FilterRelationships(ctx, pol, &selector)
 	if err != nil {
-		return nil, fmt.Errorf("ObjectOwner: %v", err)
+		return nil, fmt.Errorf("ObjectOwner: %w", err)
 	}
 
 	if len(records) == 0 {

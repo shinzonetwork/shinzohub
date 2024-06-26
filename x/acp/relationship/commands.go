@@ -7,6 +7,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	prototypes "github.com/cosmos/gogoproto/types"
 
+	hubtypes "github.com/sourcenetwork/sourcehub/types"
 	"github.com/sourcenetwork/sourcehub/x/acp/auth_engine"
 	"github.com/sourcenetwork/sourcehub/x/acp/did"
 	"github.com/sourcenetwork/sourcehub/x/acp/policy"
@@ -83,7 +84,7 @@ func (c *RegisterObjectCommand) validate() error {
 		return types.ErrPolicyNil
 	}
 
-	if _, err := sdk.AccAddressFromBech32(c.Creator); err != nil {
+	if _, err := hubtypes.AccAddressFromBech32(c.Creator); err != nil {
 		return fmt.Errorf("invalid creator: %v: %v", err, types.ErrAcpInput)
 	}
 
@@ -203,7 +204,7 @@ func (c *SetRelationshipCommand) Execute(ctx context.Context, engine auth_engine
 	}
 	if !authorized {
 		return false, nil, fmt.Errorf("failed to set relationship: actor %v is not a manager of relation %v for object %v: %w",
-			c.Creator, c.Relationship.Relation, obj, types.ErrNotAuthorized)
+			c.Actor, c.Relationship.Relation, obj, types.ErrNotAuthorized)
 	}
 
 	record, err := engine.GetRelationship(ctx, c.Policy, c.Relationship)
@@ -236,7 +237,7 @@ func (c *SetRelationshipCommand) validate() error {
 		return err
 	}
 
-	if _, err := sdk.AccAddressFromBech32(c.Creator); err != nil {
+	if _, err := hubtypes.AccAddressFromBech32(c.Creator); err != nil {
 		return fmt.Errorf("invalid creator: %v: %v", err, types.ErrAcpInput)
 	}
 

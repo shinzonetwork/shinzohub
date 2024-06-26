@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"time"
 
-	sdk "github.com/cosmos/cosmos-sdk/types"
+	hubtypes "github.com/sourcenetwork/sourcehub/types"
 	"github.com/sourcenetwork/sourcehub/x/acp/did"
 )
 
@@ -13,7 +13,7 @@ func validateBearerTokenValues(token *BearerToken) error {
 		return ErrInvalidIssuer
 	}
 
-	if err := isValidAccountAddr("source", token.AuthorizedAccount); err != nil {
+	if err := hubtypes.IsValidSourceHubAddr(token.AuthorizedAccount); err != nil {
 		return fmt.Errorf("%v: %w", err, ErrInvalidAuhtorizedAccount)
 	}
 
@@ -36,17 +36,5 @@ func validateBearerToken(token *BearerToken, currentTime *time.Time) error {
 		return newErrTokenExpired(token.ExpirationTime, now)
 	}
 
-	return nil
-}
-
-func isValidAccountAddr(prefix string, addr string) error {
-	bz, err := sdk.GetFromBech32(addr, prefix)
-	if err != nil {
-		return err
-	}
-	err = sdk.VerifyAddressFormat(bz)
-	if err != nil {
-		return err
-	}
 	return nil
 }

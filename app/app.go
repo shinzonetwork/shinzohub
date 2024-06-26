@@ -53,6 +53,7 @@ import (
 	ibctransferkeeper "github.com/cosmos/ibc-go/v8/modules/apps/transfer/keeper"
 	ibckeeper "github.com/cosmos/ibc-go/v8/modules/core/keeper"
 
+	sourcehubtypes "github.com/sourcenetwork/sourcehub/types"
 	acpmodulekeeper "github.com/sourcenetwork/sourcehub/x/acp/keeper"
 	bulletinmodulekeeper "github.com/sourcenetwork/sourcehub/x/bulletin/keeper"
 
@@ -62,7 +63,7 @@ import (
 )
 
 const (
-	AccountAddressPrefix = "source"
+	AccountAddressPrefix = sourcehubtypes.AccountAddrPrefix
 	Name                 = "sourcehub"
 )
 
