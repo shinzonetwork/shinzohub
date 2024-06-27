@@ -13,7 +13,7 @@ import (
 	"github.com/sourcenetwork/sourcehub/x/acp/types"
 )
 
-func (k msgServer) PolicyCmd(goCtx context.Context, msg *types.MsgPolicyCmd) (*types.MsgPolicyCmdResponse, error) {
+func (k msgServer) SignedPolicyCmd(goCtx context.Context, msg *types.MsgSignedPolicyCmd) (*types.MsgSignedPolicyCmdResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
 	engine, err := k.GetZanziEngine(ctx)
 	if err != nil {
@@ -38,11 +38,11 @@ func (k msgServer) PolicyCmd(goCtx context.Context, msg *types.MsgPolicyCmd) (*t
 		return nil, fmt.Errorf("PolcyCmd: policy %v: %w", payload.PolicyId, types.ErrPolicyNotFound)
 	}
 
-	result := &types.MsgPolicyCmdResponse{}
+	result := &types.PolicyCmdResult{}
 	policy := rec.Policy
 
-	switch c := payload.Cmd.(type) {
-	case *types.PolicyCmdPayload_SetRelationshipCmd:
+	switch c := payload.Cmd.Cmd.(type) {
+	case *types.PolicyCmd_SetRelationshipCmd:
 		var found auth_engine.RecordFound
 		var record *types.RelationshipRecord
 
@@ -59,13 +59,13 @@ func (k msgServer) PolicyCmd(goCtx context.Context, msg *types.MsgPolicyCmd) (*t
 			break
 		}
 
-		result.Result = &types.MsgPolicyCmdResponse_SetRelationshipResult{
+		result.Result = &types.PolicyCmdResult_SetRelationshipResult{
 			SetRelationshipResult: &types.SetRelationshipCmdResult{
 				RecordExisted: bool(found),
 				Record:        record,
 			},
 		}
-	case *types.PolicyCmdPayload_DeleteRelationshipCmd:
+	case *types.PolicyCmd_DeleteRelationshipCmd:
 		var found auth_engine.RecordFound
 
 		cmd := relationship.DeleteRelationshipCommand{
@@ -79,12 +79,12 @@ func (k msgServer) PolicyCmd(goCtx context.Context, msg *types.MsgPolicyCmd) (*t
 			break
 		}
 
-		result.Result = &types.MsgPolicyCmdResponse_DeleteRelationshipResult{
+		result.Result = &types.PolicyCmdResult_DeleteRelationshipResult{
 			DeleteRelationshipResult: &types.DeleteRelationshipCmdResult{
 				RecordFound: bool(found),
 			},
 		}
-	case *types.PolicyCmdPayload_RegisterObjectCmd:
+	case *types.PolicyCmd_RegisterObjectCmd:
 		var registrationResult types.RegistrationResult
 		var record *types.RelationshipRecord
 
@@ -105,13 +105,13 @@ func (k msgServer) PolicyCmd(goCtx context.Context, msg *types.MsgPolicyCmd) (*t
 			break
 		}
 
-		result.Result = &types.MsgPolicyCmdResponse_RegisterObjectResult{
+		result.Result = &types.PolicyCmdResult_RegisterObjectResult{
 			RegisterObjectResult: &types.RegisterObjectCmdResult{
 				Result: registrationResult,
 				Record: record,
 			},
 		}
-	case *types.PolicyCmdPayload_UnregisterObjectCmd:
+	case *types.PolicyCmd_UnregisterObjectCmd:
 		var count uint
 
 		cmd := relationship.UnregisterObjectCommand{
@@ -125,7 +125,7 @@ func (k msgServer) PolicyCmd(goCtx context.Context, msg *types.MsgPolicyCmd) (*t
 			break
 		}
 
-		result.Result = &types.MsgPolicyCmdResponse_UnregisterObjectResult{
+		result.Result = &types.PolicyCmdResult_UnregisterObjectResult{
 			UnregisterObjectResult: &types.UnregisterObjectCmdResult{
 				Found:                true, //TODO true,
 				RelationshipsRemoved: uint64(count),
@@ -141,5 +141,7 @@ func (k msgServer) PolicyCmd(goCtx context.Context, msg *types.MsgPolicyCmd) (*t
 
 	}
 
-	return result, nil
+	return &types.MsgSignedPolicyCmdResponse{
+		Result: result,
+	}, nil
 }

@@ -8,14 +8,6 @@ import (
 	"github.com/sourcenetwork/sourcehub/x/acp/types"
 )
 
-type AuthenticationStrategy int
-
-const (
-	Direct AuthenticationStrategy = iota
-	BearerToken
-	SignedPayload
-)
-
 func setRelationshipDispatcher(ctx *TestCtx, action *SetRelationshipAction) (result *types.SetRelationshipCmdResult, err error) {
 	switch ctx.Strategy {
 	case BearerToken:
@@ -33,22 +25,26 @@ func setRelationshipDispatcher(ctx *TestCtx, action *SetRelationshipAction) (res
 		}
 		err = respErr
 	case SignedPayload:
-		builder := policy_cmd.CmdBuilder{}
+		var jws string
+		builder := policy_cmd.NewCmdBuilder(ctx.LogicalClock, ctx.GetParams())
 		builder.SetRelationship(action.Relationship)
 		builder.Actor(action.Actor.DID)
-		builder.CreationTimestamp(TimeToProto(ctx.TokenIssueTs))
+		builder.CreationTimestamp(TimeToProto(ctx.Timestamp))
 		builder.PolicyID(action.PolicyId)
 		builder.SetSigner(action.Actor.Signer)
-		jws, err := builder.BuildJWS(ctx)
+		jws, err = builder.BuildJWS(ctx)
 		require.NoError(ctx.T, err)
 
-		msg := &types.MsgPolicyCmd{
+		msg := &types.MsgSignedPolicyCmd{
 			Creator: ctx.TxSigner.SourceHubAddr,
 			Payload: jws,
-			Type:    types.MsgPolicyCmd_JWS,
+			Type:    types.MsgSignedPolicyCmd_JWS,
 		}
-		//container, err = ctx.Executor.PolicyCmd(ctx, msg)
-		_ = msg
+		resp, respErr := ctx.Executor.SignedPolicyCmd(ctx, msg)
+		if resp != nil {
+			result = resp.Result.GetSetRelationshipResult()
+		}
+		err = respErr
 	}
 	return
 }
@@ -72,22 +68,25 @@ func deleteRelationshipDispatcher(ctx *TestCtx, action *DeleteRelationshipAction
 		}
 		resultErr = err
 	case SignedPayload:
-		builder := policy_cmd.CmdBuilder{}
+		builder := policy_cmd.NewCmdBuilder(ctx.LogicalClock, ctx.GetParams())
 		builder.DeleteRelationship(action.Relationship)
 		builder.Actor(action.Actor.DID)
-		builder.CreationTimestamp(TimeToProto(ctx.TokenIssueTs))
+		builder.CreationTimestamp(TimeToProto(ctx.Timestamp))
 		builder.PolicyID(action.PolicyId)
 		builder.SetSigner(action.Actor.Signer)
 		jws, err := builder.BuildJWS(ctx)
 		require.NoError(ctx.T, err)
 
-		msg := &types.MsgPolicyCmd{
+		msg := &types.MsgSignedPolicyCmd{
 			Creator: ctx.TxSigner.SourceHubAddr,
 			Payload: jws,
-			Type:    types.MsgPolicyCmd_JWS,
+			Type:    types.MsgSignedPolicyCmd_JWS,
 		}
-		//container, err = ctx.Executor.PolicyCmd(ctx, msg)
-		_ = msg
+		resp, respErr := ctx.Executor.SignedPolicyCmd(ctx, msg)
+		if resp != nil {
+			result = resp.Result.GetDeleteRelationshipResult()
+		}
+		resultErr = respErr
 	}
 	return result, resultErr
 }
@@ -109,22 +108,26 @@ func registerObjectDispatcher(ctx *TestCtx, action *RegisterObjectAction) (resul
 		}
 		err = respErr
 	case SignedPayload:
-		builder := policy_cmd.CmdBuilder{}
+		var jws string
+		builder := policy_cmd.NewCmdBuilder(ctx.LogicalClock, ctx.GetParams())
 		builder.RegisterObject(action.Object)
 		builder.Actor(action.Actor.DID)
-		builder.CreationTimestamp(TimeToProto(ctx.TokenIssueTs))
+		builder.CreationTimestamp(TimeToProto(ctx.Timestamp))
 		builder.PolicyID(action.PolicyId)
 		builder.SetSigner(action.Actor.Signer)
-		jws, err := builder.BuildJWS(ctx)
+		jws, err = builder.BuildJWS(ctx)
 		require.NoError(ctx.T, err)
 
-		msg := &types.MsgPolicyCmd{
+		msg := &types.MsgSignedPolicyCmd{
 			Creator: ctx.TxSigner.SourceHubAddr,
 			Payload: jws,
-			Type:    types.MsgPolicyCmd_JWS,
+			Type:    types.MsgSignedPolicyCmd_JWS,
 		}
-		//container, err = ctx.Executor.PolicyCmd(ctx, msg)
-		_ = msg
+		resp, respErr := ctx.Executor.SignedPolicyCmd(ctx, msg)
+		if resp != nil {
+			result = resp.Result.GetRegisterObjectResult()
+		}
+		err = respErr
 	}
 	return result, err
 }
@@ -146,22 +149,26 @@ func unregisterObjectDispatcher(ctx *TestCtx, action *UnregisterObjectAction) (r
 		}
 		err = respErr
 	case SignedPayload:
-		builder := policy_cmd.CmdBuilder{}
+		var jws string
+		builder := policy_cmd.NewCmdBuilder(ctx.LogicalClock, ctx.GetParams())
 		builder.UnregisterObject(action.Object)
 		builder.Actor(action.Actor.DID)
-		builder.CreationTimestamp(TimeToProto(ctx.TokenIssueTs))
+		builder.CreationTimestamp(TimeToProto(ctx.Timestamp))
 		builder.PolicyID(action.PolicyId)
 		builder.SetSigner(action.Actor.Signer)
-		jws, err := builder.BuildJWS(ctx)
+		jws, err = builder.BuildJWS(ctx)
 		require.NoError(ctx.T, err)
 
-		msg := &types.MsgPolicyCmd{
+		msg := &types.MsgSignedPolicyCmd{
 			Creator: ctx.TxSigner.SourceHubAddr,
 			Payload: jws,
-			Type:    types.MsgPolicyCmd_JWS,
+			Type:    types.MsgSignedPolicyCmd_JWS,
 		}
-		//container, err = ctx.Executor.PolicyCmd(ctx, msg)
-		_ = msg
+		resp, respErr := ctx.Executor.SignedPolicyCmd(ctx, msg)
+		if resp != nil {
+			result = resp.Result.GetUnregisterObjectResult()
+		}
+		err = respErr
 	}
 	return result, err
 }

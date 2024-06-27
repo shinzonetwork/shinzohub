@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+set -e;
+
+IFS=$'\n'
+for env in $(build/test_env_generator all); do 
+    echo "Executing with $env"
+    eval $env
+    go test ./tests/integration/... -count=1 -v
+done

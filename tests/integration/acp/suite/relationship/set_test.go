@@ -147,3 +147,26 @@ func TestSetRelationship_ManagerActorCannotSetRelationshipToRelationshipsTheyDoN
 	}
 	action.Run(ctx)
 }
+
+func TestSetRelationship_AdminIsNotAllowedToSetAnOwnerRelationship(t *testing.T) {
+	ctx := setupSetRel(t)
+
+	// Given object foo and Bob as a admin
+	bob := ctx.GetActor("bob").DID
+	a1 := test.SetRelationshipAction{
+		PolicyId:     ctx.State.PolicyId,
+		Relationship: types.NewActorRelationship("file", "foo", "admin", bob),
+		Actor:        ctx.GetActor("alice"),
+	}
+	a1.Run(ctx)
+
+	// when bob attemps to make himself an owner
+	// then operation is not authorized
+	action := test.SetRelationshipAction{
+		PolicyId:     ctx.State.PolicyId,
+		Relationship: types.NewActorRelationship("file", "foo", "owner", bob),
+		Actor:        ctx.GetActor("bob"),
+		ExpectedErr:  types.ErrNotAuthorized,
+	}
+	action.Run(ctx)
+}

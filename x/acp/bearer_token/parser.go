@@ -6,7 +6,12 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/cyware/ssi-sdk/crypto"
+	"github.com/cyware/ssi-sdk/did/key"
+	secp "github.com/decred/dcrd/dcrec/secp256k1/v4"
 	"github.com/go-jose/go-jose/v3"
+	"github.com/lestrrat-go/jwx/v2/jwa"
+	jwxjws "github.com/lestrrat-go/jwx/v2/jws"
 
 	"github.com/sourcenetwork/sourcehub/x/acp/did"
 )
@@ -45,29 +50,33 @@ func parseValidateJWS(ctx context.Context, resolver did.Resolver, bearerJWS stri
 		return BearerToken{}, err
 	}
 
+	// currently the ssi-sdk key resolver does not support secp256k1
+	// therefore we skip using the did pkg resolver and decode it directly,
+	// as that does not error.
 	did := bearer.IssuerID
-	doc, err := resolver.Resolve(ctx, did)
+	didKey := key.DIDKey(did)
+	pubBytes, keytype, err := didKey.Decode()
 	if err != nil {
 		return BearerToken{}, fmt.Errorf("failed to resolve actor did: %v: %w", err, ErrInvalidBearerToken)
 	}
-	// TODO this should technically be Authentication
-	if len(doc.VerificationMethod) == 0 {
-		return BearerToken{}, fmt.Errorf("resolved actor did does not contain any verification methods: %w", ErrInvalidBearerToken)
-	}
 
-	method := doc.VerificationMethod[0]
-	jwkRaw, err := json.Marshal(method.PublicKeyJWK)
+	pubKey, err := crypto.BytesToPubKey(pubBytes, keytype)
 	if err != nil {
-		return BearerToken{}, fmt.Errorf("error verifying signature: jwk marshal: %v: %w", err, ErrInvalidBearerToken)
+		return BearerToken{}, fmt.Errorf("failed to retrieve pub key: %v: %w", err, ErrInvalidBearerToken)
+	}
+	var algs []jwa.SignatureAlgorithm
+	if secpKey, ok := pubKey.(secp.PublicKey); ok {
+		// https://www.rfc-editor.org/rfc/rfc8812
+		algs = []jwa.SignatureAlgorithm{jwa.ES256K}
+		pubKey = secpKey.ToECDSA()
+	} else {
+		algs, err = jwxjws.AlgorithmsForKey(pubKey)
+		if err != nil {
+			return BearerToken{}, fmt.Errorf("failed to retrieve algs for pub key: %v: %w", err, ErrInvalidBearerToken)
+		}
 	}
 
-	jwk := jose.JSONWebKey{}
-	err = jwk.UnmarshalJSON(jwkRaw)
-	if err != nil {
-		return BearerToken{}, fmt.Errorf("error verifying signature: jwk unmarshal: %v: %w", err, ErrInvalidBearerToken)
-	}
-
-	_, err = jws.Verify(jwk)
+	_, err = jwxjws.Verify([]byte(bearerJWS), jwxjws.WithKey(algs[0], pubKey))
 	if err != nil {
 		return BearerToken{}, fmt.Errorf("could not verify actor signature for jwk: %v: %w", err, ErrInvalidBearerToken)
 	}

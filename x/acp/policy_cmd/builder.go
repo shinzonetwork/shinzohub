@@ -24,7 +24,7 @@ func NewCmdBuilder(clock LogicalClock, params types.Params) CmdBuilder {
 // CmdBuilder builds PolicyCmdPayloads
 type CmdBuilder struct {
 	clock  LogicalClock
-	cmd    types.PolicyCmdPayload
+	cmd    types.SignedPolicyCmdPayload
 	params types.Params
 	cmdErr error
 	signer crypto.Signer
@@ -54,11 +54,11 @@ func (b *CmdBuilder) GetSigner() crypto.Signer {
 	return b.signer
 }
 
-// Build validates the data provided to the Builder, validates it and returns a PolicyCmdPayload or an error.
-func (b *CmdBuilder) Build(ctx context.Context) (types.PolicyCmdPayload, error) {
+// Build validates the data provided to the Builder, validates it and returns a SignedPolicyCmdPayload or an error.
+func (b *CmdBuilder) Build(ctx context.Context) (types.SignedPolicyCmdPayload, error) {
 	height, err := b.clock.GetTimestampNow(ctx)
 	if err != nil {
-		return types.PolicyCmdPayload{}, fmt.Errorf("cmdBuilder: timestamp failed: %v", err)
+		return types.SignedPolicyCmdPayload{}, fmt.Errorf("cmdBuilder: timestamp failed: %v", err)
 	}
 
 	b.cmd.IssuedHeight = height
@@ -72,24 +72,24 @@ func (b *CmdBuilder) Build(ctx context.Context) (types.PolicyCmdPayload, error) 
 	}
 
 	if b.cmd.PolicyId == "" {
-		return types.PolicyCmdPayload{}, fmt.Errorf("cmdBuilder: policy id: %w", ErrBuilderMissingArgument)
+		return types.SignedPolicyCmdPayload{}, fmt.Errorf("cmdBuilder: policy id: %w", ErrBuilderMissingArgument)
 	}
 
 	if b.cmd.ExpirationDelta > b.params.PolicyCommandMaxExpirationDelta {
-		return types.PolicyCmdPayload{}, fmt.Errorf("cmdBuilder: %v", ErrExpirationDeltaTooLarge)
+		return types.SignedPolicyCmdPayload{}, fmt.Errorf("cmdBuilder: %v", ErrExpirationDeltaTooLarge)
 	}
 
 	if err := did.IsValidDID(b.cmd.Actor); err != nil {
-		return types.PolicyCmdPayload{}, fmt.Errorf("cmdBuilder: invalid actor: %v", err)
+		return types.SignedPolicyCmdPayload{}, fmt.Errorf("cmdBuilder: invalid actor: %v", err)
 	}
 
 	if b.cmd.Cmd == nil {
-		return types.PolicyCmdPayload{}, fmt.Errorf("cmdBuilder: Command not specified: %v", ErrBuilderMissingArgument)
+		return types.SignedPolicyCmdPayload{}, fmt.Errorf("cmdBuilder: Command not specified: %v", ErrBuilderMissingArgument)
 	}
 
 	if b.cmdErr != nil {
 		// TODO validate commands
-		return types.PolicyCmdPayload{}, fmt.Errorf("cmdBuilder: Command invalid: %v", b.cmdErr)
+		return types.SignedPolicyCmdPayload{}, fmt.Errorf("cmdBuilder: Command invalid: %v", b.cmdErr)
 	}
 
 	return b.cmd, nil
@@ -117,42 +117,26 @@ func (b *CmdBuilder) PolicyID(id string) {
 
 // SetRelationship builds a Payload for a SetRelationship command
 func (b *CmdBuilder) SetRelationship(relationship *types.Relationship) {
-	b.cmd.Cmd = &types.PolicyCmdPayload_SetRelationshipCmd{
-		SetRelationshipCmd: &types.SetRelationshipCmd{
-			Relationship: relationship,
-		},
-	}
+	b.cmd.Cmd = types.NewSetRelationshipCmd(relationship)
 }
 
 // DeleteRelationship builds a Payload for a DeleteRelationship command
 func (b *CmdBuilder) DeleteRelationship(relationship *types.Relationship) {
-	b.cmd.Cmd = &types.PolicyCmdPayload_DeleteRelationshipCmd{
-		DeleteRelationshipCmd: &types.DeleteRelationshipCmd{
-			Relationship: relationship,
-		},
-	}
+	b.cmd.Cmd = types.NewDeleteRelationshipCmd(relationship)
 }
 
 // RegisterObject builds a Payload for a RegisterObject command
 func (b *CmdBuilder) RegisterObject(obj *types.Object) {
-	b.cmd.Cmd = &types.PolicyCmdPayload_RegisterObjectCmd{
-		RegisterObjectCmd: &types.RegisterObjectCmd{
-			Object: obj,
-		},
-	}
+	b.cmd.Cmd = types.NewRegisterObjectCmd(obj)
 }
 
 // UnregisterObject builds a Payload for a UnregisterObject command
 func (b *CmdBuilder) UnregisterObject(obj *types.Object) {
-	b.cmd.Cmd = &types.PolicyCmdPayload_UnregisterObjectCmd{
-		UnregisterObjectCmd: &types.UnregisterObjectCmd{
-			Object: obj,
-		},
-	}
+	b.cmd.Cmd = types.NewUnregisterObjectCmd(obj)
 }
 
 // SignPayload produces a JWS serialized version of a Payload from a signing key
-func SignPayload(cmd types.PolicyCmdPayload, skey crypto.Signer) (string, error) {
+func SignPayload(cmd types.SignedPolicyCmdPayload, skey crypto.Signer) (string, error) {
 	marshaler := jsonpb.Marshaler{}
 	payload, err := marshaler.MarshalToString(&cmd)
 	if err != nil {

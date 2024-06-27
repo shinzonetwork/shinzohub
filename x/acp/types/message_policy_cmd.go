@@ -6,25 +6,25 @@ import (
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 )
 
-var _ sdk.Msg = &MsgPolicyCmd{}
+var _ sdk.Msg = &MsgSignedPolicyCmd{}
 
-func NewMsgPolicyCmd(creator string, payload string, contentType MsgPolicyCmd_ContentType) *MsgPolicyCmd {
-	return &MsgPolicyCmd{
+func NewMsgPolicyCmd(creator string, payload string, contentType MsgSignedPolicyCmd_ContentType) *MsgSignedPolicyCmd {
+	return &MsgSignedPolicyCmd{
 		Creator: creator,
 		Payload: payload,
 		Type:    contentType,
 	}
 }
 
-func NewMsgPolicyCmdFromJWS(creator string, jws string) *MsgPolicyCmd {
-	return &MsgPolicyCmd{
+func NewMsgPolicyCmdFromJWS(creator string, jws string) *MsgSignedPolicyCmd {
+	return &MsgSignedPolicyCmd{
 		Creator: creator,
-		Type:    MsgPolicyCmd_JWS,
+		Type:    MsgSignedPolicyCmd_JWS,
 		Payload: jws,
 	}
 }
 
-func (msg *MsgPolicyCmd) ValidateBasic() error {
+func (msg *MsgSignedPolicyCmd) ValidateBasic() error {
 	_, err := sdk.AccAddressFromBech32(msg.Creator)
 	if err != nil {
 		return errorsmod.Wrapf(sdkerrors.ErrInvalidAddress, "invalid creator address (%s)", err)

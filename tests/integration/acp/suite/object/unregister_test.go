@@ -113,7 +113,3 @@ func TestUnregisterObject_SendingInvalidPolicyIdErrors(t *testing.T) {
 	}
 	action.Run(ctx)
 }
-
-func TestUnregisterObject_UnregisteringObjectRemovesRelationshipsLeavingTheObject(t *testing.T) {
-	// TODO
-}

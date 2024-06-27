@@ -12,7 +12,7 @@ import (
 	"github.com/cyware/ssi-sdk/crypto"
 	"github.com/cyware/ssi-sdk/did"
 	"github.com/cyware/ssi-sdk/did/key"
-	didmodel "github.com/hyperledger/aries-framework-go/component/models/did"
+	"github.com/cyware/ssi-sdk/did/resolution"
 )
 
 func ExtractVerificationKey(doc DIDDocument) (cryptotypes.PubKey, error) {
@@ -27,10 +27,10 @@ type Resolver interface {
 	Resolve(ctx context.Context, did string) (DIDDocument, error)
 }
 
-func IsValidDID(did string) error {
-	_, err := didmodel.Parse(did)
+func IsValidDID(didStr string) error {
+	_, err := resolution.GetMethodForDID(didStr)
 	if err != nil {
-		return fmt.Errorf("did %v: %v", did, err)
+		return err
 	}
 	return nil
 }

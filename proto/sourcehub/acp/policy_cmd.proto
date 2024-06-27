@@ -12,7 +12,7 @@ option go_package = "github.com/sourcenetwork/sourcehub/x/acp/types";
 // The message type contains a signature which is used to authenticate the Command's Actor
 message SignedPolicyCmd {
   // payload contains the command context
-  PolicyCmdPayload payload = 1;
+  SignedPolicyCmdPayload payload = 1;
 
   // signature is a signature of the payload.
   // The signature is generated using the VerificationMethod / Authorization fields
@@ -20,8 +20,8 @@ message SignedPolicyCmd {
   bytes signature = 2;
 }
 
-// PolicyCmdPayload represents the payload containing the context of the issued command
-message PolicyCmdPayload {
+// SignedPolicyCmdPayload represents the payload containing the context of the issued command
+message SignedPolicyCmdPayload {
   // actor is a did string representing the actor which issued the command
   string actor = 1;
 
@@ -39,20 +39,15 @@ message PolicyCmdPayload {
   // policy_id is the ID of the policy under which the Command will be executed
   string policy_id = 5;
 
-  oneof cmd {
-    SetRelationshipCmd set_relationship_cmd = 6;
-    DeleteRelationshipCmd delete_relationship_cmd = 7;
-    RegisterObjectCmd register_object_cmd = 8;
-    UnregisterObjectCmd unregister_object_cmd = 9;
-  }
+  PolicyCmd cmd = 6;
 }
 
 message PolicyCmd {
   oneof cmd {
-    SetRelationshipCmd set_relationship_cmd = 2;
-    DeleteRelationshipCmd delete_relationship_cmd = 3;
-    RegisterObjectCmd register_object_cmd = 4;
-    UnregisterObjectCmd unregister_object_cmd = 5;
+    SetRelationshipCmd set_relationship_cmd = 1;
+    DeleteRelationshipCmd delete_relationship_cmd = 2;
+    RegisterObjectCmd register_object_cmd = 3;
+    UnregisterObjectCmd unregister_object_cmd = 4;
   }
 }
 

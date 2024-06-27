@@ -20,6 +20,10 @@ proto:
 test:
 	go test ./...
 
+.PHONY: test\:all
+test\:all: test_env_generator
+	scripts/run-test-matrix
+
 .PHONY: simulate
 simulate:
 	ignite chain simulate
@@ -42,3 +46,7 @@ docs:
 # the ID of the current git HEAD
 image:
 	scripts/build-docker-image.sh
+
+.PHONY: test_env_generator
+test_env_generator:
+	go build -o build/test_env_generator cmd/test_env_generator/main.go

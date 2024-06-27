@@ -9,7 +9,7 @@ import (
 )
 
 // payloadSpec executes validation against a PolicyCmdPayload to ensure it should be accepted
-func payloadSpec(params types.Params, currentHeight uint64, payload *types.PolicyCmdPayload) error {
+func payloadSpec(params types.Params, currentHeight uint64, payload *types.SignedPolicyCmdPayload) error {
 	if payload.ExpirationDelta > params.PolicyCommandMaxExpirationDelta {
 		return fmt.Errorf("%w: max %v, given %v", ErrExpirationDeltaTooLarge, params.PolicyCommandMaxExpirationDelta, payload.ExpirationDelta)
 	}
@@ -24,12 +24,12 @@ func payloadSpec(params types.Params, currentHeight uint64, payload *types.Polic
 }
 
 // ValidateAndExtractCmd validates a MsgPolicyCmd and return the Cmd payload
-func ValidateAndExtractCmd(ctx context.Context, params types.Params, resolver did.Resolver, payload string, contentType types.MsgPolicyCmd_ContentType, currentHeight uint64) (*types.PolicyCmdPayload, error) {
-	var cmd *types.PolicyCmdPayload
+func ValidateAndExtractCmd(ctx context.Context, params types.Params, resolver did.Resolver, payload string, contentType types.MsgSignedPolicyCmd_ContentType, currentHeight uint64) (*types.SignedPolicyCmdPayload, error) {
+	var cmd *types.SignedPolicyCmdPayload
 	var err error
 
 	switch contentType {
-	case types.MsgPolicyCmd_JWS:
+	case types.MsgSignedPolicyCmd_JWS:
 		verifier := newJWSVerifier(resolver)
 		cmd, err = verifier.Verify(ctx, payload)
 	default:

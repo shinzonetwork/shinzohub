@@ -11,18 +11,18 @@ import (
 func TestMsgPolicyCmd_ValidateBasic(t *testing.T) {
 	tests := []struct {
 		name string
-		msg  MsgPolicyCmd
+		msg  MsgSignedPolicyCmd
 		err  error
 	}{
 		{
 			name: "invalid address",
-			msg: MsgPolicyCmd{
+			msg: MsgSignedPolicyCmd{
 				Creator: "invalid_address",
 			},
 			err: sdkerrors.ErrInvalidAddress,
 		}, {
 			name: "valid address",
-			msg: MsgPolicyCmd{
+			msg: MsgSignedPolicyCmd{
 				Creator: sample.AccAddress(),
 			},
 		},

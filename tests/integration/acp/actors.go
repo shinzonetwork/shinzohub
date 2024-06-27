@@ -49,7 +49,6 @@ func MustNewED25519ActorFromName(name string) *TestActor {
 // MustNewSourceHubActorFromName deterministically generates a Test Actor from a string name as seed
 // The Actor carries a secp256k1 key pair and a SourceHub addr
 func MustNewSourceHubActorFromName(name string) *TestActor {
-
 	key := sdksecp256k1.GenPrivKeyFromSecret([]byte(name))
 	addr, err := bech32.ConvertAndEncode(app.AccountAddressPrefix, key.PubKey().Address())
 	if err != nil {

@@ -66,9 +66,9 @@ service Msg {
   // was valid at a particular block height.
   rpc CheckAccess(MsgCheckAccess) returns (MsgCheckAccessResponse);
 
-  // PolicyCmd is a wrapper for a Command which is executed within the Context of a Policy.
+  // SignedPolicyCmd is a wrapper for a Command which is executed within the Context of a Policy.
   // The Command is signed by the Actor issuing it.
-  rpc PolicyCmd(MsgPolicyCmd) returns (MsgPolicyCmdResponse);
+  rpc SignedPolicyCmd(MsgSignedPolicyCmd) returns (MsgSignedPolicyCmdResponse);
 
   // BearerPolicyCmd is a Msg containing an instruction which changes the authorization
   // rules in a Policy.
@@ -175,7 +175,7 @@ message MsgCheckAccessResponse {
   AccessDecision decision = 1;
 }
 
-message MsgPolicyCmd {
+message MsgSignedPolicyCmd {
   enum ContentType {
     UNKNOWN = 0;
     JWS = 1;
@@ -186,13 +186,8 @@ message MsgPolicyCmd {
   ContentType type = 3;
 }
 
-message MsgPolicyCmdResponse {
-  oneof result {
-    SetRelationshipCmdResult set_relationship_result = 1;
-    DeleteRelationshipCmdResult delete_relationship_result = 2;
-    RegisterObjectCmdResult register_object_result = 3;
-    UnregisterObjectCmdResult unregister_object_result = 4;
-  }
+message MsgSignedPolicyCmdResponse {
+  PolicyCmdResult result = 1;
 }
 
 message MsgBearerPolicyCmd {

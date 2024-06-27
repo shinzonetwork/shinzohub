@@ -27,7 +27,7 @@ func RegisterInterfaces(registry cdctypes.InterfaceRegistry) {
 		&MsgCheckAccess{},
 	)
 	registry.RegisterImplementations((*sdk.Msg)(nil),
-		&MsgPolicyCmd{},
+		&MsgSignedPolicyCmd{},
 	)
 	registry.RegisterImplementations((*sdk.Msg)(nil),
 		&MsgBearerPolicyCmd{},
