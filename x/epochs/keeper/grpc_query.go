@@ -8,7 +8,7 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
-	"github.com/osmosis-labs/osmosis/x/epochs/types"
+	"github.com/sourcenetwork/sourcehub/x/epochs/types"
 )
 
 var _ types.QueryServer = Querier{}
@@ -16,11 +16,11 @@ var _ types.QueryServer = Querier{}
 // Querier defines a wrapper around the x/epochs keeper providing gRPC method
 // handlers.
 type Querier struct {
-	Keeper
+	*Keeper
 }
 
 // NewQuerier initializes new querier.
-func NewQuerier(k Keeper) Querier {
+func NewQuerier(k *Keeper) Querier {
 	return Querier{Keeper: k}
 }
 

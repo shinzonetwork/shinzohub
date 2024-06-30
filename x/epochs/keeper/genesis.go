@@ -3,7 +3,7 @@ package keeper
 import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	"github.com/osmosis-labs/osmosis/x/epochs/types"
+	"github.com/sourcenetwork/sourcehub/x/epochs/types"
 )
 
 // InitGenesis sets epoch info from genesis

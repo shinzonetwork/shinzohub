@@ -1,0 +1,14 @@
+syntax = "proto3";
+package osmosis.epochs.module.v1beta1;
+
+import "cosmos/app/v1alpha1/module.proto";
+
+// Module is the config object for the module.
+message Module {
+  option (cosmos.app.v1alpha1.module) = {go_import: "github.com/sourcenetwork/sourcehub/x/epochs"};
+
+  // hooks_order specifies the order of epochs hooks and should be a list
+  // of module names which provide a epochs hooks instance. If no order is
+  // provided, then hooks will be applied in alphabetical order of module names.
+  repeated string hooks_order = 1;
+}

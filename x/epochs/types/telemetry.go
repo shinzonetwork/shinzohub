@@ -1,7 +1,5 @@
 package types
 
-import "github.com/osmosis-labs/osmosis/osmoutils/observability"
-
 var (
 	// epoch_hook_failed
 	//
@@ -16,5 +14,10 @@ var (
 
 // formatTxFeesMetricName formats the epochs module metric name.
 func formatEpochMetricName(metricName string) string {
-	return observability.FormatMetricName(ModuleName, metricName)
+	return FormatMetricName(ModuleName, metricName)
+}
+
+// FormatMetricName helper to format a metric name given SDK module name and extension.
+func FormatMetricName(moduleName, extension string) string {
+	return moduleName + "_" + extension
 }

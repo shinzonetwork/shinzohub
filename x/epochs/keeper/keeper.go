@@ -3,26 +3,28 @@ package keeper
 import (
 	"fmt"
 
-	"github.com/cometbft/cometbft/libs/log"
+	"cosmossdk.io/core/store"
+	"cosmossdk.io/log"
 
-	"github.com/osmosis-labs/osmosis/x/epochs/types"
-
-	sdk "github.com/cosmos/cosmos-sdk/types"
-
-	storetypes "github.com/cosmos/cosmos-sdk/store/types"
+	"github.com/sourcenetwork/sourcehub/x/epochs/types"
 )
 
 type (
 	Keeper struct {
-		storeKey storetypes.StoreKey
-		hooks    types.EpochHooks
+		storeService store.KVStoreService
+		hooks        types.EpochHooks
+		logger       log.Logger
 	}
 )
 
 // NewKeeper returns a new keeper by codec and storeKey inputs.
-func NewKeeper(storeKey storetypes.StoreKey) *Keeper {
+func NewKeeper(
+	storeService store.KVStoreService,
+	logger log.Logger,
+) *Keeper {
 	return &Keeper{
-		storeKey: storeKey,
+		storeService: storeService,
+		logger:       logger,
 	}
 }
 
@@ -37,6 +39,6 @@ func (k *Keeper) SetHooks(eh types.EpochHooks) *Keeper {
 	return k
 }
 
-func (k Keeper) Logger(ctx sdk.Context) log.Logger {
-	return ctx.Logger().With("module", fmt.Sprintf("x/%s", types.ModuleName))
+func (k Keeper) Logger() log.Logger {
+	return k.logger.With("module", fmt.Sprintf("x/%s", types.ModuleName))
 }

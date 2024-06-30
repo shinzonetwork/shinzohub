@@ -6,11 +6,10 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/osmosis-labs/osmosis/x/epochs/types"
+	"github.com/sourcenetwork/sourcehub/x/epochs/osmoutils"
+	"github.com/sourcenetwork/sourcehub/x/epochs/types"
 
 	"golang.org/x/exp/maps"
-
-	"github.com/osmosis-labs/osmosis/osmoutils"
 )
 
 // This test is responsible for testing how epochs increment based off

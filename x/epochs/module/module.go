@@ -16,10 +16,16 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"sort"
 
+	"golang.org/x/exp/maps"
+
+	"cosmossdk.io/core/appmodule"
+	"cosmossdk.io/core/store"
+	"cosmossdk.io/depinject"
+	"cosmossdk.io/log"
 	abci "github.com/cometbft/cometbft/abci/types"
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
-	"github.com/spf13/cobra"
 
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/codec"
@@ -27,9 +33,10 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
 
-	"github.com/osmosis-labs/osmosis/x/epochs/client/cli"
-	"github.com/osmosis-labs/osmosis/x/epochs/keeper"
-	"github.com/osmosis-labs/osmosis/x/epochs/types"
+	modulev1beta1 "github.com/sourcenetwork/sourcehub/api/osmosis/epochs/module/v1beta1"
+
+	"github.com/sourcenetwork/sourcehub/x/epochs/keeper"
+	"github.com/sourcenetwork/sourcehub/x/epochs/types"
 )
 
 var (
@@ -78,16 +85,6 @@ func (AppModuleBasic) RegisterGRPCGatewayRoutes(clientCtx client.Context, mux *r
 	types.RegisterQueryHandlerClient(context.Background(), mux, types.NewQueryClient(clientCtx)) //nolint:errcheck
 }
 
-// GetTxCmd returns the capability module's root tx command.
-func (a AppModuleBasic) GetTxCmd() *cobra.Command {
-	return nil
-}
-
-// GetQueryCmd returns the capability module's root query command.
-func (AppModuleBasic) GetQueryCmd() *cobra.Command {
-	return cli.GetQueryCmd()
-}
-
 // ----------------------------------------------------------------------------
 // AppModule
 // ----------------------------------------------------------------------------
@@ -96,10 +93,10 @@ func (AppModuleBasic) GetQueryCmd() *cobra.Command {
 type AppModule struct {
 	AppModuleBasic
 
-	keeper keeper.Keeper
+	keeper *keeper.Keeper
 }
 
-func NewAppModule(keeper keeper.Keeper) AppModule {
+func NewAppModule(keeper *keeper.Keeper) AppModule {
 	return AppModule{
 		AppModuleBasic: NewAppModuleBasic(),
 		keeper:         keeper,
@@ -141,16 +138,104 @@ func (am AppModule) ExportGenesis(ctx sdk.Context, cdc codec.JSONCodec) json.Raw
 	return cdc.MustMarshalJSON(genState)
 }
 
-// BeginBlock executes all ABCI BeginBlock logic respective to the capability module.
-func (am AppModule) BeginBlock(ctx sdk.Context, _ abci.RequestBeginBlock) {
-	am.keeper.BeginBlocker(ctx)
-}
-
-// EndBlock executes all ABCI EndBlock logic respective to the capability module. It
-// returns no validator updates.
-func (am AppModule) EndBlock(ctx sdk.Context, _ abci.RequestEndBlock) []abci.ValidatorUpdate {
-	return []abci.ValidatorUpdate{}
-}
-
 // ConsensusVersion implements AppModule/ConsensusVersion.
 func (AppModule) ConsensusVersion() uint64 { return 1 }
+
+// BeginBlock contains the logic that is automatically triggered at the beginning of each block.
+// The begin block implementation is optional.
+func (am AppModule) BeginBlock(ctx context.Context) error {
+
+	c := sdk.UnwrapSDKContext(ctx)
+	return BeginBlocker(c, am.keeper)
+}
+
+// EndBlock contains the logic that is automatically triggered at the end of each block.
+// The end block implementation is optional.
+func (am AppModule) EndBlock(_ context.Context) error {
+	return nil
+}
+
+// IsOnePerModuleType implements the depinject.OnePerModuleType interface.
+func (am AppModule) IsOnePerModuleType() {}
+
+// IsAppModule implements the appmodule.AppModule interface.
+func (am AppModule) IsAppModule() {}
+
+// ----------------------------------------------------------------------------
+// App Wiring Setup
+// ----------------------------------------------------------------------------
+
+func init() {
+	appmodule.Register(
+		&modulev1beta1.Module{},
+		appmodule.Provide(ProvideModule),
+		appmodule.Invoke(InvokeSetEpochsHooks),
+	)
+}
+
+type ModuleInputs struct {
+	depinject.In
+
+	Config       *modulev1beta1.Module
+	StoreService store.KVStoreService
+	Logger       log.Logger
+}
+
+type ModuleOutputs struct {
+	depinject.Out
+
+	EpochsKeeper *keeper.Keeper
+	Module       appmodule.AppModule
+}
+
+func ProvideModule(in ModuleInputs) ModuleOutputs {
+
+	k := keeper.NewKeeper(
+		in.StoreService,
+		in.Logger)
+
+	m := NewAppModule(
+		k,
+	)
+
+	return ModuleOutputs{EpochsKeeper: k, Module: m}
+}
+
+func InvokeSetEpochsHooks(
+	config *modulev1beta1.Module,
+	keeper *keeper.Keeper,
+	epochsHooks map[string]types.EpochsHooksWrapper,
+) error {
+	// all arguments to invokers are optional
+	if keeper == nil || config == nil {
+		return nil
+	}
+
+	modNames := maps.Keys(epochsHooks)
+	order := config.HooksOrder
+	if len(order) == 0 {
+		order = modNames
+		sort.Strings(order)
+	}
+
+	if len(order) != len(modNames) {
+		return fmt.Errorf("len(hooks_order: %v) != len(hooks modules: %v)", order, modNames)
+	}
+
+	if len(modNames) == 0 {
+		return nil
+	}
+
+	var multiHooks types.MultiEpochHooks
+	for _, modName := range order {
+		hook, ok := epochsHooks[modName]
+		if !ok {
+			return fmt.Errorf("can't find staking hooks for module %s", modName)
+		}
+
+		multiHooks = append(multiHooks, hook)
+	}
+
+	keeper.SetHooks(multiHooks)
+	return nil
+}

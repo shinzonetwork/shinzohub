@@ -4,8 +4,10 @@ import (
 	"testing"
 	"time"
 
+	"cosmossdk.io/log"
 	storetypes "cosmossdk.io/store/types"
 	"github.com/cosmos/cosmos-sdk/baseapp"
+	"github.com/cosmos/cosmos-sdk/runtime"
 	"github.com/cosmos/cosmos-sdk/testutil"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
@@ -14,8 +16,8 @@ import (
 
 	cdcutil "github.com/cosmos/cosmos-sdk/codec/testutil"
 
-	epochskeeper "github.com/osmosis-labs/osmosis/x/epochs/keeper"
-	"github.com/osmosis-labs/osmosis/x/epochs/types"
+	epochskeeper "github.com/sourcenetwork/sourcehub/x/epochs/keeper"
+	"github.com/sourcenetwork/sourcehub/x/epochs/types"
 )
 
 type KeeperTestSuite struct {
@@ -31,7 +33,7 @@ func (s *KeeperTestSuite) SetupTest() {
 	s.EpochsKeeper = epochsKeeper
 	queryRouter := baseapp.NewGRPCQueryRouter()
 	cfg := module.NewConfigurator(nil, nil, queryRouter)
-	types.RegisterQueryServer(cfg.QueryServer(), epochskeeper.NewQuerier(*s.EpochsKeeper))
+	types.RegisterQueryServer(cfg.QueryServer(), epochskeeper.NewQuerier(s.EpochsKeeper))
 	grpcQueryService := &baseapp.QueryServiceTestHelper{
 		GRPCQueryRouter: queryRouter,
 		Ctx:             s.Ctx,
@@ -39,7 +41,6 @@ func (s *KeeperTestSuite) SetupTest() {
 	interfaceRegistry := cdcutil.CodecOptions{AccAddressPrefix: "osmo", ValAddressPrefix: "osmovaloper"}.NewInterfaceRegistry()
 	grpcQueryService.SetInterfaceRegistry(interfaceRegistry)
 	s.queryClient = types.NewQueryClient(grpcQueryService)
-
 }
 
 func TestKeeperTestSuite(t *testing.T) {
@@ -48,9 +49,10 @@ func TestKeeperTestSuite(t *testing.T) {
 
 func Setup() (sdk.Context, *epochskeeper.Keeper) {
 	epochsStoreKey := storetypes.NewKVStoreKey(types.StoreKey)
+	storeService := runtime.NewKVStoreService(epochsStoreKey)
 	ctx := testutil.DefaultContext(epochsStoreKey, storetypes.NewTransientStoreKey("transient_test"))
-	epochsKeeper := epochskeeper.NewKeeper(epochsStoreKey)
-	epochsKeeper = epochsKeeper.SetHooks(types.NewMultiEpochHooks())
+	epochsKeeper := epochskeeper.NewKeeper(storeService, log.NewNopLogger())
+	epochsKeeper.SetHooks(types.NewMultiEpochHooks())
 	ctx.WithBlockHeight(1).WithChainID("osmosis-1").WithBlockTime(time.Now().UTC())
 	epochsKeeper.InitGenesis(ctx, *types.DefaultGenesis())
 	SetEpochStartTime(ctx, epochsKeeper)
