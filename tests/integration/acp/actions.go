@@ -45,6 +45,9 @@ type SetRelationshipAction struct {
 
 func (a *SetRelationshipAction) Run(ctx *TestCtx) *types.RelationshipRecord {
 	result, err := setRelationshipDispatcher(ctx, a)
+	if a.Expected != nil {
+		a.Expected.Record.Creator = ctx.TxSigner.SourceHubAddr
+	}
 	AssertResults(ctx, result, a.Expected, err, a.ExpectedErr)
 	if result != nil {
 		return result.Record
@@ -62,6 +65,9 @@ type RegisterObjectAction struct {
 
 func (a *RegisterObjectAction) Run(ctx *TestCtx) *types.RelationshipRecord {
 	result, err := registerObjectDispatcher(ctx, a)
+	if a.Expected != nil {
+		a.Expected.Record.Creator = ctx.TxSigner.SourceHubAddr
+	}
 	AssertResults(ctx, result, a.Expected, err, a.ExpectedErr)
 	if result != nil {
 		return result.Record

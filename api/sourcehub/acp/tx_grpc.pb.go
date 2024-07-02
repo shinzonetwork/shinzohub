@@ -27,8 +27,9 @@ const (
 	Msg_RegisterObject_FullMethodName     = "/sourcehub.acp.Msg/RegisterObject"
 	Msg_UnregisterObject_FullMethodName   = "/sourcehub.acp.Msg/UnregisterObject"
 	Msg_CheckAccess_FullMethodName        = "/sourcehub.acp.Msg/CheckAccess"
-	Msg_PolicyCmd_FullMethodName          = "/sourcehub.acp.Msg/PolicyCmd"
+	Msg_SignedPolicyCmd_FullMethodName    = "/sourcehub.acp.Msg/SignedPolicyCmd"
 	Msg_BearerPolicyCmd_FullMethodName    = "/sourcehub.acp.Msg/BearerPolicyCmd"
+	Msg_DirectPolicyCmd_FullMethodName    = "/sourcehub.acp.Msg/DirectPolicyCmd"
 )
 
 // MsgClient is the client API for Msg service.
@@ -62,10 +63,15 @@ type MsgClient interface {
 	// The resulting evaluation is used to generate a cryptographic proof that the given Access Request
 	// was valid at a particular block height.
 	CheckAccess(ctx context.Context, in *MsgCheckAccess, opts ...grpc.CallOption) (*MsgCheckAccessResponse, error)
-	// PolicyCmd is a wrapper for a Command which is executed within the Context of a Policy.
+	// SignedPolicyCmd is a wrapper for a Command which is executed within the Context of a Policy.
 	// The Command is signed by the Actor issuing it.
-	PolicyCmd(ctx context.Context, in *MsgPolicyCmd, opts ...grpc.CallOption) (*MsgPolicyCmdResponse, error)
+	SignedPolicyCmd(ctx context.Context, in *MsgSignedPolicyCmd, opts ...grpc.CallOption) (*MsgSignedPolicyCmdResponse, error)
+	// The Msg authenticates the actor initiating the command through a Bearer token.
+	// This token MUST be issued and signed by some DID Actor, the verification of the signature
+	// is used as authentication proof.
+	// Lastly, the Bearer token MUST be bound to some SourceHub account.
 	BearerPolicyCmd(ctx context.Context, in *MsgBearerPolicyCmd, opts ...grpc.CallOption) (*MsgBearerPolicyCmdResponse, error)
+	DirectPolicyCmd(ctx context.Context, in *MsgDirectPolicyCmd, opts ...grpc.CallOption) (*MsgDirectPolicyCmdResponse, error)
 }
 
 type msgClient struct {
@@ -139,9 +145,9 @@ func (c *msgClient) CheckAccess(ctx context.Context, in *MsgCheckAccess, opts ..
 	return out, nil
 }
 
-func (c *msgClient) PolicyCmd(ctx context.Context, in *MsgPolicyCmd, opts ...grpc.CallOption) (*MsgPolicyCmdResponse, error) {
-	out := new(MsgPolicyCmdResponse)
-	err := c.cc.Invoke(ctx, Msg_PolicyCmd_FullMethodName, in, out, opts...)
+func (c *msgClient) SignedPolicyCmd(ctx context.Context, in *MsgSignedPolicyCmd, opts ...grpc.CallOption) (*MsgSignedPolicyCmdResponse, error) {
+	out := new(MsgSignedPolicyCmdResponse)
+	err := c.cc.Invoke(ctx, Msg_SignedPolicyCmd_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -151,6 +157,15 @@ func (c *msgClient) PolicyCmd(ctx context.Context, in *MsgPolicyCmd, opts ...grp
 func (c *msgClient) BearerPolicyCmd(ctx context.Context, in *MsgBearerPolicyCmd, opts ...grpc.CallOption) (*MsgBearerPolicyCmdResponse, error) {
 	out := new(MsgBearerPolicyCmdResponse)
 	err := c.cc.Invoke(ctx, Msg_BearerPolicyCmd_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *msgClient) DirectPolicyCmd(ctx context.Context, in *MsgDirectPolicyCmd, opts ...grpc.CallOption) (*MsgDirectPolicyCmdResponse, error) {
+	out := new(MsgDirectPolicyCmdResponse)
+	err := c.cc.Invoke(ctx, Msg_DirectPolicyCmd_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -188,10 +203,15 @@ type MsgServer interface {
 	// The resulting evaluation is used to generate a cryptographic proof that the given Access Request
 	// was valid at a particular block height.
 	CheckAccess(context.Context, *MsgCheckAccess) (*MsgCheckAccessResponse, error)
-	// PolicyCmd is a wrapper for a Command which is executed within the Context of a Policy.
+	// SignedPolicyCmd is a wrapper for a Command which is executed within the Context of a Policy.
 	// The Command is signed by the Actor issuing it.
-	PolicyCmd(context.Context, *MsgPolicyCmd) (*MsgPolicyCmdResponse, error)
+	SignedPolicyCmd(context.Context, *MsgSignedPolicyCmd) (*MsgSignedPolicyCmdResponse, error)
+	// The Msg authenticates the actor initiating the command through a Bearer token.
+	// This token MUST be issued and signed by some DID Actor, the verification of the signature
+	// is used as authentication proof.
+	// Lastly, the Bearer token MUST be bound to some SourceHub account.
 	BearerPolicyCmd(context.Context, *MsgBearerPolicyCmd) (*MsgBearerPolicyCmdResponse, error)
+	DirectPolicyCmd(context.Context, *MsgDirectPolicyCmd) (*MsgDirectPolicyCmdResponse, error)
 	mustEmbedUnimplementedMsgServer()
 }
 
@@ -220,11 +240,14 @@ func (UnimplementedMsgServer) UnregisterObject(context.Context, *MsgUnregisterOb
 func (UnimplementedMsgServer) CheckAccess(context.Context, *MsgCheckAccess) (*MsgCheckAccessResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CheckAccess not implemented")
 }
-func (UnimplementedMsgServer) PolicyCmd(context.Context, *MsgPolicyCmd) (*MsgPolicyCmdResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method PolicyCmd not implemented")
+func (UnimplementedMsgServer) SignedPolicyCmd(context.Context, *MsgSignedPolicyCmd) (*MsgSignedPolicyCmdResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SignedPolicyCmd not implemented")
 }
 func (UnimplementedMsgServer) BearerPolicyCmd(context.Context, *MsgBearerPolicyCmd) (*MsgBearerPolicyCmdResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method BearerPolicyCmd not implemented")
+}
+func (UnimplementedMsgServer) DirectPolicyCmd(context.Context, *MsgDirectPolicyCmd) (*MsgDirectPolicyCmdResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DirectPolicyCmd not implemented")
 }
 func (UnimplementedMsgServer) mustEmbedUnimplementedMsgServer() {}
 
@@ -365,20 +388,20 @@ func _Msg_CheckAccess_Handler(srv interface{}, ctx context.Context, dec func(int
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Msg_PolicyCmd_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(MsgPolicyCmd)
+func _Msg_SignedPolicyCmd_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(MsgSignedPolicyCmd)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(MsgServer).PolicyCmd(ctx, in)
+		return srv.(MsgServer).SignedPolicyCmd(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: Msg_PolicyCmd_FullMethodName,
+		FullMethod: Msg_SignedPolicyCmd_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(MsgServer).PolicyCmd(ctx, req.(*MsgPolicyCmd))
+		return srv.(MsgServer).SignedPolicyCmd(ctx, req.(*MsgSignedPolicyCmd))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -397,6 +420,24 @@ func _Msg_BearerPolicyCmd_Handler(srv interface{}, ctx context.Context, dec func
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(MsgServer).BearerPolicyCmd(ctx, req.(*MsgBearerPolicyCmd))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Msg_DirectPolicyCmd_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(MsgDirectPolicyCmd)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MsgServer).DirectPolicyCmd(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Msg_DirectPolicyCmd_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MsgServer).DirectPolicyCmd(ctx, req.(*MsgDirectPolicyCmd))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -437,12 +478,16 @@ var Msg_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _Msg_CheckAccess_Handler,
 		},
 		{
-			MethodName: "PolicyCmd",
-			Handler:    _Msg_PolicyCmd_Handler,
+			MethodName: "SignedPolicyCmd",
+			Handler:    _Msg_SignedPolicyCmd_Handler,
 		},
 		{
 			MethodName: "BearerPolicyCmd",
 			Handler:    _Msg_BearerPolicyCmd_Handler,
+		},
+		{
+			MethodName: "DirectPolicyCmd",
+			Handler:    _Msg_DirectPolicyCmd_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

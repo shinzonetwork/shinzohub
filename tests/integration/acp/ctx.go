@@ -83,7 +83,10 @@ func (c *TestCtx) GetActor(alias string) *TestActor {
 	case Actor_ED25519:
 		return MustNewED25519ActorFromName(alias)
 	case Actor_SECP256K1:
-		return MustNewSourceHubActorFromName(alias)
+		acc := MustNewSourceHubActorFromName(alias)
+		_, err := c.Executor.GetOrCreateAccountFromActor(c.Ctx, acc)
+		require.NoError(c.T, err)
+		return acc
 	default:
 		panic(fmt.Sprintf("invalid actor type: %v", c.ActorType))
 	}

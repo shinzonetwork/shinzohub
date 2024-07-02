@@ -45,6 +45,20 @@ func setRelationshipDispatcher(ctx *TestCtx, action *SetRelationshipAction) (res
 			result = resp.Result.GetSetRelationshipResult()
 		}
 		err = respErr
+	case Direct:
+		// For Direct Authentication we use the action Action as the signer
+		ctx.TxSigner = action.Actor
+		msg := &types.MsgDirectPolicyCmd{
+			Creator:      action.Actor.SourceHubAddr,
+			PolicyId:     action.PolicyId,
+			Cmd:          types.NewSetRelationshipCmd(action.Relationship),
+			CreationTime: TimeToProto(ctx.Timestamp),
+		}
+		resp, respErr := ctx.Executor.DirectPolicyCmd(ctx, msg)
+		if resp != nil {
+			result = resp.Result.GetSetRelationshipResult()
+		}
+		err = respErr
 	}
 	return
 }
@@ -83,6 +97,20 @@ func deleteRelationshipDispatcher(ctx *TestCtx, action *DeleteRelationshipAction
 			Type:    types.MsgSignedPolicyCmd_JWS,
 		}
 		resp, respErr := ctx.Executor.SignedPolicyCmd(ctx, msg)
+		if resp != nil {
+			result = resp.Result.GetDeleteRelationshipResult()
+		}
+		resultErr = respErr
+	case Direct:
+		// For Direct Authentication we use the action Action as the signer
+		ctx.TxSigner = action.Actor
+		msg := &types.MsgDirectPolicyCmd{
+			Creator:      action.Actor.SourceHubAddr,
+			PolicyId:     action.PolicyId,
+			Cmd:          types.NewDeleteRelationshipCmd(action.Relationship),
+			CreationTime: TimeToProto(ctx.Timestamp),
+		}
+		resp, respErr := ctx.Executor.DirectPolicyCmd(ctx, msg)
 		if resp != nil {
 			result = resp.Result.GetDeleteRelationshipResult()
 		}
@@ -128,6 +156,20 @@ func registerObjectDispatcher(ctx *TestCtx, action *RegisterObjectAction) (resul
 			result = resp.Result.GetRegisterObjectResult()
 		}
 		err = respErr
+	case Direct:
+		// For Direct Authentication we use the action Action as the signer
+		ctx.TxSigner = action.Actor
+		msg := &types.MsgDirectPolicyCmd{
+			Creator:      action.Actor.SourceHubAddr,
+			PolicyId:     action.PolicyId,
+			Cmd:          types.NewRegisterObjectCmd(action.Object),
+			CreationTime: TimeToProto(ctx.Timestamp),
+		}
+		resp, respErr := ctx.Executor.DirectPolicyCmd(ctx, msg)
+		if resp != nil {
+			result = resp.Result.GetRegisterObjectResult()
+		}
+		err = respErr
 	}
 	return result, err
 }
@@ -165,6 +207,20 @@ func unregisterObjectDispatcher(ctx *TestCtx, action *UnregisterObjectAction) (r
 			Type:    types.MsgSignedPolicyCmd_JWS,
 		}
 		resp, respErr := ctx.Executor.SignedPolicyCmd(ctx, msg)
+		if resp != nil {
+			result = resp.Result.GetUnregisterObjectResult()
+		}
+		err = respErr
+	case Direct:
+		// For Direct Authentication we use the action Action as the signer
+		ctx.TxSigner = action.Actor
+		msg := &types.MsgDirectPolicyCmd{
+			Creator:      action.Actor.SourceHubAddr,
+			PolicyId:     action.PolicyId,
+			Cmd:          types.NewUnregisterObjectCmd(action.Object),
+			CreationTime: TimeToProto(ctx.Timestamp),
+		}
+		resp, respErr := ctx.Executor.DirectPolicyCmd(ctx, msg)
 		if resp != nil {
 			result = resp.Result.GetUnregisterObjectResult()
 		}

@@ -32,6 +32,9 @@ func RegisterInterfaces(registry cdctypes.InterfaceRegistry) {
 	registry.RegisterImplementations((*sdk.Msg)(nil),
 		&MsgBearerPolicyCmd{},
 	)
+	registry.RegisterImplementations((*sdk.Msg)(nil),
+		&MsgDirectPolicyCmd{},
+	)
 	// this line is used by starport scaffolding # 3
 
 	registry.RegisterImplementations((*sdk.Msg)(nil),

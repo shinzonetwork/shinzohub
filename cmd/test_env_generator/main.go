@@ -70,6 +70,12 @@ func genEnvirons() []string {
 	for actorKeyVar := range test.ActorKeyMap {
 		for executorVar := range test.ExecutorStrategyMap {
 			for authStratVar := range test.AuthenticationStrategyMap {
+				// ED25519 key type is not valid for direct authentication
+				// since ed25519 accounts cannot sign txs
+				if actorKeyVar == "ED25519" && authStratVar == "DIRECT" {
+					continue
+				}
+
 				builder := strings.Builder{}
 				writeKV(&builder, test.SourceHubActorEnvVar, actorKeyVar)
 				writeKV(&builder, test.SourceHubExecutorEnvVar, executorVar)

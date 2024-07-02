@@ -35,6 +35,10 @@ func (e *KeeperExecutor) SignedPolicyCmd(ctx *TestCtx, msg *types.MsgSignedPolic
 	return e.k.SignedPolicyCmd(ctx, msg)
 }
 
+func (e *KeeperExecutor) DirectPolicyCmd(ctx *TestCtx, msg *types.MsgDirectPolicyCmd) (*types.MsgDirectPolicyCmdResponse, error) {
+	return e.k.DirectPolicyCmd(ctx, msg)
+}
+
 func (e *KeeperExecutor) CreatePolicy(ctx *TestCtx, msg *types.MsgCreatePolicy) (*types.MsgCreatePolicyResponse, error) {
 	return e.k.CreatePolicy(ctx, msg)
 }

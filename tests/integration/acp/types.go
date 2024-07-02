@@ -39,6 +39,7 @@ type MsgExecutor interface {
 	CreatePolicy(ctx *TestCtx, msg *types.MsgCreatePolicy) (*types.MsgCreatePolicyResponse, error)
 	BearerPolicyCmd(ctx *TestCtx, msg *types.MsgBearerPolicyCmd) (*types.MsgBearerPolicyCmdResponse, error)
 	SignedPolicyCmd(ctx *TestCtx, msg *types.MsgSignedPolicyCmd) (*types.MsgSignedPolicyCmdResponse, error)
+	DirectPolicyCmd(ctx *TestCtx, msg *types.MsgDirectPolicyCmd) (*types.MsgDirectPolicyCmdResponse, error)
 }
 
 // AuthenticationStrategy is an enum representing the Authentication format
@@ -55,7 +56,7 @@ const (
 )
 
 var AuthenticationStrategyMap map[string]AuthenticationStrategy = map[string]AuthenticationStrategy{
-	//"DIRECT": Direct,
+	"DIRECT": Direct,
 	"BEARER": BearerToken,
 	"SIGNED": SignedPayload,
 }
