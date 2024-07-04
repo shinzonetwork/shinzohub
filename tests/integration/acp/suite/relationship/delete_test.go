@@ -57,6 +57,7 @@ func setupDelete(t *testing.T) *test.TestCtx {
 
 func TestDeleteRelationship_ObjectOwnerCanRemoveRelationship(t *testing.T) {
 	ctx := setupDelete(t)
+	defer ctx.Cleanup()
 
 	action := test.DeleteRelationshipAction{
 		PolicyId:     ctx.State.PolicyId,
@@ -71,6 +72,7 @@ func TestDeleteRelationship_ObjectOwnerCanRemoveRelationship(t *testing.T) {
 
 func TestDeleteRelationship_ObjectManagerCanRemoveRelationshipsForRelationTheyManage(t *testing.T) {
 	ctx := setupDelete(t)
+	defer ctx.Cleanup()
 
 	action := test.DeleteRelationshipAction{
 		PolicyId:     ctx.State.PolicyId,
@@ -85,6 +87,8 @@ func TestDeleteRelationship_ObjectManagerCanRemoveRelationshipsForRelationTheyMa
 
 func TestDeleteRelationship_ObjectManagerCannotRemoveRelationshipForRelationTheyDontManage(t *testing.T) {
 	ctx := setupDelete(t)
+	defer ctx.Cleanup()
+
 	action := test.DeleteRelationshipAction{
 		PolicyId:     ctx.State.PolicyId,
 		Relationship: types.NewActorRelationship("file", "foo", "writer", ctx.GetActor("writer").DID),

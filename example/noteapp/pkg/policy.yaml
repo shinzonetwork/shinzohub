@@ -15,6 +15,7 @@ resources:
         expr: owner
       delete: 
         expr: owner
+        'oogabooga'
 
 actor:
    name: actor

@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/cyware/ssi-sdk/crypto"
-	"github.com/cyware/ssi-sdk/did/key"
+	"github.com/TBD54566975/ssi-sdk/crypto"
+	"github.com/TBD54566975/ssi-sdk/did/key"
 	secp "github.com/decred/dcrd/dcrec/secp256k1/v4"
 	"github.com/go-jose/go-jose/v3"
 	"github.com/lestrrat-go/jwx/v2/jwa"
@@ -55,7 +55,7 @@ func parseValidateJWS(ctx context.Context, resolver did.Resolver, bearerJWS stri
 	// as that does not error.
 	did := bearer.IssuerID
 	didKey := key.DIDKey(did)
-	pubBytes, keytype, err := didKey.Decode()
+	pubBytes, _, keytype, err := didKey.Decode()
 	if err != nil {
 		return BearerToken{}, fmt.Errorf("failed to resolve actor did: %v: %w", err, ErrInvalidBearerToken)
 	}

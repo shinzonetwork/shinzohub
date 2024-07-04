@@ -3,7 +3,7 @@ package did
 import (
 	"context"
 
-	"github.com/cyware/ssi-sdk/did/key"
+	"github.com/TBD54566975/ssi-sdk/did/key"
 )
 
 var _ Resolver = (*KeyResolver)(nil)

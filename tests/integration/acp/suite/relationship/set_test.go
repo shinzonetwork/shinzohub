@@ -44,6 +44,7 @@ func setupSetRel(t *testing.T) *test.TestCtx {
 
 func TestSetRelationship_OwnerCanShareObjectTheyOwn(t *testing.T) {
 	ctx := setupSetRel(t)
+	defer ctx.Cleanup()
 
 	bob := ctx.GetActor("bob").DID
 	a1 := test.SetRelationshipAction{
@@ -66,6 +67,7 @@ func TestSetRelationship_OwnerCanShareObjectTheyOwn(t *testing.T) {
 }
 func TestSetRelationship_ActorCannotSetRelationshipForUnregisteredObject(t *testing.T) {
 	ctx := setupSetRel(t)
+	defer ctx.Cleanup()
 
 	bob := ctx.GetActor("bob").DID
 	a1 := test.SetRelationshipAction{
@@ -80,6 +82,7 @@ func TestSetRelationship_ActorCannotSetRelationshipForUnregisteredObject(t *test
 func TestSetRelationship_ActorCannotSetRelationshipForObjectTheyDoNotOwn(t *testing.T) {
 	// Given Alice as the Owner of File Foo
 	ctx := setupSetRel(t)
+	defer ctx.Cleanup()
 
 	bob := ctx.GetActor("bob").DID
 	a1 := test.SetRelationshipAction{
@@ -93,6 +96,7 @@ func TestSetRelationship_ActorCannotSetRelationshipForObjectTheyDoNotOwn(t *test
 
 func TestSetRelationship_ManagerActorCanDelegateAccessToAnotherActor(t *testing.T) {
 	ctx := setupSetRel(t)
+	defer ctx.Cleanup()
 
 	// Given object foo and Bob as a manager
 	bob := ctx.GetActor("bob").DID
@@ -126,6 +130,7 @@ func TestSetRelationship_ManagerActorCanDelegateAccessToAnotherActor(t *testing.
 
 func TestSetRelationship_ManagerActorCannotSetRelationshipToRelationshipsTheyDoNotManage(t *testing.T) {
 	ctx := setupSetRel(t)
+	defer ctx.Cleanup()
 
 	// Given object foo and Bob as a admin
 	bob := ctx.GetActor("bob").DID
@@ -150,6 +155,7 @@ func TestSetRelationship_ManagerActorCannotSetRelationshipToRelationshipsTheyDoN
 
 func TestSetRelationship_AdminIsNotAllowedToSetAnOwnerRelationship(t *testing.T) {
 	ctx := setupSetRel(t)
+	defer ctx.Cleanup()
 
 	// Given object foo and Bob as a admin
 	bob := ctx.GetActor("bob").DID

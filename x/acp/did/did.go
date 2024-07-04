@@ -4,8 +4,8 @@ import (
 	stdcrypto "crypto"
 	"crypto/ed25519"
 
-	"github.com/cyware/ssi-sdk/crypto"
-	"github.com/cyware/ssi-sdk/did/key"
+	"github.com/TBD54566975/ssi-sdk/crypto"
+	"github.com/TBD54566975/ssi-sdk/did/key"
 )
 
 func ProduceDID() (string, stdcrypto.Signer, error) {

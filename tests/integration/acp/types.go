@@ -29,7 +29,7 @@ type AccountCreator interface {
 	// GetOrCreateActor retrieves an account from a TestActor's address
 	// if the account does not exist in the chain, it must be created
 	// and given credits (if required)
-	GetOrCreateAccountFromActor(context.Context, *TestActor) (sdk.AccountI, error)
+	GetOrCreateAccountFromActor(*TestCtx, *TestActor) (sdk.AccountI, error)
 }
 
 // MsgExecutor represents a component which can execute an ACP Msg and produce a result
@@ -40,6 +40,8 @@ type MsgExecutor interface {
 	BearerPolicyCmd(ctx *TestCtx, msg *types.MsgBearerPolicyCmd) (*types.MsgBearerPolicyCmdResponse, error)
 	SignedPolicyCmd(ctx *TestCtx, msg *types.MsgSignedPolicyCmd) (*types.MsgSignedPolicyCmdResponse, error)
 	DirectPolicyCmd(ctx *TestCtx, msg *types.MsgDirectPolicyCmd) (*types.MsgDirectPolicyCmdResponse, error)
+
+	Cleanup()
 }
 
 // AuthenticationStrategy is an enum representing the Authentication format
@@ -90,7 +92,7 @@ const (
 var ExecutorStrategyMap map[string]ExecutorStrategy = map[string]ExecutorStrategy{
 	"KEEPER": Keeper,
 	//"CLI":    CLI,
-	//"SDK":    SDK,
+	"SDK": SDK,
 }
 
 // TestConfig models how the tests suite will be run

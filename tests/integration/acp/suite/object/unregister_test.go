@@ -44,6 +44,7 @@ func setupUnregister(t *testing.T) *test.TestCtx {
 
 func TestUnregisterObject_RegisteredObjectCanBeUnregisteredByAuthor(t *testing.T) {
 	ctx := setupUnregister(t)
+	defer ctx.Cleanup()
 
 	action := test.UnregisterObjectAction{
 		PolicyId: ctx.State.PolicyId,
@@ -59,6 +60,7 @@ func TestUnregisterObject_RegisteredObjectCanBeUnregisteredByAuthor(t *testing.T
 
 func TestUnregisterObject_ActorCannotUnregisterObjectTheyDoNotOwn(t *testing.T) {
 	ctx := setupUnregister(t)
+	defer ctx.Cleanup()
 
 	action := test.UnregisterObjectAction{
 		PolicyId:    ctx.State.PolicyId,
@@ -71,6 +73,7 @@ func TestUnregisterObject_ActorCannotUnregisterObjectTheyDoNotOwn(t *testing.T) 
 
 func TestUnregisterObject_UnregisteringAnObjectThatDoesNotExistReturnsUnauthorized(t *testing.T) {
 	ctx := setupUnregister(t)
+	defer ctx.Cleanup()
 
 	action := test.UnregisterObjectAction{
 		PolicyId:    ctx.State.PolicyId,
@@ -83,6 +86,7 @@ func TestUnregisterObject_UnregisteringAnObjectThatDoesNotExistReturnsUnauthoriz
 
 func TestUnregisterObject_UnregisteringAnAlreadyArchivedObjectIsANoop(t *testing.T) {
 	ctx := setupUnregister(t)
+	defer ctx.Cleanup()
 
 	action := test.UnregisterObjectAction{
 		PolicyId: ctx.State.PolicyId,
@@ -104,6 +108,7 @@ func TestUnregisterObject_UnregisteringAnAlreadyArchivedObjectIsANoop(t *testing
 
 func TestUnregisterObject_SendingInvalidPolicyIdErrors(t *testing.T) {
 	ctx := setupUnregister(t)
+	defer ctx.Cleanup()
 
 	action := test.UnregisterObjectAction{
 		PolicyId:    "abc1234",

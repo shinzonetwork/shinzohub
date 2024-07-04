@@ -19,6 +19,7 @@ resources:
 
 func TestRegisterObject_RegisteringNewObjectIsSucessful(t *testing.T) {
 	ctx := test.NewTestCtx(t)
+	defer ctx.Cleanup()
 
 	a1 := test.CreatePolicyAction{
 		Policy:  policyDef,
@@ -59,6 +60,7 @@ func TestRegisterObject_RegisteringNewObjectIsSucessful(t *testing.T) {
 
 func TestRegisterObject_RegisteringObjectRegisteredToAnotherUserErrors(t *testing.T) {
 	ctx := test.NewTestCtx(t)
+	defer ctx.Cleanup()
 
 	// Given Bob as owner of foo
 	a1 := test.CreatePolicyAction{
@@ -87,6 +89,7 @@ func TestRegisterObject_RegisteringObjectRegisteredToAnotherUserErrors(t *testin
 
 func TestRegisterObject_ReregisteringObjectOwnedByUserIsNoop(t *testing.T) {
 	ctx := test.NewTestCtx(t)
+	defer ctx.Cleanup()
 
 	// Given Bob as owner of foo
 	a1 := test.CreatePolicyAction{
@@ -127,6 +130,7 @@ func TestRegisterObject_ReregisteringObjectOwnedByUserIsNoop(t *testing.T) {
 
 func TestRegisterObject_RegisteringAnotherUsersArchivedObjectErrors(t *testing.T) {
 	ctx := test.NewTestCtx(t)
+	defer ctx.Cleanup()
 
 	// Given Bob as previous owner of foo
 	a1 := test.CreatePolicyAction{
@@ -162,6 +166,7 @@ func TestRegisterObject_RegisteringAnotherUsersArchivedObjectErrors(t *testing.T
 
 func TestRegisterObject_RegisteringArchivedUserObjectUnarchivesObject(t *testing.T) {
 	ctx := test.NewTestCtx(t)
+	defer ctx.Cleanup()
 
 	// Given Bob as previous owner of foo
 	a1 := test.CreatePolicyAction{
@@ -216,6 +221,7 @@ func TestRegisterObject_RegisteringArchivedUserObjectUnarchivesObject(t *testing
 
 func TestRegisterObject_RegisteringObjectInAnUndefinedResourceErrors(t *testing.T) {
 	ctx := test.NewTestCtx(t)
+	defer ctx.Cleanup()
 
 	// Given Bob as previous owner of foo
 	a1 := test.CreatePolicyAction{
@@ -234,6 +240,7 @@ func TestRegisterObject_RegisteringObjectInAnUndefinedResourceErrors(t *testing.
 
 func TestRegisterObject_RegisteringToUnknownPolicyReturnsError(t *testing.T) {
 	ctx := test.NewTestCtx(t)
+	defer ctx.Cleanup()
 
 	// Given Bob as previous owner of foo
 	a2 := test.RegisterObjectAction{
@@ -247,6 +254,7 @@ func TestRegisterObject_RegisteringToUnknownPolicyReturnsError(t *testing.T) {
 
 func TestRegisterObject_BlankResourceErrors(t *testing.T) {
 	ctx := test.NewTestCtx(t)
+	defer ctx.Cleanup()
 
 	// Given Bob as previous owner of foo
 	a1 := test.CreatePolicyAction{
@@ -265,6 +273,7 @@ func TestRegisterObject_BlankResourceErrors(t *testing.T) {
 
 func TestRegisterObject_BlankObjectIdErrors(t *testing.T) {
 	ctx := test.NewTestCtx(t)
+	defer ctx.Cleanup()
 
 	// Given Bob as previous owner of foo
 	a1 := test.CreatePolicyAction{

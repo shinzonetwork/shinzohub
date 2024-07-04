@@ -180,6 +180,10 @@ func (l *TxListener) Listen(ctx context.Context) error {
 	return nil
 }
 
+func (l *TxListener) Stop() {
+	l.client.Stop()
+}
+
 // Subscribe configures the Listener to return the RPC Response
 // when the response for txHash is received.
 //

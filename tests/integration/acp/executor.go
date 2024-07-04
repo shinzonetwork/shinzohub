@@ -3,8 +3,10 @@ package test
 import (
 	"context"
 	"fmt"
+	"testing"
 
 	"cosmossdk.io/log"
+	"cosmossdk.io/math"
 	"cosmossdk.io/store"
 	"cosmossdk.io/store/metrics"
 	storetypes "cosmossdk.io/store/types"
@@ -15,9 +17,15 @@ import (
 	"github.com/cosmos/cosmos-sdk/runtime"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
+	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
 	"github.com/sourcenetwork/sourcehub/x/acp/types"
+	"github.com/stretchr/testify/require"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 
+	hubsdk "github.com/sourcenetwork/sourcehub/sdk"
+	"github.com/sourcenetwork/sourcehub/testutil/e2e"
 	"github.com/sourcenetwork/sourcehub/x/acp/keeper"
 	"github.com/sourcenetwork/sourcehub/x/acp/testutil"
 )
@@ -26,6 +34,8 @@ type KeeperExecutor struct {
 	k              types.MsgServer
 	accountCreator *testutil.AccountKeeperStub
 }
+
+func (e *KeeperExecutor) Cleanup() {}
 
 func (e *KeeperExecutor) BearerPolicyCmd(ctx *TestCtx, msg *types.MsgBearerPolicyCmd) (*types.MsgBearerPolicyCmdResponse, error) {
 	return e.k.BearerPolicyCmd(ctx, msg)
@@ -43,21 +53,26 @@ func (e *KeeperExecutor) CreatePolicy(ctx *TestCtx, msg *types.MsgCreatePolicy) 
 	return e.k.CreatePolicy(ctx, msg)
 }
 
-func (e *KeeperExecutor) GetOrCreateAccountFromActor(_ context.Context, actor *TestActor) (sdk.AccountI, error) {
+func (e *KeeperExecutor) GetOrCreateAccountFromActor(_ *TestCtx, actor *TestActor) (sdk.AccountI, error) {
 	return e.accountCreator.NewAccount(actor.PubKey), nil
 }
 
-func NewExecutor(strategy ExecutorStrategy) (context.Context, MsgExecutor, error) {
+func NewExecutor(t *testing.T, strategy ExecutorStrategy) (context.Context, MsgExecutor) {
 	switch strategy {
 	case Keeper:
 		ctx, exec, err := newKeeperExecutor()
-		return ctx, exec, err
+		require.NoError(t, err)
+		return ctx, exec
 	case SDK:
-		panic("sdk executor not implemented")
+		network := &e2e.TestNetwork{}
+		network.Setup(t)
+		executor, err := newSDKExecutor(network)
+		require.NoError(t, err)
+		return context.Background(), executor
 	case CLI:
 		panic("sdk executor not implemented")
 	default:
-		return nil, nil, fmt.Errorf("invalid executor strategy: %v", strategy)
+		panic(fmt.Sprintf("invalid executor strategy: %v", strategy))
 	}
 }
 
@@ -99,4 +114,139 @@ func newKeeperExecutor() (context.Context, MsgExecutor, error) {
 		accountCreator: accKeeper,
 	}
 	return ctx, executor, nil
+}
+
+func newSDKExecutor(network *e2e.TestNetwork) (*SDKClientExecutor, error) {
+	txBuilder, err := hubsdk.NewTxBuilder(
+		hubsdk.WithSDKClient(network.Client),
+		hubsdk.WithChainID(network.GetChainID()),
+	)
+
+	if err != nil {
+		return nil, err
+	}
+	return &SDKClientExecutor{
+		Network:   network,
+		txBuilder: &txBuilder,
+	}, nil
+}
+
+type SDKClientExecutor struct {
+	Network   *e2e.TestNetwork
+	txBuilder *hubsdk.TxBuilder
+}
+
+func (e *SDKClientExecutor) BearerPolicyCmd(ctx *TestCtx, msg *types.MsgBearerPolicyCmd) (*types.MsgBearerPolicyCmdResponse, error) {
+	set := hubsdk.MsgSet{}
+	mapper := set.WithBearerPolicyCmd(msg)
+	result := e.broadcastTx(ctx, &set)
+	if result.Error() != nil {
+		return nil, result.Error()
+	}
+	response, err := mapper.Map(result.TxPayload())
+	require.NoError(ctx.T, err)
+	return response, nil
+}
+
+func (e *SDKClientExecutor) SignedPolicyCmd(ctx *TestCtx, msg *types.MsgSignedPolicyCmd) (*types.MsgSignedPolicyCmdResponse, error) {
+	set := hubsdk.MsgSet{}
+	mapper := set.WithSignedPolicyCmd(msg)
+	result := e.broadcastTx(ctx, &set)
+	if result.Error() != nil {
+		return nil, result.Error()
+	}
+	response, err := mapper.Map(result.TxPayload())
+	require.NoError(ctx.T, err)
+	return response, nil
+}
+
+func (e *SDKClientExecutor) DirectPolicyCmd(ctx *TestCtx, msg *types.MsgDirectPolicyCmd) (*types.MsgDirectPolicyCmdResponse, error) {
+	set := hubsdk.MsgSet{}
+	mapper := set.WithDirectPolicyCmd(msg)
+	result := e.broadcastTx(ctx, &set)
+	if result.Error() != nil {
+		return nil, result.Error()
+	}
+	response, err := mapper.Map(result.TxPayload())
+	require.NoError(ctx.T, err)
+	return response, nil
+}
+
+func (e *SDKClientExecutor) CreatePolicy(ctx *TestCtx, msg *types.MsgCreatePolicy) (*types.MsgCreatePolicyResponse, error) {
+	set := hubsdk.MsgSet{}
+	mapper := set.WithCreatePolicy(msg)
+	result := e.broadcastTx(ctx, &set)
+	if result.Error() != nil {
+		return nil, result.Error()
+	}
+	response, err := mapper.Map(result.TxPayload())
+	require.NoError(ctx.T, err)
+	return response, nil
+}
+
+func (e *SDKClientExecutor) GetOrCreateAccountFromActor(ctx *TestCtx, actor *TestActor) (sdk.AccountI, error) {
+	client := e.Network.Client
+	resp, err := client.AuthQueryClient().AccountInfo(ctx, &authtypes.QueryAccountInfoRequest{
+		Address: actor.SourceHubAddr,
+	})
+	if resp != nil {
+		return resp.Info, nil
+	}
+	// if error was not found, means account doesnt exist
+	// and we can create one
+	if err != nil && status.Code(err) != codes.NotFound {
+		require.NoError(ctx.T, err)
+		return nil, err
+	}
+
+	var defaultSendAmt sdk.Coins = []sdk.Coin{
+		{
+			Denom:  "stake",
+			Amount: math.NewInt(10000),
+		},
+	}
+
+	msg := banktypes.MsgSend{
+		FromAddress: e.Network.GetValidatorAddr(),
+		ToAddress:   actor.SourceHubAddr,
+		Amount:      defaultSendAmt,
+	}
+	tx, err := e.txBuilder.BuildFromMsgs(ctx,
+		hubsdk.TxSignerFromCosmosKey(e.Network.GetValidatorKey()),
+		&msg,
+	)
+	require.NoError(ctx.T, err)
+
+	_, err = client.BroadcastTx(ctx, tx)
+	require.NoError(ctx.T, err)
+	e.Network.Network.WaitForNextBlock()
+
+	resp, err = client.AuthQueryClient().AccountInfo(ctx, &authtypes.QueryAccountInfoRequest{
+		Address: actor.SourceHubAddr,
+	})
+	require.NoError(ctx.T, err)
+	return resp.Info, nil
+}
+
+func (e *SDKClientExecutor) broadcastTx(ctx *TestCtx, msgSet *hubsdk.MsgSet) *hubsdk.TxExecResult {
+	_, err := e.GetOrCreateAccountFromActor(ctx, ctx.TxSigner)
+	require.NoError(ctx.T, err)
+
+	signer := hubsdk.TxSignerFromCosmosKey(ctx.TxSigner.PrivKey)
+
+	tx, err := e.txBuilder.Build(ctx, signer, msgSet)
+	require.NoError(ctx.T, err)
+
+	response, err := e.Network.Client.BroadcastTx(ctx, tx)
+	require.NoError(ctx.T, err)
+
+	e.Network.Network.WaitForNextBlock()
+	result, err := e.Network.Client.GetTx(ctx, response.TxHash)
+	require.NoError(ctx.T, err)
+
+	return result
+}
+
+func (e *SDKClientExecutor) Cleanup() {
+	e.Network.TearDown()
 }

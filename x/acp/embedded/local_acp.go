@@ -18,7 +18,6 @@ import (
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
 
-	"github.com/sourcenetwork/sourcehub/app"
 	"github.com/sourcenetwork/sourcehub/x/acp/keeper"
 	"github.com/sourcenetwork/sourcehub/x/acp/types"
 )
@@ -187,19 +186,4 @@ func (o *option) NewDB() (dbm.DB, error) {
 	}
 
 	return dbm.NewDB(dataFile, backend, o.storePath)
-}
-
-func init() {
-	accountPubKeyPrefix := app.AccountAddressPrefix + "pub"
-	validatorAddressPrefix := app.AccountAddressPrefix + "valoper"
-	validatorPubKeyPrefix := app.AccountAddressPrefix + "valoperpub"
-	consNodeAddressPrefix := app.AccountAddressPrefix + "valcons"
-	consNodePubKeyPrefix := app.AccountAddressPrefix + "valconspub"
-
-	// Set and seal config
-	config := sdk.GetConfig()
-	config.SetBech32PrefixForAccount(app.AccountAddressPrefix, accountPubKeyPrefix)
-	config.SetBech32PrefixForValidator(validatorAddressPrefix, validatorPubKeyPrefix)
-	config.SetBech32PrefixForConsensusNode(consNodeAddressPrefix, consNodePubKeyPrefix)
-	config.Seal()
 }

@@ -4,9 +4,9 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/TBD54566975/ssi-sdk/crypto"
+	"github.com/TBD54566975/ssi-sdk/did/key"
 	"github.com/cosmos/gogoproto/jsonpb"
-	"github.com/cyware/ssi-sdk/crypto"
-	"github.com/cyware/ssi-sdk/did/key"
 	secp "github.com/decred/dcrd/dcrec/secp256k1/v4"
 	"github.com/go-jose/go-jose/v3"
 	"github.com/lestrrat-go/jwx/v2/jwa"
@@ -51,7 +51,7 @@ func (s *jwsVerifier) Verify(ctx context.Context, jwsStr string) (*types.SignedP
 	// therefore we skip using the did pkg resolver and decode it directly,
 	// as that does not error.
 	didKey := key.DIDKey(did)
-	pubBytes, keytype, err := didKey.Decode()
+	pubBytes, _, keytype, err := didKey.Decode()
 	if err != nil {
 		return nil, fmt.Errorf("failed to resolve actor did: %v", err)
 	}

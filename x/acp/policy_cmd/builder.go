@@ -14,8 +14,8 @@ import (
 	"github.com/sourcenetwork/sourcehub/x/acp/types"
 )
 
-func NewCmdBuilder(clock LogicalClock, params types.Params) CmdBuilder {
-	return CmdBuilder{
+func NewCmdBuilder(clock LogicalClock, params types.Params) *CmdBuilder {
+	return &CmdBuilder{
 		clock:  clock,
 		params: params,
 	}

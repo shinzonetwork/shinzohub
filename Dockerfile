@@ -29,7 +29,6 @@ RUN go mod download
 
 # Build
 COPY . /app
-#ENV GOFLAGS='-buildvcs=false'
 RUN --mount=type=cache,target=/root/.cache make build
 
 # Dev image entrypoint

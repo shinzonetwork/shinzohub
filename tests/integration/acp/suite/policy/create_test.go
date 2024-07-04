@@ -10,6 +10,7 @@ import (
 
 func TestCreatePolicy_ValidPolicyIsCreated(t *testing.T) {
 	ctx := test.NewTestCtx(t)
+	defer ctx.Cleanup()
 
 	policyStr := `
 name: policy
@@ -118,6 +119,7 @@ actor:
 
 func TestCreatePolicy_PolicyResourcesRequiresOwnerRelation(t *testing.T) {
 	ctx := test.NewTestCtx(t)
+	defer ctx.Cleanup()
 
 	action := test.CreatePolicyAction{
 		Policy: `
@@ -141,6 +143,7 @@ resources:
 
 func TestCreatePolicy_ManagementReferencingUndefinedRelationReturnsError(t *testing.T) {
 	ctx := test.NewTestCtx(t)
+	defer ctx.Cleanup()
 
 	action := test.CreatePolicyAction{
 		Policy: `

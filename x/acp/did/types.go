@@ -9,10 +9,10 @@ import (
 	"github.com/cosmos/cosmos-sdk/crypto/keys/ed25519"
 	"github.com/cosmos/cosmos-sdk/crypto/keys/secp256k1"
 	cryptotypes "github.com/cosmos/cosmos-sdk/crypto/types"
-	"github.com/cyware/ssi-sdk/crypto"
-	"github.com/cyware/ssi-sdk/did"
-	"github.com/cyware/ssi-sdk/did/key"
-	"github.com/cyware/ssi-sdk/did/resolution"
+	"github.com/TBD54566975/ssi-sdk/crypto"
+	"github.com/TBD54566975/ssi-sdk/did"
+	"github.com/TBD54566975/ssi-sdk/did/key"
+	"github.com/TBD54566975/ssi-sdk/did/resolution"
 )
 
 func ExtractVerificationKey(doc DIDDocument) (cryptotypes.PubKey, error) {

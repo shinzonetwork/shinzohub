@@ -1,8 +1,10 @@
 #!/usr/bin/bash
 
 if [ ! -e "~/INITIALIZED" ]; then
-    ignite chain init --skip-proto
+    scripts/genesis-setup.sh
     touch "~/INITIALIZED"
 fi
+
+# Set VALIDATOR_ADDR env var here
 
 exec /app/build/sourcehubd $@

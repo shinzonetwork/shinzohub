@@ -22,30 +22,26 @@ type TestState struct {
 	PolicyCreator string
 }
 
-func NewTestCtxFromConfig(t *testing.T, config TestConfig) (*TestCtx, error) {
-	baseCtx, executor, err := NewExecutor(config.ExecutorStrategy)
-	if err != nil {
-		return nil, err
-	}
+func NewTestCtxFromConfig(t *testing.T, config TestConfig) *TestCtx {
+	baseCtx, executor := NewExecutor(t, config.ExecutorStrategy)
 
 	root := MustNewSourceHubActorFromName("root")
-	_, err = executor.GetOrCreateAccountFromActor(baseCtx, root)
-	if err != nil {
-		return nil, err
-	}
-
 	ctx := &TestCtx{
 		Ctx:          baseCtx,
 		T:            t,
 		TxSigner:     root,
-		Timestamp:    time.Date(2024, 6, 21, 12, 10, 00, 0, time.UTC),
-		TokenIssueTs: time.Date(2024, 6, 21, 12, 00, 00, 0, time.UTC),
+		Timestamp:    time.Now(),
+		TokenIssueTs: time.Now(),
 		Executor:     executor,
 		Strategy:     config.AuthStrategy,
 		ActorType:    config.ActorType,
 		LogicalClock: &logicalClockImpl{},
 	}
-	return ctx, nil
+
+	_, err := executor.GetOrCreateAccountFromActor(ctx, root)
+	require.NoError(t, err)
+
+	return ctx
 }
 
 type TestCtx struct {
@@ -67,8 +63,7 @@ type TestCtx struct {
 func NewTestCtx(t *testing.T) *TestCtx {
 	initTest()
 	config := MustNewTestConfigFromEnv()
-	ctx, err := NewTestCtxFromConfig(t, config)
-	require.NoError(t, err)
+	ctx := NewTestCtxFromConfig(t, config)
 	return ctx
 }
 
@@ -84,7 +79,7 @@ func (c *TestCtx) GetActor(alias string) *TestActor {
 		return MustNewED25519ActorFromName(alias)
 	case Actor_SECP256K1:
 		acc := MustNewSourceHubActorFromName(alias)
-		_, err := c.Executor.GetOrCreateAccountFromActor(c.Ctx, acc)
+		_, err := c.Executor.GetOrCreateAccountFromActor(c, acc)
 		require.NoError(c.T, err)
 		return acc
 	default:
@@ -100,4 +95,8 @@ func (c *TestCtx) GetSourceHubAccount(alias string) *TestActor {
 
 func (c *TestCtx) GetParams() types.Params {
 	return types.NewParams()
+}
+
+func (c *TestCtx) Cleanup() {
+	c.Executor.Cleanup()
 }

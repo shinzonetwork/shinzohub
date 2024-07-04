@@ -1,6 +1,7 @@
 package test
 
 import (
+	"errors"
 	"reflect"
 	"time"
 
@@ -34,7 +35,15 @@ func TimeToProto(ts time.Time) *gogotypes.Timestamp {
 
 func AssertResults(ctx *TestCtx, got, want any, gotErr, wantErr error) {
 	if wantErr != nil {
-		assert.ErrorIs(ctx.T, gotErr, wantErr)
+		if errors.Is(gotErr, wantErr) {
+			assert.ErrorIs(ctx.T, gotErr, wantErr)
+		} else {
+			// Errors returned from SDK operations (RPC communication to a SourceHub node)
+			// no longer have the original errors wrapped, therefore we compare a string as fallback strat.
+			gotErrStr := gotErr.Error()
+			wantErrStr := wantErr.Error()
+			assert.Contains(ctx.T, gotErrStr, wantErrStr)
+		}
 	} else {
 		assert.NoError(ctx.T, gotErr)
 	}
