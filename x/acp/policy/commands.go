@@ -3,10 +3,10 @@ package policy
 import (
 	"fmt"
 
+	"cosmossdk.io/core/store"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	prototypes "github.com/cosmos/gogoproto/types"
 
-	hubtypes "github.com/sourcenetwork/sourcehub/types"
 	"github.com/sourcenetwork/sourcehub/x/acp/auth_engine"
 	"github.com/sourcenetwork/sourcehub/x/acp/types"
 )
@@ -24,19 +24,20 @@ type CreatePolicyCommand struct {
 }
 
 // Execute consumes the data supplied in the command and creates a new ACP Policy and stores it in the given engine.
-func (c *CreatePolicyCommand) Execute(ctx sdk.Context, accountKeeper types.AccountKeeper, engine auth_engine.AuthEngine) (*types.Policy, error) {
+func (c *CreatePolicyCommand) Execute(ctx sdk.Context, kv store.KVStore, engine auth_engine.AuthEngine) (*types.Policy, error) {
 	err := basicPolicyIRSpec(&c.Policy)
 	if err != nil {
 		return nil, fmt.Errorf("CreatePolicyCommand: %w", err)
 	}
 
-	sequence, err := c.getAccountSequenceNumber(ctx, accountKeeper)
+	counter := newPolicyCounter(kv)
+	i, err := counter.GetNextAndIncrement(ctx)
 	if err != nil {
-		return nil, fmt.Errorf("CreatePolicyCommand: %w", err)
+		return nil, fmt.Errorf("CreatePolicyCommand: %v: %w", err, types.ErrAcpInternal)
 	}
 
 	factory := factory{}
-	record, err := factory.Create(c.Policy, c.Creator, sequence, c.CreationTime)
+	record, err := factory.Create(c.Policy, c.Creator, i, c.CreationTime)
 	if err != nil {
 		return nil, fmt.Errorf("CreatePolicyCommand: %w", err)
 	}
@@ -53,18 +54,4 @@ func (c *CreatePolicyCommand) Execute(ctx sdk.Context, accountKeeper types.Accou
 	}
 
 	return record.Policy, nil
-}
-
-func (c *CreatePolicyCommand) getAccountSequenceNumber(ctx sdk.Context, accountKeeper types.AccountKeeper) (uint64, error) {
-	addr, err := hubtypes.AccAddressFromBech32(c.Creator)
-	if err != nil {
-		return 0, fmt.Errorf("%w: %v", ErrInvalidCreator, err)
-	}
-
-	acc := accountKeeper.GetAccount(ctx, addr)
-	if acc == nil {
-		return 0, fmt.Errorf("account %v: %w", c.Creator, types.ErrAccNotFound)
-	}
-
-	return acc.GetSequence(), nil
 }

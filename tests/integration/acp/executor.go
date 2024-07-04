@@ -94,9 +94,11 @@ func newKeeperExecutor() (context.Context, MsgExecutor, error) {
 	accKeeper := &testutil.AccountKeeperStub{}
 	accKeeper.GenAccount()
 
+	kv := runtime.NewKVStoreService(storeKey)
+
 	k := keeper.NewKeeper(
 		cdc,
-		runtime.NewKVStoreService(storeKey),
+		kv,
 		log.NewNopLogger(),
 		authority.String(),
 		accKeeper,
@@ -104,6 +106,7 @@ func newKeeperExecutor() (context.Context, MsgExecutor, error) {
 
 	ctx := sdk.NewContext(stateStore, cmtproto.Header{}, false, log.NewNopLogger())
 	ctx = ctx.WithEventManager(sdk.NewEventManager())
+	ctx = ctx.WithMultiStore(stateStore)
 
 	// Initialize params
 	k.SetParams(ctx, types.DefaultParams())

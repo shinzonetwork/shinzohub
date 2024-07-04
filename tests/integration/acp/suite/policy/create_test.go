@@ -37,7 +37,7 @@ actor:
   doc: my actor
 `
 	want := &types.Policy{
-		Id:           "d431eabc84aa4d2e782b31b37382aeb73fe435c10c35769756ee8302d8371b1c",
+		Id:           "d12fa4d041911f2c77f6f49dd73942fb03389ab983714315af67b0f8e7cbcfef",
 		Name:         "policy",
 		Description:  "ok",
 		CreationTime: test.TimeToProto(ctx.Timestamp),

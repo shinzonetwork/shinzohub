@@ -27,12 +27,14 @@ func (k msgServer) CreatePolicy(goCtx context.Context, msg *types.MsgCreatePolic
 		return nil, fmt.Errorf("CreatePolicy: %w", err)
 	}
 
+	kv := k.storeService.OpenKVStore(ctx)
+
 	cmd := policy.CreatePolicyCommand{
 		Creator:      msg.Creator,
 		Policy:       ir,
 		CreationTime: msg.CreationTime,
 	}
-	pol, err := cmd.Execute(ctx, k.accountKeeper, engine)
+	pol, err := cmd.Execute(ctx, kv, engine)
 
 	if err != nil {
 		return nil, err

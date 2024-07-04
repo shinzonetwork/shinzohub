@@ -54,7 +54,8 @@ func setupEvaluateAccessRequest(t *testing.T) (context.Context, auth_engine.Auth
 		Creator:      "cosmos1gue5de6a8fdff0jut08vw5sg9pk6rr00cstakj",
 		CreationTime: timestamp,
 	}
-	pol, err := createCmd.Execute(ctx, &testutil.AccountKeeperStub{}, engine)
+	db := dbm.NewMemDB()
+	pol, err := createCmd.Execute(ctx, db, engine)
 	require.Nil(t, err)
 
 	_, err = engine.SetRelationship(ctx, pol, &types.RelationshipRecord{
@@ -79,7 +80,7 @@ func setupEvaluateAccessRequest(t *testing.T) (context.Context, auth_engine.Auth
 	require.Nil(t, err)
 
 	storeKey := storetypes.NewKVStoreKey(types.StoreKey)
-	db := dbm.NewMemDB()
+	db = dbm.NewMemDB()
 	stateStore := store.NewCommitMultiStore(db, log.NewNopLogger(), metrics.NewNoOpMetrics())
 	stateStore.MountStoreWithDB(storeKey, storetypes.StoreTypeIAVL, db)
 	require.NoError(t, stateStore.LoadLatestVersion())

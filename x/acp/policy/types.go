@@ -39,11 +39,11 @@ type policyIder struct{}
 // buildId computes the unique id for a policy.
 //
 // the id is a hash of the policy hash, creator account addr and account sequence number.
-func (i *policyIder) Id(pol *types.Policy, sequence uint64) string {
+func (i *policyIder) Id(pol *types.Policy, counter uint64) string {
 	hasher := sha256.New()
 
 	hasher.Write(i.hashPol(pol))
-	hasher.Write([]byte(fmt.Sprintf("%v", sequence)))
+	hasher.Write([]byte(fmt.Sprintf("%v", counter)))
 
 	hash := hasher.Sum(nil)
 	id := hex.EncodeToString(hash)
@@ -55,7 +55,6 @@ func (i *policyIder) Id(pol *types.Policy, sequence uint64) string {
 func (i *policyIder) hashPol(pol *types.Policy) []byte {
 	hasher := sha256.New()
 	hasher.Write([]byte(pol.Name))
-	hasher.Write([]byte(pol.Creator))
 
 	for _, resource := range pol.Resources {
 		hasher.Write([]byte(resource.Name))
