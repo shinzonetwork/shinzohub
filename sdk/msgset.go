@@ -30,30 +30,6 @@ func (b *MsgSet) WithCreatePolicy(msg *acptypes.MsgCreatePolicy) Mapper[*acptype
 	return newMapper(idx, &acptypes.MsgCreatePolicyResponse{})
 }
 
-// WithSetRelationship includes a MsgSetRelationship to the Tx
-func (b *MsgSet) WithSetRelationship(msg *acptypes.MsgSetRelationship) Mapper[*acptypes.MsgSetRelationshipResponse] {
-	idx := b.addMsg(msg)
-	return newMapper(idx, &acptypes.MsgSetRelationshipResponse{})
-}
-
-// WithDeleteRelationship includes a MsgDeleteRelationship to the Tx
-func (b *MsgSet) WithDeleteRelationship(msg *acptypes.MsgDeleteRelationship) Mapper[*acptypes.MsgDeleteRelationshipResponse] {
-	idx := b.addMsg(msg)
-	return newMapper(idx, &acptypes.MsgDeleteRelationshipResponse{})
-}
-
-// WithRegisterObject includes a MsgRegisterObject to the Tx
-func (b *MsgSet) WithRegisterObject(msg *acptypes.MsgRegisterObject) Mapper[*acptypes.MsgRegisterObjectResponse] {
-	idx := b.addMsg(msg)
-	return newMapper(idx, &acptypes.MsgRegisterObjectResponse{})
-}
-
-// WithUnregisterObject includes a MsgUnregisterObject to the Tx
-func (b *MsgSet) WithUnregisterObject(msg *acptypes.MsgUnregisterObject) Mapper[*acptypes.MsgUnregisterObjectResponse] {
-	idx := b.addMsg(msg)
-	return newMapper(idx, &acptypes.MsgUnregisterObjectResponse{})
-}
-
 // WithCheckAccess includes a MsgCheckAcces to the Tx
 func (b *MsgSet) WithCheckAccess(msg *acptypes.MsgCheckAccess) Mapper[*acptypes.MsgCheckAccessResponse] {
 	idx := b.addMsg(msg)

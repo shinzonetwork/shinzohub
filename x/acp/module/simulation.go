@@ -27,22 +27,6 @@ const (
 	// TODO: Determine the simulation weight value
 	defaultWeightMsgCreatePolicy int = 100
 
-	opWeightMsgSetRelationship = "op_weight_msg_set_relationship"
-	// TODO: Determine the simulation weight value
-	defaultWeightMsgSetRelationship int = 100
-
-	opWeightMsgDeleteRelationship = "op_weight_msg_delete_relationship"
-	// TODO: Determine the simulation weight value
-	defaultWeightMsgDeleteRelationship int = 100
-
-	opWeightMsgRegisterObject = "op_weight_msg_register_object"
-	// TODO: Determine the simulation weight value
-	defaultWeightMsgRegisterObject int = 100
-
-	opWeightMsgUnregisterObject = "op_weight_msg_unregister_object"
-	// TODO: Determine the simulation weight value
-	defaultWeightMsgUnregisterObject int = 100
-
 	opWeightMsgCheckAccess = "op_weight_msg_check_access"
 	// TODO: Determine the simulation weight value
 	defaultWeightMsgCheckAccess int = 100
@@ -90,50 +74,6 @@ func (am AppModule) WeightedOperations(simState module.SimulationState) []simtyp
 		acpsimulation.SimulateMsgCreatePolicy(am.accountKeeper, am.bankKeeper, am.keeper),
 	))
 
-	var weightMsgSetRelationship int
-	simState.AppParams.GetOrGenerate(opWeightMsgSetRelationship, &weightMsgSetRelationship, nil,
-		func(_ *rand.Rand) {
-			weightMsgSetRelationship = defaultWeightMsgSetRelationship
-		},
-	)
-	operations = append(operations, simulation.NewWeightedOperation(
-		weightMsgSetRelationship,
-		acpsimulation.SimulateMsgSetRelationship(am.accountKeeper, am.bankKeeper, am.keeper),
-	))
-
-	var weightMsgDeleteRelationship int
-	simState.AppParams.GetOrGenerate(opWeightMsgDeleteRelationship, &weightMsgDeleteRelationship, nil,
-		func(_ *rand.Rand) {
-			weightMsgDeleteRelationship = defaultWeightMsgDeleteRelationship
-		},
-	)
-	operations = append(operations, simulation.NewWeightedOperation(
-		weightMsgDeleteRelationship,
-		acpsimulation.SimulateMsgDeleteRelationship(am.accountKeeper, am.bankKeeper, am.keeper),
-	))
-
-	var weightMsgRegisterObject int
-	simState.AppParams.GetOrGenerate(opWeightMsgRegisterObject, &weightMsgRegisterObject, nil,
-		func(_ *rand.Rand) {
-			weightMsgRegisterObject = defaultWeightMsgRegisterObject
-		},
-	)
-	operations = append(operations, simulation.NewWeightedOperation(
-		weightMsgRegisterObject,
-		acpsimulation.SimulateMsgRegisterObject(am.accountKeeper, am.bankKeeper, am.keeper),
-	))
-
-	var weightMsgUnregisterObject int
-	simState.AppParams.GetOrGenerate(opWeightMsgUnregisterObject, &weightMsgUnregisterObject, nil,
-		func(_ *rand.Rand) {
-			weightMsgUnregisterObject = defaultWeightMsgUnregisterObject
-		},
-	)
-	operations = append(operations, simulation.NewWeightedOperation(
-		weightMsgUnregisterObject,
-		acpsimulation.SimulateMsgUnregisterObject(am.accountKeeper, am.bankKeeper, am.keeper),
-	))
-
 	var weightMsgCheckAccess int
 	simState.AppParams.GetOrGenerate(opWeightMsgCheckAccess, &weightMsgCheckAccess, nil,
 		func(_ *rand.Rand) {
@@ -169,38 +109,6 @@ func (am AppModule) ProposalMsgs(simState module.SimulationState) []simtypes.Wei
 			defaultWeightMsgCreatePolicy,
 			func(r *rand.Rand, ctx sdk.Context, accs []simtypes.Account) sdk.Msg {
 				acpsimulation.SimulateMsgCreatePolicy(am.accountKeeper, am.bankKeeper, am.keeper)
-				return nil
-			},
-		),
-		simulation.NewWeightedProposalMsg(
-			opWeightMsgSetRelationship,
-			defaultWeightMsgSetRelationship,
-			func(r *rand.Rand, ctx sdk.Context, accs []simtypes.Account) sdk.Msg {
-				acpsimulation.SimulateMsgSetRelationship(am.accountKeeper, am.bankKeeper, am.keeper)
-				return nil
-			},
-		),
-		simulation.NewWeightedProposalMsg(
-			opWeightMsgDeleteRelationship,
-			defaultWeightMsgDeleteRelationship,
-			func(r *rand.Rand, ctx sdk.Context, accs []simtypes.Account) sdk.Msg {
-				acpsimulation.SimulateMsgDeleteRelationship(am.accountKeeper, am.bankKeeper, am.keeper)
-				return nil
-			},
-		),
-		simulation.NewWeightedProposalMsg(
-			opWeightMsgRegisterObject,
-			defaultWeightMsgRegisterObject,
-			func(r *rand.Rand, ctx sdk.Context, accs []simtypes.Account) sdk.Msg {
-				acpsimulation.SimulateMsgRegisterObject(am.accountKeeper, am.bankKeeper, am.keeper)
-				return nil
-			},
-		),
-		simulation.NewWeightedProposalMsg(
-			opWeightMsgUnregisterObject,
-			defaultWeightMsgUnregisterObject,
-			func(r *rand.Rand, ctx sdk.Context, accs []simtypes.Account) sdk.Msg {
-				acpsimulation.SimulateMsgUnregisterObject(am.accountKeeper, am.bankKeeper, am.keeper)
 				return nil
 			},
 		),

@@ -31,10 +31,6 @@ func GetTxCmd() *cobra.Command {
 	}
 
 	cmd.AddCommand(CmdCreatePolicy())
-	cmd.AddCommand(CmdCreateRelationship())
-	cmd.AddCommand(CmdDeleteRelationship())
-	cmd.AddCommand(CmdRegisterObject())
-	cmd.AddCommand(CmdUnregisterObject())
 	cmd.AddCommand(CmdCheckAccess())
 	// this line is used by starport scaffolding # 1
 

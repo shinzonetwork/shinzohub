@@ -12,18 +12,6 @@ func RegisterInterfaces(registry cdctypes.InterfaceRegistry) {
 		&MsgCreatePolicy{},
 	)
 	registry.RegisterImplementations((*sdk.Msg)(nil),
-		&MsgSetRelationship{},
-	)
-	registry.RegisterImplementations((*sdk.Msg)(nil),
-		&MsgDeleteRelationship{},
-	)
-	registry.RegisterImplementations((*sdk.Msg)(nil),
-		&MsgRegisterObject{},
-	)
-	registry.RegisterImplementations((*sdk.Msg)(nil),
-		&MsgUnregisterObject{},
-	)
-	registry.RegisterImplementations((*sdk.Msg)(nil),
 		&MsgCheckAccess{},
 	)
 	registry.RegisterImplementations((*sdk.Msg)(nil),

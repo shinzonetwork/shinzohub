@@ -65,10 +65,10 @@ actor:
 	resp, err := msgServer.CreatePolicy(ctx, &msg)
 	require.Nil(t, err)
 
-	_, err = msgServer.RegisterObject(ctx, &types.MsgRegisterObject{
+	_, err = msgServer.DirectPolicyCmd(ctx, &types.MsgDirectPolicyCmd{
 		Creator:      creator,
 		PolicyId:     resp.Policy.Id,
-		Object:       s.obj,
+		Cmd:          types.NewRegisterObjectCmd(s.obj),
 		CreationTime: timestamp,
 	})
 	require.Nil(t, err)
