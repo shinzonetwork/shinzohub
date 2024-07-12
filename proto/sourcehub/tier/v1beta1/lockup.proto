@@ -1,0 +1,24 @@
+syntax = "proto3";
+package sourcehub.tier.v1beta1;
+
+import "cosmos_proto/cosmos.proto";
+import "gogoproto/gogo.proto";
+import "google/protobuf/timestamp.proto";
+
+option go_package = "github.com/sourcenetwork/sourcehub/x/tier/types";
+
+// Lockup defines a message for locking up coins for a period of time.
+message Lockup {
+  string validator_address = 1 [(cosmos_proto.scalar) = "cosmos.ValidatorAddressString"];
+  string amount = 2 [
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
+    (gogoproto.nullable) = false
+  ];
+
+  // completion_time is the completion time of an unlocking lockup.
+  // It is only used for unlocking lockups.
+  int64 creation_height = 3;
+  google.protobuf.Timestamp unbond_time = 4 [(gogoproto.stdtime) = true];
+  google.protobuf.Timestamp unlock_time = 5 [(gogoproto.stdtime) = true];
+}

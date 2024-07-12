@@ -1,0 +1,101 @@
+syntax = "proto3";
+package sourcehub.tier.v1beta1;
+
+import "amino/amino.proto";
+import "cosmos/base/query/v1beta1/pagination.proto";
+import "gogoproto/gogo.proto";
+import "google/api/annotations.proto";
+import "sourcehub/tier/v1beta1/lockup.proto";
+import "sourcehub/tier/v1beta1/params.proto";
+
+option go_package = "github.com/sourcenetwork/sourcehub/x/tier/types";
+
+// Query defines the gRPC querier service.
+service Query {
+  // Parameters queries the parameters of the module.
+  rpc Params(QueryParamsRequest) returns (QueryParamsResponse) {
+    option (google.api.http).get = "/sourcehub/tier/v1beta1/params";
+  }
+
+  // Lockup queries a lockup by delegator and validator address.
+  rpc Lockup(LockupRequest) returns (LockupResponse) {
+    option (google.api.http).get = "/sourcehub/tier/v1beta1/locked/{delegator_address}/{validator_address}";
+  }
+
+  // Lockups queries all the lockups of a delegator.
+  rpc Lockups(LockupsRequest) returns (LockupsResponse) {
+    option (google.api.http).get = "/sourcehub/tier/v1beta1/locked/{delegator_address}";
+  }
+
+  // rpc LockupsTo(LockupsToRequest) returns (LockupsToResponse) {
+  //   option (google.api.http).get = "/sourcehub/tier/v1beta1/locked/{validator_address}";
+  // }
+
+  // UnlockingLockup queries an unlocking lockup by delegator and validator address.
+  rpc UnlockingLockup(UnlockingLockupRequest) returns (UnlockingLockupResponse) {
+    option (google.api.http).get = "/sourcehub/tier/v1beta1/unlocking/{delegator_address}/{validator_address}";
+  }
+
+  // UnlockingLockups queries all the unlocking lockups of a delegator.
+  rpc UnlockingLockups(UnlockingLockupsRequest) returns (UnlockingLockupsResponse) {
+    option (google.api.http).get = "/sourcehub/tier/v1beta1/unlocking/{delegator_address}";
+  }
+}
+
+// QueryParamsRequest is request type for the Query/Params RPC method.
+message QueryParamsRequest {}
+
+// QueryParamsResponse is response type for the Query/Params RPC method.
+message QueryParamsResponse {
+  // params holds all the parameters of this module.
+  Params params = 1 [
+    (gogoproto.nullable) = false,
+    (amino.dont_omitempty) = true
+  ];
+}
+
+// LockupRequest is the request type for the Query/Lockup RPC method.
+message LockupRequest {
+  string delegator_address = 1;
+  string validator_address = 2;
+}
+
+// LockupResponse is the response type for the Query/Lockup RPC method.
+message LockupResponse {
+  Lockup lockup = 1 [(gogoproto.nullable) = false];
+}
+
+// LockupsRequest is the request type for the Query/Lockups RPC method.
+message LockupsRequest {
+  string delegator_address = 1;
+  cosmos.base.query.v1beta1.PageRequest pagination = 2;
+}
+
+// LockupsResponse is the response type for the Query/Lockups RPC method.
+message LockupsResponse {
+  repeated Lockup lockup = 1 [(gogoproto.nullable) = false];
+  cosmos.base.query.v1beta1.PageResponse pagination = 2;
+}
+
+// UnlockingLockupRequest is the request type for the Query/UnlockingLockup RPC method.
+message UnlockingLockupRequest {
+  string delegator_address = 1;
+  string validator_address = 2;
+}
+
+// UnlockingLockupResponse is the response type for the Query/UnlockingLockup RPC method.
+message UnlockingLockupResponse {
+  Lockup lockup = 1 [(gogoproto.nullable) = false];
+}
+
+// UnlockingLockupsRequest is the request type for the Query/UnlockingLockups RPC method.
+message UnlockingLockupsRequest {
+  string delegator_address = 1;
+  cosmos.base.query.v1beta1.PageRequest pagination = 2;
+}
+
+// UnlockingLockupsResponse is the response type for the Query/UnlockingLockups RPC method.
+message UnlockingLockupsResponse {
+  repeated Lockup lockup = 1 [(gogoproto.nullable) = false];
+  cosmos.base.query.v1beta1.PageResponse pagination = 2;
+}

@@ -1,0 +1,126 @@
+syntax = "proto3";
+package sourcehub.tier.v1beta1;
+
+import "amino/amino.proto";
+import "cosmos/base/v1beta1/coin.proto";
+import "cosmos/msg/v1/msg.proto";
+import "cosmos_proto/cosmos.proto";
+import "gogoproto/gogo.proto";
+import "google/protobuf/timestamp.proto";
+import "sourcehub/tier/v1beta1/params.proto";
+
+option go_package = "github.com/sourcenetwork/sourcehub/x/tier/types";
+
+// Msg defines the Msg service.
+service Msg {
+  option (cosmos.msg.v1.service) = true;
+
+  // UpdateParams defines a (governance) operation for updating the module
+  // parameters. The authority defaults to the x/gov module account.
+  rpc UpdateParams(MsgUpdateParams) returns (MsgUpdateParamsResponse);
+
+  // Lock defines a (delegator) operation for locking a stake.
+  rpc Lock(MsgLock) returns (MsgLockResponse);
+
+  // Unlock defines a (delegator) operation for unlocking a stake.
+  rpc Unlock(MsgUnlock) returns (MsgUnlockResponse);
+
+  // Redelegate defines a (delegator) operation for re-delegating a stake.
+  rpc Redelegate(MsgRedelegate) returns (MsgRedelegateResponse);
+
+  // CancelUnlocking defines a (delegator) operation for canceling an unlocking stake.
+  rpc CancelUnlocking(MsgCancelUnlocking) returns (MsgCancelUnlockingResponse);
+}
+
+// MsgUpdateParams is the Msg/UpdateParams request type.
+message MsgUpdateParams {
+  option (cosmos.msg.v1.signer) = "authority";
+  option (amino.name) = "sourcehub/x/tier/MsgUpdateParams";
+
+  // authority is the address that controls the module (defaults to x/gov unless overwritten).
+  string authority = 1 [(cosmos_proto.scalar) = "cosmos.AddressString"];
+
+  // params defines the module parameters to update.
+
+  // NOTE: All parameters must be supplied.
+  Params params = 2 [
+    (gogoproto.nullable) = false,
+    (amino.dont_omitempty) = true
+  ];
+}
+
+// MsgUpdateParamsResponse defines the response structure for executing a
+// MsgUpdateParams message.
+message MsgUpdateParamsResponse {}
+
+// MsgLock is the Msg/Lock request type.
+message MsgLock {
+  option (cosmos.msg.v1.signer) = "delegator_address";
+  string delegator_address = 1 [(cosmos_proto.scalar) = "cosmos.AddressString"];
+  string validator_address = 2 [(cosmos_proto.scalar) = "cosmos.ValidatorAddressString"];
+  cosmos.base.v1beta1.Coin stake = 3 [
+    (gogoproto.nullable) = false,
+    (amino.dont_omitempty) = true
+  ];
+}
+
+// MsgLockResponse defines the response structure for executing a
+// MsgLock message.
+message MsgLockResponse {}
+
+// MsgUnlock is the Msg/Unlock request type.
+message MsgUnlock {
+  option (cosmos.msg.v1.signer) = "delegator_address";
+  string delegator_address = 1 [(cosmos_proto.scalar) = "cosmos.AddressString"];
+  string validator_address = 2 [(cosmos_proto.scalar) = "cosmos.ValidatorAddressString"];
+  cosmos.base.v1beta1.Coin stake = 3 [
+    (gogoproto.nullable) = false,
+    (amino.dont_omitempty) = true
+  ];
+}
+
+// MsgUnlockResponse defines the response structure for executing a
+message MsgUnlockResponse {
+  google.protobuf.Timestamp completion_time = 1 [
+    (gogoproto.nullable) = false,
+    (amino.dont_omitempty) = true,
+    (gogoproto.stdtime) = true
+  ];
+}
+
+// MsgRedelegate is the Msg/Redelegate request type.
+message MsgRedelegate {
+  option (cosmos.msg.v1.signer) = "delegator_address";
+  string delegator_address = 1 [(cosmos_proto.scalar) = "cosmos.AddressString"];
+  string src_validator_address = 2 [(cosmos_proto.scalar) = "cosmos.ValidatorAddressString"];
+  string dst_validator_address = 3 [(cosmos_proto.scalar) = "cosmos.ValidatorAddressString"];
+  cosmos.base.v1beta1.Coin stake = 4 [
+    (gogoproto.nullable) = false,
+    (amino.dont_omitempty) = true
+  ];
+}
+
+// MsgRedelegateResponse defines the response structure for executing a
+message MsgRedelegateResponse {
+  google.protobuf.Timestamp completion_time = 1 [
+    (gogoproto.nullable) = false,
+    (amino.dont_omitempty) = true,
+    (gogoproto.stdtime) = true
+  ];
+}
+
+// MsgCancelUnlocking is the Msg/CancelUnlocking request type.
+message MsgCancelUnlocking {
+  option (cosmos.msg.v1.signer) = "delegator_address";
+  string delegator_address = 1 [(cosmos_proto.scalar) = "cosmos.AddressString"];
+  string validator_address = 2 [(cosmos_proto.scalar) = "cosmos.ValidatorAddressString"];
+
+  // amount is always less than or equal to unlocking delegation entry balance
+  cosmos.base.v1beta1.Coin stake = 3 [(gogoproto.nullable) = false];
+
+  // creation_height is the height which the unlocking took place.
+  int64 creation_height = 4;
+}
+
+// MsgCancelUnlockingResponse defines the response structure for executing a MsgCancelUnlocking message.
+message MsgCancelUnlockingResponse {}

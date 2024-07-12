@@ -1,0 +1,22 @@
+syntax = "proto3";
+package sourcehub.tier.v1beta1;
+
+import "amino/amino.proto";
+import "gogoproto/gogo.proto";
+import "sourcehub/tier/v1beta1/lockup.proto";
+import "sourcehub/tier/v1beta1/params.proto";
+
+option go_package = "github.com/sourcenetwork/sourcehub/x/tier/types";
+
+// GenesisState defines the tier module's genesis state.
+message GenesisState {
+  // params defines all the parameters of the module.
+  Params params = 1 [
+    (gogoproto.nullable) = false,
+    (amino.dont_omitempty) = true
+  ];
+  repeated Lockup lockups = 2 [
+    (gogoproto.nullable) = false,
+    (amino.dont_omitempty) = true
+  ];
+}
