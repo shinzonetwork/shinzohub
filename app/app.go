@@ -1,6 +1,7 @@
 package app
 
 import (
+	"encoding/json"
 	"io"
 	"os"
 	"path/filepath"
@@ -12,6 +13,7 @@ import (
 	evidencekeeper "cosmossdk.io/x/evidence/keeper"
 	feegrantkeeper "cosmossdk.io/x/feegrant/keeper"
 	upgradekeeper "cosmossdk.io/x/upgrade/keeper"
+	abci "github.com/cometbft/cometbft/abci/types"
 	dbm "github.com/cosmos/cosmos-db"
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/client"
@@ -23,6 +25,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/server/config"
 	servertypes "github.com/cosmos/cosmos-sdk/server/types"
 	testdata_pulsar "github.com/cosmos/cosmos-sdk/testutil/testdata/testpb"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
 	"github.com/cosmos/cosmos-sdk/x/auth"
 	authkeeper "github.com/cosmos/cosmos-sdk/x/auth/keeper"
@@ -46,6 +49,8 @@ import (
 	paramstypes "github.com/cosmos/cosmos-sdk/x/params/types"
 	slashingkeeper "github.com/cosmos/cosmos-sdk/x/slashing/keeper"
 	stakingkeeper "github.com/cosmos/cosmos-sdk/x/staking/keeper"
+	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
+	_ "github.com/cosmos/ibc-go/modules/capability" // import for side-effects
 	capabilitykeeper "github.com/cosmos/ibc-go/modules/capability/keeper"
 	icacontrollerkeeper "github.com/cosmos/ibc-go/v8/modules/apps/27-interchain-accounts/controller/keeper"
 	icahostkeeper "github.com/cosmos/ibc-go/v8/modules/apps/27-interchain-accounts/host/keeper"
@@ -53,9 +58,12 @@ import (
 	ibctransferkeeper "github.com/cosmos/ibc-go/v8/modules/apps/transfer/keeper"
 	ibckeeper "github.com/cosmos/ibc-go/v8/modules/core/keeper"
 
+	appparams "github.com/sourcenetwork/sourcehub/app/params"
 	sourcehubtypes "github.com/sourcenetwork/sourcehub/types"
 	acpmodulekeeper "github.com/sourcenetwork/sourcehub/x/acp/keeper"
 	bulletinmodulekeeper "github.com/sourcenetwork/sourcehub/x/bulletin/keeper"
+	epochskeeper "github.com/sourcenetwork/sourcehub/x/epochs/keeper"
+	tierkeeper "github.com/sourcenetwork/sourcehub/x/tier/keeper"
 
 	// this line is used by starport scaffolding # stargate/app/moduleImport
 
@@ -121,6 +129,8 @@ type App struct {
 
 	AcpKeeper      acpmodulekeeper.Keeper
 	BulletinKeeper bulletinmodulekeeper.Keeper
+	EpochsKeeper   *epochskeeper.Keeper
+	TierKeeper     tierkeeper.Keeper
 	// this line is used by starport scaffolding # stargate/app/keeperDeclaration
 
 	// simulation manager
@@ -260,6 +270,8 @@ func New(
 		&app.CircuitBreakerKeeper,
 		&app.AcpKeeper,
 		&app.BulletinKeeper,
+		&app.EpochsKeeper,
+		&app.TierKeeper,
 		// this line is used by starport scaffolding # stargate/app/keeperDefinition
 	); err != nil {
 		panic(err)
@@ -331,10 +343,42 @@ func New(
 	// However, when registering a module manually (i.e. that does not support app wiring), the module version map
 	// must be set manually as follow. The upgrade module will de-duplicate the module version map.
 	//
-	// app.SetInitChainer(func(ctx sdk.Context, req *abci.RequestInitChain) (*abci.ResponseInitChain, error) {
-	// 	app.UpgradeKeeper.SetModuleVersionMap(ctx, app.ModuleManager.GetVersionMap())
-	// 	return app.App.InitChainer(ctx, req)
-	// })
+	initChainer := func(ctx sdk.Context, req *abci.RequestInitChain) (*abci.ResponseInitChain, error) {
+
+		// TODO: Is there a cleaner way to update the denom without having to unmarshal and marshal the genesis state?
+		// At the time of validator being created, the denom is still the old one if we just set the params here:
+		//
+		//   stakingParams := app.StakingKeeper.GetParams(ctx)
+		//   stakingParams.BondDenom = BondDenom
+		//   app.StakingKeeper.SetParams(ctx, stakingParams)
+		//
+		// The above approach doesn't work because the params need to be set before InitGenesis runs.
+		// Hence, we need to update the genesis state directly.
+
+		var genesisState GenesisState
+		err := json.Unmarshal(req.AppStateBytes, &genesisState)
+		if err != nil {
+			return nil, err
+		}
+
+		// Update the bond denomination in the staking module genesis state.
+		stakingGenesis := stakingtypes.GetGenesisStateFromAppState(app.appCodec, genesisState)
+		stakingGenesis.Params.BondDenom = appparams.DefaultBondDenom
+
+		// Marshal the updated staking genesis state back into the app state
+		genesisState[stakingtypes.ModuleName] = app.appCodec.MustMarshalJSON(stakingGenesis)
+
+		appparams.RegisterDenoms(ctx, app.BankKeeper)
+
+		req.AppStateBytes, err = json.Marshal(genesisState)
+		if err != nil {
+			return nil, err
+		}
+
+		return app.App.InitChainer(ctx, req)
+
+	}
+	app.SetInitChainer(initChainer)
 
 	if err := app.Load(loadLatest); err != nil {
 		return nil, err

@@ -3,6 +3,14 @@ package app
 import (
 	"time"
 
+	epochsmodulev1 "github.com/sourcenetwork/sourcehub/api/osmosis/epochs/module/v1beta1"
+	_ "github.com/sourcenetwork/sourcehub/x/epochs/module"
+	epochstypes "github.com/sourcenetwork/sourcehub/x/epochs/types"
+
+	tiermodulev1 "github.com/sourcenetwork/sourcehub/api/sourcehub/tier/module/v1beta1"
+	_ "github.com/sourcenetwork/sourcehub/x/tier/module"
+	tiertypes "github.com/sourcenetwork/sourcehub/x/tier/types"
+
 	runtimev1alpha1 "cosmossdk.io/api/cosmos/app/runtime/v1alpha1"
 	appv1alpha1 "cosmossdk.io/api/cosmos/app/v1alpha1"
 	authmodulev1 "cosmossdk.io/api/cosmos/auth/module/v1"
@@ -116,6 +124,8 @@ var (
 		// chain modules
 		acpmoduletypes.ModuleName,
 		bulletinmoduletypes.ModuleName,
+		epochstypes.ModuleName,
+		tiertypes.ModuleName,
 		// this line is used by starport scaffolding # stargate/app/initGenesis
 	}
 
@@ -142,6 +152,8 @@ var (
 		// chain modules
 		acpmoduletypes.ModuleName,
 		bulletinmoduletypes.ModuleName,
+		epochstypes.ModuleName,
+		tiertypes.ModuleName,
 		// this line is used by starport scaffolding # stargate/app/beginBlockers
 	}
 
@@ -162,6 +174,8 @@ var (
 		// chain modules
 		acpmoduletypes.ModuleName,
 		bulletinmoduletypes.ModuleName,
+		epochstypes.ModuleName,
+		tiertypes.ModuleName,
 		// this line is used by starport scaffolding # stargate/app/endBlockers
 	}
 
@@ -181,6 +195,7 @@ var (
 		{Account: ibctransfertypes.ModuleName, Permissions: []string{authtypes.Minter, authtypes.Burner}},
 		{Account: ibcfeetypes.ModuleName},
 		{Account: icatypes.ModuleName},
+		{Account: tiertypes.ModuleName, Permissions: []string{authtypes.Minter, authtypes.Burner, authtypes.Staking}},
 		// this line is used by starport scaffolding # stargate/app/maccPerms
 	}
 
@@ -318,6 +333,14 @@ var (
 			{
 				Name:   bulletinmoduletypes.ModuleName,
 				Config: appconfig.WrapAny(&bulletinmodulev1.Module{}),
+			},
+			{
+				Name:   epochstypes.ModuleName,
+				Config: appconfig.WrapAny(&epochsmodulev1.Module{}),
+			},
+			{
+				Name:   tiertypes.ModuleName,
+				Config: appconfig.WrapAny(&tiermodulev1.Module{}),
 			},
 			// this line is used by starport scaffolding # stargate/app/moduleConfig
 		},
