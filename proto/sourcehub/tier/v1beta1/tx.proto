@@ -64,8 +64,7 @@ message MsgLock {
   ];
 }
 
-// MsgLockResponse defines the response structure for executing a
-// MsgLock message.
+// MsgLockResponse defines the response structure for executing a MsgLock message.
 message MsgLockResponse {}
 
 // MsgUnlock is the Msg/Unlock request type.
@@ -79,7 +78,7 @@ message MsgUnlock {
   ];
 }
 
-// MsgUnlockResponse defines the response structure for executing a
+// MsgUnlockResponse defines the response structure for executing a MsgUnlock message.
 message MsgUnlockResponse {
   google.protobuf.Timestamp completion_time = 1 [
     (gogoproto.nullable) = false,
@@ -100,7 +99,7 @@ message MsgRedelegate {
   ];
 }
 
-// MsgRedelegateResponse defines the response structure for executing a
+// MsgRedelegateResponse defines the response structure for executing a MsgRedelegate message.
 message MsgRedelegateResponse {
   google.protobuf.Timestamp completion_time = 1 [
     (gogoproto.nullable) = false,

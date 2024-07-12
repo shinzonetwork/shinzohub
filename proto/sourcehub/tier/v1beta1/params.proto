@@ -20,6 +20,7 @@ message Params {
 
 // Rate defines the rate for a specific locked stake.
 message Rate {
+  // amount of locked stake required for earning rewards at this rate.
   string amount = 1 [
     (cosmos_proto.scalar) = "cosmos.Int",
     (gogoproto.customtype) = "cosmossdk.io/math.Int",

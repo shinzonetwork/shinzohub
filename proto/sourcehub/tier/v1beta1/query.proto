@@ -27,10 +27,6 @@ service Query {
     option (google.api.http).get = "/sourcehub/tier/v1beta1/locked/{delegator_address}";
   }
 
-  // rpc LockupsTo(LockupsToRequest) returns (LockupsToResponse) {
-  //   option (google.api.http).get = "/sourcehub/tier/v1beta1/locked/{validator_address}";
-  // }
-
   // UnlockingLockup queries an unlocking lockup by delegator and validator address.
   rpc UnlockingLockup(UnlockingLockupRequest) returns (UnlockingLockupResponse) {
     option (google.api.http).get = "/sourcehub/tier/v1beta1/unlocking/{delegator_address}/{validator_address}";
