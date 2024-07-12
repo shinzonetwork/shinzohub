@@ -1,0 +1,67 @@
+version: 1
+validation: sovereign
+
+accounts:
+  - name: alice
+    mnemonic: 'near smoke great nasty alley food crush nurse rubber say danger search employ under gaze today alien eager risk letter drum relief sponsor current'
+    # address: source1m4f5a896t7fzd9vc7pfgmc3fxkj8n24s68fcw9
+    coins:
+      - 100000open
+  - name: bob
+    mnemonic: 'kingdom race grab ask size settle gesture vendor certain purpose clump gauge firm kiwi muffin term hello addict laugh tornado copper all sheriff reflect'
+    # address: source1wjj5v5rlf57kayyeskncpu4hwev25ty645p2et
+    coins:
+      - 100000open
+  - name: charlie
+    mnemonic: 'violin foster walnut trial jungle lucky reward odor loud cube spend jaguar ketchup ramp shock south omit cliff twice release sample hover tribe hair'
+    # address: source14shhdf9p668r8m6qqxwmg5rm8dpr7tfm659j4l
+    coins:
+      - 100000open
+  - name: frank
+    mnemonic: 'trophy space shove poverty armor trap foil siege poem keen cancel device garage item desert mention school multiply viable practice silent push flip blame'
+    # address: source1n34fvpteuanu2nx2a4hql4jvcrcnal3gsrjppy
+    coins:
+      - 100000open
+  - name: victor
+    mnemonic: 'divert tenant reveal hire thing jar carry lonely magic oak audit fiber earth catalog cheap merry print clown portion speak daring giant weird slight'
+    # address: source1cy0p47z24ejzvq55pu3lesxwf73xnrnd0lyxme
+    coins:
+      - 200000000open
+
+faucet:
+  name: frank
+  coins:
+    - 100000open
+
+validators:
+  - name: victor
+    # address: sourcevaloper1cy0p47z24ejzvq55pu3lesxwf73xnrnd0pzkqm
+    bonded: 100000000open
+
+build:
+  main: cmd/sourcehubd
+
+genesis:
+  app_state:
+    staking:
+      params:
+        unbonding_time: '10s'
+
+    epochs:
+      epochs:
+        - 'identifier': 'tier'
+          'duration': '10s'
+
+    tier:
+      params:
+        epoch_duration: '10s'
+        unlocking_epochs: 2
+        reward_rates:
+          - amount: '300'
+            rate: 1.50
+          - amount: '200'
+            rate: 1.20
+          - amount: '100'
+            rate: 1.10
+          - amount: '0'
+            rate: 1.00
