@@ -4,6 +4,8 @@ import (
 	"context"
 	"testing"
 
+	coretypes "github.com/sourcenetwork/acp_core/pkg/types"
+
 	"github.com/sourcenetwork/sourcehub/sdk"
 	"github.com/sourcenetwork/sourcehub/testutil/e2e"
 	"github.com/sourcenetwork/sourcehub/x/acp/types"
@@ -31,7 +33,7 @@ name: test policy
 		types.NewMsgCreatePolicyNow(
 			network.GetValidatorAddr(),
 			policy,
-			types.PolicyMarshalingType_SHORT_YAML,
+			coretypes.PolicyMarshalingType_SHORT_YAML,
 		),
 	)
 

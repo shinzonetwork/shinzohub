@@ -3,7 +3,7 @@ syntax = "proto3";
 package sourcehub.acp;
 
 import "google/protobuf/timestamp.proto";
-import "sourcehub/acp/relationship.proto";
+import "sourcenetwork/acp_core/relationship.proto";
 
 option go_package = "github.com/sourcenetwork/sourcehub/x/acp/types";
 
@@ -55,13 +55,13 @@ message PolicyCmd {
 // A Relationship is a statement which ties together an object and a subjecto with a "relation",
 // which means the set of high level rules defined in the Policy will apply to these entities.
 message SetRelationshipCmd {
-  Relationship relationship = 1;
+  sourcenetwork.acp_core.Relationship relationship = 1;
 }
 
 // DelereRelationship removes a Relationship from a Policy.
 // If the Relationship was not found in a Policy, this Cmd is a no-op.
 message DeleteRelationshipCmd {
-  Relationship relationship = 1;
+  sourcenetwork.acp_core.Relationship relationship = 1;
 }
 
 // RegisterObject creates a special kind of Relationship within a Policy which ties
@@ -73,7 +73,7 @@ message DeleteRelationshipCmd {
 // Attempting to register a previously registered Object is an error,
 // Object IDs are therefore assumed to be unique within a Policy.
 message RegisterObjectCmd {
-  Object object = 1;
+  sourcenetwork.acp_core.Object object = 1;
 }
 
 
@@ -90,14 +90,14 @@ message RegisterObjectCmd {
 // The previous scenario where an unauthorized user is able to claim ownership to data previously unaccessible to them
 // is an "ownership hijack".
 message UnregisterObjectCmd {
-  Object object = 1;
+  sourcenetwork.acp_core.Object object = 1;
 }
 
 // SetRelationshipCmd sets a Relationship in a Policy
 message SetRelationshipCmdResult {
   // Indicates whether the given Relationship previously existed, ie the Tx was a no op
   bool record_existed = 1;
-  RelationshipRecord record = 2;
+  sourcenetwork.acp_core.RelationshipRecord record = 2;
 }
 
 // DeleteRelationshipCmdResult removes a Relationship in a Policy
@@ -107,8 +107,8 @@ message DeleteRelationshipCmdResult {
 
 // RegisterObjectCmdResult registers an Object in a Policy
 message RegisterObjectCmdResult {
-  RegistrationResult result = 1;
-  RelationshipRecord record = 2;
+  sourcenetwork.acp_core.RegistrationResult result = 1;
+  sourcenetwork.acp_core.RelationshipRecord record = 2;
 }
 
 // UnregisterObjectCmdResult unregisters an Object in a Policy

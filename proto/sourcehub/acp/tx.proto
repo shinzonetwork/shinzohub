@@ -9,10 +9,9 @@ import "gogoproto/gogo.proto";
 import "google/protobuf/timestamp.proto";
 import "sourcehub/acp/access_decision.proto";
 import "sourcehub/acp/params.proto";
-import "sourcehub/acp/policy.proto";
 import "sourcehub/acp/policy_cmd.proto";
-import "sourcehub/acp/policy_short.proto";
-import "sourcehub/acp/relationship.proto";
+import "sourcenetwork/acp_core/policy_short.proto";
+import "sourcenetwork/acp_core/policy.proto";
 
 option go_package = "github.com/sourcenetwork/sourcehub/x/acp/types";
 
@@ -75,12 +74,12 @@ message MsgCreatePolicy {
   option (cosmos.msg.v1.signer) = "creator";
   string creator = 1;
   string policy = 2;
-  PolicyMarshalingType marshal_type = 3;
+  sourcenetwork.acp_core.PolicyMarshalingType marshal_type = 3;
   google.protobuf.Timestamp creation_time = 4;
 }
 
 message MsgCreatePolicyResponse {
-  Policy policy = 1;
+  sourcenetwork.acp_core.Policy policy = 1;
 }
 
 message MsgCheckAccess {

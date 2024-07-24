@@ -5,6 +5,8 @@ import (
 	"testing"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/sourcenetwork/acp_core/pkg/errors"
+	coretypes "github.com/sourcenetwork/acp_core/pkg/types"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
 
@@ -15,7 +17,7 @@ import (
 type queryObjectOwnerSuite struct {
 	suite.Suite
 
-	obj *types.Object
+	obj *coretypes.Object
 }
 
 func TestObjectOwner(t *testing.T) {
@@ -23,7 +25,7 @@ func TestObjectOwner(t *testing.T) {
 }
 
 func (s *queryObjectOwnerSuite) setup(t *testing.T) (context.Context, Keeper, sdk.AccountI, string, string) {
-	s.obj = types.NewObject("file", "1")
+	s.obj = coretypes.NewObject("file", "1")
 
 	policyStr := `
 name: policy
@@ -56,7 +58,7 @@ actor:
 	msg := types.MsgCreatePolicy{
 		Creator:      creator,
 		Policy:       policyStr,
-		MarshalType:  types.PolicyMarshalingType_SHORT_YAML,
+		MarshalType:  coretypes.PolicyMarshalingType_SHORT_YAML,
 		CreationTime: timestamp,
 	}
 
@@ -97,7 +99,7 @@ func (s *queryObjectOwnerSuite) TestQueryingForUnregisteredObjectReturnsEmptyOwn
 
 	resp, err := keeper.ObjectOwner(ctx, &types.QueryObjectOwnerRequest{
 		PolicyId: policyId,
-		Object:   types.NewObject("file", "404"),
+		Object:   coretypes.NewObject("file", "404"),
 	})
 
 	require.Nil(s.T(), err)
@@ -115,7 +117,7 @@ func (s *queryObjectOwnerSuite) TestQueryingPolicyThatDoesNotExistReturnError() 
 		Object:   s.obj,
 	})
 
-	require.ErrorIs(s.T(), err, types.ErrPolicyNotFound)
+	require.ErrorIs(s.T(), err, errors.ErrorType_NOT_FOUND)
 	require.Nil(s.T(), resp)
 }
 
@@ -124,7 +126,7 @@ func (s *queryObjectOwnerSuite) TestQueryingForObjectInNonExistingPolicyReturnsE
 
 	resp, err := keeper.ObjectOwner(ctx, &types.QueryObjectOwnerRequest{
 		PolicyId: policyId,
-		Object:   types.NewObject("missing-resource", "abc"),
+		Object:   coretypes.NewObject("missing-resource", "abc"),
 	})
 
 	require.Nil(s.T(), resp)

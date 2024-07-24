@@ -9,6 +9,7 @@ import (
 	cryptocdc "github.com/cosmos/cosmos-sdk/crypto/codec"
 	"github.com/cosmos/cosmos-sdk/crypto/keyring"
 	prototypes "github.com/cosmos/gogoproto/types"
+	coretypes "github.com/sourcenetwork/acp_core/pkg/types"
 
 	"github.com/sourcenetwork/sourcehub/sdk"
 	"github.com/sourcenetwork/sourcehub/x/acp/bearer_token"
@@ -56,7 +57,7 @@ resources:
 `
 
 	msgSet := sdk.MsgSet{}
-	policyMapper := msgSet.WithCreatePolicy(acptypes.NewMsgCreatePolicyNow(txSigner.GetAccAddress(), policy, acptypes.PolicyMarshalingType_SHORT_YAML))
+	policyMapper := msgSet.WithCreatePolicy(acptypes.NewMsgCreatePolicyNow(txSigner.GetAccAddress(), policy, coretypes.PolicyMarshalingType_SHORT_YAML))
 	tx, err := txBuilder.Build(ctx, txSigner, &msgSet)
 	if err != nil {
 		log.Fatal(err)
@@ -101,7 +102,7 @@ resources:
 		Creator:      txSigner.GetAccAddress(),
 		BearerToken:  jws,
 		PolicyId:     policyResponse.Policy.Id,
-		Cmd:          acptypes.NewRegisterObjectCmd(acptypes.NewObject("resource", "foo")),
+		Cmd:          acptypes.NewRegisterObjectCmd(coretypes.NewObject("resource", "foo")),
 		CreationTime: prototypes.TimestampNow(),
 	}
 

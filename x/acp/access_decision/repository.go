@@ -2,13 +2,14 @@ package access_decision
 
 import (
 	"context"
-	"fmt"
 
 	storetypes "cosmossdk.io/store/types"
 	gogoproto "github.com/cosmos/gogoproto/proto"
+	"github.com/sourcenetwork/acp_core/pkg/errors"
 	raccoon "github.com/sourcenetwork/raccoondb"
 
 	"github.com/sourcenetwork/sourcehub/utils"
+	"github.com/sourcenetwork/sourcehub/x/acp/stores"
 	"github.com/sourcenetwork/sourcehub/x/acp/types"
 )
 
@@ -47,7 +48,7 @@ func NewAccessDecisionRepository(store storetypes.KVStore) *AccessDecisionReposi
 }
 
 func (r *AccessDecisionRepository) getStore(ctx context.Context) raccoon.ObjectStore[*types.AccessDecision] {
-	rcKV := raccoon.KvFromCosmosKv(r.kv)
+	rcKV := stores.RaccoonKVFromCosmos(r.kv)
 	marshaler := NewGogoProtoMarshaler[*types.AccessDecision](func() *types.AccessDecision { return &types.AccessDecision{} })
 	ider := &decisionIder{}
 	return raccoon.NewObjStore[*types.AccessDecision](rcKV, marshaler, ider)
@@ -58,7 +59,7 @@ func (r *AccessDecisionRepository) wrapErr(err error) error {
 		return err
 	}
 
-	return fmt.Errorf("%v: %w", err, types.ErrAcpInternal)
+	return errors.New(err.Error(), errors.ErrorType_INTERNAL)
 }
 
 func (r *AccessDecisionRepository) Set(ctx context.Context, decision *types.AccessDecision) error {

@@ -10,8 +10,10 @@ import (
 	"github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/cosmos/cosmos-sdk/client/tx"
 	gogotypes "github.com/cosmos/gogoproto/types"
-	"github.com/sourcenetwork/sourcehub/x/acp/types"
+	coretypes "github.com/sourcenetwork/acp_core/pkg/types"
 	"github.com/spf13/cobra"
+
+	"github.com/sourcenetwork/sourcehub/x/acp/types"
 )
 
 var _ = strconv.Itoa(0)
@@ -33,19 +35,19 @@ func CmdCreatePolicy() *cobra.Command {
 		Args: cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) (err error) {
 			var policyFile string
-			var marshalingType types.PolicyMarshalingType
+			var marshalingType coretypes.PolicyMarshalingType
 
 			if len(args) == 2 {
-				marshalingType = types.PolicyMarshalingType_UNKNOWN
+				marshalingType = coretypes.PolicyMarshalingType_UNKNOWN
 				policyFile = args[1]
 
-				marshalingTypeCode, ok := types.PolicyMarshalingType_value[args[0]]
+				marshalingTypeCode, ok := coretypes.PolicyMarshalingType_value[args[0]]
 				if ok {
-					marshalingType = types.PolicyMarshalingType(marshalingTypeCode)
+					marshalingType = coretypes.PolicyMarshalingType(marshalingTypeCode)
 				}
 			} else {
 				policyFile = args[0]
-				marshalingType = types.PolicyMarshalingType_SHORT_YAML
+				marshalingType = coretypes.PolicyMarshalingType_SHORT_YAML
 			}
 
 			var file io.Reader

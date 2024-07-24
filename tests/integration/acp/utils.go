@@ -7,6 +7,7 @@ import (
 
 	gogotypes "github.com/cosmos/gogoproto/types"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 // MustDateTimeToProto parses a time.DateTime (YYYY-MM-DD HH:MM:SS) timestamp
@@ -35,11 +36,13 @@ func TimeToProto(ts time.Time) *gogotypes.Timestamp {
 
 func AssertResults(ctx *TestCtx, got, want any, gotErr, wantErr error) {
 	if wantErr != nil {
+		require.NotNil(ctx.T, gotErr, "expected an error but got none")
 		if errors.Is(gotErr, wantErr) {
 			assert.ErrorIs(ctx.T, gotErr, wantErr)
 		} else {
 			// Errors returned from SDK operations (RPC communication to a SourceHub node)
 			// no longer have the original errors wrapped, therefore we compare a string as fallback strat.
+
 			gotErrStr := gotErr.Error()
 			wantErrStr := wantErr.Error()
 			assert.Contains(ctx.T, gotErrStr, wantErrStr)

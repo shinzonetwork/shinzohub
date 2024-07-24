@@ -3,7 +3,10 @@ package relationship
 import (
 	"testing"
 
+	"github.com/sourcenetwork/acp_core/pkg/errors"
+	coretypes "github.com/sourcenetwork/acp_core/pkg/types"
 	test "github.com/sourcenetwork/sourcehub/tests/integration/acp"
+
 	"github.com/sourcenetwork/sourcehub/x/acp/types"
 )
 
@@ -31,9 +34,9 @@ func setupSetRel(t *testing.T) *test.TestCtx {
 	action := test.PolicySetupAction{
 		Policy:        setPolicy,
 		PolicyCreator: ctx.TxSigner,
-		ObjectsPerActor: map[string][]*types.Object{
+		ObjectsPerActor: map[string][]*coretypes.Object{
 			"alice": {
-				types.NewObject("file", "foo"),
+				coretypes.NewObject("file", "foo"),
 			},
 		},
 	}
@@ -49,16 +52,15 @@ func TestSetRelationship_OwnerCanShareObjectTheyOwn(t *testing.T) {
 	bob := ctx.GetActor("bob").DID
 	a1 := test.SetRelationshipAction{
 		PolicyId:     ctx.State.PolicyId,
-		Relationship: types.NewActorRelationship("file", "foo", "reader", bob),
+		Relationship: coretypes.NewActorRelationship("file", "foo", "reader", bob),
 		Actor:        ctx.GetActor("alice"),
 		Expected: &types.SetRelationshipCmdResult{
 			RecordExisted: false,
-			Record: &types.RelationshipRecord{
-				Creator:      ctx.TxSigner.SourceHubAddr,
-				Actor:        ctx.GetActor("alice").DID,
+			Record: &coretypes.RelationshipRecord{
+				OwnerDid:     ctx.GetActor("alice").DID,
 				CreationTime: test.TimeToProto(ctx.Timestamp),
 				PolicyId:     ctx.State.PolicyId,
-				Relationship: types.NewActorRelationship("file", "foo", "reader", bob),
+				Relationship: coretypes.NewActorRelationship("file", "foo", "reader", bob),
 				Archived:     false,
 			},
 		},
@@ -72,9 +74,9 @@ func TestSetRelationship_ActorCannotSetRelationshipForUnregisteredObject(t *test
 	bob := ctx.GetActor("bob").DID
 	a1 := test.SetRelationshipAction{
 		PolicyId:     ctx.State.PolicyId,
-		Relationship: types.NewActorRelationship("file", "404-file-not-registered", "reader", bob),
+		Relationship: coretypes.NewActorRelationship("file", "404-file-not-registered", "reader", bob),
 		Actor:        ctx.GetActor("alice"),
-		ExpectedErr:  types.ErrObjectNotFound,
+		ExpectedErr:  errors.ErrorType_NOT_FOUND,
 	}
 	a1.Run(ctx)
 }
@@ -87,9 +89,9 @@ func TestSetRelationship_ActorCannotSetRelationshipForObjectTheyDoNotOwn(t *test
 	bob := ctx.GetActor("bob").DID
 	a1 := test.SetRelationshipAction{
 		PolicyId:     ctx.State.PolicyId,
-		Relationship: types.NewActorRelationship("file", "foo", "reader", bob),
+		Relationship: coretypes.NewActorRelationship("file", "foo", "reader", bob),
 		Actor:        ctx.GetActor("bob"),
-		ExpectedErr:  types.ErrNotAuthorized,
+		ExpectedErr:  errors.ErrorType_UNAUTHORIZED,
 	}
 	a1.Run(ctx)
 }
@@ -102,7 +104,7 @@ func TestSetRelationship_ManagerActorCanDelegateAccessToAnotherActor(t *testing.
 	bob := ctx.GetActor("bob").DID
 	a1 := test.SetRelationshipAction{
 		PolicyId:     ctx.State.PolicyId,
-		Relationship: types.NewActorRelationship("file", "foo", "admin", bob),
+		Relationship: coretypes.NewActorRelationship("file", "foo", "admin", bob),
 		Actor:        ctx.GetActor("alice"),
 	}
 	a1.Run(ctx)
@@ -111,16 +113,15 @@ func TestSetRelationship_ManagerActorCanDelegateAccessToAnotherActor(t *testing.
 	charlie := ctx.GetActor("charlie").DID
 	action := test.SetRelationshipAction{
 		PolicyId:     ctx.State.PolicyId,
-		Relationship: types.NewActorRelationship("file", "foo", "reader", charlie),
+		Relationship: coretypes.NewActorRelationship("file", "foo", "reader", charlie),
 		Actor:        ctx.GetActor("bob"),
 		Expected: &types.SetRelationshipCmdResult{
 			RecordExisted: false,
-			Record: &types.RelationshipRecord{
-				Creator:      ctx.TxSigner.SourceHubAddr,
-				Actor:        bob,
+			Record: &coretypes.RelationshipRecord{
+				OwnerDid:     bob,
 				CreationTime: test.TimeToProto(ctx.Timestamp),
 				PolicyId:     ctx.State.PolicyId,
-				Relationship: types.NewActorRelationship("file", "foo", "reader", charlie),
+				Relationship: coretypes.NewActorRelationship("file", "foo", "reader", charlie),
 				Archived:     false,
 			},
 		},
@@ -136,7 +137,7 @@ func TestSetRelationship_ManagerActorCannotSetRelationshipToRelationshipsTheyDoN
 	bob := ctx.GetActor("bob").DID
 	a1 := test.SetRelationshipAction{
 		PolicyId:     ctx.State.PolicyId,
-		Relationship: types.NewActorRelationship("file", "foo", "admin", bob),
+		Relationship: coretypes.NewActorRelationship("file", "foo", "admin", bob),
 		Actor:        ctx.GetActor("alice"),
 	}
 	a1.Run(ctx)
@@ -146,9 +147,9 @@ func TestSetRelationship_ManagerActorCannotSetRelationshipToRelationshipsTheyDoN
 	charlie := ctx.GetActor("charlie").DID
 	action := test.SetRelationshipAction{
 		PolicyId:     ctx.State.PolicyId,
-		Relationship: types.NewActorRelationship("file", "foo", "admin", charlie),
+		Relationship: coretypes.NewActorRelationship("file", "foo", "admin", charlie),
 		Actor:        ctx.GetActor("bob"),
-		ExpectedErr:  types.ErrNotAuthorized,
+		ExpectedErr:  errors.ErrorType_UNAUTHORIZED,
 	}
 	action.Run(ctx)
 }
@@ -161,7 +162,7 @@ func TestSetRelationship_AdminIsNotAllowedToSetAnOwnerRelationship(t *testing.T)
 	bob := ctx.GetActor("bob").DID
 	a1 := test.SetRelationshipAction{
 		PolicyId:     ctx.State.PolicyId,
-		Relationship: types.NewActorRelationship("file", "foo", "admin", bob),
+		Relationship: coretypes.NewActorRelationship("file", "foo", "admin", bob),
 		Actor:        ctx.GetActor("alice"),
 	}
 	a1.Run(ctx)
@@ -170,9 +171,9 @@ func TestSetRelationship_AdminIsNotAllowedToSetAnOwnerRelationship(t *testing.T)
 	// then operation is not authorized
 	action := test.SetRelationshipAction{
 		PolicyId:     ctx.State.PolicyId,
-		Relationship: types.NewActorRelationship("file", "foo", "owner", bob),
+		Relationship: coretypes.NewActorRelationship("file", "foo", "owner", bob),
 		Actor:        ctx.GetActor("bob"),
-		ExpectedErr:  types.ErrNotAuthorized,
+		ExpectedErr:  errors.ErrorType_OPERATION_FORBIDDEN,
 	}
 	action.Run(ctx)
 }

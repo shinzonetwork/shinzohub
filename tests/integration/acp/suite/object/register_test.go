@@ -1,7 +1,11 @@
 package object
 
 import (
+	stderrors "errors"
 	"testing"
+
+	"github.com/sourcenetwork/acp_core/pkg/errors"
+	coretypes "github.com/sourcenetwork/acp_core/pkg/types"
 
 	test "github.com/sourcenetwork/sourcehub/tests/integration/acp"
 	"github.com/sourcenetwork/sourcehub/x/acp/types"
@@ -31,15 +35,13 @@ func TestRegisterObject_RegisteringNewObjectIsSucessful(t *testing.T) {
 	a2 := test.RegisterObjectAction{
 		PolicyId: pol.Id,
 		Actor:    ctx.GetActor("bob"),
-		Object:   types.NewObject("resource", "foo"),
+		Object:   coretypes.NewObject("resource", "foo"),
 		Expected: &types.RegisterObjectCmdResult{
-			Result: types.RegistrationResult_Registered,
-			Record: &types.RelationshipRecord{
-				//TxId:         "",
-				Creator:      ctx.TxSigner.SourceHubAddr,
+			Result: coretypes.RegistrationResult_Registered,
+			Record: &coretypes.RelationshipRecord{
 				PolicyId:     ctx.State.PolicyId,
-				Actor:        bob.DID,
-				Relationship: types.NewActorRelationship("resource", "foo", "owner", bob.DID),
+				OwnerDid:     bob.DID,
+				Relationship: coretypes.NewActorRelationship("resource", "foo", "owner", bob.DID),
 				Archived:     false,
 				CreationTime: test.TimeToProto(ctx.Timestamp),
 			},
@@ -72,7 +74,7 @@ func TestRegisterObject_RegisteringObjectRegisteredToAnotherUserErrors(t *testin
 	a2 := test.RegisterObjectAction{
 		PolicyId: pol.Id,
 		Actor:    ctx.GetActor("bob"),
-		Object:   types.NewObject("resource", "foo"),
+		Object:   coretypes.NewObject("resource", "foo"),
 	}
 	a2.Run(ctx)
 
@@ -81,8 +83,8 @@ func TestRegisterObject_RegisteringObjectRegisteredToAnotherUserErrors(t *testin
 	a2 = test.RegisterObjectAction{
 		PolicyId:    pol.Id,
 		Actor:       ctx.GetActor("alice"),
-		Object:      types.NewObject("resource", "foo"),
-		ExpectedErr: types.ErrNotAuthorized,
+		Object:      coretypes.NewObject("resource", "foo"),
+		ExpectedErr: errors.ErrorType_UNAUTHORIZED,
 	}
 	a2.Run(ctx)
 }
@@ -101,7 +103,7 @@ func TestRegisterObject_ReregisteringObjectOwnedByUserIsNoop(t *testing.T) {
 	a2 := test.RegisterObjectAction{
 		PolicyId: pol.Id,
 		Actor:    ctx.GetActor("bob"),
-		Object:   types.NewObject("resource", "foo"),
+		Object:   coretypes.NewObject("resource", "foo"),
 	}
 	a2.Run(ctx)
 
@@ -111,15 +113,13 @@ func TestRegisterObject_ReregisteringObjectOwnedByUserIsNoop(t *testing.T) {
 	a2 = test.RegisterObjectAction{
 		PolicyId: pol.Id,
 		Actor:    ctx.GetActor("bob"),
-		Object:   types.NewObject("resource", "foo"),
+		Object:   coretypes.NewObject("resource", "foo"),
 		Expected: &types.RegisterObjectCmdResult{
-			Result: types.RegistrationResult_NoOp,
-			Record: &types.RelationshipRecord{
-				//TxId:         "",
-				Creator:      ctx.TxSigner.SourceHubAddr,
+			Result: coretypes.RegistrationResult_NoOp,
+			Record: &coretypes.RelationshipRecord{
 				PolicyId:     ctx.State.PolicyId,
-				Actor:        bob.DID,
-				Relationship: types.NewActorRelationship("resource", "foo", "owner", bob.DID),
+				OwnerDid:     bob.DID,
+				Relationship: coretypes.NewActorRelationship("resource", "foo", "owner", bob.DID),
 				Archived:     false,
 				CreationTime: test.TimeToProto(ctx.Timestamp),
 			},
@@ -142,14 +142,14 @@ func TestRegisterObject_RegisteringAnotherUsersArchivedObjectErrors(t *testing.T
 	a2 := test.RegisterObjectAction{
 		PolicyId: pol.Id,
 		Actor:    ctx.GetActor("bob"),
-		Object:   types.NewObject("resource", "foo"),
+		Object:   coretypes.NewObject("resource", "foo"),
 	}
 	a2.Run(ctx)
 
 	a3 := test.UnregisterObjectAction{
 		PolicyId: pol.Id,
 		Actor:    ctx.GetActor("bob"),
-		Object:   types.NewObject("resource", "foo"),
+		Object:   coretypes.NewObject("resource", "foo"),
 	}
 	a3.Run(ctx)
 
@@ -158,8 +158,8 @@ func TestRegisterObject_RegisteringAnotherUsersArchivedObjectErrors(t *testing.T
 	action := test.RegisterObjectAction{
 		PolicyId:    pol.Id,
 		Actor:       ctx.GetActor("alice"),
-		Object:      types.NewObject("resource", "foo"),
-		ExpectedErr: types.ErrNotAuthorized,
+		Object:      coretypes.NewObject("resource", "foo"),
+		ExpectedErr: errors.ErrorType_UNAUTHORIZED,
 	}
 	action.Run(ctx)
 }
@@ -177,13 +177,13 @@ func TestRegisterObject_RegisteringArchivedUserObjectUnarchivesObject(t *testing
 	a2 := test.RegisterObjectAction{
 		PolicyId: pol.Id,
 		Actor:    ctx.GetActor("bob"),
-		Object:   types.NewObject("resource", "foo"),
+		Object:   coretypes.NewObject("resource", "foo"),
 	}
 	a2.Run(ctx)
 	a3 := test.UnregisterObjectAction{
 		PolicyId: pol.Id,
 		Actor:    ctx.GetActor("bob"),
-		Object:   types.NewObject("resource", "foo"),
+		Object:   coretypes.NewObject("resource", "foo"),
 	}
 	a3.Run(ctx)
 
@@ -192,15 +192,13 @@ func TestRegisterObject_RegisteringArchivedUserObjectUnarchivesObject(t *testing
 	action := test.RegisterObjectAction{
 		PolicyId: pol.Id,
 		Actor:    bob,
-		Object:   types.NewObject("resource", "foo"),
+		Object:   coretypes.NewObject("resource", "foo"),
 		Expected: &types.RegisterObjectCmdResult{
-			Result: types.RegistrationResult_Unarchived,
-			Record: &types.RelationshipRecord{
-				//TxId:         "",
-				Creator:      ctx.TxSigner.SourceHubAddr,
+			Result: coretypes.RegistrationResult_Unarchived,
+			Record: &coretypes.RelationshipRecord{
 				PolicyId:     ctx.State.PolicyId,
-				Actor:        bob.DID,
-				Relationship: types.NewActorRelationship("resource", "foo", "owner", bob.DID),
+				OwnerDid:     bob.DID,
+				Relationship: coretypes.NewActorRelationship("resource", "foo", "owner", bob.DID),
 				Archived:     false,
 				CreationTime: test.TimeToProto(ctx.Timestamp),
 			},
@@ -232,8 +230,8 @@ func TestRegisterObject_RegisteringObjectInAnUndefinedResourceErrors(t *testing.
 	a2 := test.RegisterObjectAction{
 		PolicyId:    pol.Id,
 		Actor:       ctx.GetActor("bob"),
-		Object:      types.NewObject("abc", "foo"),
-		ExpectedErr: types.ErrAcpInput,
+		Object:      coretypes.NewObject("abc", "foo"),
+		ExpectedErr: stderrors.New("resource not found"), // FIXME update once zanzi errors are sorted
 	}
 	a2.Run(ctx)
 }
@@ -246,8 +244,8 @@ func TestRegisterObject_RegisteringToUnknownPolicyReturnsError(t *testing.T) {
 	a2 := test.RegisterObjectAction{
 		PolicyId:    "abc1234",
 		Actor:       ctx.GetActor("bob"),
-		Object:      types.NewObject("resource", "foo"),
-		ExpectedErr: types.ErrPolicyNotFound,
+		Object:      coretypes.NewObject("resource", "foo"),
+		ExpectedErr: errors.ErrorType_NOT_FOUND,
 	}
 	a2.Run(ctx)
 }
@@ -265,8 +263,8 @@ func TestRegisterObject_BlankResourceErrors(t *testing.T) {
 	a2 := test.RegisterObjectAction{
 		PolicyId:    pol.Id,
 		Actor:       ctx.GetActor("bob"),
-		Object:      types.NewObject("abc", "foo"),
-		ExpectedErr: types.ErrAcpInput,
+		Object:      coretypes.NewObject("abc", "foo"),
+		ExpectedErr: stderrors.New("resource not found"), //FIXME once zanzi errors are sorted, change this to the correct type
 	}
 	a2.Run(ctx)
 }
@@ -284,8 +282,8 @@ func TestRegisterObject_BlankObjectIdErrors(t *testing.T) {
 	a2 := test.RegisterObjectAction{
 		PolicyId:    pol.Id,
 		Actor:       ctx.GetActor("bob"),
-		Object:      types.NewObject("abc", ""),
-		ExpectedErr: types.ErrAcpInput,
+		Object:      coretypes.NewObject("abc", ""),
+		ExpectedErr: errors.ErrorType_BAD_INPUT,
 	}
 	a2.Run(ctx)
 }

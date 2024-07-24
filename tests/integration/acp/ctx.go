@@ -8,7 +8,7 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/sourcenetwork/sourcehub/x/acp/policy_cmd"
+	"github.com/sourcenetwork/sourcehub/x/acp/signed_policy_cmd"
 	"github.com/sourcenetwork/sourcehub/x/acp/testutil"
 	"github.com/sourcenetwork/sourcehub/x/acp/types"
 )
@@ -57,7 +57,8 @@ type TestCtx struct {
 	Strategy      AuthenticationStrategy
 	AccountKeeper *testutil.AccountKeeperStub
 	ActorType     ActorKeyType
-	LogicalClock  policy_cmd.LogicalClock
+	LogicalClock  signed_policy_cmd.LogicalClock
+	TxHash        string
 }
 
 func NewTestCtx(t *testing.T) *TestCtx {

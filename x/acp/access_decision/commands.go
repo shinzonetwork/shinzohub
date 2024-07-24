@@ -6,8 +6,10 @@ import (
 
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	prototypes "github.com/cosmos/gogoproto/types"
+	"github.com/sourcenetwork/acp_core/pkg/errors"
+	coretypes "github.com/sourcenetwork/acp_core/pkg/types"
 
-	"github.com/sourcenetwork/sourcehub/x/acp/auth_engine"
+	"github.com/sourcenetwork/sourcehub/utils"
 	"github.com/sourcenetwork/sourcehub/x/acp/types"
 )
 
@@ -15,7 +17,7 @@ import (
 const DefaultExpirationDelta uint64 = 100
 
 type EvaluateAccessRequestsCommand struct {
-	Policy     *types.Policy
+	Policy     *coretypes.Policy
 	Operations []*types.Operation
 	Actor      string
 
@@ -30,7 +32,7 @@ type EvaluateAccessRequestsCommand struct {
 	params *types.DecisionParams
 }
 
-func (c *EvaluateAccessRequestsCommand) Execute(ctx context.Context, engine auth_engine.AuthEngine, repository Repository, paramsRepo ParamsRepository) (*types.AccessDecision, error) {
+func (c *EvaluateAccessRequestsCommand) Execute(ctx context.Context, engine coretypes.ACPEngineServer, repository Repository, paramsRepo ParamsRepository) (*types.AccessDecision, error) {
 	err := c.validate()
 	if err != nil {
 		return nil, fmt.Errorf("EvaluateAccessRequest: %w", err)
@@ -58,32 +60,39 @@ func (c *EvaluateAccessRequestsCommand) Execute(ctx context.Context, engine auth
 
 func (c *EvaluateAccessRequestsCommand) validate() error {
 	if c.Policy == nil {
-		return types.ErrPolicyNil
+		return errors.New("policy cannot be nil", errors.ErrorType_BAD_INPUT)
 	}
 
 	if c.Operations == nil {
-		return types.ErrAccessRequestNil
+		return errors.New("access request cannot be nil", errors.ErrorType_BAD_INPUT)
 	}
 
 	if c.CurrentHeight == 0 {
-		return types.ErrInvalidHeight
+		return errors.New("invalid height: must be nonzero postive number", errors.ErrorType_BAD_INPUT)
 	}
 
 	return nil
 }
 
-func (c *EvaluateAccessRequestsCommand) evaluateRequest(ctx context.Context, engine auth_engine.AuthEngine) error {
-	actor := types.Actor{
-		Id: c.Actor,
-	}
-
-	for _, operation := range c.Operations {
-		isAllowed, err := engine.Check(ctx, c.Policy, operation, &actor)
-		if err != nil {
-			return err
-		} else if !isAllowed {
-			return fmt.Errorf("actor %v: operation %v: %w", actor, operation, types.ErrNotAuthorized)
+func (c *EvaluateAccessRequestsCommand) evaluateRequest(ctx context.Context, engine coretypes.ACPEngineServer) error {
+	operations := utils.MapSlice(c.Operations, func(op *types.Operation) *coretypes.Operation {
+		return &coretypes.Operation{
+			Object:     op.Object,
+			Permission: op.Permission,
 		}
+	})
+	resp, err := engine.VerifyAccessRequest(ctx, &coretypes.VerifyAccessRequestRequest{
+		PolicyId: c.Policy.Id,
+		AccessRequest: &coretypes.AccessRequest{
+			Operations: operations,
+			Actor:      &coretypes.Actor{c.Actor},
+		},
+	})
+	if err != nil {
+		return err
+	}
+	if !resp.Valid {
+		return errors.ErrorType_UNAUTHORIZED
 	}
 
 	return nil

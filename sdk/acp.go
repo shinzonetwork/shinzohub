@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/sourcenetwork/sourcehub/x/acp/policy_cmd"
+	"github.com/sourcenetwork/sourcehub/x/acp/signed_policy_cmd"
 	"github.com/sourcenetwork/sourcehub/x/acp/types"
 )
 
@@ -12,7 +12,7 @@ import (
 //
 // The client is used to fetch the latests acp module params from SourceHub
 // and as a block height fetcher.
-func NewCmdBuilder(ctx context.Context, client *Client) (*policy_cmd.CmdBuilder, error) {
+func NewCmdBuilder(ctx context.Context, client *Client) (*signed_policy_cmd.CmdBuilder, error) {
 	acpClient := client.ACPQueryClient()
 	paramsResp, err := acpClient.Params(ctx, &types.QueryParamsRequest{})
 	if err != nil {
@@ -20,7 +20,7 @@ func NewCmdBuilder(ctx context.Context, client *Client) (*policy_cmd.CmdBuilder,
 	}
 	params := paramsResp.Params
 
-	clock := policy_cmd.LogicalClockFromCometClient(client.cometClient)
+	clock := signed_policy_cmd.LogicalClockFromCometClient(client.cometClient)
 
-	return policy_cmd.NewCmdBuilder(clock, params), nil
+	return signed_policy_cmd.NewCmdBuilder(clock, params), nil
 }

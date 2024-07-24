@@ -1,5 +1,7 @@
 package access_decision
 
+/*
+
 import (
 	"context"
 	"testing"
@@ -92,7 +94,6 @@ func setupEvaluateAccessRequest(t *testing.T) (context.Context, auth_engine.Auth
 	return ctx, engine, repository, paramRepo, pol
 }
 
-/*
 
 func TestEvaluateAccessRequest_GeneratesAccessDecisionWhenActorIsAuthorized(t *testing.T) {
 	ctx, engine, repo, paramRepo, pol := setupEvaluateAccessRequest(t)

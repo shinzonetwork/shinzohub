@@ -2,13 +2,13 @@ package keeper
 
 import (
 	"context"
-	"fmt"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/sourcenetwork/acp_core/pkg/errors"
+	coretypes "github.com/sourcenetwork/acp_core/pkg/types"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
-	"github.com/sourcenetwork/sourcehub/x/acp/access_decision"
 	"github.com/sourcenetwork/sourcehub/x/acp/did"
 	"github.com/sourcenetwork/sourcehub/x/acp/types"
 )
@@ -19,12 +19,7 @@ func (k Keeper) VerifyAccessRequest(goCtx context.Context, req *types.QueryVerif
 	}
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
-	engine, err := k.GetZanziEngine(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	rec, err := engine.GetPolicy(goCtx, req.PolicyId)
+	engine, err := k.GetACPEngine(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -35,23 +30,25 @@ func (k Keeper) VerifyAccessRequest(goCtx context.Context, req *types.QueryVerif
 		// this means the actor ID is a cosmos account
 		// so convert it to a did
 		acc := k.accountKeeper.GetAccount(ctx, addr)
+		if acc == nil {
+			return nil, errors.Wrap("verify access request: could not produce did for actor", errors.ErrorType_BAD_INPUT, errors.Pair("actorId", actorId))
+		}
 		did, err := did.IssueDID(acc)
 		if err != nil {
-			return nil, fmt.Errorf("verify access request: could not produce did for actor %v: %v: %w", actorId, err, types.ErrAcpInput)
+			return nil, errors.Wrap("verify access request: could not produce did for actor", errors.ErrorType_BAD_INPUT, errors.Pair("actorId", actorId))
 		}
 		req.AccessRequest.Actor.Id = did
 	}
 
-	cmd := access_decision.VerifyAccessRequestQuery{
-		Policy:        rec.Policy,
+	result, err := engine.VerifyAccessRequest(ctx, &coretypes.VerifyAccessRequestRequest{
+		PolicyId:      req.PolicyId,
 		AccessRequest: req.AccessRequest,
-	}
-	valid, err := cmd.Execute(ctx, engine)
+	})
 	if err != nil {
 		return nil, err
 	}
 
 	return &types.QueryVerifyAccessRequestResponse{
-		Valid: valid,
+		Valid: result.Valid,
 	}, nil
 }

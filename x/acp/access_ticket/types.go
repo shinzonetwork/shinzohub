@@ -1,11 +1,13 @@
 package access_ticket
 
 import (
+	"context"
 	"encoding/base64"
 	"fmt"
 	"strings"
 
 	"github.com/cosmos/cosmos-sdk/baseapp"
+	"github.com/sourcenetwork/sourcehub/x/acp/did"
 	"github.com/sourcenetwork/sourcehub/x/acp/types"
 )
 
@@ -91,4 +93,25 @@ func (b *keyBuilder) ABCIQueryPath() string {
 	// For the Data part it's necessary to figure out which prefix stores have been added to the mix but that's more straight forward.
 
 	return "/" + baseapp.QueryPathStore + "/" + types.ModuleName + "/" + iavlQuerySuffix
+}
+
+func UnmarshalAndVerify(ctx context.Context, trustedNodeAddr string, ticketStr string) (*types.AccessTicket, error) {
+	marshaler := Marshaler{}
+	service, err := NewABCIService(trustedNodeAddr)
+	if err != nil {
+		return nil, err
+	}
+	ticketSpec := NewAccessTicketSpec(&service, &did.KeyResolver{})
+
+	ticket, err := marshaler.Unmarshal(ticketStr)
+	if err != nil {
+		return nil, err
+	}
+
+	err = ticketSpec.SatisfiesRaw(ctx, ticket)
+	if err != nil {
+		return nil, err
+	}
+
+	return ticket, nil
 }

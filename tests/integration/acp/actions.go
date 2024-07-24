@@ -1,21 +1,23 @@
 package test
 
 import (
+	coretypes "github.com/sourcenetwork/acp_core/pkg/types"
+
 	"github.com/sourcenetwork/sourcehub/x/acp/types"
 )
 
 type CreatePolicyAction struct {
 	Policy      string
-	Expected    *types.Policy
+	Expected    *coretypes.Policy
 	Creator     *TestActor
 	ExpectedErr error
 }
 
-func (a *CreatePolicyAction) Run(ctx *TestCtx) *types.Policy {
+func (a *CreatePolicyAction) Run(ctx *TestCtx) *coretypes.Policy {
 	msg := &types.MsgCreatePolicy{
 		Policy:       a.Policy,
 		Creator:      a.Creator.SourceHubAddr,
-		MarshalType:  types.PolicyMarshalingType_SHORT_YAML,
+		MarshalType:  coretypes.PolicyMarshalingType_SHORT_YAML,
 		CreationTime: TimeToProto(ctx.Timestamp),
 	}
 	response, err := ctx.Executor.CreatePolicy(ctx, msg)
@@ -37,17 +39,14 @@ func (a *CreatePolicyAction) Run(ctx *TestCtx) *types.Policy {
 
 type SetRelationshipAction struct {
 	PolicyId     string
-	Relationship *types.Relationship
+	Relationship *coretypes.Relationship
 	Actor        *TestActor
 	Expected     *types.SetRelationshipCmdResult
 	ExpectedErr  error
 }
 
-func (a *SetRelationshipAction) Run(ctx *TestCtx) *types.RelationshipRecord {
+func (a *SetRelationshipAction) Run(ctx *TestCtx) *coretypes.RelationshipRecord {
 	result, err := setRelationshipDispatcher(ctx, a)
-	if a.Expected != nil {
-		a.Expected.Record.Creator = ctx.TxSigner.SourceHubAddr
-	}
 	AssertResults(ctx, result, a.Expected, err, a.ExpectedErr)
 	if result != nil {
 		return result.Record
@@ -57,17 +56,14 @@ func (a *SetRelationshipAction) Run(ctx *TestCtx) *types.RelationshipRecord {
 
 type RegisterObjectAction struct {
 	PolicyId    string
-	Object      *types.Object
+	Object      *coretypes.Object
 	Actor       *TestActor
 	Expected    *types.RegisterObjectCmdResult
 	ExpectedErr error
 }
 
-func (a *RegisterObjectAction) Run(ctx *TestCtx) *types.RelationshipRecord {
+func (a *RegisterObjectAction) Run(ctx *TestCtx) *coretypes.RelationshipRecord {
 	result, err := registerObjectDispatcher(ctx, a)
-	if a.Expected != nil {
-		a.Expected.Record.Creator = ctx.TxSigner.SourceHubAddr
-	}
 	AssertResults(ctx, result, a.Expected, err, a.ExpectedErr)
 	if result != nil {
 		return result.Record
@@ -77,7 +73,7 @@ func (a *RegisterObjectAction) Run(ctx *TestCtx) *types.RelationshipRecord {
 
 type RegisterObjectsAction struct {
 	PolicyId string
-	Objects  []*types.Object
+	Objects  []*coretypes.Object
 	Actor    *TestActor
 }
 
@@ -94,7 +90,7 @@ func (a *RegisterObjectsAction) Run(ctx *TestCtx) {
 
 type SetRelationshipsAction struct {
 	PolicyId      string
-	Relationships []*types.Relationship
+	Relationships []*coretypes.Relationship
 	Actor         *TestActor
 }
 
@@ -111,7 +107,7 @@ func (a *SetRelationshipsAction) Run(ctx *TestCtx) {
 
 type DeleteRelationshipsAction struct {
 	PolicyId      string
-	Relationships []*types.Relationship
+	Relationships []*coretypes.Relationship
 	Actor         *TestActor
 }
 
@@ -128,7 +124,7 @@ func (a *DeleteRelationshipsAction) Run(ctx *TestCtx) {
 
 type DeleteRelationshipAction struct {
 	PolicyId     string
-	Relationship *types.Relationship
+	Relationship *coretypes.Relationship
 	Actor        *TestActor
 	Expected     *types.DeleteRelationshipCmdResult
 	ExpectedErr  error
@@ -142,7 +138,7 @@ func (a *DeleteRelationshipAction) Run(ctx *TestCtx) *types.DeleteRelationshipCm
 
 type UnregisterObjectAction struct {
 	PolicyId    string
-	Object      *types.Object
+	Object      *coretypes.Object
 	Actor       *TestActor
 	Expected    *types.UnregisterObjectCmdResult
 	ExpectedErr error
@@ -157,8 +153,8 @@ func (a *UnregisterObjectAction) Run(ctx *TestCtx) *types.UnregisterObjectCmdRes
 type PolicySetupAction struct {
 	Policy                string
 	PolicyCreator         *TestActor
-	ObjectsPerActor       map[string][]*types.Object
-	RelationshipsPerActor map[string][]*types.Relationship
+	ObjectsPerActor       map[string][]*coretypes.Object
+	RelationshipsPerActor map[string][]*coretypes.Relationship
 }
 
 func (a *PolicySetupAction) Run(ctx *TestCtx) {

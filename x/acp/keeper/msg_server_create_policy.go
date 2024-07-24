@@ -2,55 +2,52 @@ package keeper
 
 import (
 	"context"
+	"encoding/hex"
 	"fmt"
 
+	comettypes "github.com/cometbft/cometbft/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/sourcenetwork/sourcehub/utils"
-	"github.com/sourcenetwork/sourcehub/x/acp/policy"
+	"github.com/sourcenetwork/acp_core/pkg/auth"
+	coretypes "github.com/sourcenetwork/acp_core/pkg/types"
+
 	"github.com/sourcenetwork/sourcehub/x/acp/types"
+)
+
+const (
+	txHashMapKey  = "tx_hash"
+	creatorMapKey = "creator"
 )
 
 func (k msgServer) CreatePolicy(goCtx context.Context, msg *types.MsgCreatePolicy) (*types.MsgCreatePolicyResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
-	ctx = utils.WithMsgSpan(ctx)
-	defer utils.FinalizeSpan(ctx)
 
-	eventManager := ctx.EventManager()
-
-	engine, err := k.GetZanziEngine(ctx)
+	engine, err := k.GetACPEngine(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	ir, err := policy.Unmarshal(msg.Policy, msg.MarshalType)
+	principal := auth.RootPrincipal()
+	goCtx = auth.InjectPrincipal(goCtx, principal)
+
+	tx := comettypes.Tx(ctx.TxBytes())
+	txHash := hex.EncodeToString(tx.Hash())
+
+	coreResult, err := engine.CreatePolicy(goCtx, &coretypes.CreatePolicyRequest{
+		Policy:       msg.Policy,
+		MarshalType:  msg.MarshalType,
+		CreationTime: msg.CreationTime,
+		Metadata: map[string]string{
+			txHashMapKey:  txHash,
+			creatorMapKey: msg.Creator,
+		},
+	})
 	if err != nil {
 		return nil, fmt.Errorf("CreatePolicy: %w", err)
 	}
 
-	kv := k.storeService.OpenKVStore(ctx)
-
-	cmd := policy.CreatePolicyCommand{
-		Creator:      msg.Creator,
-		Policy:       ir,
-		CreationTime: msg.CreationTime,
-	}
-	pol, err := cmd.Execute(ctx, kv, engine)
-
-	if err != nil {
-		return nil, err
-	}
-
-	event := types.EventPolicyCreated{
-		Creator:    msg.Creator,
-		PolicyId:   pol.Id,
-		PolicyName: pol.Name,
-	}
-	err = eventManager.EmitTypedEvent(&event)
-	if err != nil {
-		return nil, err
-	}
+	// TODO event
 
 	return &types.MsgCreatePolicyResponse{
-		Policy: pol,
+		Policy: coreResult.Policy,
 	}, nil
 }

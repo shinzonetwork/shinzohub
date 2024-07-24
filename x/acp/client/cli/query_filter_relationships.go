@@ -7,12 +7,13 @@ import (
 	"github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/spf13/cobra"
 
+	coretypes "github.com/sourcenetwork/acp_core/pkg/types"
 	"github.com/sourcenetwork/sourcehub/x/acp/types"
 )
 
 func CmdQueryFilterRelationships() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "relationships [policy-id] [object] [relation] [subject]",
+		Use:   "filter-relationships [policy-id] [object] [relation] [subject]",
 		Short: "filters through relationships in a policy",
 		Long: `Filters thourgh all relationships in a Policy. 
                 Performs a lookup using the object, relation and subject filters.
@@ -21,7 +22,8 @@ func CmdQueryFilterRelationships() *cobra.Command {
                 relation := name | *
                 subject := id | *
                 Returns`,
-		Args: cobra.ExactArgs(4),
+		Args:    cobra.ExactArgs(4),
+		Aliases: []string{"relationships"},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			clientCtx, err := client.GetClientQueryContext(cmd)
 			if err != nil {
@@ -52,19 +54,19 @@ func CmdQueryFilterRelationships() *cobra.Command {
 	return cmd
 }
 
-func buildSelector(object, relation, subject string) *types.RelationshipSelector {
-	objSelector := &types.ObjectSelector{}
-	relSelector := &types.RelationSelector{}
-	subjSelector := &types.SubjectSelector{}
+func buildSelector(object, relation, subject string) *coretypes.RelationshipSelector {
+	objSelector := &coretypes.ObjectSelector{}
+	relSelector := &coretypes.RelationSelector{}
+	subjSelector := &coretypes.SubjectSelector{}
 
 	if object == "*" {
-		objSelector.Selector = &types.ObjectSelector_Wildcard{
-			Wildcard: &types.WildcardSelector{},
+		objSelector.Selector = &coretypes.ObjectSelector_Wildcard{
+			Wildcard: &coretypes.WildcardSelector{},
 		}
 	} else {
 		res, id, _ := strings.Cut(object, ":")
-		objSelector.Selector = &types.ObjectSelector_Object{
-			Object: &types.Object{
+		objSelector.Selector = &coretypes.ObjectSelector_Object{
+			Object: &coretypes.Object{
 				Resource: res,
 				Id:       id,
 			},
@@ -72,24 +74,24 @@ func buildSelector(object, relation, subject string) *types.RelationshipSelector
 	}
 
 	if relation == "*" {
-		relSelector.Selector = &types.RelationSelector_Wildcard{
-			Wildcard: &types.WildcardSelector{},
+		relSelector.Selector = &coretypes.RelationSelector_Wildcard{
+			Wildcard: &coretypes.WildcardSelector{},
 		}
 	} else {
-		relSelector.Selector = &types.RelationSelector_Relation{
+		relSelector.Selector = &coretypes.RelationSelector_Relation{
 			Relation: relation,
 		}
 	}
 
 	if subject == "*" {
-		subjSelector.Selector = &types.SubjectSelector_Wildcard{
-			Wildcard: &types.WildcardSelector{},
+		subjSelector.Selector = &coretypes.SubjectSelector_Wildcard{
+			Wildcard: &coretypes.WildcardSelector{},
 		}
 	} else {
-		subjSelector.Selector = &types.SubjectSelector_Subject{
-			Subject: &types.Subject{
-				Subject: &types.Subject_Actor{
-					Actor: &types.Actor{
+		subjSelector.Selector = &coretypes.SubjectSelector_Subject{
+			Subject: &coretypes.Subject{
+				Subject: &coretypes.Subject_Actor{
+					Actor: &coretypes.Actor{
 						Id: subject,
 					},
 				},
@@ -97,7 +99,7 @@ func buildSelector(object, relation, subject string) *types.RelationshipSelector
 		}
 	}
 
-	return &types.RelationshipSelector{
+	return &coretypes.RelationshipSelector{
 		ObjectSelector:   objSelector,
 		RelationSelector: relSelector,
 		SubjectSelector:  subjSelector,

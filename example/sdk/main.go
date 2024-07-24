@@ -8,6 +8,7 @@ import (
 	cdctypes "github.com/cosmos/cosmos-sdk/codec/types"
 	cryptocdc "github.com/cosmos/cosmos-sdk/crypto/codec"
 	"github.com/cosmos/cosmos-sdk/crypto/keyring"
+	coretypes "github.com/sourcenetwork/acp_core/pkg/types"
 
 	"github.com/sourcenetwork/sourcehub/sdk"
 	"github.com/sourcenetwork/sourcehub/x/acp/did"
@@ -59,7 +60,7 @@ resources:
 `
 
 	msgSet := sdk.MsgSet{}
-	policyMapper := msgSet.WithCreatePolicy(acptypes.NewMsgCreatePolicyNow(signer.GetAccAddress(), policy, acptypes.PolicyMarshalingType_SHORT_YAML))
+	policyMapper := msgSet.WithCreatePolicy(acptypes.NewMsgCreatePolicyNow(signer.GetAccAddress(), policy, coretypes.PolicyMarshalingType_SHORT_YAML))
 	tx, err := txBuilder.Build(ctx, signer, &msgSet)
 	if err != nil {
 		log.Fatal(err)
@@ -90,7 +91,7 @@ resources:
 	if err != nil {
 		log.Fatal(err)
 	}
-	cmdBuilder.RegisterObject(acptypes.NewObject("resource", "readme.txt"))
+	cmdBuilder.RegisterObject(coretypes.NewObject("resource", "readme.txt"))
 	cmdBuilder.PolicyID(policyResponse.Policy.Id)
 	cmdBuilder.Actor(aliceDid)
 	cmdBuilder.SetSigner(aliceSigner)

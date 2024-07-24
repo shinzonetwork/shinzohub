@@ -4,17 +4,17 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/sourcenetwork/sourcehub/x/acp/types"
+	"github.com/sourcenetwork/acp_core/pkg/errors"
 )
 
-var ErrInvalidBearerToken = types.ErrAcpInput.Wrap("invalid bearer token")
-var ErrMsgUnauthorized = fmt.Errorf("bearer policy msg: authorized_account doesn't match: %w", types.ErrNotAuthorized)
+var ErrInvalidBearerToken = errors.Wrap("invalid bearer token", errors.ErrorType_BAD_INPUT)
+var ErrMsgUnauthorized = errors.Wrap("bearer policy msg: authorized_account doesn't match", errors.ErrorType_UNAUTHORIZED)
 
-var ErrInvalidIssuer = fmt.Errorf("invalid issuer: expected did: %w", ErrInvalidBearerToken)
-var ErrInvalidAuhtorizedAccount = fmt.Errorf("invalid authorized_account: expects SourceHub address: %w", ErrInvalidBearerToken)
-var ErrTokenExpired = fmt.Errorf("token expired: %w", ErrInvalidBearerToken)
-var ErrMissingClaim = fmt.Errorf("requried claim not found: %w", ErrInvalidBearerToken)
-var ErrJSONSerializationUnsupported = fmt.Errorf("JWS JSON Serialization not supported: %w", ErrInvalidBearerToken)
+var ErrInvalidIssuer = errors.Wrap("invalid issuer: expected did", ErrInvalidBearerToken)
+var ErrInvalidAuhtorizedAccount = errors.Wrap("invalid authorized_account: expects SourceHub address", ErrInvalidBearerToken)
+var ErrTokenExpired = errors.Wrap("token expired", ErrInvalidBearerToken)
+var ErrMissingClaim = errors.Wrap("requried claim not found", ErrInvalidBearerToken)
+var ErrJSONSerializationUnsupported = errors.Wrap("JWS JSON Serialization not supported", ErrInvalidBearerToken)
 
 func newErrTokenExpired(expiresUnix int64, nowUnix int64) error {
 	expires := time.Unix(expiresUnix, 0).Format(time.DateTime)

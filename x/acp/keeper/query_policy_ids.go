@@ -4,28 +4,25 @@ import (
 	"context"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	coretypes "github.com/sourcenetwork/acp_core/pkg/types"
+	"github.com/sourcenetwork/acp_core/pkg/utils"
+
 	"github.com/sourcenetwork/sourcehub/x/acp/types"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 )
 
 func (k Keeper) PolicyIds(goCtx context.Context, req *types.QueryPolicyIdsRequest) (*types.QueryPolicyIdsResponse, error) {
-	if req == nil {
-		return nil, status.Error(codes.InvalidArgument, "invalid request")
-	}
 	ctx := sdk.UnwrapSDKContext(goCtx)
-
-	engine, err := k.GetZanziEngine(ctx)
+	engine, err := k.GetACPEngine(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	ids, err := engine.ListPolicyIds(goCtx)
+	resp, err := engine.ListPolicies(ctx, &coretypes.ListPoliciesRequest{})
 	if err != nil {
 		return nil, err
 	}
 
 	return &types.QueryPolicyIdsResponse{
-		Ids: ids,
+		Ids: utils.MapSlice(resp.Policies, func(p *coretypes.Policy) string { return p.Id }),
 	}, nil
 }

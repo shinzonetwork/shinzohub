@@ -4,20 +4,28 @@ import (
 	"context"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	coretypes "github.com/sourcenetwork/acp_core/pkg/types"
+
 	"github.com/sourcenetwork/sourcehub/x/acp/types"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 )
 
 func (k Keeper) ValidatePolicy(goCtx context.Context, req *types.QueryValidatePolicyRequest) (*types.QueryValidatePolicyResponse, error) {
-	if req == nil {
-		return nil, status.Error(codes.InvalidArgument, "invalid request")
+	ctx := sdk.UnwrapSDKContext(goCtx)
+	engine, err := k.GetACPEngine(ctx)
+	if err != nil {
+		return nil, err
 	}
 
-	ctx := sdk.UnwrapSDKContext(goCtx)
+	resp, err := engine.ValidatePolicy(ctx, &coretypes.ValidatePolicyRequest{
+		Policy:      req.Policy,
+		MarshalType: req.MarshalType,
+	})
+	if err != nil {
+		return nil, err
+	}
 
-	// TODO: Process the query
-	_ = ctx
-
-	return &types.QueryValidatePolicyResponse{}, nil
+	return &types.QueryValidatePolicyResponse{
+		Valid:    resp.Valid,
+		ErrorMsg: resp.ErrorMsg,
+	}, nil
 }

@@ -2,12 +2,13 @@ package keeper
 
 import (
 	"context"
-	"fmt"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/sourcenetwork/sourcehub/x/acp/types"
+	coretypes "github.com/sourcenetwork/acp_core/pkg/types"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+
+	"github.com/sourcenetwork/sourcehub/x/acp/types"
 )
 
 func (k Keeper) FilterRelationships(goCtx context.Context, req *types.QueryFilterRelationshipsRequest) (*types.QueryFilterRelationshipsResponse, error) {
@@ -16,25 +17,20 @@ func (k Keeper) FilterRelationships(goCtx context.Context, req *types.QueryFilte
 	}
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
-	engine, err := k.GetZanziEngine(ctx)
+	engine, err := k.GetACPEngine(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	rec, err := engine.GetPolicy(goCtx, req.PolicyId)
-	if err != nil {
-		return nil, err
-	}
-	if rec == nil {
-		return nil, fmt.Errorf("policy %v: %w", req.PolicyId, types.ErrPolicyNotFound)
-	}
-
-	records, err := engine.FilterRelationships(goCtx, rec.Policy, req.Selector)
+	records, err := engine.FilterRelationships(goCtx, &coretypes.FilterRelationshipsRequest{
+		PolicyId: req.PolicyId,
+		Selector: req.Selector,
+	})
 	if err != nil {
 		return nil, err
 	}
 
 	return &types.QueryFilterRelationshipsResponse{
-		Records: records,
+		Records: records.Records,
 	}, nil
 }

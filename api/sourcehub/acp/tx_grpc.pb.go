@@ -19,16 +19,12 @@ import (
 const _ = grpc.SupportPackageIsVersion7
 
 const (
-	Msg_UpdateParams_FullMethodName       = "/sourcehub.acp.Msg/UpdateParams"
-	Msg_CreatePolicy_FullMethodName       = "/sourcehub.acp.Msg/CreatePolicy"
-	Msg_SetRelationship_FullMethodName    = "/sourcehub.acp.Msg/SetRelationship"
-	Msg_DeleteRelationship_FullMethodName = "/sourcehub.acp.Msg/DeleteRelationship"
-	Msg_RegisterObject_FullMethodName     = "/sourcehub.acp.Msg/RegisterObject"
-	Msg_UnregisterObject_FullMethodName   = "/sourcehub.acp.Msg/UnregisterObject"
-	Msg_CheckAccess_FullMethodName        = "/sourcehub.acp.Msg/CheckAccess"
-	Msg_SignedPolicyCmd_FullMethodName    = "/sourcehub.acp.Msg/SignedPolicyCmd"
-	Msg_BearerPolicyCmd_FullMethodName    = "/sourcehub.acp.Msg/BearerPolicyCmd"
-	Msg_DirectPolicyCmd_FullMethodName    = "/sourcehub.acp.Msg/DirectPolicyCmd"
+	Msg_UpdateParams_FullMethodName    = "/sourcehub.acp.Msg/UpdateParams"
+	Msg_CreatePolicy_FullMethodName    = "/sourcehub.acp.Msg/CreatePolicy"
+	Msg_CheckAccess_FullMethodName     = "/sourcehub.acp.Msg/CheckAccess"
+	Msg_SignedPolicyCmd_FullMethodName = "/sourcehub.acp.Msg/SignedPolicyCmd"
+	Msg_BearerPolicyCmd_FullMethodName = "/sourcehub.acp.Msg/BearerPolicyCmd"
+	Msg_DirectPolicyCmd_FullMethodName = "/sourcehub.acp.Msg/DirectPolicyCmd"
 )
 
 // MsgClient is the client API for Msg service.
@@ -41,23 +37,6 @@ type MsgClient interface {
 	// CreatePolicy adds a new Policy to SourceHub.
 	// The Policy models an aplication's high level access control rules.
 	CreatePolicy(ctx context.Context, in *MsgCreatePolicy, opts ...grpc.CallOption) (*MsgCreatePolicyResponse, error)
-	// SetRelationship creates or updates a Relationship within a Policy
-	// A Relationship is a statement which ties together an object and a subjecto with a "relation",
-	// which means the set of high level rules defined in the Policy will apply to these entities.
-	SetRelationship(ctx context.Context, in *MsgSetRelationship, opts ...grpc.CallOption) (*MsgSetRelationshipResponse, error)
-	// DelereRelationship removes a Relationship from a Policy.
-	// If the Relationship was not found in a Policy, this Msg is a no-op.
-	DeleteRelationship(ctx context.Context, in *MsgDeleteRelationship, opts ...grpc.CallOption) (*MsgDeleteRelationshipResponse, error)
-	// Attempting to register a previously registered Object is an error,
-	// Object IDs are therefore assumed to be unique within a Policy.
-	RegisterObject(ctx context.Context, in *MsgRegisterObject, opts ...grpc.CallOption) (*MsgRegisterObjectResponse, error)
-	// Suppose Bob owns object Foo, which is shared with Bob but not Eve.
-	// Eve wants to access Foo but was not given permission to, they could "hijack" Bob's object by waiting for Bob to Unregister Foo,
-	// then submitting a RegisterObject Msg, effectively becoming Foo's new owner.
-	// If Charlie has a copy of the object, Eve could convince Charlie to share his copy, granting Eve access to Foo.
-	// The previous scenario where an unauthorized user is able to claim ownership to data previously unaccessible to them
-	// is an "ownership hijack".
-	UnregisterObject(ctx context.Context, in *MsgUnregisterObject, opts ...grpc.CallOption) (*MsgUnregisterObjectResponse, error)
 	// CheckAccess executes an Access Request for an User and stores the result of the evaluation in SourceHub.
 	// The resulting evaluation is used to generate a cryptographic proof that the given Access Request
 	// was valid at a particular block height.
@@ -93,42 +72,6 @@ func (c *msgClient) UpdateParams(ctx context.Context, in *MsgUpdateParams, opts 
 func (c *msgClient) CreatePolicy(ctx context.Context, in *MsgCreatePolicy, opts ...grpc.CallOption) (*MsgCreatePolicyResponse, error) {
 	out := new(MsgCreatePolicyResponse)
 	err := c.cc.Invoke(ctx, Msg_CreatePolicy_FullMethodName, in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *msgClient) SetRelationship(ctx context.Context, in *MsgSetRelationship, opts ...grpc.CallOption) (*MsgSetRelationshipResponse, error) {
-	out := new(MsgSetRelationshipResponse)
-	err := c.cc.Invoke(ctx, Msg_SetRelationship_FullMethodName, in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *msgClient) DeleteRelationship(ctx context.Context, in *MsgDeleteRelationship, opts ...grpc.CallOption) (*MsgDeleteRelationshipResponse, error) {
-	out := new(MsgDeleteRelationshipResponse)
-	err := c.cc.Invoke(ctx, Msg_DeleteRelationship_FullMethodName, in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *msgClient) RegisterObject(ctx context.Context, in *MsgRegisterObject, opts ...grpc.CallOption) (*MsgRegisterObjectResponse, error) {
-	out := new(MsgRegisterObjectResponse)
-	err := c.cc.Invoke(ctx, Msg_RegisterObject_FullMethodName, in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *msgClient) UnregisterObject(ctx context.Context, in *MsgUnregisterObject, opts ...grpc.CallOption) (*MsgUnregisterObjectResponse, error) {
-	out := new(MsgUnregisterObjectResponse)
-	err := c.cc.Invoke(ctx, Msg_UnregisterObject_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -181,23 +124,6 @@ type MsgServer interface {
 	// CreatePolicy adds a new Policy to SourceHub.
 	// The Policy models an aplication's high level access control rules.
 	CreatePolicy(context.Context, *MsgCreatePolicy) (*MsgCreatePolicyResponse, error)
-	// SetRelationship creates or updates a Relationship within a Policy
-	// A Relationship is a statement which ties together an object and a subjecto with a "relation",
-	// which means the set of high level rules defined in the Policy will apply to these entities.
-	SetRelationship(context.Context, *MsgSetRelationship) (*MsgSetRelationshipResponse, error)
-	// DelereRelationship removes a Relationship from a Policy.
-	// If the Relationship was not found in a Policy, this Msg is a no-op.
-	DeleteRelationship(context.Context, *MsgDeleteRelationship) (*MsgDeleteRelationshipResponse, error)
-	// Attempting to register a previously registered Object is an error,
-	// Object IDs are therefore assumed to be unique within a Policy.
-	RegisterObject(context.Context, *MsgRegisterObject) (*MsgRegisterObjectResponse, error)
-	// Suppose Bob owns object Foo, which is shared with Bob but not Eve.
-	// Eve wants to access Foo but was not given permission to, they could "hijack" Bob's object by waiting for Bob to Unregister Foo,
-	// then submitting a RegisterObject Msg, effectively becoming Foo's new owner.
-	// If Charlie has a copy of the object, Eve could convince Charlie to share his copy, granting Eve access to Foo.
-	// The previous scenario where an unauthorized user is able to claim ownership to data previously unaccessible to them
-	// is an "ownership hijack".
-	UnregisterObject(context.Context, *MsgUnregisterObject) (*MsgUnregisterObjectResponse, error)
 	// CheckAccess executes an Access Request for an User and stores the result of the evaluation in SourceHub.
 	// The resulting evaluation is used to generate a cryptographic proof that the given Access Request
 	// was valid at a particular block height.
@@ -223,18 +149,6 @@ func (UnimplementedMsgServer) UpdateParams(context.Context, *MsgUpdateParams) (*
 }
 func (UnimplementedMsgServer) CreatePolicy(context.Context, *MsgCreatePolicy) (*MsgCreatePolicyResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreatePolicy not implemented")
-}
-func (UnimplementedMsgServer) SetRelationship(context.Context, *MsgSetRelationship) (*MsgSetRelationshipResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method SetRelationship not implemented")
-}
-func (UnimplementedMsgServer) DeleteRelationship(context.Context, *MsgDeleteRelationship) (*MsgDeleteRelationshipResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method DeleteRelationship not implemented")
-}
-func (UnimplementedMsgServer) RegisterObject(context.Context, *MsgRegisterObject) (*MsgRegisterObjectResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method RegisterObject not implemented")
-}
-func (UnimplementedMsgServer) UnregisterObject(context.Context, *MsgUnregisterObject) (*MsgUnregisterObjectResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method UnregisterObject not implemented")
 }
 func (UnimplementedMsgServer) CheckAccess(context.Context, *MsgCheckAccess) (*MsgCheckAccessResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CheckAccess not implemented")
@@ -293,78 +207,6 @@ func _Msg_CreatePolicy_Handler(srv interface{}, ctx context.Context, dec func(in
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(MsgServer).CreatePolicy(ctx, req.(*MsgCreatePolicy))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _Msg_SetRelationship_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(MsgSetRelationship)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(MsgServer).SetRelationship(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: Msg_SetRelationship_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(MsgServer).SetRelationship(ctx, req.(*MsgSetRelationship))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _Msg_DeleteRelationship_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(MsgDeleteRelationship)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(MsgServer).DeleteRelationship(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: Msg_DeleteRelationship_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(MsgServer).DeleteRelationship(ctx, req.(*MsgDeleteRelationship))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _Msg_RegisterObject_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(MsgRegisterObject)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(MsgServer).RegisterObject(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: Msg_RegisterObject_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(MsgServer).RegisterObject(ctx, req.(*MsgRegisterObject))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _Msg_UnregisterObject_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(MsgUnregisterObject)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(MsgServer).UnregisterObject(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: Msg_UnregisterObject_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(MsgServer).UnregisterObject(ctx, req.(*MsgUnregisterObject))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -455,22 +297,6 @@ var Msg_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "CreatePolicy",
 			Handler:    _Msg_CreatePolicy_Handler,
-		},
-		{
-			MethodName: "SetRelationship",
-			Handler:    _Msg_SetRelationship_Handler,
-		},
-		{
-			MethodName: "DeleteRelationship",
-			Handler:    _Msg_DeleteRelationship_Handler,
-		},
-		{
-			MethodName: "RegisterObject",
-			Handler:    _Msg_RegisterObject_Handler,
-		},
-		{
-			MethodName: "UnregisterObject",
-			Handler:    _Msg_UnregisterObject_Handler,
 		},
 		{
 			MethodName: "CheckAccess",

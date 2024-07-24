@@ -6,12 +6,13 @@ import "amino/amino.proto";
 import "cosmos/base/query/v1beta1/pagination.proto";
 import "gogoproto/gogo.proto";
 import "google/api/annotations.proto";
-import "sourcehub/acp/access_decision.proto";
 import "sourcehub/acp/params.proto";
-import "sourcehub/acp/policy.proto";
-import "sourcehub/acp/policy_short.proto";
-import "sourcehub/acp/relationship.proto";
-import "sourcehub/acp/relationship_selector.proto";
+import "sourcehub/acp/access_decision.proto";
+import "sourcenetwork/acp_core/policy.proto";
+import "sourcenetwork/acp_core/policy_short.proto";
+import "sourcenetwork/acp_core/relationship.proto";
+import "sourcenetwork/acp_core/relationship_selector.proto";
+import "sourcenetwork/acp_core/access_decision.proto";
 
 option go_package = "github.com/sourcenetwork/sourcehub/x/acp/types";
 
@@ -75,7 +76,7 @@ message QueryPolicyRequest {
 }
 
 message QueryPolicyResponse {
-  Policy policy = 1;
+  sourcenetwork.acp_core.Policy policy = 1;
 }
 
 message QueryPolicyIdsRequest {
@@ -89,16 +90,16 @@ message QueryPolicyIdsResponse {
 
 message QueryFilterRelationshipsRequest {
   string policy_id = 1;
-  RelationshipSelector selector = 2;
+  sourcenetwork.acp_core.RelationshipSelector selector = 2;
 }
 
 message QueryFilterRelationshipsResponse {
-  repeated RelationshipRecord records = 1;
+  repeated sourcenetwork.acp_core.RelationshipRecord records = 1;
 }
 
 message QueryVerifyAccessRequestRequest {
   string policy_id = 1;
-  AccessRequest access_request = 2;
+  sourcenetwork.acp_core.AccessRequest access_request = 2;
 }
 
 message QueryVerifyAccessRequestResponse {
@@ -107,11 +108,12 @@ message QueryVerifyAccessRequestResponse {
 
 message QueryValidatePolicyRequest {
   string policy = 1;
-  PolicyMarshalingType marshal_type = 3;
+  sourcenetwork.acp_core.PolicyMarshalingType marshal_type = 3;
 }
 
 message QueryValidatePolicyResponse {
   bool valid = 1;
+  string error_msg = 2;
 }
 
 message QueryAccessDecisionRequest {
@@ -124,7 +126,7 @@ message QueryAccessDecisionResponse {
 
 message QueryObjectOwnerRequest {
   string policy_id = 1;
-  Object object = 2;
+  sourcenetwork.acp_core.Object object = 2;
 }
 
 message QueryObjectOwnerResponse {

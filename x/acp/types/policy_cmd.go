@@ -1,6 +1,8 @@
 package types
 
-func NewSetRelationshipCmd(rel *Relationship) *PolicyCmd {
+import acptypes "github.com/sourcenetwork/acp_core/pkg/types"
+
+func NewSetRelationshipCmd(rel *acptypes.Relationship) *PolicyCmd {
 	return &PolicyCmd{
 		Cmd: &PolicyCmd_SetRelationshipCmd{
 			SetRelationshipCmd: &SetRelationshipCmd{
@@ -10,7 +12,7 @@ func NewSetRelationshipCmd(rel *Relationship) *PolicyCmd {
 	}
 }
 
-func NewDeleteRelationshipCmd(rel *Relationship) *PolicyCmd {
+func NewDeleteRelationshipCmd(rel *acptypes.Relationship) *PolicyCmd {
 	return &PolicyCmd{
 		Cmd: &PolicyCmd_DeleteRelationshipCmd{
 			DeleteRelationshipCmd: &DeleteRelationshipCmd{
@@ -20,7 +22,7 @@ func NewDeleteRelationshipCmd(rel *Relationship) *PolicyCmd {
 	}
 }
 
-func NewRegisterObjectCmd(obj *Object) *PolicyCmd {
+func NewRegisterObjectCmd(obj *acptypes.Object) *PolicyCmd {
 	return &PolicyCmd{
 		Cmd: &PolicyCmd_RegisterObjectCmd{
 			RegisterObjectCmd: &RegisterObjectCmd{
@@ -30,7 +32,7 @@ func NewRegisterObjectCmd(obj *Object) *PolicyCmd {
 	}
 }
 
-func NewUnregisterObjectCmd(obj *Object) *PolicyCmd {
+func NewUnregisterObjectCmd(obj *acptypes.Object) *PolicyCmd {
 	return &PolicyCmd{
 		Cmd: &PolicyCmd_UnregisterObjectCmd{
 			UnregisterObjectCmd: &UnregisterObjectCmd{

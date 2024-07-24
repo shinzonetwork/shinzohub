@@ -7,7 +7,7 @@ import (
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	"github.com/sourcenetwork/sourcehub/x/acp/policy_cmd"
+	"github.com/sourcenetwork/sourcehub/x/acp/signed_policy_cmd"
 	"github.com/sourcenetwork/sourcehub/x/acp/types"
 )
 
@@ -17,7 +17,7 @@ const (
 	SourceHubActorEnvVar     string = "SOURCEHUB_ACP_TEST_ACTOR"
 )
 
-var _ policy_cmd.LogicalClock = (*logicalClockImpl)(nil)
+var _ signed_policy_cmd.LogicalClock = (*logicalClockImpl)(nil)
 
 type logicalClockImpl struct{}
 

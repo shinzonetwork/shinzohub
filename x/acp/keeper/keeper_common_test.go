@@ -22,7 +22,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/sourcenetwork/sourcehub/x/acp/did"
-	"github.com/sourcenetwork/sourcehub/x/acp/policy_cmd"
+	"github.com/sourcenetwork/sourcehub/x/acp/signed_policy_cmd"
 	"github.com/sourcenetwork/sourcehub/x/acp/testutil"
 	"github.com/sourcenetwork/sourcehub/x/acp/types"
 )
@@ -74,7 +74,7 @@ func mustGenerateActor() (string, crypto.Signer) {
 	return bob, bobSigner
 }
 
-var _ policy_cmd.LogicalClock = (*logicalClockImpl)(nil)
+var _ signed_policy_cmd.LogicalClock = (*logicalClockImpl)(nil)
 
 type logicalClockImpl struct{}
 

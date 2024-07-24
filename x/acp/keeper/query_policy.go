@@ -2,12 +2,14 @@ package keeper
 
 import (
 	"context"
-	"fmt"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/sourcenetwork/sourcehub/x/acp/types"
+	"github.com/sourcenetwork/acp_core/pkg/errors"
+	coretypes "github.com/sourcenetwork/acp_core/pkg/types"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+
+	"github.com/sourcenetwork/sourcehub/x/acp/types"
 )
 
 func (k Keeper) Policy(goCtx context.Context, req *types.QueryPolicyRequest) (*types.QueryPolicyResponse, error) {
@@ -16,17 +18,19 @@ func (k Keeper) Policy(goCtx context.Context, req *types.QueryPolicyRequest) (*t
 	}
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
-	engine, err := k.GetZanziEngine(ctx)
+	engine, err := k.GetACPEngine(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	rec, err := engine.GetPolicy(goCtx, req.Id)
+	rec, err := engine.GetPolicy(goCtx, &coretypes.GetPolicyRequest{
+		Id: req.Id,
+	})
 	if err != nil {
 		return nil, err
 	}
 	if rec == nil {
-		return nil, fmt.Errorf("id %v: %w", req.Id, types.ErrPolicyNotFound)
+		return nil, errors.NewPolicyNotFound(req.Id)
 	}
 
 	return &types.QueryPolicyResponse{

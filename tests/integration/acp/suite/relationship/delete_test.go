@@ -3,6 +3,9 @@ package relationship
 import (
 	"testing"
 
+	"github.com/sourcenetwork/acp_core/pkg/errors"
+	coretypes "github.com/sourcenetwork/acp_core/pkg/types"
+
 	test "github.com/sourcenetwork/sourcehub/tests/integration/acp"
 	"github.com/sourcenetwork/sourcehub/x/acp/types"
 )
@@ -37,16 +40,16 @@ func setupDelete(t *testing.T) *test.TestCtx {
 	action := test.PolicySetupAction{
 		Policy:        deletePolicy,
 		PolicyCreator: ctx.TxSigner,
-		ObjectsPerActor: map[string][]*types.Object{
-			"alice": []*types.Object{
-				types.NewObject("file", "foo"),
+		ObjectsPerActor: map[string][]*coretypes.Object{
+			"alice": []*coretypes.Object{
+				coretypes.NewObject("file", "foo"),
 			},
 		},
-		RelationshipsPerActor: map[string][]*types.Relationship{
-			"alice": []*types.Relationship{
-				types.NewActorRelationship("file", "foo", "reader", reader.DID),
-				types.NewActorRelationship("file", "foo", "writer", writer.DID),
-				types.NewActorRelationship("file", "foo", "admin", admin.DID),
+		RelationshipsPerActor: map[string][]*coretypes.Relationship{
+			"alice": []*coretypes.Relationship{
+				coretypes.NewActorRelationship("file", "foo", "reader", reader.DID),
+				coretypes.NewActorRelationship("file", "foo", "writer", writer.DID),
+				coretypes.NewActorRelationship("file", "foo", "admin", admin.DID),
 			},
 		},
 	}
@@ -61,7 +64,7 @@ func TestDeleteRelationship_ObjectOwnerCanRemoveRelationship(t *testing.T) {
 
 	action := test.DeleteRelationshipAction{
 		PolicyId:     ctx.State.PolicyId,
-		Relationship: types.NewActorRelationship("file", "foo", "reader", ctx.GetActor("reader").DID),
+		Relationship: coretypes.NewActorRelationship("file", "foo", "reader", ctx.GetActor("reader").DID),
 		Actor:        ctx.GetActor("alice"),
 		Expected: &types.DeleteRelationshipCmdResult{
 			RecordFound: true,
@@ -76,7 +79,7 @@ func TestDeleteRelationship_ObjectManagerCanRemoveRelationshipsForRelationTheyMa
 
 	action := test.DeleteRelationshipAction{
 		PolicyId:     ctx.State.PolicyId,
-		Relationship: types.NewActorRelationship("file", "foo", "reader", ctx.GetActor("reader").DID),
+		Relationship: coretypes.NewActorRelationship("file", "foo", "reader", ctx.GetActor("reader").DID),
 		Actor:        ctx.GetActor("admin"),
 		Expected: &types.DeleteRelationshipCmdResult{
 			RecordFound: true,
@@ -91,9 +94,9 @@ func TestDeleteRelationship_ObjectManagerCannotRemoveRelationshipForRelationThey
 
 	action := test.DeleteRelationshipAction{
 		PolicyId:     ctx.State.PolicyId,
-		Relationship: types.NewActorRelationship("file", "foo", "writer", ctx.GetActor("writer").DID),
+		Relationship: coretypes.NewActorRelationship("file", "foo", "writer", ctx.GetActor("writer").DID),
 		Actor:        ctx.GetActor("admin"),
-		ExpectedErr:  types.ErrNotAuthorized,
+		ExpectedErr:  errors.ErrorType_UNAUTHORIZED,
 	}
 	action.Run(ctx)
 }

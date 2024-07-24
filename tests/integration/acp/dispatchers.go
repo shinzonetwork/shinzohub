@@ -4,7 +4,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/sourcenetwork/sourcehub/x/acp/bearer_token"
-	"github.com/sourcenetwork/sourcehub/x/acp/policy_cmd"
+	"github.com/sourcenetwork/sourcehub/x/acp/signed_policy_cmd"
 	"github.com/sourcenetwork/sourcehub/x/acp/types"
 )
 
@@ -26,7 +26,7 @@ func setRelationshipDispatcher(ctx *TestCtx, action *SetRelationshipAction) (res
 		err = respErr
 	case SignedPayload:
 		var jws string
-		builder := policy_cmd.NewCmdBuilder(ctx.LogicalClock, ctx.GetParams())
+		builder := signed_policy_cmd.NewCmdBuilder(ctx.LogicalClock, ctx.GetParams())
 		builder.SetRelationship(action.Relationship)
 		builder.Actor(action.Actor.DID)
 		builder.CreationTimestamp(TimeToProto(ctx.Timestamp))
@@ -82,7 +82,7 @@ func deleteRelationshipDispatcher(ctx *TestCtx, action *DeleteRelationshipAction
 		}
 		resultErr = err
 	case SignedPayload:
-		builder := policy_cmd.NewCmdBuilder(ctx.LogicalClock, ctx.GetParams())
+		builder := signed_policy_cmd.NewCmdBuilder(ctx.LogicalClock, ctx.GetParams())
 		builder.DeleteRelationship(action.Relationship)
 		builder.Actor(action.Actor.DID)
 		builder.CreationTimestamp(TimeToProto(ctx.Timestamp))
@@ -137,7 +137,7 @@ func registerObjectDispatcher(ctx *TestCtx, action *RegisterObjectAction) (resul
 		err = respErr
 	case SignedPayload:
 		var jws string
-		builder := policy_cmd.NewCmdBuilder(ctx.LogicalClock, ctx.GetParams())
+		builder := signed_policy_cmd.NewCmdBuilder(ctx.LogicalClock, ctx.GetParams())
 		builder.RegisterObject(action.Object)
 		builder.Actor(action.Actor.DID)
 		builder.CreationTimestamp(TimeToProto(ctx.Timestamp))
@@ -192,7 +192,7 @@ func unregisterObjectDispatcher(ctx *TestCtx, action *UnregisterObjectAction) (r
 		err = respErr
 	case SignedPayload:
 		var jws string
-		builder := policy_cmd.NewCmdBuilder(ctx.LogicalClock, ctx.GetParams())
+		builder := signed_policy_cmd.NewCmdBuilder(ctx.LogicalClock, ctx.GetParams())
 		builder.UnregisterObject(action.Object)
 		builder.Actor(action.Actor.DID)
 		builder.CreationTimestamp(TimeToProto(ctx.Timestamp))

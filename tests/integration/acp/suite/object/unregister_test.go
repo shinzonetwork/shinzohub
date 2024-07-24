@@ -3,6 +3,9 @@ package object
 import (
 	"testing"
 
+	"github.com/sourcenetwork/acp_core/pkg/errors"
+	coretypes "github.com/sourcenetwork/acp_core/pkg/types"
+
 	test "github.com/sourcenetwork/sourcehub/tests/integration/acp"
 	"github.com/sourcenetwork/sourcehub/x/acp/types"
 )
@@ -29,14 +32,14 @@ func setupUnregister(t *testing.T) *test.TestCtx {
 	a1.Run(ctx)
 	a2 := test.RegisterObjectAction{
 		PolicyId: ctx.State.PolicyId,
-		Object:   types.NewObject("file", "foo"),
+		Object:   coretypes.NewObject("file", "foo"),
 		Actor:    ctx.GetActor("alice"),
 	}
 	a2.Run(ctx)
 	a3 := test.SetRelationshipAction{
 		Actor:        ctx.GetActor("alice"),
 		PolicyId:     ctx.State.PolicyId,
-		Relationship: types.NewActorRelationship("file", "foo", "reader", ctx.GetActor("alice").DID),
+		Relationship: coretypes.NewActorRelationship("file", "foo", "reader", ctx.GetActor("alice").DID),
 	}
 	a3.Run(ctx)
 	return ctx
@@ -48,7 +51,7 @@ func TestUnregisterObject_RegisteredObjectCanBeUnregisteredByAuthor(t *testing.T
 
 	action := test.UnregisterObjectAction{
 		PolicyId: ctx.State.PolicyId,
-		Object:   types.NewObject("file", "foo"),
+		Object:   coretypes.NewObject("file", "foo"),
 		Actor:    ctx.GetActor("alice"),
 		Expected: &types.UnregisterObjectCmdResult{
 			Found:                true,
@@ -64,22 +67,25 @@ func TestUnregisterObject_ActorCannotUnregisterObjectTheyDoNotOwn(t *testing.T) 
 
 	action := test.UnregisterObjectAction{
 		PolicyId:    ctx.State.PolicyId,
-		Object:      types.NewObject("file", "foo"),
+		Object:      coretypes.NewObject("file", "foo"),
 		Actor:       ctx.GetActor("bob"),
-		ExpectedErr: types.ErrNotAuthorized,
+		ExpectedErr: errors.ErrorType_UNAUTHORIZED,
 	}
 	action.Run(ctx)
 }
 
-func TestUnregisterObject_UnregisteringAnObjectThatDoesNotExistReturnsUnauthorized(t *testing.T) {
+func TestUnregisterObject_UnregisteringAnObjectThatDoesNotExistReturnsFoundFalse(t *testing.T) {
 	ctx := setupUnregister(t)
 	defer ctx.Cleanup()
 
 	action := test.UnregisterObjectAction{
-		PolicyId:    ctx.State.PolicyId,
-		Object:      types.NewObject("file", "file-isnt-registerd"),
-		Actor:       ctx.GetActor("bob"),
-		ExpectedErr: types.ErrNotAuthorized,
+		PolicyId: ctx.State.PolicyId,
+		Object:   coretypes.NewObject("file", "file-isnt-registerd"),
+		Actor:    ctx.GetActor("bob"),
+		Expected: &types.UnregisterObjectCmdResult{
+			Found:                false,
+			RelationshipsRemoved: 0,
+		},
 	}
 	action.Run(ctx)
 }
@@ -90,14 +96,14 @@ func TestUnregisterObject_UnregisteringAnAlreadyArchivedObjectIsANoop(t *testing
 
 	action := test.UnregisterObjectAction{
 		PolicyId: ctx.State.PolicyId,
-		Object:   types.NewObject("file", "foo"),
+		Object:   coretypes.NewObject("file", "foo"),
 		Actor:    ctx.GetActor("alice"),
 	}
 	action.Run(ctx)
 
 	action = test.UnregisterObjectAction{
 		PolicyId: ctx.State.PolicyId,
-		Object:   types.NewObject("file", "foo"),
+		Object:   coretypes.NewObject("file", "foo"),
 		Actor:    ctx.GetActor("alice"),
 		Expected: &types.UnregisterObjectCmdResult{
 			Found: true,
@@ -112,9 +118,9 @@ func TestUnregisterObject_SendingInvalidPolicyIdErrors(t *testing.T) {
 
 	action := test.UnregisterObjectAction{
 		PolicyId:    "abc1234",
-		Object:      types.NewObject("file", "foo"),
+		Object:      coretypes.NewObject("file", "foo"),
 		Actor:       ctx.GetActor("alice"),
-		ExpectedErr: types.ErrPolicyNotFound,
+		ExpectedErr: errors.ErrorType_NOT_FOUND,
 	}
 	action.Run(ctx)
 }

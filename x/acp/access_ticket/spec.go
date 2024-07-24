@@ -5,8 +5,11 @@ import (
 	"fmt"
 
 	storetypes "cosmossdk.io/store/types"
+	"github.com/TBD54566975/ssi-sdk/crypto"
+	"github.com/TBD54566975/ssi-sdk/did/key"
 	abcitypes "github.com/cometbft/cometbft/abci/types"
 	"github.com/cometbft/cometbft/crypto/merkle"
+	"github.com/cosmos/cosmos-sdk/crypto/keys/secp256k1"
 
 	"github.com/sourcenetwork/sourcehub/x/acp/did"
 	"github.com/sourcenetwork/sourcehub/x/acp/types"
@@ -45,14 +48,17 @@ func (s *AccessTicketSpec) SatisfiesRaw(ctx context.Context, ticket *types.Acces
 	}
 
 	didStr := ticket.Decision.Actor
-	doc, err := s.resolver.Resolve(ctx, didStr)
+
+	did := key.DIDKey(didStr)
+	pubBytes, _, keytype, err := did.Decode()
 	if err != nil {
 		return err
 	}
-
-	pkey, err := did.ExtractVerificationKey(doc)
-	if err != nil {
-		return err
+	if keytype != crypto.SECP256k1 {
+		return fmt.Errorf("unsuported key type: expected SECP256k1: got %v", keytype)
+	}
+	pkey := &secp256k1.PubKey{
+		Key: pubBytes,
 	}
 
 	err = s.signer.Verify(pkey, ticket)

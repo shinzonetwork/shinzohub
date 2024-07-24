@@ -5,6 +5,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/spf13/cobra"
 
+	coretypes "github.com/sourcenetwork/acp_core/pkg/types"
 	"github.com/sourcenetwork/sourcehub/x/acp/types"
 )
 
@@ -27,7 +28,7 @@ func CmdQueryOjectOwner() *cobra.Command {
 
 			req := types.QueryObjectOwnerRequest{
 				PolicyId: polId,
-				Object:   types.NewObject(resource, objId),
+				Object:   coretypes.NewObject(resource, objId),
 			}
 
 			res, err := queryClient.ObjectOwner(cmd.Context(), &req)

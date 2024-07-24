@@ -4,13 +4,14 @@ import (
 	"context"
 	"testing"
 
+	coretypes "github.com/sourcenetwork/acp_core/pkg/types"
 	"github.com/stretchr/testify/require"
 
 	"github.com/sourcenetwork/sourcehub/x/acp/did"
 	"github.com/sourcenetwork/sourcehub/x/acp/types"
 )
 
-func setupTestVerifyAccessRequest(t *testing.T) (context.Context, Keeper, *types.Policy, string) {
+func setupTestVerifyAccessRequest(t *testing.T) (context.Context, Keeper, *coretypes.Policy, string) {
 	ctx, keeper, accKeep := setupKeeper(t)
 	msgServer := NewMsgServerImpl(keeper)
 
@@ -18,7 +19,7 @@ func setupTestVerifyAccessRequest(t *testing.T) (context.Context, Keeper, *types
 	creator := creatorAcc.GetAddress().String()
 	creatorDID, _ := did.IssueDID(creatorAcc)
 
-	obj := types.NewObject("file", "1")
+	obj := coretypes.NewObject("file", "1")
 
 	policyStr := `
 name: policy
@@ -39,7 +40,7 @@ resources:
 	msg := types.MsgCreatePolicy{
 		Creator:      creator,
 		Policy:       policyStr,
-		MarshalType:  types.PolicyMarshalingType_SHORT_YAML,
+		MarshalType:  coretypes.PolicyMarshalingType_SHORT_YAML,
 		CreationTime: timestamp,
 	}
 
@@ -62,18 +63,18 @@ func TestVerifyAccessRequest_QueryingObjectsTheActorHasAccessToReturnsTrue(t *te
 
 	req := &types.QueryVerifyAccessRequestRequest{
 		PolicyId: pol.Id,
-		AccessRequest: &types.AccessRequest{
-			Operations: []*types.Operation{
+		AccessRequest: &coretypes.AccessRequest{
+			Operations: []*coretypes.Operation{
 				{
-					Object:     types.NewObject("file", "1"),
+					Object:     coretypes.NewObject("file", "1"),
 					Permission: "read",
 				},
 				{
-					Object:     types.NewObject("file", "1"),
+					Object:     coretypes.NewObject("file", "1"),
 					Permission: "write",
 				},
 			},
-			Actor: &types.Actor{
+			Actor: &coretypes.Actor{
 				Id: creator,
 			},
 		},
@@ -92,14 +93,14 @@ func TestVerifyAccessRequest_QueryingOperationActorIsNotAuthorizedReturnNotValid
 
 	req := &types.QueryVerifyAccessRequestRequest{
 		PolicyId: pol.Id,
-		AccessRequest: &types.AccessRequest{
-			Operations: []*types.Operation{
+		AccessRequest: &coretypes.AccessRequest{
+			Operations: []*coretypes.Operation{
 				{
-					Object:     types.NewObject("file", "1"),
+					Object:     coretypes.NewObject("file", "1"),
 					Permission: "rm-root",
 				},
 			},
-			Actor: &types.Actor{
+			Actor: &coretypes.Actor{
 				Id: creator,
 			},
 		},
@@ -118,14 +119,14 @@ func TestVerifyAccessRequest_QueryingObjectThatDoesNotExistReturnValidFalse(t *t
 
 	req := &types.QueryVerifyAccessRequestRequest{
 		PolicyId: pol.Id,
-		AccessRequest: &types.AccessRequest{
-			Operations: []*types.Operation{
+		AccessRequest: &coretypes.AccessRequest{
+			Operations: []*coretypes.Operation{
 				{
-					Object:     types.NewObject("file", "file-that-is-not-registered"),
+					Object:     coretypes.NewObject("file", "file-that-is-not-registered"),
 					Permission: "read",
 				},
 			},
-			Actor: &types.Actor{
+			Actor: &coretypes.Actor{
 				Id: creator,
 			},
 		},

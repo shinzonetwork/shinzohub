@@ -122,7 +122,7 @@ func (b *Client) BroadcastTx(ctx context.Context, tx xauthsigning.Tx) (*sdk.TxRe
 
 	response := grpcRes.TxResponse
 
-	log.Printf("broadcast tx: %v", grpcRes)
+	//log.Printf("broadcast tx: %v", grpcRes)
 	if response.Code != 0 {
 		return response, fmt.Errorf("tx rejected: codespace %v: code %v: %v", response.Codespace, response.Code, response.RawLog)
 	}
