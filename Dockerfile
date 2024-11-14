@@ -25,6 +25,10 @@ WORKDIR /app
 
 # Cache deps
 COPY go.* /app/
+
+# Copy submodules
+COPY submodules/acp_core /app/submodules/acp_core
+
 RUN go mod download
 
 # Build
