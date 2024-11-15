@@ -5,8 +5,8 @@ import (
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	coretypes "github.com/sourcenetwork/acp_core/pkg/types"
-	"github.com/sourcenetwork/acp_core/pkg/utils"
 
+	"github.com/sourcenetwork/sourcehub/utils"
 	"github.com/sourcenetwork/sourcehub/x/acp/types"
 )
 
@@ -22,7 +22,8 @@ func (k Keeper) PolicyIds(goCtx context.Context, req *types.QueryPolicyIdsReques
 		return nil, err
 	}
 
+	// Use MapNullableSlice instead of MapSlice to filter out 'nil' policies.
 	return &types.QueryPolicyIdsResponse{
-		Ids: utils.MapSlice(resp.Policies, func(p *coretypes.Policy) string { return p.Id }),
+		Ids: utils.MapNullableSlice(resp.Policies, func(p *coretypes.Policy) string { return p.Id }),
 	}, nil
 }
