@@ -11,12 +11,11 @@ import (
 )
 
 func Test_calReward(t *testing.T) {
-
 	rateList := []types.Rate{
-		{Amount: math.NewInt(300), Rate: 1.50},
-		{Amount: math.NewInt(200), Rate: 1.20},
-		{Amount: math.NewInt(100), Rate: 1.10},
-		{Amount: math.NewInt(0), Rate: 1.00},
+		{Amount: math.NewInt(300), Rate: 150},
+		{Amount: math.NewInt(200), Rate: 120},
+		{Amount: math.NewInt(100), Rate: 110},
+		{Amount: math.NewInt(0), Rate: 100},
 	}
 
 	tests := []struct {
@@ -86,7 +85,6 @@ func Test_calReward(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
-
 		name := fmt.Sprintf("%d adds %d", tt.lockedAmt, tt.lockingAmt)
 		oldLock := math.NewInt(tt.lockedAmt)
 		newLock := math.NewInt(tt.lockingAmt)
