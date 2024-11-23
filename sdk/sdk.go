@@ -27,7 +27,7 @@ import (
 type Opt func(*Client) error
 
 // WithGRPCAddr sets the GRPC Address of a SourceHub node which the Client will connect to.
-// If not specified defines to DefaultGRPCAddr
+// If not specified defaults to DefaultGRPCAddr
 // Note: Cosmos queries are not verifiable therefore only trusted RPC nodes should be used.
 func WithGRPCAddr(addr string) Opt {
 	return func(c *Client) error {
@@ -82,6 +82,7 @@ func NewClient(opts ...Opt) (*Client, error) {
 	client.txClient = txClient
 	client.conn = conn
 	client.cometClient = cometClient
+
 	return client, nil
 }
 
