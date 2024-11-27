@@ -17,18 +17,22 @@ type EpochsKeeper interface {
 // StakingKeeper defines the expected interface for the Staking module.
 type StakingKeeper interface {
 	Delegate(ctx context.Context, delAddr sdk.AccAddress, bondAmt math.Int, tokenSrc stakingtypes.BondStatus,
-		validator stakingtypes.Validator, subtractAccount bool) (
-		newShares math.LegacyDec, err error)
-
+		validator stakingtypes.Validator, subtractAccount bool) (newShares math.LegacyDec, err error)
 	Undelegate(ctx context.Context, delAddr sdk.AccAddress, valAddr sdk.ValAddress, sharesAmount math.LegacyDec) (
 		time.Time, math.Int, error)
-
 	BeginRedelegation(ctx context.Context, delAddr sdk.AccAddress, valSrcAddr, valDstAddr sdk.ValAddress,
 		sharesAmount math.LegacyDec) (completionTime time.Time, err error)
 	BondDenom(ctx context.Context) (string, error)
 	GetValidator(ctx context.Context, addr sdk.ValAddress) (validator stakingtypes.Validator, err error)
 	ValidateUnbondAmount(ctx context.Context, delAddr sdk.AccAddress, valAddr sdk.ValAddress, amt math.Int) (
 		shares math.LegacyDec, err error)
+	GetUnbondingDelegation(ctx context.Context, delAddr sdk.AccAddress, valAddr sdk.ValAddress) (
+		ubd stakingtypes.UnbondingDelegation, err error)
+	SetUnbondingDelegation(ctx context.Context, ubd stakingtypes.UnbondingDelegation) error
+	RemoveUnbondingDelegation(ctx context.Context, ubd stakingtypes.UnbondingDelegation) error
+	SetValidatorByConsAddr(ctx context.Context, addr stakingtypes.Validator) error
+	SetValidator(ctx context.Context, addr stakingtypes.Validator) error
+	CompleteUnbonding(ctx context.Context, delAddr sdk.AccAddress, valAddr sdk.ValAddress) (sdk.Coins, error)
 }
 
 // BankKeeper defines the expected interface for the Bank module.
@@ -43,6 +47,7 @@ type BankKeeper interface {
 
 	// ViewKeeper interface
 	IterateAllBalances(ctx context.Context, cb func(addr sdk.AccAddress, coin sdk.Coin) bool)
+	GetBalance(ctx context.Context, addr sdk.AccAddress, denom string) sdk.Coin
 }
 
 // ParamSubspace defines the expected Subspace interface for parameters.

@@ -76,7 +76,6 @@ func (k Keeper) Logger() log.Logger {
 // CompleteUnlocking completes the unlocking process for all lockups that have reached their unlock time.
 // It is called at the end of each Epoch.
 func (k Keeper) CompleteUnlocking(ctx context.Context) error {
-
 	cb := func(delAddr sdk.AccAddress, valAddr sdk.ValAddress, lockup types.Lockup) error {
 		if time.Now().Before(*lockup.UnlockTime) {
 			return nil
@@ -99,12 +98,12 @@ func (k Keeper) CompleteUnlocking(ctx context.Context) error {
 	if err != nil {
 		return errorsmod.Wrap(err, "iterate lockups")
 	}
+
 	return nil
 }
 
 // Lock locks the stake of a delegator to a validator.
 func (k Keeper) Lock(ctx context.Context, delAddr sdk.AccAddress, valAddr sdk.ValAddress, amt math.Int) error {
-
 	validator, err := k.stakingKeeper.GetValidator(ctx, valAddr)
 	if err != nil {
 		return types.ErrInvalidAddress.Wrapf("validator address %s: %s", valAddr, err)
@@ -126,7 +125,7 @@ func (k Keeper) Lock(ctx context.Context, delAddr sdk.AccAddress, valAddr sdk.Va
 	}
 
 	// Record the lockup
-	k.addLockup(ctx, delAddr, valAddr, stake.Amount)
+	k.AddLockup(ctx, delAddr, valAddr, stake.Amount)
 
 	// Mint credits
 	creditAmt := k.proratedCredit(ctx, delAddr, amt)
@@ -143,7 +142,7 @@ func (k Keeper) Lock(ctx context.Context, delAddr sdk.AccAddress, valAddr sdk.Va
 func (k Keeper) Unlock(ctx context.Context, delAddr sdk.AccAddress, valAddr sdk.ValAddress, amt math.Int) (
 	unbondTime time.Time, unlockTime time.Time, err error) {
 
-	err = k.subtractLockup(ctx, delAddr, valAddr, amt)
+	err = k.SubtractLockup(ctx, delAddr, valAddr, amt)
 	if err != nil {
 		return time.Time{}, time.Time{}, errorsmod.Wrap(err, "subtract lockup")
 	}
@@ -167,7 +166,7 @@ func (k Keeper) Unlock(ctx context.Context, delAddr sdk.AccAddress, valAddr sdk.
 
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	height := sdkCtx.BlockHeight()
-	k.setLockup(ctx, true, delAddr, valAddr, amt, height, &unbondTime, &unlockTime)
+	k.SetLockup(ctx, true, delAddr, valAddr, amt, height, &unbondTime, &unlockTime)
 
 	return unbondTime, unlockTime, nil
 }
@@ -177,12 +176,12 @@ func (k Keeper) Unlock(ctx context.Context, delAddr sdk.AccAddress, valAddr sdk.
 func (k Keeper) Redelegate(ctx context.Context, delAddr sdk.AccAddress, srcValAddr, dstValAddr sdk.ValAddress, amt math.Int) (
 	completionTime time.Time, err error) {
 
-	err = k.subtractLockup(ctx, delAddr, srcValAddr, amt)
+	err = k.SubtractLockup(ctx, delAddr, srcValAddr, amt)
 	if err != nil {
 		return time.Time{}, errorsmod.Wrap(err, "subtract locked stake from source validator")
 	}
 
-	k.addLockup(ctx, delAddr, dstValAddr, amt)
+	k.AddLockup(ctx, delAddr, dstValAddr, amt)
 
 	shares, err := k.stakingKeeper.ValidateUnbondAmount(ctx, delAddr, srcValAddr, amt)
 	if err != nil {
