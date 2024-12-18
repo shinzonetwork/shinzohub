@@ -27,9 +27,12 @@ func TestParamsQuery(t *testing.T) {
 
 func TestLockupQuery(t *testing.T) {
 	keeper, ctx := keepertest.TierKeeper(t)
-	delAddr := sdk.AccAddress("source1wjj5v5rlf57kayyeskncpu4hwev25ty645p2et")
-	valAddr := sdk.ValAddress("sourcevaloper1cy0p47z24ejzvq55pu3lesxwf73xnrnd0pzkqm")
 	amount := math.NewInt(1000)
+
+	delAddr, err := sdk.AccAddressFromBech32("source1wjj5v5rlf57kayyeskncpu4hwev25ty645p2et")
+	require.NoError(t, err)
+	valAddr, err := sdk.ValAddressFromBech32("sourcevaloper1cy0p47z24ejzvq55pu3lesxwf73xnrnd0pzkqm")
+	require.NoError(t, err)
 
 	keeper.AddLockup(ctx, delAddr, valAddr, amount)
 
@@ -51,10 +54,13 @@ func TestLockupQuery(t *testing.T) {
 
 func TestLockupsQuery(t *testing.T) {
 	keeper, ctx := keepertest.TierKeeper(t)
-	delAddr := sdk.AccAddress("source1wjj5v5rlf57kayyeskncpu4hwev25ty645p2et")
-	valAddr := sdk.ValAddress("sourcevaloper1cy0p47z24ejzvq55pu3lesxwf73xnrnd0pzkqm")
 	amount1 := math.NewInt(1000)
 	amount2 := math.NewInt(500)
+
+	delAddr, err := sdk.AccAddressFromBech32("source1wjj5v5rlf57kayyeskncpu4hwev25ty645p2et")
+	require.NoError(t, err)
+	valAddr, err := sdk.ValAddressFromBech32("sourcevaloper1cy0p47z24ejzvq55pu3lesxwf73xnrnd0pzkqm")
+	require.NoError(t, err)
 
 	keeper.AddLockup(ctx, delAddr, valAddr, amount1)
 	keeper.AddLockup(ctx, delAddr, valAddr, amount2)
@@ -71,20 +77,32 @@ func TestLockupsQuery(t *testing.T) {
 
 func TestUnlockingLockupQuery(t *testing.T) {
 	keeper, ctx := keepertest.TierKeeper(t)
-	delAddr := sdk.AccAddress("source1wjj5v5rlf57kayyeskncpu4hwev25ty645p2et")
-	valAddr := sdk.ValAddress("sourcevaloper1cy0p47z24ejzvq55pu3lesxwf73xnrnd0pzkqm")
+	params := keeper.GetParams(ctx)
+	epochDuration := *params.EpochDuration
 	amount := math.NewInt(1000)
 
-	unbondTime := time.Now().Add(24 * time.Hour).UTC()
-	unlockTime := time.Now().Add(48 * time.Hour).UTC()
+	delAddr, err := sdk.AccAddressFromBech32("source1wjj5v5rlf57kayyeskncpu4hwev25ty645p2et")
+	require.NoError(t, err)
+	valAddr, err := sdk.ValAddressFromBech32("sourcevaloper1cy0p47z24ejzvq55pu3lesxwf73xnrnd0pzkqm")
+	require.NoError(t, err)
 
-	keeper.SetLockup(ctx, true, delAddr, valAddr, amount, 1, &unbondTime, &unlockTime)
+	ctx = ctx.WithBlockHeight(1).WithBlockTime(time.Now())
+
+	keeper.SetLockup(ctx, true, delAddr, valAddr, amount, nil)
+
+	unbondTime := ctx.BlockTime().Add(epochDuration * time.Duration(params.UnlockingEpochs))
+	unlockTime := unbondTime
 
 	querier := tierkeeper.NewQuerier(keeper)
 	response, err := querier.UnlockingLockup(ctx, &types.UnlockingLockupRequest{
 		DelegatorAddress: delAddr.String(),
 		ValidatorAddress: valAddr.String(),
+		CreationHeight:   1,
 	})
+
+	// use normalized time to confirm SetLockup() logic
+	unbondTimeUTC := unbondTime.UTC()
+	unlockTimeUTC := unlockTime.UTC()
 
 	require.NoError(t, err)
 	require.Equal(t, &types.UnlockingLockupResponse{
@@ -92,26 +110,35 @@ func TestUnlockingLockupQuery(t *testing.T) {
 			DelegatorAddress: delAddr.String(),
 			ValidatorAddress: valAddr.String(),
 			Amount:           amount,
-			UnbondTime:       &unbondTime,
-			UnlockTime:       &unlockTime,
+			UnbondTime:       &unbondTimeUTC,
+			UnlockTime:       &unlockTimeUTC,
 		},
 	}, response)
 }
 
 func TestUnlockingLockupsQuery(t *testing.T) {
 	keeper, ctx := keepertest.TierKeeper(t)
-	delAddr := sdk.AccAddress("source1wjj5v5rlf57kayyeskncpu4hwev25ty645p2et")
-	valAddr := sdk.ValAddress("sourcevaloper1cy0p47z24ejzvq55pu3lesxwf73xnrnd0pzkqm")
+	params := keeper.GetParams(ctx)
+	epochDuration := *params.EpochDuration
 	amount1 := math.NewInt(1000)
 	amount2 := math.NewInt(500)
 
-	unbondTime1 := time.Now().Add(24 * time.Hour).UTC()
-	unlockTime1 := time.Now().Add(48 * time.Hour).UTC()
-	unbondTime2 := time.Now().Add(36 * time.Hour).UTC()
-	unlockTime2 := time.Now().Add(72 * time.Hour).UTC()
+	delAddr, err := sdk.AccAddressFromBech32("source1wjj5v5rlf57kayyeskncpu4hwev25ty645p2et")
+	require.NoError(t, err)
+	valAddr, err := sdk.ValAddressFromBech32("sourcevaloper1cy0p47z24ejzvq55pu3lesxwf73xnrnd0pzkqm")
+	require.NoError(t, err)
 
-	keeper.SetLockup(ctx, true, delAddr, valAddr, amount1, 1, &unbondTime1, &unlockTime1)
-	keeper.SetLockup(ctx, true, delAddr, valAddr, amount2, 2, &unbondTime2, &unlockTime2)
+	ctx = ctx.WithBlockHeight(1).WithBlockTime(time.Now())
+	keeper.SetLockup(ctx, true, delAddr, valAddr, amount1, nil)
+
+	unbondTime1 := ctx.BlockTime().Add(epochDuration * time.Duration(params.UnlockingEpochs))
+	unlockTime1 := unbondTime1
+
+	ctx = ctx.WithBlockHeight(2).WithBlockTime(unbondTime1)
+	keeper.SetLockup(ctx, true, delAddr, valAddr, amount2, nil)
+
+	unbondTime2 := ctx.BlockTime().Add(epochDuration * time.Duration(params.UnlockingEpochs))
+	unlockTime2 := unbondTime2
 
 	querier := tierkeeper.NewQuerier(keeper)
 	response, err := querier.UnlockingLockups(ctx, &types.UnlockingLockupsRequest{
@@ -119,9 +146,15 @@ func TestUnlockingLockupsQuery(t *testing.T) {
 	})
 
 	require.NoError(t, err)
-	require.Len(t, response.Lockup, 1)
-	// TODO: at the moment, SetLockup() overrides existing lockup.
-	// This needs to be changed in favor of storing unlocking lockups separately.
-	// After the change, this test should be updated to use new SetLockup logic
-	// and the response.Lockup length check above should return 2 as expected.
+	require.Len(t, response.Lockup, 2)
+
+	require.Equal(t, amount1, response.Lockup[0].Amount)
+	require.Equal(t, int64(1), response.Lockup[0].CreationHeight)
+	require.Equal(t, &unbondTime1, response.Lockup[0].UnbondTime)
+	require.Equal(t, &unlockTime1, response.Lockup[0].UnlockTime)
+
+	require.Equal(t, amount2, response.Lockup[1].Amount)
+	require.Equal(t, int64(2), response.Lockup[1].CreationHeight)
+	require.Equal(t, &unbondTime2, response.Lockup[1].UnbondTime)
+	require.Equal(t, &unlockTime2, response.Lockup[1].UnlockTime)
 }

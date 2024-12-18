@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"context"
+	"errors"
 	"time"
 
 	errorsmod "cosmossdk.io/errors"
@@ -12,8 +13,16 @@ import (
 	"github.com/sourcenetwork/sourcehub/x/tier/types"
 )
 
-// mintCredit mints a coin and sends it to the specified address.
-func (k Keeper) mintCredit(ctx context.Context, addr sdk.AccAddress, amt math.Int) error {
+// MintCredit mints a coin and sends it to the specified address.
+func (k Keeper) MintCredit(ctx context.Context, addr sdk.AccAddress, amt math.Int) error {
+	if _, err := sdk.AccAddressFromBech32(addr.String()); err != nil {
+		return errorsmod.Wrap(err, "invalid address")
+	}
+
+	if amt.LTE(math.ZeroInt()) {
+		return errors.New("invalid amount")
+	}
+
 	coins := sdk.NewCoins(sdk.NewCoin(appparams.CreditDenom, amt))
 	err := k.bankKeeper.MintCoins(ctx, types.ModuleName, coins)
 	if err != nil {
@@ -101,54 +110,18 @@ func (k Keeper) resetAllCredits(ctx context.Context) error {
 		lockedAmts[delAddr.String()] = amt.Add(lockup.Amount)
 	}
 
-	k.MustIterateLockups(ctx, false, cb)
+	k.MustIterateLockups(ctx, cb)
 
 	rates := k.GetParams(ctx).RewardRates
 
 	for delStrAddr, amt := range lockedAmts {
 		delAddr := sdk.MustAccAddressFromBech32(delStrAddr)
 		credit := calculateCredit(rates, math.ZeroInt(), amt)
-		err := k.mintCredit(ctx, delAddr, credit)
+		err := k.MintCredit(ctx, delAddr, credit)
 		if err != nil {
 			return errorsmod.Wrapf(err, "mint %s to %s", credit, delAddr)
 		}
 	}
 
 	return nil
-}
-
-// calculateCredit calculates the reward earned on the lockingAmt.
-// lockingAmt is stacked up on top of the lockedAmt to earn at the
-// highest eligible reward.
-func calculateCredit(rateList []types.Rate, lockedAmt, lockingAmt math.Int) math.Int {
-	credit := math.ZeroInt()
-	stakedAmt := lockedAmt.Add(lockingAmt)
-
-	// Iterate from the highest reward rate to the lowest.
-	for _, r := range rateList {
-		// Continue if the total lock does not reach the current rate requirement.
-		if stakedAmt.LT(r.Amount) {
-			continue
-		}
-
-		lower := math.MaxInt(r.Amount, lockedAmt)
-		diff := stakedAmt.Sub(lower)
-
-		diffDec := math.LegacyNewDecFromInt(diff)
-		rateDec := math.LegacyNewDec(r.Rate)
-
-		amt := diffDec.Mul(rateDec).Quo(math.LegacyNewDec(100))
-		credit = credit.Add(amt.TruncateInt())
-
-		// Subtract the lock that has been rewarded.
-		stakedAmt = stakedAmt.Sub(diff)
-		lockingAmt = lockingAmt.Sub(diff)
-
-		// Break if all the new lock has been rewarded.
-		if lockingAmt.IsZero() {
-			break
-		}
-	}
-
-	return credit
 }
