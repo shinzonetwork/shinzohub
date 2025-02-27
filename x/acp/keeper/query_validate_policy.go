@@ -11,10 +11,7 @@ import (
 
 func (q Querier) ValidatePolicy(goCtx context.Context, req *types.QueryValidatePolicyRequest) (*types.QueryValidatePolicyResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
-	engine, err := q.GetACPEngine(ctx)
-	if err != nil {
-		return nil, err
-	}
+	engine := q.GetACPEngine(ctx)
 
 	resp, err := engine.ValidatePolicy(ctx, &coretypes.ValidatePolicyRequest{
 		Policy:      req.Policy,

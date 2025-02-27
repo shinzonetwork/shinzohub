@@ -42,17 +42,16 @@ resources:
 	creator := accKeep.FirstAcc().GetAddress().String()
 
 	msg := types.MsgCreatePolicy{
-		Creator:      creator,
-		Policy:       policyStr,
-		MarshalType:  coretypes.PolicyMarshalingType_SHORT_YAML,
-		CreationTime: timestamp,
+		Creator:     creator,
+		Policy:      policyStr,
+		MarshalType: coretypes.PolicyMarshalingType_SHORT_YAML,
 	}
 
 	msgServer := NewMsgServerImpl(keeper)
 	resp, err := msgServer.CreatePolicy(ctx, &msg)
 	require.NoError(t, err)
 
-	return ctx, keeper, resp.Policy.Id
+	return ctx, keeper, resp.Record.Policy.Id
 }
 
 func (s *queryPolicySuite) TestQueryPolicy_Success() {
@@ -66,8 +65,8 @@ func (s *queryPolicySuite) TestQueryPolicy_Success() {
 	resp, err := querier.Policy(ctx, &req)
 	require.NoError(s.T(), err)
 	require.NotNil(s.T(), resp)
-	require.Equal(s.T(), "Source Policy", resp.Policy.Name)
-	require.Equal(s.T(), "A valid policy", resp.Policy.Description)
+	require.Equal(s.T(), "Source Policy", resp.Record.Policy.Name)
+	require.Equal(s.T(), "A valid policy", resp.Record.Policy.Description)
 }
 
 func (s *queryPolicySuite) TestQueryPolicy_UnknownPolicyReturnsPolicyNotFoundErr() {

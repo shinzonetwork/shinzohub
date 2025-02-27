@@ -4,6 +4,7 @@ import (
 	"context"
 	"testing"
 
+	prototypes "github.com/cosmos/gogoproto/types"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
 	"google.golang.org/grpc/codes"
@@ -31,7 +32,7 @@ func (s *queryAccessDecisionSuite) setup(t *testing.T) (context.Context, Keeper)
 		PolicyId:           "policy-1",
 		Creator:            "creator-1",
 		CreatorAccSequence: 12345,
-		Operations: []*types.Operation{
+		Operations: []*coretypes.Operation{
 			{
 				Object: &coretypes.Object{
 					Resource: "file",
@@ -46,7 +47,10 @@ func (s *queryAccessDecisionSuite) setup(t *testing.T) (context.Context, Keeper)
 			ProofExpirationDelta:    7200,
 			TicketExpirationDelta:   86400,
 		},
-		CreationTime: timestamp,
+		CreationTime: &types.Timestamp{
+			ProtoTs:     &prototypes.Timestamp{},
+			BlockHeight: 0,
+		},
 		IssuedHeight: 100,
 	}
 

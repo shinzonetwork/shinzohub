@@ -12,6 +12,12 @@ const (
 
 	// AccessDecisionRepositoryKey defines the namespace for Access Decisions
 	AccessDecisionRepositoryKey = "access_decision"
+
+	// RegistrationsCommitmentPrefix defines a key prefix for RegistrationsCommitments
+	RegistrationsCommitmentPrefix = "commitments"
+
+	// ObjectEventsPrefix defines a key prefix for ObjectEvents
+	ObjectEventsPrefix = "object_events"
 )
 
 var (

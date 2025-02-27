@@ -18,22 +18,24 @@ func (q Querier) Policy(goCtx context.Context, req *types.QueryPolicyRequest) (*
 	}
 
 	ctx := sdk.UnwrapSDKContext(goCtx)
-	engine, err := q.GetACPEngine(ctx)
-	if err != nil {
-		return nil, err
-	}
+	engine := q.GetACPEngine(ctx)
 
-	resp, err := engine.GetPolicy(ctx, &coretypes.GetPolicyRequest{
+	response, err := engine.GetPolicy(goCtx, &coretypes.GetPolicyRequest{
 		Id: req.Id,
 	})
 	if err != nil {
 		return nil, err
 	}
-	if resp == nil {
-		return nil, errors.NewPolicyNotFound(req.Id)
+	if response == nil {
+		return nil, errors.ErrPolicyNotFound(req.Id)
+	}
+
+	record, err := types.MapPolicy(response.Record)
+	if err != nil {
+		return nil, err
 	}
 
 	return &types.QueryPolicyResponse{
-		Policy: resp.Policy,
+		Record: record,
 	}, nil
 }

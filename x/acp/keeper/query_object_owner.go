@@ -18,10 +18,7 @@ func (q Querier) ObjectOwner(goCtx context.Context, req *types.QueryObjectOwnerR
 
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
-	engine, err := q.GetACPEngine(ctx)
-	if err != nil {
-		return nil, err
-	}
+	engine := q.GetACPEngine(ctx)
 
 	result, err := engine.GetObjectRegistration(ctx, &coretypes.GetObjectRegistrationRequest{
 		PolicyId: req.PolicyId,
@@ -31,8 +28,16 @@ func (q Querier) ObjectOwner(goCtx context.Context, req *types.QueryObjectOwnerR
 		return nil, err
 	}
 
+	var record *types.RelationshipRecord
+	if result.IsRegistered {
+		record, err = types.MapRelationshipRecord(result.Record)
+		if err != nil {
+			return nil, err
+		}
+	}
+
 	return &types.QueryObjectOwnerResponse{
 		IsRegistered: result.IsRegistered,
-		OwnerId:      result.OwnerId,
+		Record:       record,
 	}, nil
 }

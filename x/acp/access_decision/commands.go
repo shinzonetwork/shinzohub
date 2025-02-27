@@ -5,7 +5,6 @@ import (
 	"fmt"
 
 	sdktypes "github.com/cosmos/cosmos-sdk/types"
-	prototypes "github.com/cosmos/gogoproto/types"
 	"github.com/sourcenetwork/acp_core/pkg/errors"
 	coretypes "github.com/sourcenetwork/acp_core/pkg/types"
 
@@ -18,10 +17,10 @@ const DefaultExpirationDelta uint64 = 100
 
 type EvaluateAccessRequestsCommand struct {
 	Policy     *coretypes.Policy
-	Operations []*types.Operation
+	Operations []*coretypes.Operation
 	Actor      string
 
-	CreationTime *prototypes.Timestamp
+	CreationTime *types.Timestamp
 
 	// Creator is the same as the Tx signer
 	Creator sdktypes.AccountI
@@ -75,7 +74,7 @@ func (c *EvaluateAccessRequestsCommand) validate() error {
 }
 
 func (c *EvaluateAccessRequestsCommand) evaluateRequest(ctx context.Context, engine coretypes.ACPEngineServer) error {
-	operations := utils.MapSlice(c.Operations, func(op *types.Operation) *coretypes.Operation {
+	operations := utils.MapSlice(c.Operations, func(op *coretypes.Operation) *coretypes.Operation {
 		return &coretypes.Operation{
 			Object:     op.Object,
 			Permission: op.Permission,

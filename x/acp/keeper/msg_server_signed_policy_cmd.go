@@ -7,16 +7,13 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
 	"github.com/sourcenetwork/sourcehub/x/acp/did"
+	"github.com/sourcenetwork/sourcehub/x/acp/keeper/policy_cmd"
 	"github.com/sourcenetwork/sourcehub/x/acp/signed_policy_cmd"
 	"github.com/sourcenetwork/sourcehub/x/acp/types"
 )
 
 func (k msgServer) SignedPolicyCmd(goCtx context.Context, msg *types.MsgSignedPolicyCmd) (*types.MsgSignedPolicyCmdResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
-	engine, err := k.GetACPEngine(ctx)
-	if err != nil {
-		return nil, err
-	}
 
 	resolver := &did.KeyResolver{}
 	params := k.GetParams(ctx)
@@ -26,8 +23,13 @@ func (k msgServer) SignedPolicyCmd(goCtx context.Context, msg *types.MsgSignedPo
 		return nil, fmt.Errorf("PolicyCmd: %w", err)
 	}
 
-	result, err := dispatchPolicyCmd(ctx, engine, payload.PolicyId, payload.Actor, payload.CreationTime, payload.Cmd)
+	cmdCtx, err := policy_cmd.NewPolicyCmdCtx(ctx, payload.PolicyId, payload.Actor, msg.Creator, k.GetParams(ctx))
+	if err != nil {
+		return nil, err
+	}
 
+	handler := k.GetPolicyCmdHandler(ctx)
+	result, err := handler.Dispatch(&cmdCtx, payload.Cmd)
 	if err != nil {
 		return nil, err
 	}

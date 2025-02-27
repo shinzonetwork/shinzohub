@@ -86,17 +86,16 @@ func (s *queryPolicyIdsSuite) setupPolicies(
 		}
 
 		msg := types.MsgCreatePolicy{
-			Creator:      creator,
-			Policy:       policyString,
-			MarshalType:  marshalingType,
-			CreationTime: timestamp,
+			Creator:     creator,
+			Policy:      policyString,
+			MarshalType: marshalingType,
 		}
 
 		resp, err := msgServer.CreatePolicy(ctx, &msg)
 		require.NoError(t, err)
 		require.NotNil(t, resp)
 
-		policyIds = append(policyIds, resp.Policy.Id)
+		policyIds = append(policyIds, resp.Record.Policy.Id)
 	}
 
 	return policyIds

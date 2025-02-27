@@ -9,15 +9,13 @@ import (
 
 	hubtypes "github.com/sourcenetwork/sourcehub/types"
 	"github.com/sourcenetwork/sourcehub/x/acp/did"
+	"github.com/sourcenetwork/sourcehub/x/acp/keeper/policy_cmd"
 	"github.com/sourcenetwork/sourcehub/x/acp/types"
 )
 
 func (k msgServer) DirectPolicyCmd(goCtx context.Context, msg *types.MsgDirectPolicyCmd) (*types.MsgDirectPolicyCmdResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
-	engine, err := k.GetACPEngine(ctx)
-	if err != nil {
-		return nil, err
-	}
+
 	addr, err := hubtypes.AccAddressFromBech32(msg.Creator)
 	if err != nil {
 		return nil, fmt.Errorf("DirectPolicyCmd: %v: %w", err, types.NewErrInvalidAccAddrErr(err, msg.Creator))
@@ -34,7 +32,13 @@ func (k msgServer) DirectPolicyCmd(goCtx context.Context, msg *types.MsgDirectPo
 			errors.ErrorType_BAD_INPUT, errors.Pair("address", msg.Creator))
 	}
 
-	result, err := dispatchPolicyCmd(ctx, engine, msg.PolicyId, actorID, msg.CreationTime, msg.Cmd)
+	cmdCtx, err := policy_cmd.NewPolicyCmdCtx(ctx, msg.PolicyId, actorID, msg.Creator, k.GetParams(ctx))
+	if err != nil {
+		return nil, err
+	}
+
+	handler := k.GetPolicyCmdHandler(ctx)
+	result, err := handler.Dispatch(&cmdCtx, msg.Cmd)
 	if err != nil {
 		return nil, err
 	}

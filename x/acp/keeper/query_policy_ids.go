@@ -18,21 +18,15 @@ func (q Querier) PolicyIds(goCtx context.Context, req *types.QueryPolicyIdsReque
 	}
 
 	ctx := sdk.UnwrapSDKContext(goCtx)
-	engine, err := q.GetACPEngine(ctx)
-	if err != nil {
-		return nil, err
-	}
+	engine := q.GetACPEngine(ctx)
 
 	resp, err := engine.ListPolicies(ctx, &coretypes.ListPoliciesRequest{})
 	if err != nil {
 		return nil, err
 	}
-	if resp == nil {
-		return nil, status.Error(codes.NotFound, "no policies found")
-	}
 
 	// Use MapNullableSlice instead of MapSlice to filter out 'nil' policies.
 	return &types.QueryPolicyIdsResponse{
-		Ids: utils.MapNullableSlice(resp.Policies, func(p *coretypes.Policy) string { return p.Id }),
+		Ids: utils.MapNullableSlice(resp.Records, func(p *coretypes.PolicyRecord) string { return p.Policy.Id }),
 	}, nil
 }

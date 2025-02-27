@@ -10,7 +10,6 @@ import (
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
 
-	"github.com/sourcenetwork/sourcehub/x/acp/did"
 	"github.com/sourcenetwork/sourcehub/x/acp/types"
 )
 
@@ -56,10 +55,9 @@ actor:
 	creator := accKeep.FirstAcc().GetAddress().String()
 
 	msg := types.MsgCreatePolicy{
-		Creator:      creator,
-		Policy:       policyStr,
-		MarshalType:  coretypes.PolicyMarshalingType_SHORT_YAML,
-		CreationTime: timestamp,
+		Creator:     creator,
+		Policy:      policyStr,
+		MarshalType: coretypes.PolicyMarshalingType_SHORT_YAML,
 	}
 
 	msgServer := NewMsgServerImpl(keeper)
@@ -68,18 +66,17 @@ actor:
 	require.Nil(t, err)
 
 	_, err = msgServer.DirectPolicyCmd(ctx, &types.MsgDirectPolicyCmd{
-		Creator:      creator,
-		PolicyId:     resp.Policy.Id,
-		Cmd:          types.NewRegisterObjectCmd(s.obj),
-		CreationTime: timestamp,
+		Creator:  creator,
+		PolicyId: resp.Record.Policy.Id,
+		Cmd:      types.NewRegisterObjectCmd(s.obj),
 	})
 	require.Nil(t, err)
 
-	return ctx, keeper, accKeep.FirstAcc(), creator, resp.Policy.Id
+	return ctx, keeper, accKeep.FirstAcc(), creator, resp.Record.Policy.Id
 }
 
 func (s *queryObjectOwnerSuite) TestQueryReturnsObjectOwner() {
-	ctx, k, creatorAcc, _, policyId := s.setup(s.T())
+	ctx, k, _, _, policyId := s.setup(s.T())
 	querier := NewQuerier(k)
 
 	resp, err := querier.ObjectOwner(ctx, &types.QueryObjectOwnerRequest{
@@ -87,10 +84,9 @@ func (s *queryObjectOwnerSuite) TestQueryReturnsObjectOwner() {
 		Object:   s.obj,
 	})
 
-	did, _ := did.IssueDID(creatorAcc)
 	require.Equal(s.T(), resp, &types.QueryObjectOwnerResponse{
 		IsRegistered: true,
-		OwnerId:      did,
+		Record:       resp.Record,
 	})
 	require.Nil(s.T(), err)
 }
@@ -107,7 +103,7 @@ func (s *queryObjectOwnerSuite) TestQueryingForUnregisteredObjectReturnsEmptyOwn
 	require.Nil(s.T(), err)
 	require.Equal(s.T(), resp, &types.QueryObjectOwnerResponse{
 		IsRegistered: false,
-		OwnerId:      "",
+		Record:       nil,
 	})
 }
 

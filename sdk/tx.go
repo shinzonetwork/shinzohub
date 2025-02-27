@@ -15,6 +15,7 @@ import (
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 
 	"github.com/sourcenetwork/sourcehub/app"
+	"github.com/sourcenetwork/sourcehub/app/params"
 	appparams "github.com/sourcenetwork/sourcehub/app/params"
 )
 
@@ -176,6 +177,22 @@ type TxBuilderOpt func(*TxBuilder) error
 func WithChainID(id string) TxBuilderOpt {
 	return func(b *TxBuilder) error {
 		b.chainID = id
+		return nil
+	}
+}
+
+// WithUOpenDenom configures TxBuilder to build Txs paid using open tokens
+func WithMicroOpen() TxBuilderOpt {
+	return func(b *TxBuilder) error {
+		b.feeTokenDenom = params.MicroOpenDenom
+		return nil
+	}
+}
+
+// WithMicroCredit configures TxBuilder to build Txs paid using credits
+func WithMicroCredit() TxBuilderOpt {
+	return func(b *TxBuilder) error {
+		b.feeTokenDenom = params.MicroCreditDenom
 		return nil
 	}
 }

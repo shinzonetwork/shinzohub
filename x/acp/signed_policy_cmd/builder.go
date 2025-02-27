@@ -10,7 +10,6 @@ import (
 	"github.com/go-jose/go-jose/v3"
 	"github.com/go-jose/go-jose/v3/cryptosigner"
 
-	coretypes "github.com/sourcenetwork/acp_core/pkg/types"
 	"github.com/sourcenetwork/sourcehub/x/acp/did"
 	"github.com/sourcenetwork/sourcehub/x/acp/types"
 )
@@ -64,8 +63,8 @@ func (b *CmdBuilder) Build(ctx context.Context) (types.SignedPolicyCmdPayload, e
 
 	b.cmd.IssuedHeight = height
 
-	if b.cmd.CreationTime == nil {
-		b.cmd.CreationTime = prototypes.TimestampNow()
+	if b.cmd.IssuedAt == nil {
+		b.cmd.IssuedAt = prototypes.TimestampNow()
 	}
 
 	if b.cmd.ExpirationDelta == 0 {
@@ -97,8 +96,8 @@ func (b *CmdBuilder) Build(ctx context.Context) (types.SignedPolicyCmdPayload, e
 }
 
 // CreationTimestamp sets the creation timestamp
-func (b *CmdBuilder) CreationTimestamp(ts *prototypes.Timestamp) {
-	b.cmd.CreationTime = ts
+func (b *CmdBuilder) IssuedAt(ts *prototypes.Timestamp) {
+	b.cmd.IssuedAt = ts
 }
 
 // Actor sets the Actor for the Command
@@ -116,24 +115,9 @@ func (b *CmdBuilder) PolicyID(id string) {
 	b.cmd.PolicyId = id
 }
 
-// SetRelationship builds a Payload for a SetRelationship command
-func (b *CmdBuilder) SetRelationship(relationship *coretypes.Relationship) {
-	b.cmd.Cmd = types.NewSetRelationshipCmd(relationship)
-}
-
-// DeleteRelationship builds a Payload for a DeleteRelationship command
-func (b *CmdBuilder) DeleteRelationship(relationship *coretypes.Relationship) {
-	b.cmd.Cmd = types.NewDeleteRelationshipCmd(relationship)
-}
-
-// RegisterObject builds a Payload for a RegisterObject command
-func (b *CmdBuilder) RegisterObject(obj *coretypes.Object) {
-	b.cmd.Cmd = types.NewRegisterObjectCmd(obj)
-}
-
-// UnregisterObject builds a Payload for a UnregisterObject command
-func (b *CmdBuilder) UnregisterObject(obj *coretypes.Object) {
-	b.cmd.Cmd = types.NewUnregisterObjectCmd(obj)
+// PolicyCmd sets the command to be issued with the Signed token
+func (b *CmdBuilder) PolicyCmd(cmd *types.PolicyCmd) {
+	b.cmd.Cmd = cmd
 }
 
 // SignPayload produces a JWS serialized version of a Payload from a signing key
