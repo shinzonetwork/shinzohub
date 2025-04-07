@@ -13,8 +13,10 @@ import (
 	acpruntime "github.com/sourcenetwork/acp_core/pkg/runtime"
 	"github.com/sourcenetwork/acp_core/pkg/services"
 	"github.com/sourcenetwork/raccoondb/v2/primitives"
+	"github.com/sourcenetwork/sourcehub/x/acp/capability"
 	cosmosadapter "github.com/sourcenetwork/sourcehub/x/acp/stores/cosmos"
 
+	capabilitykeeper "github.com/cosmos/ibc-go/modules/capability/keeper"
 	"github.com/sourcenetwork/sourcehub/x/acp/access_decision"
 	"github.com/sourcenetwork/sourcehub/x/acp/commitment"
 	"github.com/sourcenetwork/sourcehub/x/acp/keeper/policy_cmd"
@@ -34,6 +36,7 @@ type (
 		authority string
 
 		accountKeeper types.AccountKeeper
+		capKeeper     *capabilitykeeper.ScopedKeeper
 	}
 )
 
@@ -43,6 +46,7 @@ func NewKeeper(
 	logger log.Logger,
 	authority string,
 	accountKeeper types.AccountKeeper,
+	capKeeper *capabilitykeeper.ScopedKeeper,
 
 ) Keeper {
 	if _, err := sdk.AccAddressFromBech32(authority); err != nil {
@@ -55,6 +59,7 @@ func NewKeeper(
 		authority:     authority,
 		logger:        logger,
 		accountKeeper: accountKeeper,
+		capKeeper:     capKeeper,
 	}
 }
 
@@ -140,4 +145,23 @@ func (k *Keeper) getPolicyCmdHandler(ctx sdk.Context) *policy_cmd.Handler {
 		k.getRegistrationService(ctx),
 		k.getCommitmentService(ctx),
 	)
+}
+
+func (k *Keeper) getPolicyCapabilityManager(ctx sdk.Context) *capability.PolicyCapabilityManager {
+	return capability.NewPolicyCapabilityManager(k.capKeeper)
+}
+
+// InitializeCapabilityKeeper allows main app to set the capability
+// keeper after the moment of creation.
+//
+// This is supported since currently the capability module
+// does not integrate with the new module dependency injection system.
+//
+// If the keeper was previously initialized (ie inner point != nil),
+// throws a panic
+func (k *Keeper) InitializeCapabilityKeeper(keeper *capabilitykeeper.ScopedKeeper) {
+	if k.capKeeper != nil {
+		panic("capability keeper already initialized")
+	}
+	k.capKeeper = keeper
 }
