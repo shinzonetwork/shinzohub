@@ -5,6 +5,7 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"time"
 
 	"cosmossdk.io/depinject"
 	"cosmossdk.io/log"
@@ -24,6 +25,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/server/api"
 	"github.com/cosmos/cosmos-sdk/server/config"
 	servertypes "github.com/cosmos/cosmos-sdk/server/types"
+	"github.com/cosmos/cosmos-sdk/telemetry"
 	testdata_pulsar "github.com/cosmos/cosmos-sdk/testutil/testdata/testpb"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
@@ -61,6 +63,7 @@ import (
 	"github.com/skip-mev/block-sdk/v2/block/base"
 
 	"github.com/sourcenetwork/sourcehub/app/ante"
+	"github.com/sourcenetwork/sourcehub/app/metrics"
 	overrides "github.com/sourcenetwork/sourcehub/app/overrides"
 	sourcehubtypes "github.com/sourcenetwork/sourcehub/types"
 	acpkeeper "github.com/sourcenetwork/sourcehub/x/acp/keeper"
@@ -137,7 +140,7 @@ type App struct {
 	AcpKeeper      *acpkeeper.Keeper
 	BulletinKeeper *bulletinkeeper.Keeper
 	EpochsKeeper   *epochskeeper.Keeper
-	TierKeeper     tierkeeper.Keeper
+	TierKeeper     *tierkeeper.Keeper
 	// this line is used by starport scaffolding # stargate/app/keeperDeclaration
 
 	// simulation manager
@@ -367,8 +370,29 @@ func New(
 		mempool,
 	)
 
-	app.App.SetPrepareProposal(proposalHandler.PrepareProposalHandler())
-	app.App.SetProcessProposal(proposalHandler.ProcessProposalHandler())
+	prepareProposalHandler := proposalHandler.PrepareProposalHandler()
+	prepareProposal := func(ctx sdk.Context, req *abcitypes.RequestPrepareProposal) (*abcitypes.ResponsePrepareProposal, error) {
+		defer telemetry.MeasureSince(time.Now(), metrics.App, metrics.PrepareProposal, metrics.SecondsUnit)
+		telemetry.IncrCounterWithLabels(
+			[]string{metrics.App, metrics.PrepareProposal, metrics.Tx, metrics.Count},
+			float32(len(req.Txs)),
+			[]metrics.Label{telemetry.NewLabel(metrics.Method, metrics.PrepareProposal)},
+		)
+		return prepareProposalHandler(ctx, req)
+	}
+	app.App.SetPrepareProposal(prepareProposal)
+
+	processProposalHandler := proposalHandler.ProcessProposalHandler()
+	processProposal := func(ctx sdk.Context, req *abcitypes.RequestProcessProposal) (*abcitypes.ResponseProcessProposal, error) {
+		defer telemetry.MeasureSince(time.Now(), metrics.App, metrics.ProcessProposal, metrics.SecondsUnit)
+		telemetry.IncrCounterWithLabels(
+			[]string{metrics.App, metrics.ProcessProposal, metrics.Tx, metrics.Count},
+			float32(len(req.Txs)),
+			[]metrics.Label{telemetry.NewLabel(metrics.Method, metrics.ProcessProposal)},
+		)
+		return processProposalHandler(ctx, req)
+	}
+	app.App.SetProcessProposal(processProposal)
 
 	/****  Module Options ****/
 

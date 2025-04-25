@@ -9,8 +9,10 @@ import (
 	"cosmossdk.io/store/prefix"
 	storetypes "cosmossdk.io/store/types"
 	"github.com/cosmos/cosmos-sdk/runtime"
+	"github.com/cosmos/cosmos-sdk/telemetry"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
+	"github.com/sourcenetwork/sourcehub/app/metrics"
 	"github.com/sourcenetwork/sourcehub/x/tier/types"
 )
 
@@ -372,6 +374,13 @@ func (k *Keeper) setTotalLockupsAmount(ctx context.Context, total math.Int) erro
 	}
 
 	store.Set(types.TotalLockupsKey, bz)
+
+	// Update total lockups amount gauge
+	telemetry.ModuleSetGauge(
+		types.ModuleName,
+		float32(total.Int64()),
+		metrics.TotalLocked,
+	)
 
 	return nil
 }

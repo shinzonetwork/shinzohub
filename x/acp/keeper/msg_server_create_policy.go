@@ -44,7 +44,14 @@ func (k *Keeper) CreatePolicy(goCtx context.Context, msg *types.MsgCreatePolicy)
 	if err != nil {
 		return nil, fmt.Errorf("CreatePolicy: %w", err)
 	}
-	// TODO event
+
+	err = ctx.EventManager().EmitTypedEvent(&coretypes.EventPolicyCreated{
+		PolicyId:   rec.Policy.Id,
+		PolicyName: msg.Policy,
+	})
+	if err != nil {
+		return nil, err
+	}
 
 	return &types.MsgCreatePolicyResponse{
 		Record: rec,

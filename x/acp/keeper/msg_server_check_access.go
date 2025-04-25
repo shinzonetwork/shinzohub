@@ -13,7 +13,6 @@ import (
 
 func (k *Keeper) CheckAccess(goCtx context.Context, msg *types.MsgCheckAccess) (*types.MsgCheckAccessResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
-	eventManager := ctx.EventManager()
 
 	repository := k.getAccessDecisionRepository(ctx)
 	paramsRepository := access_decision.StaticParamsRepository{}
@@ -54,7 +53,7 @@ func (k *Keeper) CheckAccess(goCtx context.Context, msg *types.MsgCheckAccess) (
 		return nil, err
 	}
 
-	err = eventManager.EmitTypedEvent(&coretypes.EventAccessDecisionCreated{
+	err = ctx.EventManager().EmitTypedEvent(&coretypes.EventAccessDecisionCreated{
 		Creator:    msg.Creator,
 		PolicyId:   msg.PolicyId,
 		DecisionId: decision.Id,

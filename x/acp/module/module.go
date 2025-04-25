@@ -22,6 +22,7 @@ import (
 	// this line is used by starport scaffolding # 1
 
 	modulev1 "github.com/sourcenetwork/sourcehub/api/sourcehub/acp/module"
+	"github.com/sourcenetwork/sourcehub/app/metrics"
 	"github.com/sourcenetwork/sourcehub/x/acp/client/cli"
 	"github.com/sourcenetwork/sourcehub/x/acp/keeper"
 	"github.com/sourcenetwork/sourcehub/x/acp/types"
@@ -128,8 +129,13 @@ func (AppModuleBasic) GetQueryCmd() *cobra.Command {
 
 // RegisterServices registers a gRPC query service to respond to the module-specific gRPC queries
 func (am AppModule) RegisterServices(cfg module.Configurator) {
-	types.RegisterMsgServer(cfg.MsgServer(), am.keeper)
-	types.RegisterQueryServer(cfg.QueryServer(), am.keeper)
+	// Inject instrumentation into msg service handler
+	descriptor := metrics.WrapMsgServerServiceDescriptor(types.ModuleName, types.Msg_serviceDesc)
+	cfg.MsgServer().RegisterService(&descriptor, am.keeper)
+
+	// Inject instrumentation into query service handler
+	descriptor = metrics.WrapQueryServiceDescriptor(types.ModuleName, types.Query_serviceDesc)
+	cfg.QueryServer().RegisterService(&descriptor, am.keeper)
 }
 
 // RegisterInvariants registers the invariants of the module. If an invariant deviates from its predicted value, the InvariantRegistry triggers appropriate logic (most often the chain will be halted)

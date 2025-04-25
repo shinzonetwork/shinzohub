@@ -14,6 +14,7 @@ import (
 
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
+	"github.com/sourcenetwork/sourcehub/app/metrics"
 	appparams "github.com/sourcenetwork/sourcehub/app/params"
 
 	"github.com/sourcenetwork/sourcehub/x/tier/types"
@@ -98,7 +99,19 @@ func (k *Keeper) Logger() log.Logger {
 
 // CompleteUnlocking completes the unlocking process for all lockups that have reached their unlock time.
 // It is called at the end of each Epoch.
-func (k *Keeper) CompleteUnlocking(ctx context.Context) error {
+func (k *Keeper) CompleteUnlocking(ctx context.Context) (err error) {
+	start := time.Now()
+
+	defer func() {
+		metrics.ModuleMeasureSinceWithCounter(
+			types.ModuleName,
+			metrics.CompleteUnlocking,
+			start,
+			err,
+			nil,
+		)
+	}()
+
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 
 	cb := func(delAddr sdk.AccAddress, valAddr sdk.ValAddress, creationHeight int64, unlockingLockup types.UnlockingLockup) error {
@@ -137,7 +150,7 @@ func (k *Keeper) CompleteUnlocking(ctx context.Context) error {
 		return nil
 	}
 
-	err := k.iterateUnlockingLockups(ctx, cb)
+	err = k.iterateUnlockingLockups(ctx, cb)
 	if err != nil {
 		return errorsmod.Wrap(err, "iterate unlocking lockups")
 	}
@@ -146,7 +159,23 @@ func (k *Keeper) CompleteUnlocking(ctx context.Context) error {
 }
 
 // Lock locks the stake of a delegator to a validator.
-func (k *Keeper) Lock(ctx context.Context, delAddr sdk.AccAddress, valAddr sdk.ValAddress, amt math.Int) error {
+func (k *Keeper) Lock(ctx context.Context, delAddr sdk.AccAddress, valAddr sdk.ValAddress, amt math.Int) (err error) {
+	start := time.Now()
+
+	defer func() {
+		metrics.ModuleMeasureSinceWithCounter(
+			types.ModuleName,
+			metrics.Lock,
+			start,
+			err,
+			[]metrics.Label{
+				metrics.NewLabel(metrics.Amount, amt.String()),
+				metrics.NewLabel(metrics.Delegator, delAddr.String()),
+				metrics.NewLabel(metrics.Validator, valAddr.String()),
+			},
+		)
+	}()
+
 	// Specified amt must be a positive integer
 	if !amt.IsPositive() {
 		return types.ErrInvalidAmount.Wrap("lock non-positive amount")
@@ -185,12 +214,21 @@ func (k *Keeper) Lock(ctx context.Context, delAddr sdk.AccAddress, valAddr sdk.V
 		return errorsmod.Wrap(err, "add lockup")
 	}
 
+	// Update total credit amount
+	totalCredits := k.getTotalCreditAmount(ctx)
+	totalCredits = totalCredits.Add(creditAmt)
+	err = k.setTotalCreditAmount(ctx, totalCredits)
+	if err != nil {
+		return errorsmod.Wrap(err, "set total credit amount")
+	}
+
 	sdk.UnwrapSDKContext(ctx).EventManager().EmitEvent(
 		sdk.NewEvent(
 			types.EventTypeLock,
 			sdk.NewAttribute(stakingtypes.AttributeKeyDelegator, delAddr.String()),
 			sdk.NewAttribute(stakingtypes.AttributeKeyValidator, valAddr.String()),
 			sdk.NewAttribute(sdk.AttributeKeyAmount, amt.String()),
+			sdk.NewAttribute(types.AttributeCreditAmount, creditAmt.String()),
 		),
 	)
 
@@ -201,6 +239,23 @@ func (k *Keeper) Lock(ctx context.Context, delAddr sdk.AccAddress, valAddr sdk.V
 // The specified lockup amount will be unlocked in CompleteUnlocking after the unlocking period has passed.
 func (k *Keeper) Unlock(ctx context.Context, delAddr sdk.AccAddress, valAddr sdk.ValAddress,
 	amt math.Int) (creationHeight int64, completionTime, unlockTime time.Time, err error) {
+
+	start := time.Now()
+
+	defer func() {
+		metrics.ModuleMeasureSinceWithCounter(
+			types.ModuleName,
+			metrics.Unlock,
+			start,
+			err,
+			[]metrics.Label{
+				metrics.NewLabel(metrics.Amount, amt.String()),
+				metrics.NewLabel(metrics.Delegator, delAddr.String()),
+				metrics.NewLabel(metrics.Validator, valAddr.String()),
+			},
+		)
+	}()
+
 	// Specified amt must be a positive integer
 	if !amt.IsPositive() {
 		return 0, time.Time{}, time.Time{}, types.ErrInvalidAmount.Wrap("unlock non-positive amount")
@@ -261,14 +316,32 @@ func (k *Keeper) Unlock(ctx context.Context, delAddr sdk.AccAddress, valAddr sdk
 // Redelegate redelegates the stake of a delegator from a source validator to a destination validator.
 // The redelegation will be completed after the unbonding period has passed (e.g. at completionTime).
 func (k *Keeper) Redelegate(ctx context.Context, delAddr sdk.AccAddress, srcValAddr, dstValAddr sdk.ValAddress,
-	amt math.Int) (time.Time, error) {
+	amt math.Int) (completionTime time.Time, err error) {
+
+	start := time.Now()
+
+	defer func() {
+		metrics.ModuleMeasureSinceWithCounter(
+			types.ModuleName,
+			metrics.Redelegate,
+			start,
+			err,
+			[]metrics.Label{
+				metrics.NewLabel(metrics.Amount, amt.String()),
+				metrics.NewLabel(metrics.Delegator, delAddr.String()),
+				metrics.NewLabel(metrics.SrcValidator, srcValAddr.String()),
+				metrics.NewLabel(metrics.DstValidator, dstValAddr.String()),
+			},
+		)
+	}()
+
 	// Specified amt must be a positive integer
 	if !amt.IsPositive() {
 		return time.Time{}, types.ErrInvalidAmount.Wrap("redelegate non-positive amount")
 	}
 
 	// Subtract the lockup from the source validator
-	err := k.subtractLockup(ctx, delAddr, srcValAddr, amt)
+	err = k.subtractLockup(ctx, delAddr, srcValAddr, amt)
 	if err != nil {
 		return time.Time{}, errorsmod.Wrap(err, "subtract lockup from source validator")
 	}
@@ -294,7 +367,7 @@ func (k *Keeper) Redelegate(ctx context.Context, delAddr sdk.AccAddress, srcValA
 		return time.Time{}, errorsmod.Wrap(err, "validate unbond amount")
 	}
 
-	completionTime, err := k.stakingKeeper.BeginRedelegation(ctx, modAddr, srcValAddr, dstValAddr, shares)
+	completionTime, err = k.stakingKeeper.BeginRedelegation(ctx, modAddr, srcValAddr, dstValAddr, shares)
 	if err != nil {
 		return time.Time{}, errorsmod.Wrap(err, "begin redelegation")
 	}
@@ -316,7 +389,25 @@ func (k *Keeper) Redelegate(ctx context.Context, delAddr sdk.AccAddress, srcValA
 // CancelUnlocking effectively cancels the pending unlocking lockup partially or in full.
 // Reverts the specified amt if a valid value is provided (e.g. 0 < amt < unlocking lockup amount).
 func (k *Keeper) CancelUnlocking(ctx context.Context, delAddr sdk.AccAddress, valAddr sdk.ValAddress,
-	creationHeight int64, amt math.Int) error {
+	creationHeight int64, amt math.Int) (err error) {
+
+	start := time.Now()
+
+	defer func() {
+		metrics.ModuleMeasureSinceWithCounter(
+			types.ModuleName,
+			metrics.CancelUnlocking,
+			start,
+			err,
+			[]metrics.Label{
+				metrics.NewLabel(metrics.Amount, amt.String()),
+				metrics.NewLabel(metrics.CreationHeight, fmt.Sprintf("%d", creationHeight)),
+				metrics.NewLabel(metrics.Delegator, delAddr.String()),
+				metrics.NewLabel(metrics.Validator, valAddr.String()),
+			},
+		)
+	}()
+
 	// Specified amt must be a positive integer
 	if !amt.IsPositive() {
 		return types.ErrInvalidAmount.Wrap("cancel unlocking non-positive amount")
