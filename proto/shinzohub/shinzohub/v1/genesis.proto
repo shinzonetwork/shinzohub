@@ -1,0 +1,17 @@
+syntax = "proto3";
+package shinzohub.shinzohub.v1;
+
+import "amino/amino.proto";
+import "gogoproto/gogo.proto";
+import "shinzohub/shinzohub/v1/params.proto";
+
+option go_package = "shinzohub/x/shinzohub/types";
+
+// GenesisState defines the shinzohub module's genesis state.
+message GenesisState {
+  // params defines all the parameters of the module.
+  Params params = 1 [
+    (gogoproto.nullable) = false,
+    (amino.dont_omitempty) = true
+  ];
+}
