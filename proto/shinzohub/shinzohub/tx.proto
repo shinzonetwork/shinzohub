@@ -1,11 +1,11 @@
 syntax = "proto3";
-package shinzohub.shinzohub.v1;
+package shinzohub.shinzohub;
 
 import "amino/amino.proto";
 import "cosmos/msg/v1/msg.proto";
 import "cosmos_proto/cosmos.proto";
 import "gogoproto/gogo.proto";
-import "shinzohub/shinzohub/v1/params.proto";
+import "shinzohub/shinzohub/params.proto";
 
 option go_package = "shinzohub/x/shinzohub/types";
 

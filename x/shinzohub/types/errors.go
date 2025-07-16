@@ -3,10 +3,11 @@ package types
 // DONTCOVER
 
 import (
-	"cosmossdk.io/errors"
+	sdkerrors "cosmossdk.io/errors"
 )
 
 // x/shinzohub module sentinel errors
 var (
-	ErrInvalidSigner = errors.Register(ModuleName, 1100, "expected gov account as only signer for proposal message")
+	ErrInvalidSigner = sdkerrors.Register(ModuleName, 1100, "expected gov account as only signer for proposal message")
+	ErrSample        = sdkerrors.Register(ModuleName, 1101, "sample error")
 )

@@ -1,7 +1,5 @@
 package types
 
-import "cosmossdk.io/collections"
-
 const (
 	// ModuleName defines the module name
 	ModuleName = "shinzohub"
@@ -9,11 +7,14 @@ const (
 	// StoreKey defines the primary module store key
 	StoreKey = ModuleName
 
-	// GovModuleName duplicates the gov module's name to avoid a dependency with x/gov.
-	// It should be synced with the gov module's name if it is ever changed.
-	// See: https://github.com/cosmos/cosmos-sdk/blob/v0.52.0-beta.2/x/gov/types/keys.go#L9
-	GovModuleName = "gov"
+	// MemStoreKey defines the in-memory store key
+	MemStoreKey = "mem_shinzohub"
 )
 
-// ParamsKey is the prefix to retrieve all Params
-var ParamsKey = collections.NewPrefix("p_shinzohub")
+var (
+	ParamsKey = []byte("p_shinzohub")
+)
+
+func KeyPrefix(p string) []byte {
+	return []byte(p)
+}

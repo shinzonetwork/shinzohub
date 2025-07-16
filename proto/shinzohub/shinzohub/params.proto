@@ -1,5 +1,5 @@
 syntax = "proto3";
-package shinzohub.shinzohub.v1;
+package shinzohub.shinzohub;
 
 import "amino/amino.proto";
 import "gogoproto/gogo.proto";
@@ -10,4 +10,6 @@ option go_package = "shinzohub/x/shinzohub/types";
 message Params {
   option (amino.name) = "shinzohub/x/shinzohub/Params";
   option (gogoproto.equal) = true;
+
+  
 }

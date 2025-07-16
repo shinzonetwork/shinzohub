@@ -1,10 +1,8 @@
 package cmd
 
 import (
-	"errors"
 	"fmt"
 	"io"
-	"os"
 	"strings"
 
 	"cosmossdk.io/log"
@@ -12,7 +10,8 @@ import (
 	storetypes "cosmossdk.io/store/types"
 	"github.com/cometbft/cometbft/crypto"
 	"github.com/cometbft/cometbft/libs/bytes"
-	cmtproto "github.com/cometbft/cometbft/proto/tendermint/types"
+	tmos "github.com/cometbft/cometbft/libs/os"
+	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
 	dbm "github.com/cosmos/cosmos-db"
 	"github.com/cosmos/cosmos-sdk/client/flags"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
@@ -30,21 +29,26 @@ import (
 	"shinzohub/app"
 )
 
-const valVotingPower int64 = 900000000000000
+const (
+	valVotingPower int64 = 900000000000000
+)
 
-var flagAccountsToFund = "accounts-to-fund"
+var (
+	flagAccountsToFund = "accounts-to-fund"
+)
 
 type valArgs struct {
 	newValAddr         bytes.HexBytes
 	newOperatorAddress string
 	newValPubKey       crypto.PubKey
-	accountsToFund     []string
+	accountsToFund     []sdk.AccAddress
 	upgradeToTrigger   string
 	homeDir            string
 }
 
-func NewInPlaceTestnetCmd() *cobra.Command {
+func NewInPlaceTestnetCmd(addStartFlags servertypes.ModuleInitFlags) *cobra.Command {
 	cmd := server.InPlaceTestnetCreator(newTestnetApp)
+	addStartFlags(cmd)
 	cmd.Short = "Updates chain's application and consensus state with provided validator info and starts the node"
 	cmd.Long = `The test command modifies both application and consensus stores within a local mainnet node and starts the node,
 with the aim of facilitating testing procedures. This command replaces existing validator data with updated information,
@@ -79,11 +83,13 @@ func newTestnetApp(logger log.Logger, db dbm.DB, traceStore io.Writer, appOpts s
 func initAppForTestnet(app *app.App, args valArgs) *app.App {
 	// Required Changes:
 	//
-	ctx := app.App.NewUncachedContext(true, cmtproto.Header{})
+	ctx := app.BaseApp.NewUncachedContext(true, tmproto.Header{})
 
 	pubkey := &ed25519.PubKey{Key: args.newValPubKey.Bytes()}
 	pubkeyAny, err := codectypes.NewAnyWithValue(pubkey)
-	handleErr(err)
+	if err != nil {
+		tmos.Exit(err.Error())
+	}
 
 	// STAKING
 	//
@@ -110,23 +116,27 @@ func initAppForTestnet(app *app.App, args valArgs) *app.App {
 	}
 
 	validator, err := app.StakingKeeper.ValidatorAddressCodec().StringToBytes(newVal.GetOperator())
-	handleErr(err)
+	if err != nil {
+		tmos.Exit(err.Error())
+	}
 
 	// Remove all validators from power store
 	stakingKey := app.GetKey(stakingtypes.ModuleName)
 	stakingStore := ctx.KVStore(stakingKey)
 	iterator, err := app.StakingKeeper.ValidatorsPowerStoreIterator(ctx)
-	handleErr(err)
-
+	if err != nil {
+		tmos.Exit(err.Error())
+	}
 	for ; iterator.Valid(); iterator.Next() {
 		stakingStore.Delete(iterator.Key())
 	}
 	iterator.Close()
 
-	// Remove all validators from last validators store
+	// Remove all valdiators from last validators store
 	iterator, err = app.StakingKeeper.LastValidatorsIterator(ctx)
-	handleErr(err)
-
+	if err != nil {
+		tmos.Exit(err.Error())
+	}
 	for ; iterator.Valid(); iterator.Next() {
 		stakingStore.Delete(iterator.Key())
 	}
@@ -147,20 +157,25 @@ func initAppForTestnet(app *app.App, args valArgs) *app.App {
 	iterator.Close()
 
 	// Add our validator to power and last validators store
-	handleErr(app.StakingKeeper.SetValidator(ctx, newVal))
-	handleErr(app.StakingKeeper.SetValidatorByConsAddr(ctx, newVal))
-	handleErr(app.StakingKeeper.SetValidatorByPowerIndex(ctx, newVal))
-	handleErr(app.StakingKeeper.SetLastValidatorPower(ctx, validator, 0))
-	handleErr(app.StakingKeeper.Hooks().AfterValidatorCreated(ctx, validator))
+	app.StakingKeeper.SetValidator(ctx, newVal)
+	err = app.StakingKeeper.SetValidatorByConsAddr(ctx, newVal)
+	if err != nil {
+		tmos.Exit(err.Error())
+	}
+	app.StakingKeeper.SetValidatorByPowerIndex(ctx, newVal)
+	app.StakingKeeper.SetLastValidatorPower(ctx, validator, 0)
+	if err := app.StakingKeeper.Hooks().AfterValidatorCreated(ctx, validator); err != nil {
+		tmos.Exit(err.Error())
+	}
 
 	// DISTRIBUTION
 	//
 
 	// Initialize records for this validator across all distribution stores
-	handleErr(app.DistrKeeper.SetValidatorHistoricalRewards(ctx, validator, 0, distrtypes.NewValidatorHistoricalRewards(sdk.DecCoins{}, 1)))
-	handleErr(app.DistrKeeper.SetValidatorCurrentRewards(ctx, validator, distrtypes.NewValidatorCurrentRewards(sdk.DecCoins{}, 1)))
-	handleErr(app.DistrKeeper.SetValidatorAccumulatedCommission(ctx, validator, distrtypes.InitialValidatorAccumulatedCommission()))
-	handleErr(app.DistrKeeper.SetValidatorOutstandingRewards(ctx, validator, distrtypes.ValidatorOutstandingRewards{Rewards: sdk.DecCoins{}}))
+	app.DistrKeeper.SetValidatorHistoricalRewards(ctx, validator, 0, distrtypes.NewValidatorHistoricalRewards(sdk.DecCoins{}, 1))
+	app.DistrKeeper.SetValidatorCurrentRewards(ctx, validator, distrtypes.NewValidatorCurrentRewards(sdk.DecCoins{}, 1))
+	app.DistrKeeper.SetValidatorAccumulatedCommission(ctx, validator, distrtypes.InitialValidatorAccumulatedCommission())
+	app.DistrKeeper.SetValidatorOutstandingRewards(ctx, validator, distrtypes.ValidatorOutstandingRewards{Rewards: sdk.DecCoins{}})
 
 	// SLASHING
 	//
@@ -169,26 +184,30 @@ func initAppForTestnet(app *app.App, args valArgs) *app.App {
 	newConsAddr := sdk.ConsAddress(args.newValAddr.Bytes())
 	newValidatorSigningInfo := slashingtypes.ValidatorSigningInfo{
 		Address:     newConsAddr.String(),
-		StartHeight: app.App.LastBlockHeight() - 1,
+		StartHeight: app.LastBlockHeight() - 1,
 		Tombstoned:  false,
 	}
-	_ = app.SlashingKeeper.SetValidatorSigningInfo(ctx, newConsAddr, newValidatorSigningInfo)
+	app.SlashingKeeper.SetValidatorSigningInfo(ctx, newConsAddr, newValidatorSigningInfo)
 
 	// BANK
 	//
 	bondDenom, err := app.StakingKeeper.BondDenom(ctx)
-	handleErr(err)
+	if err != nil {
+		tmos.Exit(err.Error())
+	}
 
 	defaultCoins := sdk.NewCoins(sdk.NewInt64Coin(bondDenom, 1000000000))
 
 	// Fund local accounts
-	for _, accountStr := range args.accountsToFund {
-		handleErr(app.BankKeeper.MintCoins(ctx, minttypes.ModuleName, defaultCoins))
-
-		account, err := app.AuthKeeper.AddressCodec().StringToBytes(accountStr)
-		handleErr(err)
-
-		handleErr(app.BankKeeper.SendCoinsFromModuleToAccount(ctx, minttypes.ModuleName, account, defaultCoins))
+	for _, account := range args.accountsToFund {
+		err := app.BankKeeper.MintCoins(ctx, minttypes.ModuleName, defaultCoins)
+		if err != nil {
+			tmos.Exit(err.Error())
+		}
+		err = app.BankKeeper.SendCoinsFromModuleToAccount(ctx, minttypes.ModuleName, account, defaultCoins)
+		if err != nil {
+			tmos.Exit(err.Error())
+		}
 	}
 
 	return app
@@ -200,43 +219,44 @@ func getCommandArgs(appOpts servertypes.AppOptions) (valArgs, error) {
 
 	newValAddr, ok := appOpts.Get(server.KeyNewValAddr).(bytes.HexBytes)
 	if !ok {
-		return args, errors.New("newValAddr is not of type bytes.HexBytes")
+		panic("newValAddr is not of type bytes.HexBytes")
 	}
 	args.newValAddr = newValAddr
 	newValPubKey, ok := appOpts.Get(server.KeyUserPubKey).(crypto.PubKey)
 	if !ok {
-		return args, errors.New("newValPubKey is not of type crypto.PubKey")
+		panic("newValPubKey is not of type crypto.PubKey")
 	}
 	args.newValPubKey = newValPubKey
 	newOperatorAddress, ok := appOpts.Get(server.KeyNewOpAddr).(string)
 	if !ok {
-		return args, errors.New("newOperatorAddress is not of type string")
+		panic("newOperatorAddress is not of type string")
 	}
 	args.newOperatorAddress = newOperatorAddress
 	upgradeToTrigger, ok := appOpts.Get(server.KeyTriggerTestnetUpgrade).(string)
 	if !ok {
-		return args, errors.New("upgradeToTrigger is not of type string")
+		panic("upgradeToTrigger is not of type string")
 	}
 	args.upgradeToTrigger = upgradeToTrigger
 
-	// parsing  and set accounts to fund
+	// validate  and set accounts to fund
 	accountsString := cast.ToString(appOpts.Get(flagAccountsToFund))
-	args.accountsToFund = append(args.accountsToFund, strings.Split(accountsString, ",")...)
+
+	for _, account := range strings.Split(accountsString, ",") {
+		if account != "" {
+			addr, err := sdk.AccAddressFromBech32(account)
+			if err != nil {
+				return args, fmt.Errorf("invalid bech32 address format %w", err)
+			}
+			args.accountsToFund = append(args.accountsToFund, addr)
+		}
+	}
 
 	// home dir
 	homeDir := cast.ToString(appOpts.Get(flags.FlagHome))
 	if homeDir == "" {
-		return args, errors.New("invalid home dir")
+		return args, fmt.Errorf("invalid home dir")
 	}
 	args.homeDir = homeDir
 
 	return args, nil
-}
-
-// handleErr prints the error and exits the program if the error is not nil
-func handleErr(err error) {
-	if err != nil {
-		fmt.Fprintln(os.Stderr, err.Error())
-		os.Exit(1)
-	}
 }
