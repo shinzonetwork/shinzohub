@@ -1,0 +1,47 @@
+// Exported from the playground, these relationships should give you an idea of how the ACP relationships have been setup
+// http://acp-playground.stage.infra.source.network/
+// Learn more here - https://docs.source.network/sourcehub/getting-started/acp-check
+
+primitive:blocks#owner@did:user:sourcehub
+primitive:blocks#admin@did:user:shinzohub
+primitive:blocks#writer@group:indexer#member
+primitive:blocks#reader@group:host#member
+primitive:blocks#reader@did:user:randomUser
+primitive:blocks#banned@did:user:aBannedIndexer
+primitive:blocks#subscriber@did:user:subscriber
+
+view:datafeedA#owner@did:user:sourcehub
+view:datafeedA#admin@did:user:shinzohub
+view:datafeedA#admin@group:shinzoteam#administrator
+view:datafeedA#creator@did:user:creator
+view:datafeedA#subscriber@did:user:subscriber
+view:datafeedA#writer@group:host#member
+view:datafeedA#banned@did:user:aBannedHost
+view:datafeedA#parent@primitive:blocks
+
+view:datafeedB#owner@did:user:sourcehub
+view:datafeedB#admin@did:user:shinzohub
+view:datafeedB#admin@group:shinzoteam#administrator
+view:datafeedB#creator@did:user:creatorOfB
+view:datafeedB#subscriber@did:user:subscriberToB
+view:datafeedB#parent@view:datafeedA
+
+group:shinzoteam#owner@did:user:addo 
+group:shinzoteam#admin@did:user:duncan
+group:shinzoteam#guest@did:user:quinn
+group:shinzoteam#guest@did:user:daniel
+
+group:indexer#owner@did:user:sourcehub
+group:indexer#admin@did:user:shinzohub
+group:indexer#admin@group:shinzoteam#administrator
+group:indexer#guest@did:user:anIndexer
+group:indexer#guest@did:user:aBlockedIndexer
+group:indexer#blocked@did:user:aBlockedIndexer
+group:indexer#guest@did:user:aBannedIndexer
+
+group:host#owner@did:user:sourcehub
+group:host#admin@did:user:shinzohub
+group:host#admin@group:shinzoteam#administrator
+group:host#guest@did:user:aHost
+group:host#guest@did:user:aBlockedHost
+group:host#blocked@did:user:aBlockedHost

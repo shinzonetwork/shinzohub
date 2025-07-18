@@ -1,0 +1,103 @@
+name: shinzo
+resources:
+  primitive:
+		relations:
+			admin:
+				manages:
+				- writer
+				- reader
+				- banned
+				types:
+				- actor
+				- group->administrator
+			writer:
+				types:
+				- actor
+				- group->member
+			reader:
+				types:
+				- actor
+				- group->member
+			subscriber:
+				types:
+				- actor
+			banned:
+				types:
+				- actor
+		permissions:
+			read:
+				expr: (writer + reader) - banned
+			update:
+				expr: writer - banned
+			delete:
+				expr: owner
+			query:
+				expr: (subscriber) - banned
+  view:
+    relations:
+      admin:
+        manages:
+        - writer
+        - reader
+        - subscriber
+        - banned
+        types:
+        - actor
+        - group->administrator
+      creator:
+        types:
+        - actor
+      writer:
+        types:
+        - actor
+        - group->member
+      reader:
+        types:
+        - actor
+        - group->member
+      banned:
+        types:
+        - actor
+      subscriber:
+        types:
+        - actor
+      parent:
+        types:
+        - primitive
+        - view
+    permissions:
+      read:
+        expr: writer + reader + parent->read + subscriber - banned
+      update:
+        expr: ((writer + parent->update) & parent->read) - banned
+      query:
+        expr: (subscriber) - banned
+      delete:
+        expr: owner
+  group:  
+    relations:
+      owner:
+        manages:
+        - admin
+        - guest
+        - blocked
+        types:
+        - actor
+      admin:
+        manages:
+        - guest
+        - blocked
+        types:
+        - actor
+        - group->administrator
+      guest:
+        types:
+        - actor
+      blocked:
+        types:
+        - actor
+    permissions:
+      member:
+        expr: guest - blocked
+      administrator:
+        expr: (owner + admin) - blocked

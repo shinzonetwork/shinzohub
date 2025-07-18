@@ -7,3 +7,9 @@ release/
 *.dot
 *.log
 *.ign
+
+# MacOS
+.DS_STORE
+
+# VSCode
+.history/
