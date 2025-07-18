@@ -1,0 +1,61 @@
+package api
+
+import (
+	"context"
+	"shinzohub/pkg/sourcehub"
+	"shinzohub/pkg/validators"
+)
+
+type ShinzoRegistrar struct {
+	Validator validators.Validator
+	Acp       sourcehub.AcpClient
+}
+
+const IndexerGroup string = "Indexer"
+const HostGroup string = "Host"
+
+func (registrar *ShinzoRegistrar) RequestIndexerRole(ctx context.Context, did string) error {
+	err := registrar.Validator.ValidateDid(did)
+	if err != nil {
+		return err
+	}
+
+	err = registrar.Acp.AddToGroup(IndexerGroup, did)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (registrar *ShinzoRegistrar) RequestHostRole(ctx context.Context, did string) error {
+	err := registrar.Validator.ValidateDid(did)
+	if err != nil {
+		return err
+	}
+
+	err = registrar.Acp.AddToGroup(HostGroup, did)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (registrar *ShinzoRegistrar) SubscribeToDataFeed(ctx context.Context, did string, dataFeedId string) error {
+	err := registrar.Validator.ValidateDid(did)
+	if err != nil {
+		return err
+	}
+	err = registrar.Validator.ValidateDataFeedId(dataFeedId)
+	if err != nil {
+		return err
+	}
+
+	err = registrar.Acp.GiveQueryAccess(dataFeedId, did)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
