@@ -20,7 +20,7 @@ func (registrar *ShinzoRegistrar) RequestIndexerRole(ctx context.Context, did st
 		return err
 	}
 
-	err = registrar.Acp.AddToGroup(IndexerGroup, did)
+	err = registrar.Acp.AddToGroup(ctx, IndexerGroup, did)
 	if err != nil {
 		return err
 	}
@@ -34,7 +34,7 @@ func (registrar *ShinzoRegistrar) RequestHostRole(ctx context.Context, did strin
 		return err
 	}
 
-	err = registrar.Acp.AddToGroup(HostGroup, did)
+	err = registrar.Acp.AddToGroup(ctx, HostGroup, did)
 	if err != nil {
 		return err
 	}
@@ -52,7 +52,7 @@ func (registrar *ShinzoRegistrar) SubscribeToDataFeed(ctx context.Context, did s
 		return err
 	}
 
-	err = registrar.Acp.GiveQueryAccess(dataFeedId, did)
+	err = registrar.Acp.GiveQueryAccess(ctx, dataFeedId, did)
 	if err != nil {
 		return err
 	}

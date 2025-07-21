@@ -65,8 +65,7 @@ func sendAndConfirmTx(ctx context.Context, acp *sdk.Client, txBuilder *sdk.TxBui
 	return nil
 }
 
-func (client *AcpGoClient) AddToGroup(groupName string, did string) error {
-	ctx := context.Background()
+func (client *AcpGoClient) AddToGroup(ctx context.Context, groupName string, did string) error {
 	policyId, err := client.lookupPolicyIdByGroupName(ctx, groupName)
 	if err != nil {
 		return addToGroupError(did, groupName, err)
@@ -93,8 +92,7 @@ func (client *AcpGoClient) AddToGroup(groupName string, did string) error {
 	return sendAndConfirmTx(ctx, client.acp, client.transactionBuilder, &msgSet, func(e error) error { return addToGroupError(did, groupName, e) })
 }
 
-func (client *AcpGoClient) RemoveFromGroup(groupName string, did string) error {
-	ctx := context.Background()
+func (client *AcpGoClient) RemoveFromGroup(ctx context.Context, groupName string, did string) error {
 	policyId, err := client.lookupPolicyIdByGroupName(ctx, groupName)
 	if err != nil {
 		return removeFromGroupError(did, groupName, err)
@@ -121,8 +119,7 @@ func (client *AcpGoClient) RemoveFromGroup(groupName string, did string) error {
 	return sendAndConfirmTx(ctx, client.acp, client.transactionBuilder, &msgSet, func(e error) error { return removeFromGroupError(did, groupName, e) })
 }
 
-func (client *AcpGoClient) GiveQueryAccess(documentId string, did string) error {
-	ctx := context.Background()
+func (client *AcpGoClient) GiveQueryAccess(ctx context.Context, documentId string, did string) error {
 	policyId, err := client.lookupPolicyIdByGroupName(ctx, "default-document-policy")
 	if err != nil {
 		return giveQueryAccessError(did, documentId, err)
