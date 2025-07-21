@@ -7,11 +7,13 @@ import (
 	coretypes "github.com/sourcenetwork/acp_core/pkg/types"
 	"github.com/sourcenetwork/sourcehub/sdk"
 	acptypes "github.com/sourcenetwork/sourcehub/x/acp/types"
+	"os"
 )
 
 type AcpGoClient struct {
 	acp                *sdk.Client
 	transactionBuilder *sdk.TxBuilder
+	signer             sdk.TxSigner
 }
 
 // Helper: look up policy ID by group name (assumes group name == policy name)
@@ -46,8 +48,8 @@ func giveQueryAccessError(did, documentId string, err error) error {
 	return fmt.Errorf("Encountered an error giving query access to %s for document %s: %w", did, documentId, err)
 }
 
-func sendAndConfirmTx(ctx context.Context, acp *sdk.Client, txBuilder *sdk.TxBuilder, msgSet *sdk.MsgSet, decorateError func(error) error) error {
-	tx, err := txBuilder.Build(ctx, nil, msgSet) // nil signer placeholder
+func sendAndConfirmTx(ctx context.Context, acp *sdk.Client, txBuilder *sdk.TxBuilder, signer sdk.TxSigner, msgSet *sdk.MsgSet, decorateError func(error) error) error {
+	tx, err := txBuilder.Build(ctx, signer, msgSet)
 	if err != nil {
 		return decorateError(err)
 	}
@@ -89,7 +91,7 @@ func (client *AcpGoClient) AddToGroup(ctx context.Context, groupName string, did
 	msg := acptypes.NewMsgSignedPolicyCmdFromJWS(did, jws)
 	msgSet := sdk.MsgSet{}
 	msgSet.WithSignedPolicyCmd(msg)
-	return sendAndConfirmTx(ctx, client.acp, client.transactionBuilder, &msgSet, func(e error) error { return addToGroupError(did, groupName, e) })
+	return sendAndConfirmTx(ctx, client.acp, client.transactionBuilder, client.signer, &msgSet, func(e error) error { return addToGroupError(did, groupName, e) })
 }
 
 func (client *AcpGoClient) RemoveFromGroup(ctx context.Context, groupName string, did string) error {
@@ -116,7 +118,7 @@ func (client *AcpGoClient) RemoveFromGroup(ctx context.Context, groupName string
 	msg := acptypes.NewMsgSignedPolicyCmdFromJWS(did, jws)
 	msgSet := sdk.MsgSet{}
 	msgSet.WithSignedPolicyCmd(msg)
-	return sendAndConfirmTx(ctx, client.acp, client.transactionBuilder, &msgSet, func(e error) error { return removeFromGroupError(did, groupName, e) })
+	return sendAndConfirmTx(ctx, client.acp, client.transactionBuilder, client.signer, &msgSet, func(e error) error { return removeFromGroupError(did, groupName, e) })
 }
 
 func (client *AcpGoClient) GiveQueryAccess(ctx context.Context, documentId string, did string) error {
@@ -143,5 +145,5 @@ func (client *AcpGoClient) GiveQueryAccess(ctx context.Context, documentId strin
 	msg := acptypes.NewMsgSignedPolicyCmdFromJWS(did, jws)
 	msgSet := sdk.MsgSet{}
 	msgSet.WithSignedPolicyCmd(msg)
-	return sendAndConfirmTx(ctx, client.acp, client.transactionBuilder, &msgSet, func(e error) error { return giveQueryAccessError(did, documentId, e) })
+	return sendAndConfirmTx(ctx, client.acp, client.transactionBuilder, client.signer, &msgSet, func(e error) error { return giveQueryAccessError(did, documentId, e) })
 }
