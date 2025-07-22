@@ -10,3 +10,7 @@ release/
 
 # VSCode
 .history/
+
+# Dev env
+logs/
+.shinzohub/

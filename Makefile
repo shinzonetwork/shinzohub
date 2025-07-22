@@ -102,4 +102,48 @@ govulncheck:
 	@go tool golang.org/x/vuln/cmd/govulncheck@latest
 	@govulncheck ./...
 
-.PHONY: govet govulncheck
+DEFRA_PATH ?=
+
+bootstrap:
+	@if [ -z "$(SOURCEHUB_PATH)" ]; then \
+		echo "ERROR: You must pass SOURCEHUB_PATH or set it as an environment variable. Usage:"; \
+		echo " make bootstrap SOURCEHUB_PATH=../path/to/sourcehub"; \
+		exit 1; \
+	fi
+	@scripts/bootstrap.sh "$(SOURCEHUB_PATH)"
+
+stop:
+	@echo "===> Stopping sourcehubd if running..."
+	@SHINZO_ROOTDIR="$(shell pwd)/.shinzohub"; \
+	SOURCEHUB_PIDS=$$(ps aux | grep '[s]ourcehubd' | awk '{print $$2}'); \
+	if [ -n "$$SOURCEHUB_PIDS" ]; then \
+	  echo "Killing sourcehubd PIDs: $$SOURCEHUB_PIDS"; \
+	  echo "$$SOURCEHUB_PIDS" | xargs -r kill -9 2>/dev/null; \
+	  echo "Stopped all sourcehubd processes"; \
+	else \
+	  echo "No sourcehubd processes found"; \
+	fi; \
+	rm -f .shinzohub/sourcehubd.pid;
+	@echo "===> Stopping shinzohubd if running..."
+	SHINZOHUBD_PIDS=$$(ps aux | grep '[s]hinzohubd' | awk '{print $$2}'); \
+	if [ -n "$$SHINZOHUBD_PIDS" ]; then \
+	  echo "Killing shinzohubd PIDs: $$SHINZOHUBD_PIDS"; \
+	  echo "$$SHINZOHUBD_PIDS" | xargs -r kill -9 2>/dev/null; \
+	  echo "Stopped all shinzohubd processes"; \
+	else \
+	  echo "No shinzohubd processes found"; \
+	fi; \
+	rm -f .shinzohub/shinzohubd.pid;
+	@echo "===> Stopping registrar if running..."
+	REGISTRAR_PIDS=$$(ps aux | grep '[r]egistrar' | awk '{print $$2}'); \
+	if [ -n "$$REGISTRAR_PIDS" ]; then \
+	  echo "Killing registrar PIDs: $$REGISTRAR_PIDS"; \
+	  echo "$$REGISTRAR_PIDS" | xargs -r kill -9 2>/dev/null; \
+	  echo "Stopped all registrar processes"; \
+	else \
+	  echo "No registrar processes found"; \
+	fi; \
+	rm -f .shinzohub/registrar.pid;
+	@rm -f .shinzohub/ready
+
+.PHONY: govet govulncheck bootstrap stop
