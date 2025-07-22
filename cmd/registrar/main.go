@@ -8,13 +8,12 @@ import (
 	"shinzohub/pkg/sourcehub"
 	"shinzohub/pkg/utils"
 	"shinzohub/pkg/validators"
+
+	"github.com/sourcenetwork/sourcehub/sdk"
 )
 
 func main() {
-	registrar := api.ShinzoRegistrar{
-		Validator: &validators.RegistrarValidator{},
-		Acp:       &sourcehub.AcpGoClient{},
-	}
+	registrar := buildRegistrarHandler()
 
 	type RegistrarRequest struct {
 		DID        string `json:"did"`
@@ -58,4 +57,28 @@ func main() {
 	if err := http.ListenAndServe(":8080", mainMux); err != nil {
 		log.Fatalf("Server failed: %v", err)
 	}
+}
+
+func buildRegistrarHandler() api.ShinzoRegistrar {
+	signer, err := sourcehub.NewApiSignerFromEnv()
+	if err != nil {
+		log.Fatalf("Failed to load API signer: %v", err)
+	}
+
+	acpClient, err := sdk.NewClient()
+	if err != nil {
+		log.Fatalf("Failed to create ACP SDK client: %v", err)
+	}
+	txBuilder, err := sdk.NewTxBuilder(sdk.WithSDKClient(acpClient))
+	if err != nil {
+		log.Fatalf("Failed to create TxBuilder: %v", err)
+	}
+
+	acpGoClient := sourcehub.NewAcpGoClient(acpClient, &txBuilder, signer)
+
+	registrar := api.ShinzoRegistrar{
+		Validator: &validators.RegistrarValidator{},
+		Acp:       acpGoClient,
+	}
+	return registrar
 }

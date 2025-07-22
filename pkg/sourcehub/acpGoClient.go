@@ -7,7 +7,6 @@ import (
 	coretypes "github.com/sourcenetwork/acp_core/pkg/types"
 	"github.com/sourcenetwork/sourcehub/sdk"
 	acptypes "github.com/sourcenetwork/sourcehub/x/acp/types"
-	"os"
 )
 
 type AcpGoClient struct {
@@ -65,6 +64,14 @@ func sendAndConfirmTx(ctx context.Context, acp *sdk.Client, txBuilder *sdk.TxBui
 		return decorateError(fmt.Errorf("Transaction failed: %w", execErr))
 	}
 	return nil
+}
+
+func NewAcpGoClient(acp *sdk.Client, txBuilder *sdk.TxBuilder, signer sdk.TxSigner) *AcpGoClient {
+	return &AcpGoClient{
+		acp:                acp,
+		transactionBuilder: txBuilder,
+		signer:             signer,
+	}
 }
 
 func (client *AcpGoClient) AddToGroup(ctx context.Context, groupName string, did string) error {
