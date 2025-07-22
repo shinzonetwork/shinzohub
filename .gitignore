@@ -8,9 +8,12 @@ release/
 *.log
 *.ign
 
-# VSCode
-.history/
-
 # Dev env
 logs/
 .shinzohub/
+
+# MacOS
+.DS_STORE
+
+# VSCode
+.history/
