@@ -1,6 +1,7 @@
 # 01 - Access Control Policies (ACPs)
 
 ## Status
+Proposed - editted by Quinn Purdy on July 24, 2025
 Proposed - written by Quinn Purdy on July 18, 2025
 
 ## Context
@@ -65,6 +66,12 @@ ShinzoHub will be given a special role on all documents and groups used by Shinz
 2) ShinzoHub needs to expose APIs where prospective Indexers and Hosts can register to join their respective group. This registration process may require the collection, validation, and/or storage of some data.
 
 3) `query` permissions on a Primitive or View will require payment. While the details are not yet finalized, payments are likely to be facilitated by a smart contract deployed on each Shinzo-supported chain; the Shinzo team has nicknamed this the "Outpost" contract for now. The Outpost contract will emit events whenever a successful payment is made. ShinzoHub will be required to listen for these events via IBC and then will need to give the paying did the appropriate role(s) such that they will have `query` permissions on the chosen Primitive or View.
+
+### Node Access Control
+
+By default, when working with SourceHub and Defra, any node has the ability to create new policies and attach relationships to them. This kind of flexible access control, while valuable for some use cases, is not desirable for Shinzo - Shinzo's goal is to make blockchain data highly available to paying users via a decentralized protocol and infrastructure, not to give user's ownership over data. In the case of Shinzo, the protocol, ShinzoHub, owns the data and it alone should maintain administrator priveledges on the data.
+
+To facilitate this, the default Node Access Control policy supported by DefraDB will be applied. This effectively locks down the network such that only ShinzoHub will be permitted to create new policies and apply relationships.
 
 ## Consequences
 Going forward, testing and interacting with the Shinzo system will become more difficult; you will need to have appropriate permissions to read and write to files and any test environments will likely require more setup to accomodate this. However, though this will initially be a bit of a hassle, it is worthwhile because it creates a local environment closer to what we will expect to see in production. Migrating early on in the development lifecycle is helpful because the amount and complexity of changes required to accomodate the newly introduced ACPs is much smaller early on than it will be in the future with more of Shinzo implemented.
