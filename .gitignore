@@ -1,3 +1,13 @@
+vue/node_modules
+vue/dist
+release/
+.idea/
+.vscode/
+.DS_Store
+*.dot
+*.log
+*.ign
+
 # MacOS
 .DS_STORE
 
