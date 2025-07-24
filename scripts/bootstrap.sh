@@ -50,6 +50,33 @@ echo "Started registrar (PID $REGISTRAR_PID). Logs at $REGISTRAR_LOG_PATH"
 
 sleep 3
 
+# Check if processes are running
+if ! kill -0 $SOURCEHUB_PID 2>/dev/null; then
+  echo "ERROR: sourcehubd failed to start (PID $SOURCEHUB_PID not running)" >&2
+  echo "--- sourcehubd log errors ---"
+  grep -iE 'error|fail|panic|fatal' "$SOURCEHUB_LOG_PATH" || echo "No error lines found in $SOURCEHUB_LOG_PATH"
+  exit 1
+fi
+if ! kill -0 $SHINZOHUBD_PID 2>/dev/null; then
+  echo "ERROR: shinzohubd failed to start (PID $SHINZOHUBD_PID not running)" >&2
+  echo "--- shinzohubd log errors ---"
+  grep -iE 'error|fail|panic|fatal' "$SHINZOHUBD_LOG_PATH" || echo "No error lines found in $SHINZOHUBD_LOG_PATH"
+  # exit 1
+fi
+if ! kill -0 $REGISTRAR_PID 2>/dev/null; then
+  echo "ERROR: registrar failed to start (PID $REGISTRAR_PID not running)" >&2
+  echo "--- registrar log errors ---"
+  grep -iE 'error|fail|panic|fatal' "$REGISTRAR_LOG_PATH" || echo "No error lines found in $REGISTRAR_LOG_PATH"
+  exit 1
+fi
+
+# Run setup_policy.sh to upload policy and create groups
+echo "===> Setting up policy and groups"
+if ! scripts/setup_policy.sh; then
+  echo "ERROR: setup_policy.sh failed. Exiting bootstrap."
+  exit 1
+fi
+
 # Create an empty file to indicate that services are ready
 READY_FILE="$ROOTDIR/ready"
 echo "===> Ready"
@@ -81,27 +108,7 @@ cleanup() {
   rm -f "$READY_FILE"
   exit 0
 }
-trap cleanup INT TERM
-
-# Check if processes are running
-if ! kill -0 $SOURCEHUB_PID 2>/dev/null; then
-  echo "ERROR: sourcehubd failed to start (PID $SOURCEHUB_PID not running)" >&2
-  echo "--- sourcehubd log errors ---"
-  grep -iE 'error|fail|panic|fatal' "$SOURCEHUB_LOG_PATH" || echo "No error lines found in $SOURCEHUB_LOG_PATH"
-  exit 1
-fi
-if ! kill -0 $SHINZOHUBD_PID 2>/dev/null; then
-  echo "ERROR: shinzohubd failed to start (PID $SHINZOHUBD_PID not running)" >&2
-  echo "--- shinzohubd log errors ---"
-  grep -iE 'error|fail|panic|fatal' "$SHINZOHUBD_LOG_PATH" || echo "No error lines found in $SHINZOHUBD_LOG_PATH"
-  # exit 1
-fi
-if ! kill -0 $REGISTRAR_PID 2>/dev/null; then
-  echo "ERROR: registrar failed to start (PID $REGISTRAR_PID not running)" >&2
-  echo "--- registrar log errors ---"
-  grep -iE 'error|fail|panic|fatal' "$REGISTRAR_LOG_PATH" || echo "No error lines found in $REGISTRAR_LOG_PATH"
-  exit 1
-fi
+trap cleanup INT TERM EXIT
 
 # Wait forever until killed, so trap always runs
 while true; do sleep 1; done 
