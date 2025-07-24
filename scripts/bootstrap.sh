@@ -48,6 +48,8 @@ REGISTRAR_PID=$!
 echo "$REGISTRAR_PID" > "$ROOTDIR/registrar.pid"
 echo "Started registrar (PID $REGISTRAR_PID). Logs at $REGISTRAR_LOG_PATH"
 
+sleep 3
+
 # Create an empty file to indicate that services are ready
 READY_FILE="$ROOTDIR/ready"
 echo "===> Ready"

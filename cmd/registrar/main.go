@@ -53,8 +53,8 @@ func main() {
 	mainMux := http.NewServeMux()
 	mainMux.Handle("/registrar/", http.StripPrefix("/registrar", registrarMux))
 
-	log.Println("Server listening on :8080")
-	if err := http.ListenAndServe(":8080", mainMux); err != nil {
+	log.Println("Server listening on :8081")
+	if err := http.ListenAndServe(":8081", mainMux); err != nil {
 		log.Fatalf("Server failed: %v", err)
 	}
 }
