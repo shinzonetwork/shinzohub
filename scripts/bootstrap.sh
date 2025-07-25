@@ -2,23 +2,34 @@
 
 set -e
 
+# Usage: ./scripts/bootstrap.sh /path/to/sourcehub [INDEXER_PATH=/path/to/indexer]  (or set INDEXER_PATH env var)
+
 SOURCEHUB_PATH="$1"
+INDEXER_PATH="${INDEXER_PATH:-$2}"
 ROOTDIR="$(pwd)/.shinzohub"
 LOGDIR="logs"
 SOURCEHUB_LOG_PATH="$LOGDIR/sourcehub_logs.txt"
 SHINZOHUBD_LOG_PATH="$LOGDIR/shinzohubd_logs.txt"
 REGISTRAR_LOG_PATH="$LOGDIR/registrar_logs.txt"
+INDEXER_BOOTSTRAP_LOG_PATH="$LOGDIR/indexer_bootstrap_logs.txt"
 
 # Expand ~ to $HOME if present
 SOURCEHUB_PATH="${SOURCEHUB_PATH/#\~/$HOME}"
+INDEXER_PATH="${INDEXER_PATH/#\~/$HOME}"
 
 if [[ -z "$SOURCEHUB_PATH" ]]; then
   echo "ERROR: You must pass SOURCEHUB_PATH. Usage:"
-  echo "  make bootstrap SOURCEHUB_PATH=/path/to/sourcehub"
+  echo "  make bootstrap SOURCEHUB_PATH=/path/to/sourcehub INDEXER_PATH=/path/to/indexer"
+  exit 1
+fi
+if [[ -z "$INDEXER_PATH" ]]; then
+  echo "ERROR: You must pass INDEXER_PATH (as env var or 2nd arg). Usage:"
+  echo "  make bootstrap SOURCEHUB_PATH=/path/to/sourcehub INDEXER_PATH=/path/to/indexer"
   exit 1
 fi
 
 SOURCEHUB_ROOT="$(cd "$SOURCEHUB_PATH" && pwd)"
+INDEXER_ROOT="$(cd "$INDEXER_PATH" && pwd)"
 
 mkdir -p "$LOGDIR"
 mkdir -p "$ROOTDIR"
@@ -48,6 +59,13 @@ REGISTRAR_PID=$!
 echo "$REGISTRAR_PID" > "$ROOTDIR/registrar.pid"
 echo "Started registrar (PID $REGISTRAR_PID). Logs at $REGISTRAR_LOG_PATH"
 
+# Start indexer bootstrap (DefraDB + block_poster)
+echo "===> Bootstrapping indexer (DefraDB/block_poster) from $INDEXER_ROOT"
+(cd "$INDEXER_ROOT" && ./scripts/bootstrap.sh "$INDEXER_ROOT/../defradb" > "$OLDPWD/$INDEXER_BOOTSTRAP_LOG_PATH" 2>&1 &)
+INDEXER_BOOTSTRAP_PID=$!
+echo "$INDEXER_BOOTSTRAP_PID" > "$ROOTDIR/indexer_bootstrap.pid"
+echo "Started indexer bootstrap (PID $INDEXER_BOOTSTRAP_PID). Logs at $INDEXER_BOOTSTRAP_LOG_PATH"
+
 sleep 3
 
 # Check if processes are running
@@ -55,18 +73,28 @@ if ! kill -0 $SOURCEHUB_PID 2>/dev/null; then
   echo "ERROR: sourcehubd failed to start (PID $SOURCEHUB_PID not running)" >&2
   echo "--- sourcehubd log errors ---"
   grep -iE 'error|fail|panic|fatal' "$SOURCEHUB_LOG_PATH" || echo "No error lines found in $SOURCEHUB_LOG_PATH"
+  cleanup
   exit 1
 fi
 if ! kill -0 $SHINZOHUBD_PID 2>/dev/null; then
   echo "ERROR: shinzohubd failed to start (PID $SHINZOHUBD_PID not running)" >&2
   echo "--- shinzohubd log errors ---"
   grep -iE 'error|fail|panic|fatal' "$SHINZOHUBD_LOG_PATH" || echo "No error lines found in $SHINZOHUBD_LOG_PATH"
+  # cleanup
   # exit 1
 fi
 if ! kill -0 $REGISTRAR_PID 2>/dev/null; then
   echo "ERROR: registrar failed to start (PID $REGISTRAR_PID not running)" >&2
   echo "--- registrar log errors ---"
   grep -iE 'error|fail|panic|fatal' "$REGISTRAR_LOG_PATH" || echo "No error lines found in $REGISTRAR_LOG_PATH"
+  cleanup
+  exit 1
+fi
+if ! kill -0 $INDEXER_BOOTSTRAP_PID 2>/dev/null; then
+  echo "ERROR: indexer bootstrap failed to start (PID $INDEXER_BOOTSTRAP_PID not running)" >&2
+  echo "--- indexer bootstrap log errors ---"
+  grep -iE 'error|fail|panic|fatal' "$INDEXER_BOOTSTRAP_LOG_PATH" || echo "No error lines found in $INDEXER_BOOTSTRAP_LOG_PATH"
+  cleanup
   exit 1
 fi
 
@@ -74,6 +102,7 @@ fi
 echo "===> Setting up policy and groups"
 if ! scripts/setup_policy.sh; then
   echo "ERROR: setup_policy.sh failed. Exiting bootstrap."
+  cleanup
   exit 1
 fi
 
@@ -104,6 +133,22 @@ cleanup() {
   if [[ -f "$ROOTDIR/registrar.pid" ]]; then
     kill -9 $(cat "$ROOTDIR/registrar.pid") 2>/dev/null || true
     rm -f "$ROOTDIR/registrar.pid"
+  fi
+  echo "Stopping indexer bootstrap..."
+  if [[ -f "$ROOTDIR/indexer_bootstrap.pid" ]]; then
+    kill -9 $(cat "$ROOTDIR/indexer_bootstrap.pid") 2>/dev/null || true
+    rm -f "$ROOTDIR/indexer_bootstrap.pid"
+  fi
+  # Failsafe: kill any remaining defradb/block_poster processes
+  DEFRA_PIDS=$(ps aux | grep '[d]efradb start --rootdir ' | awk '{print $2}')
+  if [[ -n "$DEFRA_PIDS" ]]; then
+    echo "Killing remaining defradb PIDs: $DEFRA_PIDS"
+    echo "$DEFRA_PIDS" | xargs -r kill -9 2>/dev/null || true
+  fi
+  POSTER_PIDS=$(ps aux | grep '[b]lock_poster' | awk '{print $2}')
+  if [[ -n "$POSTER_PIDS" ]]; then
+    echo "Killing remaining block_poster PIDs: $POSTER_PIDS"
+    echo "$POSTER_PIDS" | xargs -r kill -9 2>/dev/null || true
   fi
   rm -f "$READY_FILE"
   exit 0
