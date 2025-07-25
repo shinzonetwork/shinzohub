@@ -35,9 +35,6 @@ find_policy_id_by_name() {
 POLICY_ID=$(find_policy_id_by_name "$POLICY_NAME")
 if [[ -n "$POLICY_ID" ]]; then
   echo "Policy with name '$POLICY_NAME' already exists with ID: $POLICY_ID"
-  mkdir -p .shinzohub
-  echo "$POLICY_ID" > "$POLICY_ID_FILE"
-  echo "Saved policy ID to $POLICY_ID_FILE"
   exit 0
 fi
 
