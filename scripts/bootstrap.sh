@@ -59,6 +59,25 @@ REGISTRAR_PID=$!
 echo "$REGISTRAR_PID" > "$ROOTDIR/registrar.pid"
 echo "Started registrar (PID $REGISTRAR_PID). Logs at $REGISTRAR_LOG_PATH"
 
+# Inject policy id into indexer schema before starting indexer bootstrap
+POLICY_ID_FILE="$ROOTDIR/policy_id"
+SCHEMA_FILE="$INDEXER_ROOT/schema/schema.graphql"
+if [[ ! -f "$POLICY_ID_FILE" ]]; then
+  echo "ERROR: Policy ID file not found at $POLICY_ID_FILE. Cannot update schema."
+  exit 1
+fi
+POLICY_ID=$(cat "$POLICY_ID_FILE")
+if [[ -z "$POLICY_ID" ]]; then
+  echo "ERROR: Policy ID is empty in $POLICY_ID_FILE. Cannot update schema."
+  exit 1
+fi
+if [[ ! -f "$SCHEMA_FILE" ]]; then
+  echo "ERROR: Schema file not found at $SCHEMA_FILE."
+  exit 1
+fi
+# Replace <replace_with_policy_id> with actual policy id (removing chevrons)
+sed -i.bak "s/<replace_with_policy_id>/$POLICY_ID/g" "$SCHEMA_FILE"
+
 # Start indexer bootstrap (DefraDB + block_poster)
 echo "===> Bootstrapping indexer (DefraDB/block_poster) from $INDEXER_ROOT"
 (cd "$INDEXER_ROOT" && ./scripts/bootstrap.sh "$INDEXER_ROOT/../defradb" > "$OLDPWD/$INDEXER_BOOTSTRAP_LOG_PATH" 2>&1 &)
@@ -150,6 +169,12 @@ cleanup() {
     echo "Killing remaining block_poster PIDs: $POSTER_PIDS"
     echo "$POSTER_PIDS" | xargs -r kill -9 2>/dev/null || true
   fi
+  # Restore schema file to original state
+  if [[ -f "$SCHEMA_FILE" && -n "$POLICY_ID" ]]; then
+    ESCAPED_POLICY_ID=$(printf '%s\n' "$POLICY_ID" | sed 's/[\\/&|]/\\&/g')
+    sed -i "" "s|$ESCAPED_POLICY_ID|<replace_with_policy_id>|g" "$SCHEMA_FILE"
+  fi
+  rm -f "$SCHEMA_FILE.bak"
   rm -f "$READY_FILE"
   exit 0
 }
