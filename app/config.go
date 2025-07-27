@@ -1,6 +1,8 @@
 package app
 
-import sdk "github.com/cosmos/cosmos-sdk/types"
+import (
+	sdk "github.com/cosmos/cosmos-sdk/types"
+)
 
 func init() {
 	// Set prefixes
@@ -13,6 +15,7 @@ func init() {
 	// Set and seal config
 	config := sdk.GetConfig()
 	config.SetCoinType(ChainCoinType)
+	config.SetPurpose(sdk.Purpose)
 	config.SetBech32PrefixForAccount(AccountAddressPrefix, accountPubKeyPrefix)
 	config.SetBech32PrefixForValidator(validatorAddressPrefix, validatorPubKeyPrefix)
 	config.SetBech32PrefixForConsensusNode(consNodeAddressPrefix, consNodePubKeyPrefix)

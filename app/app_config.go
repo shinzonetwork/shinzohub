@@ -46,11 +46,12 @@ import (
 	paramstypes "github.com/cosmos/cosmos-sdk/x/params/types"
 	slashingtypes "github.com/cosmos/cosmos-sdk/x/slashing/types"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
-	capabilitytypes "github.com/cosmos/ibc-go/modules/capability/types"
-	icatypes "github.com/cosmos/ibc-go/v8/modules/apps/27-interchain-accounts/types"
-	ibcfeetypes "github.com/cosmos/ibc-go/v8/modules/apps/29-fee/types"
-	ibctransfertypes "github.com/cosmos/ibc-go/v8/modules/apps/transfer/types"
-	ibcexported "github.com/cosmos/ibc-go/v8/modules/core/exported"
+	erc20types "github.com/cosmos/evm/x/erc20/types"
+	feemarkettypes "github.com/cosmos/evm/x/feemarket/types"
+	evmtypes "github.com/cosmos/evm/x/vm/types"
+	icatypes "github.com/cosmos/ibc-go/v10/modules/apps/27-interchain-accounts/types"
+	ibctransfertypes "github.com/cosmos/ibc-go/v10/modules/apps/transfer/types"
+	ibcexported "github.com/cosmos/ibc-go/v10/modules/core/exported"
 	"google.golang.org/protobuf/types/known/durationpb"
 
 	shinzohubmodulev1 "shinzohub/api/shinzohub/shinzohub/module"
@@ -68,7 +69,7 @@ var (
 	// can do so safely.
 	genesisModuleOrder = []string{
 		// cosmos-sdk/ibc modules
-		capabilitytypes.ModuleName,
+		// capabilitytypes.ModuleName,
 		authtypes.ModuleName,
 		banktypes.ModuleName,
 		distrtypes.ModuleName,
@@ -78,12 +79,16 @@ var (
 		minttypes.ModuleName,
 		crisistypes.ModuleName,
 		ibcexported.ModuleName,
+
+		feemarkettypes.ModuleName,
+		erc20types.ModuleName,
+		evmtypes.ModuleName,
+
 		genutiltypes.ModuleName,
 		evidencetypes.ModuleName,
 		authz.ModuleName,
 		ibctransfertypes.ModuleName,
 		icatypes.ModuleName,
-		ibcfeetypes.ModuleName,
 		feegrant.ModuleName,
 		paramstypes.ModuleName,
 		upgradetypes.ModuleName,
@@ -111,12 +116,16 @@ var (
 		stakingtypes.ModuleName,
 		authz.ModuleName,
 		genutiltypes.ModuleName,
+
+		// NEW modules (in correct order!)
+		erc20types.ModuleName,
+		feemarkettypes.ModuleName,
+		evmtypes.ModuleName,
+
 		// ibc modules
-		capabilitytypes.ModuleName,
 		ibcexported.ModuleName,
 		ibctransfertypes.ModuleName,
 		icatypes.ModuleName,
-		ibcfeetypes.ModuleName,
 		// chain modules
 		shinzohubmoduletypes.ModuleName,
 		// this line is used by starport scaffolding # stargate/app/beginBlockers
@@ -130,12 +139,16 @@ var (
 		feegrant.ModuleName,
 		group.ModuleName,
 		genutiltypes.ModuleName,
+
+		// NEW modules
+		evmtypes.ModuleName,
+		feemarkettypes.ModuleName,
+		erc20types.ModuleName,
+
 		// ibc modules
 		ibcexported.ModuleName,
 		ibctransfertypes.ModuleName,
-		capabilitytypes.ModuleName,
 		icatypes.ModuleName,
-		ibcfeetypes.ModuleName,
 		// chain modules
 		shinzohubmoduletypes.ModuleName,
 		// this line is used by starport scaffolding # stargate/app/endBlockers
@@ -156,9 +169,13 @@ var (
 		{Account: govtypes.ModuleName, Permissions: []string{authtypes.Burner}},
 		{Account: nft.ModuleName},
 		{Account: ibctransfertypes.ModuleName, Permissions: []string{authtypes.Minter, authtypes.Burner}},
-		{Account: ibcfeetypes.ModuleName},
 		{Account: icatypes.ModuleName},
 		// this line is used by starport scaffolding # stargate/app/maccPerms
+
+		// Add these entries
+		{Account: evmtypes.ModuleName, Permissions: []string{authtypes.Minter, authtypes.Burner}},
+		{Account: feemarkettypes.ModuleName}, // No permissions needed
+		{Account: erc20types.ModuleName, Permissions: []string{authtypes.Minter, authtypes.Burner}},
 	}
 
 	// blocked account addresses

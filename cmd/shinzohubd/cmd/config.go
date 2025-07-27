@@ -3,6 +3,7 @@ package cmd
 import (
 	cmtcfg "github.com/cometbft/cometbft/config"
 	serverconfig "github.com/cosmos/cosmos-sdk/server/config"
+	evmserverconfig "github.com/cosmos/evm/server/config"
 )
 
 // initCometBFTConfig helps to override default CometBFT Config values.
@@ -23,6 +24,10 @@ func initAppConfig() (string, interface{}) {
 	// The following code snippet is just for reference.
 	type CustomAppConfig struct {
 		serverconfig.Config `mapstructure:",squash"`
+
+		EVM     evmserverconfig.EVMConfig
+		JSONRPC evmserverconfig.JSONRPCConfig
+		TLS     evmserverconfig.TLSConfig
 	}
 
 	// Optionally allow the chain developer to overwrite the SDK's default
@@ -44,10 +49,19 @@ func initAppConfig() (string, interface{}) {
 	// srvCfg.BaseConfig.IAVLDisableFastNode = true // disable fastnode by default
 
 	customAppConfig := CustomAppConfig{
-		Config: *srvCfg,
+		Config:  *srvCfg,
+		EVM:     *evmserverconfig.DefaultEVMConfig(),
+		JSONRPC: *evmserverconfig.DefaultJSONRPCConfig(),
+		TLS:     *evmserverconfig.DefaultTLSConfig(),
 	}
 
+	customAppConfig.JSONRPC.Enable = true
+
 	customAppTemplate := serverconfig.DefaultConfigTemplate
+
+	// Add EVM template to existing config
+	customAppTemplate += evmserverconfig.DefaultEVMConfigTemplate
+
 	// Edit the default template file
 	//
 	// customAppTemplate := serverconfig.DefaultConfigTemplate + `

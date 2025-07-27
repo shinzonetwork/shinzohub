@@ -25,6 +25,10 @@ import (
 	"github.com/spf13/viper"
 
 	"shinzohub/app"
+
+	evmcmd "github.com/cosmos/evm/client"
+	evmserver "github.com/cosmos/evm/server"
+	srvflags "github.com/cosmos/evm/server/flags"
 )
 
 func initRootCmd(
@@ -42,7 +46,14 @@ func initRootCmd(
 		snapshot.Cmd(newApp),
 	)
 
-	server.AddCommands(rootCmd, app.DefaultNodeHome, newApp, appExport, addModuleInitFlags)
+	// Replace server.AddCommands with the following to
+	// add EVM Comet commands to start server, etc.:
+	evmserver.AddCommands(
+		rootCmd,
+		evmserver.NewDefaultStartOptions(newApp, app.DefaultNodeHome),
+		appExport,
+		addModuleInitFlags,
+	)
 
 	// add keybase, auxiliary RPC, query, genesis, and tx child commands
 	rootCmd.AddCommand(
@@ -51,7 +62,12 @@ func initRootCmd(
 		queryCommand(),
 		txCommand(),
 		keys.Commands(),
+		evmcmd.KeyCommands(app.DefaultNodeHome, true),
 	)
+
+	if _, err := srvflags.AddTxFlags(rootCmd); err != nil {
+		panic(err)
+	}
 }
 
 func addModuleInitFlags(startCmd *cobra.Command) {
@@ -130,6 +146,7 @@ func newApp(
 	app, err := app.New(
 		logger, db, traceStore, true,
 		appOpts,
+		app.EVMAppOptions,
 		baseappOptions...,
 	)
 	if err != nil {
@@ -171,7 +188,7 @@ func appExport(
 	appOpts = viperAppOpts
 
 	if height != -1 {
-		bApp, err = app.New(logger, db, traceStore, false, appOpts)
+		bApp, err = app.New(logger, db, traceStore, false, appOpts, app.EVMAppOptions)
 		if err != nil {
 			return servertypes.ExportedApp{}, err
 		}
@@ -180,7 +197,7 @@ func appExport(
 			return servertypes.ExportedApp{}, err
 		}
 	} else {
-		bApp, err = app.New(logger, db, traceStore, true, appOpts)
+		bApp, err = app.New(logger, db, traceStore, true, appOpts, app.EVMAppOptions)
 		if err != nil {
 			return servertypes.ExportedApp{}, err
 		}

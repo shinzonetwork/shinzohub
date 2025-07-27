@@ -10,45 +10,42 @@ import (
 	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
 	govv1beta1 "github.com/cosmos/cosmos-sdk/x/gov/types/v1beta1"
 	paramstypes "github.com/cosmos/cosmos-sdk/x/params/types"
-	"github.com/cosmos/ibc-go/modules/capability"
-	capabilitykeeper "github.com/cosmos/ibc-go/modules/capability/keeper"
-	capabilitytypes "github.com/cosmos/ibc-go/modules/capability/types"
-	icamodule "github.com/cosmos/ibc-go/v8/modules/apps/27-interchain-accounts"
-	icacontroller "github.com/cosmos/ibc-go/v8/modules/apps/27-interchain-accounts/controller"
-	icacontrollerkeeper "github.com/cosmos/ibc-go/v8/modules/apps/27-interchain-accounts/controller/keeper"
-	icacontrollertypes "github.com/cosmos/ibc-go/v8/modules/apps/27-interchain-accounts/controller/types"
-	icahost "github.com/cosmos/ibc-go/v8/modules/apps/27-interchain-accounts/host"
-	icahostkeeper "github.com/cosmos/ibc-go/v8/modules/apps/27-interchain-accounts/host/keeper"
-	icahosttypes "github.com/cosmos/ibc-go/v8/modules/apps/27-interchain-accounts/host/types"
-	icatypes "github.com/cosmos/ibc-go/v8/modules/apps/27-interchain-accounts/types"
-	ibcfee "github.com/cosmos/ibc-go/v8/modules/apps/29-fee"
-	ibcfeekeeper "github.com/cosmos/ibc-go/v8/modules/apps/29-fee/keeper"
-	ibcfeetypes "github.com/cosmos/ibc-go/v8/modules/apps/29-fee/types"
-	ibctransfer "github.com/cosmos/ibc-go/v8/modules/apps/transfer"
-	ibctransferkeeper "github.com/cosmos/ibc-go/v8/modules/apps/transfer/keeper"
-	ibctransfertypes "github.com/cosmos/ibc-go/v8/modules/apps/transfer/types"
-	ibc "github.com/cosmos/ibc-go/v8/modules/core"
-	ibcclienttypes "github.com/cosmos/ibc-go/v8/modules/core/02-client/types"
-	ibcconnectiontypes "github.com/cosmos/ibc-go/v8/modules/core/03-connection/types"
-	porttypes "github.com/cosmos/ibc-go/v8/modules/core/05-port/types"
-	ibcexported "github.com/cosmos/ibc-go/v8/modules/core/exported"
-	ibckeeper "github.com/cosmos/ibc-go/v8/modules/core/keeper"
-	solomachine "github.com/cosmos/ibc-go/v8/modules/light-clients/06-solomachine"
-	ibctm "github.com/cosmos/ibc-go/v8/modules/light-clients/07-tendermint"
+	icamodule "github.com/cosmos/ibc-go/v10/modules/apps/27-interchain-accounts"
+	icacontroller "github.com/cosmos/ibc-go/v10/modules/apps/27-interchain-accounts/controller"
+	icacontrollerkeeper "github.com/cosmos/ibc-go/v10/modules/apps/27-interchain-accounts/controller/keeper"
+	icacontrollertypes "github.com/cosmos/ibc-go/v10/modules/apps/27-interchain-accounts/controller/types"
+	icahost "github.com/cosmos/ibc-go/v10/modules/apps/27-interchain-accounts/host"
+	icahostkeeper "github.com/cosmos/ibc-go/v10/modules/apps/27-interchain-accounts/host/keeper"
+	icahosttypes "github.com/cosmos/ibc-go/v10/modules/apps/27-interchain-accounts/host/types"
+	icatypes "github.com/cosmos/ibc-go/v10/modules/apps/27-interchain-accounts/types"
+
+	ibctransfer "github.com/cosmos/evm/x/ibc/transfer"
+	transferkeeper "github.com/cosmos/evm/x/ibc/transfer/keeper"
+
+	ibctransfertypes "github.com/cosmos/ibc-go/v10/modules/apps/transfer/types"
+	ibc "github.com/cosmos/ibc-go/v10/modules/core"
+	ibcclienttypes "github.com/cosmos/ibc-go/v10/modules/core/02-client/types"
+	ibcconnectiontypes "github.com/cosmos/ibc-go/v10/modules/core/03-connection/types"
+	porttypes "github.com/cosmos/ibc-go/v10/modules/core/05-port/types"
+	ibcexported "github.com/cosmos/ibc-go/v10/modules/core/exported"
+	ibckeeper "github.com/cosmos/ibc-go/v10/modules/core/keeper"
+	solomachine "github.com/cosmos/ibc-go/v10/modules/light-clients/06-solomachine"
+
 	// this line is used by starport scaffolding # ibc/app/import
+
+	"github.com/cosmos/cosmos-sdk/runtime"
 )
 
 // registerIBCModules register IBC keepers and non dependency inject modules.
 func (app *App) registerIBCModules(appOpts servertypes.AppOptions) error {
 	// set up non depinject support modules store keys
 	if err := app.RegisterStores(
-		storetypes.NewKVStoreKey(capabilitytypes.StoreKey),
+		// storetypes.NewKVStoreKey(capabilitytypes.StoreKey),
 		storetypes.NewKVStoreKey(ibcexported.StoreKey),
 		storetypes.NewKVStoreKey(ibctransfertypes.StoreKey),
-		storetypes.NewKVStoreKey(ibcfeetypes.StoreKey),
 		storetypes.NewKVStoreKey(icahosttypes.StoreKey),
 		storetypes.NewKVStoreKey(icacontrollertypes.StoreKey),
-		storetypes.NewMemoryStoreKey(capabilitytypes.MemStoreKey),
+		// storetypes.NewMemoryStoreKey(capabilitytypes.MemStoreKey),
 		storetypes.NewTransientStoreKey(paramstypes.TStoreKey),
 	); err != nil {
 		return err
@@ -62,27 +59,12 @@ func (app *App) registerIBCModules(appOpts servertypes.AppOptions) error {
 	app.ParamsKeeper.Subspace(icacontrollertypes.SubModuleName).WithKeyTable(icacontrollertypes.ParamKeyTable())
 	app.ParamsKeeper.Subspace(icahosttypes.SubModuleName).WithKeyTable(icahosttypes.ParamKeyTable())
 
-	// add capability keeper and ScopeToModule for ibc module
-	app.CapabilityKeeper = capabilitykeeper.NewKeeper(
-		app.AppCodec(),
-		app.GetKey(capabilitytypes.StoreKey),
-		app.GetMemKey(capabilitytypes.MemStoreKey),
-	)
-
-	// add capability keeper and ScopeToModule for ibc module
-	scopedIBCKeeper := app.CapabilityKeeper.ScopeToModule(ibcexported.ModuleName)
-	scopedIBCTransferKeeper := app.CapabilityKeeper.ScopeToModule(ibctransfertypes.ModuleName)
-	scopedICAControllerKeeper := app.CapabilityKeeper.ScopeToModule(icacontrollertypes.SubModuleName)
-	scopedICAHostKeeper := app.CapabilityKeeper.ScopeToModule(icahosttypes.SubModuleName)
-
 	// Create IBC keeper
 	app.IBCKeeper = ibckeeper.NewKeeper(
 		app.appCodec,
-		app.GetKey(ibcexported.StoreKey),
+		runtime.NewKVStoreService(app.GetKey(ibcexported.StoreKey)),
 		app.GetSubspace(ibcexported.ModuleName),
-		app.StakingKeeper,
 		app.UpgradeKeeper,
-		scopedIBCKeeper,
 		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
 	)
 
@@ -93,91 +75,63 @@ func (app *App) registerIBCModules(appOpts servertypes.AppOptions) error {
 	govRouter := govv1beta1.NewRouter()
 	govRouter.AddRoute(govtypes.RouterKey, govv1beta1.ProposalHandler)
 
-	app.IBCFeeKeeper = ibcfeekeeper.NewKeeper(
-		app.appCodec, app.GetKey(ibcfeetypes.StoreKey),
-		app.IBCKeeper.ChannelKeeper, // may be replaced with IBC middleware
-		app.IBCKeeper.ChannelKeeper,
-		app.IBCKeeper.PortKeeper, app.AccountKeeper, app.BankKeeper,
-	)
-
-	// Create IBC transfer keeper
-	app.TransferKeeper = ibctransferkeeper.NewKeeper(
+	// Add Erc20Keeper to TransferKeeper params
+	// Now wire the transfer keeper using the extended EVM-aware version
+	app.TransferKeeper = transferkeeper.NewKeeper(
 		app.appCodec,
-		app.GetKey(ibctransfertypes.StoreKey),
+		runtime.NewKVStoreService(app.GetKey(ibctransfertypes.StoreKey)),
 		app.GetSubspace(ibctransfertypes.ModuleName),
-		app.IBCFeeKeeper,
 		app.IBCKeeper.ChannelKeeper,
-		app.IBCKeeper.PortKeeper,
+		app.IBCKeeper.ChannelKeeper,
+		app.MsgServiceRouter(),
 		app.AccountKeeper,
 		app.BankKeeper,
-		scopedIBCTransferKeeper,
+		app.Erc20Keeper,
 		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
 	)
 
 	// Create interchain account keepers
 	app.ICAHostKeeper = icahostkeeper.NewKeeper(
 		app.appCodec,
-		app.GetKey(icahosttypes.StoreKey),
+		runtime.NewKVStoreService(app.GetKey(icahosttypes.StoreKey)),
 		app.GetSubspace(icahosttypes.SubModuleName),
-		app.IBCFeeKeeper, // use ics29 fee as ics4Wrapper in middleware stack
 		app.IBCKeeper.ChannelKeeper,
-		app.IBCKeeper.PortKeeper,
+		app.IBCKeeper.ChannelKeeper,
 		app.AccountKeeper,
-		scopedICAHostKeeper,
 		app.MsgServiceRouter(),
+		app.GRPCQueryRouter(),
 		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
 	)
-	app.ICAHostKeeper.WithQueryRouter(app.GRPCQueryRouter())
 
 	app.ICAControllerKeeper = icacontrollerkeeper.NewKeeper(
 		app.appCodec,
-		app.GetKey(icacontrollertypes.StoreKey),
+		runtime.NewKVStoreService(app.GetKey(icacontrollertypes.StoreKey)),
 		app.GetSubspace(icacontrollertypes.SubModuleName),
-		app.IBCFeeKeeper, // use ics29 fee as ics4Wrapper in middleware stack
 		app.IBCKeeper.ChannelKeeper,
-		app.IBCKeeper.PortKeeper,
-		scopedICAControllerKeeper,
+		app.IBCKeeper.ChannelKeeper,
 		app.MsgServiceRouter(),
 		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
 	)
+
 	app.GovKeeper.SetLegacyRouter(govRouter)
-
-	// Create IBC modules with ibcfee middleware
-	transferIBCModule := ibcfee.NewIBCMiddleware(ibctransfer.NewIBCModule(app.TransferKeeper), app.IBCFeeKeeper)
-
-	// integration point for custom authentication modules
-	var noAuthzModule porttypes.IBCModule
-	icaControllerIBCModule := ibcfee.NewIBCMiddleware(
-		icacontroller.NewIBCMiddleware(noAuthzModule, app.ICAControllerKeeper),
-		app.IBCFeeKeeper,
-	)
-
-	icaHostIBCModule := ibcfee.NewIBCMiddleware(icahost.NewIBCModule(app.ICAHostKeeper), app.IBCFeeKeeper)
 
 	// Create static IBC router, add transfer route, then set and seal it
 	ibcRouter := porttypes.NewRouter().
-		AddRoute(ibctransfertypes.ModuleName, transferIBCModule).
-		AddRoute(icacontrollertypes.SubModuleName, icaControllerIBCModule).
-		AddRoute(icahosttypes.SubModuleName, icaHostIBCModule)
+		AddRoute(ibctransfertypes.ModuleName, ibctransfer.NewIBCModule(app.TransferKeeper)).
+		AddRoute(icacontrollertypes.SubModuleName, icacontroller.NewIBCMiddleware(app.ICAControllerKeeper)).
+		AddRoute(icahosttypes.SubModuleName, icahost.NewIBCModule(app.ICAHostKeeper))
 
 	// this line is used by starport scaffolding # ibc/app/module
 
 	app.IBCKeeper.SetRouter(ibcRouter)
 
-	app.ScopedIBCKeeper = scopedIBCKeeper
-	app.ScopedIBCTransferKeeper = scopedIBCTransferKeeper
-	app.ScopedICAHostKeeper = scopedICAHostKeeper
-	app.ScopedICAControllerKeeper = scopedICAControllerKeeper
-
 	// register IBC modules
 	if err := app.RegisterModules(
 		ibc.NewAppModule(app.IBCKeeper),
 		ibctransfer.NewAppModule(app.TransferKeeper),
-		ibcfee.NewAppModule(app.IBCFeeKeeper),
 		icamodule.NewAppModule(&app.ICAControllerKeeper, &app.ICAHostKeeper),
-		capability.NewAppModule(app.appCodec, *app.CapabilityKeeper, false),
-		ibctm.NewAppModule(),
-		solomachine.NewAppModule(),
+		// ibctm.NewAppModule(),
+		// solomachine.NewAppModule(),
 	); err != nil {
 		return err
 	}
@@ -190,13 +144,12 @@ func (app *App) registerIBCModules(appOpts servertypes.AppOptions) error {
 // This needs to be removed after IBC supports App Wiring.
 func RegisterIBC(registry cdctypes.InterfaceRegistry) map[string]appmodule.AppModule {
 	modules := map[string]appmodule.AppModule{
-		ibcexported.ModuleName:      ibc.AppModule{},
-		ibctransfertypes.ModuleName: ibctransfer.AppModule{},
-		ibcfeetypes.ModuleName:      ibcfee.AppModule{},
-		icatypes.ModuleName:         icamodule.AppModule{},
-		capabilitytypes.ModuleName:  capability.AppModule{},
-		ibctm.ModuleName:            ibctm.AppModule{},
-		solomachine.ModuleName:      solomachine.AppModule{},
+		ibcexported.ModuleName: ibc.AppModule{},
+		// ibctransfertypes.ModuleName: ibctransfer.AppModule{},
+		icatypes.ModuleName: icamodule.AppModule{},
+		// capabilitytypes.ModuleName:  capability.AppModule{},
+		// ibctm.ModuleName:       ibctm.AppModule{},
+		solomachine.ModuleName: solomachine.AppModule{},
 	}
 
 	for name, m := range modules {

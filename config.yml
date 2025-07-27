@@ -1,13 +1,15 @@
 version: 1
 validation: sovereign
+genesis:
+  chain_id: shinzohub_9000-1
 accounts: 
 - name: alice
   coins:
-  - 20000token
-  - 200000000stake
+  - 5000000000000000000000000000000000000000000000ashinzo
+  - 5000000000000000000000000000000000000000000000stake
 - name: bob
   coins:
-  - 10000token
+  - 10000ashinzo
   - 100000000stake
 client:
   openapi:
@@ -15,14 +17,14 @@ client:
 faucet:
   name: bob
   coins:
-  - 5token
+  - 5ashinzo
   - 100000stake
 validators:
 - name: alice
-  bonded: 100000000stake
+  bonded: 1000000000000000000000000000000000stake
 - name: validator1
-  bonded: 100000000stake
+  bonded: 1000000000000000000000000000000000stake
 - name: validator2
-  bonded: 200000000stake
+  bonded: 1000000000000000000000000000000000stake
 - name: validator3
-  bonded: 300000000stake
+  bonded: 1000000000000000000000000000000000stake
