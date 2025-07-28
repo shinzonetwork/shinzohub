@@ -92,15 +92,7 @@ import (
 	feemarketkeeper "github.com/cosmos/evm/x/feemarket/keeper"
 	evmkeeper "github.com/cosmos/evm/x/vm/keeper"
 
-	chainante "shinzohub/app/ante"
-
-	evmante "github.com/cosmos/evm/ante"
-	evmevmante "github.com/cosmos/evm/ante/evm"
-
-	srvflags "github.com/cosmos/evm/server/flags"
 	cosmosevmtypes "github.com/cosmos/evm/types"
-	erc20types "github.com/cosmos/evm/x/erc20/types"
-	feemarkettypes "github.com/cosmos/evm/x/feemarket/types"
 	evmtypes "github.com/cosmos/evm/x/vm/types"
 
 	"shinzohub/docs"
@@ -110,10 +102,8 @@ import (
 	feemarket "github.com/cosmos/evm/x/feemarket"
 	evm "github.com/cosmos/evm/x/vm"
 	"github.com/ethereum/go-ethereum/core/vm"
-	"github.com/spf13/cast"
 
 	enccodec "github.com/cosmos/evm/encoding/codec"
-	ibctransfertypes "github.com/cosmos/ibc-go/v10/modules/apps/transfer/types"
 )
 
 const (
@@ -337,57 +327,9 @@ func New(
 		return nil, err
 	}
 
-	app.evmKvStoreKeys[evmtypes.StoreKey] = storetypes.NewKVStoreKey(evmtypes.StoreKey)
-	app.evmKvStoreKeys[feemarkettypes.StoreKey] = storetypes.NewKVStoreKey(feemarkettypes.StoreKey)
-	app.evmKvStoreKeys[erc20types.StoreKey] = storetypes.NewKVStoreKey(erc20types.StoreKey)
-
-	app.evmTransientStoreKeys[evmtypes.TransientKey] = storetypes.NewTransientStoreKey(evmtypes.TransientKey)
-	app.evmTransientStoreKeys[feemarkettypes.TransientKey] = storetypes.NewTransientStoreKey(feemarkettypes.TransientKey)
-
-	app.App.MountKVStores(app.evmKvStoreKeys)
-	app.App.MountTransientStores(app.evmTransientStoreKeys)
-
-	// Register subspaces (after Build)
-	app.ParamsKeeper.Subspace(evmtypes.ModuleName)
-	app.ParamsKeeper.Subspace(feemarkettypes.ModuleName)
-	app.ParamsKeeper.Subspace(erc20types.ModuleName)
-
-	// Tracer string
-	tracer := cast.ToString(appOpts.Get(srvflags.EVMTracer))
-
-	// FeeMarketKeeper
-	app.FeeMarketKeeper = feemarketkeeper.NewKeeper(
-		app.appCodec,
-		authtypes.NewModuleAddress(govtypes.ModuleName),
-		app.evmKvStoreKeys[feemarkettypes.StoreKey],
-		app.evmTransientStoreKeys[feemarkettypes.TransientKey],
-	)
-
-	// EVMKeeper (must come before Erc20Keeper)
-	app.EVMKeeper = evmkeeper.NewKeeper(
-		app.appCodec,
-		app.evmKvStoreKeys[evmtypes.StoreKey],
-		app.evmTransientStoreKeys[evmtypes.TransientKey],
-		authtypes.NewModuleAddress(govtypes.ModuleName),
-		app.AccountKeeper,
-		app.BankKeeper,
-		app.StakingKeeper,
-		app.FeeMarketKeeper,
-		&app.Erc20Keeper, // must be passed by reference even though it's not initialized yet
-		tracer,
-	)
-
-	// Erc20Keeper
-	app.Erc20Keeper = erc20keeper.NewKeeper(
-		app.evmKvStoreKeys[erc20types.StoreKey],
-		app.appCodec,
-		authtypes.NewModuleAddress(govtypes.ModuleName),
-		app.AccountKeeper,
-		app.BankKeeper,
-		app.EVMKeeper,
-		app.StakingKeeper,
-		&app.TransferKeeper,
-	)
+	if err := SetupEVM(app, appOpts); err != nil {
+		return nil, err
+	}
 
 	// register legacy modules
 	if err := app.registerIBCModules(appOpts); err != nil {
@@ -399,44 +341,14 @@ func New(
 		return nil, err
 	}
 
-	// Configure EVM precompiles
-	corePrecompiles := NewAvailableStaticPrecompiles(
-		*app.StakingKeeper,
-		app.DistrKeeper,
-		app.BankKeeper,
-		app.Erc20Keeper,
-		app.AuthzKeeper,
-		app.TransferKeeper,
-		*app.IBCKeeper.ChannelKeeper,
-		app.EVMKeeper,
-		*app.GovKeeper,
-		app.SlashingKeeper,
-		app.EvidenceKeeper,
-	)
-
-	app.EVMKeeper.WithStaticPrecompiles(
-		corePrecompiles,
-	)
-
-	// Set AnteHandler with EVM options
-	anteOpts := chainante.HandlerOptions{
-		AccountKeeper:          app.AccountKeeper,
-		BankKeeper:             app.BankKeeper,
-		SignModeHandler:        app.txConfig.SignModeHandler(),
-		FeegrantKeeper:         app.FeeGrantKeeper,
-		SigGasConsumer:         evmante.SigVerificationGasConsumer,
-		ExtensionOptionChecker: cosmosevmtypes.HasDynamicFeeExtensionOption,
-		TxFeeChecker:           evmevmante.NewDynamicFeeChecker(app.FeeMarketKeeper),
-		EvmKeeper:              app.EVMKeeper,
-		FeeMarketKeeper:        app.FeeMarketKeeper,
-		MaxTxGasWanted:         cast.ToUint64(appOpts.Get(srvflags.EVMMaxTxGasWanted)),
-		Cdc:                    app.appCodec,
-		IBCKeeper:              app.IBCKeeper,
+	if err := SetupEVMPrecompiles(app, appOpts); err != nil {
+		return nil, err
 	}
 
-	anteHandler := chainante.NewAnteHandler(anteOpts)
-
-	app.SetAnteHandler(anteHandler)
+	// Setup AnteHandler with EVM support
+	if err := SetupEVMAnteHandler(app, appOpts); err != nil {
+		return nil, err
+	}
 
 	/****  Module Options ****/
 
@@ -467,28 +379,8 @@ func New(
 			return nil, err
 		}
 
-		// Inject or override EVM modules
-
-		// Add/override FeeMarket genesis
-		feemarketGenesis := feemarkettypes.DefaultGenesisState()
-		genesisState[feemarkettypes.ModuleName] = app.appCodec.MustMarshalJSON(feemarketGenesis)
-
-		// Add/override EVM genesis
-		evmGenesis := evmtypes.DefaultGenesisState()
-
-		evmGenesis.Params.EvmDenom = BaseDenom
-		evmGenesis.Params.ChainConfig = *evmtypes.DefaultChainConfig(app.ChainID())
-		evmGenesis.Params.ActiveStaticPrecompiles = evmtypes.AvailableStaticPrecompiles
-		genesisState[evmtypes.ModuleName] = app.appCodec.MustMarshalJSON(evmGenesis)
-
-		// Add/override ERC20 genesis
-		erc20Genesis := erc20types.DefaultGenesisState()
-		erc20Genesis.TokenPairs = ExampleTokenPairs // you should define this
-		erc20Genesis.Params.NativePrecompiles = append(erc20Genesis.Params.NativePrecompiles, WTokenContractMainnet)
-		genesisState[erc20types.ModuleName] = app.appCodec.MustMarshalJSON(erc20Genesis)
-
-		transferGenesis := ibctransfertypes.DefaultGenesisState()
-		genesisState[ibctransfertypes.ModuleName] = app.appCodec.MustMarshalJSON(transferGenesis)
+		// Modify genesis state with EVM-related defaults
+		genesisState = CustomizeEVMGenesis(app, genesisState)
 
 		// Update module version map
 		if err := app.UpgradeKeeper.SetModuleVersionMap(ctx, app.ModuleManager.GetVersionMap()); err != nil {
