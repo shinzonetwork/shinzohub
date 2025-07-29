@@ -128,7 +128,7 @@ func CustomizeEVMGenesis(app *App, genesisState cosmosevmtypes.GenesisState) cos
 	evmGenesis := evmtypes.DefaultGenesisState()
 	evmGenesis.Params.EvmDenom = BaseDenom
 	evmGenesis.Params.ChainConfig = *evmtypes.DefaultChainConfig(app.ChainID())
-	evmGenesis.Params.ActiveStaticPrecompiles = evmtypes.AvailableStaticPrecompiles
+	evmGenesis.Params.ActiveStaticPrecompiles = GetAvailableStaticPrecompiles()
 	genesisState[evmtypes.ModuleName] = app.appCodec.MustMarshalJSON(evmGenesis)
 
 	erc20Genesis := erc20types.DefaultGenesisState()
