@@ -224,6 +224,7 @@ func ProvideCustomSigners() []signing.CustomGetSigner {
 
 func UpdateInterfaceRegistry(interfaceRegistry codectypes.InterfaceRegistry) {
 	enccodec.RegisterInterfaces(interfaceRegistry)
+	evmtypes.RegisterInterfaces(interfaceRegistry)
 }
 
 func UpdateLegacyAmino(interfaceRegistry codectypes.InterfaceRegistry, cdc *codec.LegacyAmino) {
