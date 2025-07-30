@@ -28,6 +28,10 @@ func (p Precompile) ViewRegistryRegister(ctx sdk.Context, contract *vm.Contract,
 	// Store in StateDB using the precompile's own address as the account
 	stateDB.SetState(contract.Address(), key, common.BytesToHash(value))
 
+	// store the view cruator also
+	cruator := crypto.Keccak256Hash([]byte("cruator"), key.Bytes())
+	stateDB.SetState(contract.Address(), cruator, common.BytesToHash(contract.CallerAddress.Bytes()))
+
 	// -----------------------
 	// Emit EVM Log (Event)
 	// -----------------------
