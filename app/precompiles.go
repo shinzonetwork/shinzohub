@@ -3,6 +3,7 @@ package app
 import (
 	"fmt"
 	"maps"
+	"shinzohub/app/precompiles/viewregistry"
 
 	evidencekeeper "cosmossdk.io/x/evidence/keeper"
 	authzkeeper "github.com/cosmos/cosmos-sdk/x/authz/keeper"
@@ -23,12 +24,22 @@ import (
 	erc20Keeper "github.com/cosmos/evm/x/erc20/keeper"
 	transferkeeper "github.com/cosmos/evm/x/ibc/transfer/keeper"
 	evmkeeper "github.com/cosmos/evm/x/vm/keeper"
+	evmtypes "github.com/cosmos/evm/x/vm/types"
 	channelkeeper "github.com/cosmos/ibc-go/v10/modules/core/04-channel/keeper"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/vm"
 )
 
 const bech32PrecompileBaseGas = 6_000
+
+func GetAvailableStaticPrecompiles() []string {
+	customAvailableStaticPrecompiles := []string{
+		viewregistry.ViewregistryPrecompileAddress,
+		// register custom address here
+	}
+
+	return append(evmtypes.AvailableStaticPrecompiles, customAvailableStaticPrecompiles...)
+}
 
 // NewAvailableStaticPrecompiles returns the list of all available static precompiled contracts from EVM.
 //
@@ -113,6 +124,14 @@ func NewAvailableStaticPrecompiles(
 	precompiles[govPrecompile.Address()] = govPrecompile
 	precompiles[slashingPrecompile.Address()] = slashingPrecompile
 	precompiles[evidencePrecompile.Address()] = evidencePrecompile
+
+	// register custom precompiles
+	viewRegistryPrecompile, err := viewregistry.NewPrecompile(bech32PrecompileBaseGas)
+	if err != nil {
+		panic(fmt.Errorf("failed to instantiate view registry precompile: %w", err))
+	}
+
+	precompiles[viewRegistryPrecompile.Address()] = viewRegistryPrecompile
 
 	return precompiles
 }
