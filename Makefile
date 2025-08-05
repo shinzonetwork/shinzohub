@@ -113,37 +113,85 @@ bootstrap:
 	@scripts/bootstrap.sh "$(SOURCEHUB_PATH)"
 
 stop:
-	@echo "===> Stopping sourcehubd if running..."
+	@echo "===> Stopping all services..."
 	@SHINZO_ROOTDIR="$(shell pwd)/.shinzohub"; \
+	INDEXER_ROOT="$(shell pwd)/../indexer"; \
+	SCHEMA_FILE="$$INDEXER_ROOT/schema/schema.graphql"; \
+	POLICY_ID_FILE="$$SHINZO_ROOTDIR/policy_id"; \
+	\
+	# Stop sourcehubd \
+	echo "Stopping sourcehubd..."; \
 	SOURCEHUB_PIDS=$$(ps aux | grep '[s]ourcehubd' | awk '{print $$2}'); \
 	if [ -n "$$SOURCEHUB_PIDS" ]; then \
 	  echo "Killing sourcehubd PIDs: $$SOURCEHUB_PIDS"; \
 	  echo "$$SOURCEHUB_PIDS" | xargs -r kill -9 2>/dev/null; \
-	  echo "Stopped all sourcehubd processes"; \
 	else \
 	  echo "No sourcehubd processes found"; \
 	fi; \
-	rm -f .shinzohub/sourcehubd.pid;
-	@echo "===> Stopping shinzohubd if running..."
+	rm -f $$SHINZO_ROOTDIR/sourcehubd.pid; \
+	\
+	# Stop shinzohubd \
+	echo "Stopping shinzohubd..."; \
 	SHINZOHUBD_PIDS=$$(ps aux | grep '[s]hinzohubd' | awk '{print $$2}'); \
 	if [ -n "$$SHINZOHUBD_PIDS" ]; then \
 	  echo "Killing shinzohubd PIDs: $$SHINZOHUBD_PIDS"; \
 	  echo "$$SHINZOHUBD_PIDS" | xargs -r kill -9 2>/dev/null; \
-	  echo "Stopped all shinzohubd processes"; \
 	else \
 	  echo "No shinzohubd processes found"; \
 	fi; \
-	rm -f .shinzohub/shinzohubd.pid;
-	@echo "===> Stopping registrar if running..."
+	rm -f $$SHINZO_ROOTDIR/shinzohubd.pid; \
+	\
+	# Stop registrar \
+	echo "Stopping registrar..."; \
 	REGISTRAR_PIDS=$$(ps aux | grep '[r]egistrar' | awk '{print $$2}'); \
 	if [ -n "$$REGISTRAR_PIDS" ]; then \
 	  echo "Killing registrar PIDs: $$REGISTRAR_PIDS"; \
 	  echo "$$REGISTRAR_PIDS" | xargs -r kill -9 2>/dev/null; \
-	  echo "Stopped all registrar processes"; \
 	else \
 	  echo "No registrar processes found"; \
 	fi; \
-	rm -f .shinzohub/registrar.pid;
-	@rm -f .shinzohub/ready
+	rm -f $$SHINZO_ROOTDIR/registrar.pid; \
+	\
+	# Stop indexer bootstrap \
+	echo "Stopping indexer bootstrap..."; \
+	if [ -f "$$SHINZO_ROOTDIR/indexer_bootstrap.pid" ]; then \
+	  kill -9 $$(cat $$SHINZO_ROOTDIR/indexer_bootstrap.pid) 2>/dev/null || true; \
+	  rm -f $$SHINZO_ROOTDIR/indexer_bootstrap.pid; \
+	fi; \
+	\
+	# Stop defradb processes \
+	echo "Stopping defradb processes..."; \
+	DEFRA_PIDS=$$(ps aux | grep '[d]efradb start --rootdir ' | awk '{print $$2}'); \
+	if [ -n "$$DEFRA_PIDS" ]; then \
+	  echo "Killing defradb PIDs: $$DEFRA_PIDS"; \
+	  echo "$$DEFRA_PIDS" | xargs -r kill -9 2>/dev/null; \
+	else \
+	  echo "No defradb processes found"; \
+	fi; \
+	\
+	# Stop block_poster processes \
+	echo "Stopping block_poster processes..."; \
+	POSTER_PIDS=$$(ps aux | grep '[b]lock_poster' | awk '{print $$2}'); \
+	if [ -n "$$POSTER_PIDS" ]; then \
+	  echo "Killing block_poster PIDs: $$POSTER_PIDS"; \
+	  echo "$$POSTER_PIDS" | xargs -r kill -9 2>/dev/null; \
+	else \
+	  echo "No block_poster processes found"; \
+	fi; \
+	\
+	# Restore schema file if it was modified \
+	if [ -f "$$SCHEMA_FILE" ] && [ -f "$$POLICY_ID_FILE" ]; then \
+	  POLICY_ID=$$(cat $$POLICY_ID_FILE); \
+	  if [ -n "$$POLICY_ID" ]; then \
+	    echo "Restoring schema file..."; \
+	    ESCAPED_POLICY_ID=$$(printf '%s\n' "$$POLICY_ID" | sed 's/[\\/&|]/\\&/g'); \
+	    sed -i "" "s|$$ESCAPED_POLICY_ID|<replace_with_policy_id>|g" "$$SCHEMA_FILE"; \
+	  fi; \
+	fi; \
+	rm -f "$$SCHEMA_FILE.bak"; \
+	\
+	# Clean up ready file \
+	rm -f $$SHINZO_ROOTDIR/ready; \
+	echo "All services stopped and cleaned up."
 
 .PHONY: govet govulncheck bootstrap stop

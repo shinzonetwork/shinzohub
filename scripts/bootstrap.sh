@@ -34,101 +34,15 @@ INDEXER_ROOT="$(cd "$INDEXER_PATH" && pwd)"
 mkdir -p "$LOGDIR"
 mkdir -p "$ROOTDIR"
 
-# Build and run SourceHub
-echo "===> Building SourceHub from $SOURCEHUB_ROOT"
-cd "$SOURCEHUB_ROOT"
-./build/sourcehubd start > "$OLDPWD/$SOURCEHUB_LOG_PATH" 2>&1 &
-SOURCEHUB_PID=$!
-echo "$SOURCEHUB_PID" > "$ROOTDIR/sourcehubd.pid"
-echo "Started sourcehubd (PID $SOURCEHUB_PID). Logs at $SOURCEHUB_LOG_PATH"
-cd "$OLDPWD"
-
-# Build and run shinzohubd
-echo "===> Building shinzohubd"
-go build -o bin/shinzohubd cmd/shinzohubd/main.go
-./bin/shinzohubd start > "$SHINZOHUBD_LOG_PATH" 2>&1 &
-SHINZOHUBD_PID=$!
-echo "$SHINZOHUBD_PID" > "$ROOTDIR/shinzohubd.pid"
-echo "Started shinzohubd (PID $SHINZOHUBD_PID). Logs at $SHINZOHUBD_LOG_PATH"
-
-# Build and run registrar
-echo "===> Building registrar"
-go build -o bin/registrar cmd/registrar/main.go
-./bin/registrar > "$REGISTRAR_LOG_PATH" 2>&1 &
-REGISTRAR_PID=$!
-echo "$REGISTRAR_PID" > "$ROOTDIR/registrar.pid"
-echo "Started registrar (PID $REGISTRAR_PID). Logs at $REGISTRAR_LOG_PATH"
-
-# Inject policy id into indexer schema before starting indexer bootstrap
-POLICY_ID_FILE="$ROOTDIR/policy_id"
-SCHEMA_FILE="$INDEXER_ROOT/schema/schema.graphql"
-if [[ ! -f "$POLICY_ID_FILE" ]]; then
-  echo "ERROR: Policy ID file not found at $POLICY_ID_FILE. Cannot update schema."
-  exit 1
-fi
-POLICY_ID=$(cat "$POLICY_ID_FILE")
-if [[ -z "$POLICY_ID" ]]; then
-  echo "ERROR: Policy ID is empty in $POLICY_ID_FILE. Cannot update schema."
-  exit 1
-fi
-if [[ ! -f "$SCHEMA_FILE" ]]; then
-  echo "ERROR: Schema file not found at $SCHEMA_FILE."
-  exit 1
-fi
-# Replace <replace_with_policy_id> with actual policy id (removing chevrons)
-sed -i.bak "s/<replace_with_policy_id>/$POLICY_ID/g" "$SCHEMA_FILE"
-
-# Start indexer bootstrap (DefraDB + block_poster)
-echo "===> Bootstrapping indexer (DefraDB/block_poster) from $INDEXER_ROOT"
-(cd "$INDEXER_ROOT" && ./scripts/bootstrap.sh "$INDEXER_ROOT/../defradb" > "$OLDPWD/$INDEXER_BOOTSTRAP_LOG_PATH" 2>&1 &)
-INDEXER_BOOTSTRAP_PID=$!
-echo "$INDEXER_BOOTSTRAP_PID" > "$ROOTDIR/indexer_bootstrap.pid"
-echo "Started indexer bootstrap (PID $INDEXER_BOOTSTRAP_PID). Logs at $INDEXER_BOOTSTRAP_LOG_PATH"
-
-sleep 3
-
-# Check if processes are running
-if ! kill -0 $SOURCEHUB_PID 2>/dev/null; then
-  echo "ERROR: sourcehubd failed to start (PID $SOURCEHUB_PID not running)" >&2
-  echo "--- sourcehubd log errors ---"
-  grep -iE 'error|fail|panic|fatal' "$SOURCEHUB_LOG_PATH" || echo "No error lines found in $SOURCEHUB_LOG_PATH"
-  cleanup
-  exit 1
-fi
-if ! kill -0 $SHINZOHUBD_PID 2>/dev/null; then
-  echo "ERROR: shinzohubd failed to start (PID $SHINZOHUBD_PID not running)" >&2
-  echo "--- shinzohubd log errors ---"
-  grep -iE 'error|fail|panic|fatal' "$SHINZOHUBD_LOG_PATH" || echo "No error lines found in $SHINZOHUBD_LOG_PATH"
-  # cleanup
-  # exit 1
-fi
-if ! kill -0 $REGISTRAR_PID 2>/dev/null; then
-  echo "ERROR: registrar failed to start (PID $REGISTRAR_PID not running)" >&2
-  echo "--- registrar log errors ---"
-  grep -iE 'error|fail|panic|fatal' "$REGISTRAR_LOG_PATH" || echo "No error lines found in $REGISTRAR_LOG_PATH"
-  cleanup
-  exit 1
-fi
-if ! kill -0 $INDEXER_BOOTSTRAP_PID 2>/dev/null; then
-  echo "ERROR: indexer bootstrap failed to start (PID $INDEXER_BOOTSTRAP_PID not running)" >&2
-  echo "--- indexer bootstrap log errors ---"
-  grep -iE 'error|fail|panic|fatal' "$INDEXER_BOOTSTRAP_LOG_PATH" || echo "No error lines found in $INDEXER_BOOTSTRAP_LOG_PATH"
-  cleanup
-  exit 1
-fi
-
-# Run setup_policy.sh to upload policy and create groups
-echo "===> Setting up policy and groups"
-if ! scripts/setup_policy.sh; then
-  echo "ERROR: setup_policy.sh failed. Exiting bootstrap."
-  cleanup
-  exit 1
-fi
-
-# Create an empty file to indicate that services are ready
-READY_FILE="$ROOTDIR/ready"
-echo "===> Ready"
-touch "$READY_FILE"
+# Function to check if a port is in use
+check_port() {
+  local port=$1
+  if lsof -Pi :$port -sTCP:LISTEN -t >/dev/null 2>&1; then
+    echo "ERROR: Port $port is already in use"
+    return 1
+  fi
+  return 0
+}
 
 # Define cleanup function for robust process cleanup
 cleanup() {
@@ -178,6 +92,123 @@ cleanup() {
   rm -f "$READY_FILE"
   exit 0
 }
+
+# Check if required ports are available
+echo "===> Checking port availability..."
+if ! check_port 8081; then
+  echo "ERROR: Port 8081 (registrar) is already in use. Please free up the port and try again."
+  exit 1
+fi
+
+# Build and run SourceHub
+echo "===> Building SourceHub from $SOURCEHUB_ROOT"
+cd "$SOURCEHUB_ROOT"
+# Check if sourcehubd binary exists and is executable
+if [[ ! -f "./build/sourcehubd" ]] || [[ ! -x "./build/sourcehubd" ]]; then
+  echo "ERROR: sourcehubd binary not found or not executable at ./build/sourcehubd"
+  echo "Please build SourceHub first: make build"
+  exit 1
+fi
+./build/sourcehubd start > "$OLDPWD/$SOURCEHUB_LOG_PATH" 2>&1 &
+SOURCEHUB_PID=$!
+echo "$SOURCEHUB_PID" > "$ROOTDIR/sourcehubd.pid"
+echo "Started sourcehubd (PID $SOURCEHUB_PID). Logs at $SOURCEHUB_LOG_PATH"
+cd "$OLDPWD"
+
+# Build and run shinzohubd
+echo "===> Building shinzohubd"
+go build -o bin/shinzohubd cmd/shinzohubd/main.go
+./bin/shinzohubd start > "$SHINZOHUBD_LOG_PATH" 2>&1 &
+SHINZOHUBD_PID=$!
+echo "$SHINZOHUBD_PID" > "$ROOTDIR/shinzohubd.pid"
+echo "Started shinzohubd (PID $SHINZOHUBD_PID). Logs at $SHINZOHUBD_LOG_PATH"
+
+# Build and run registrar
+echo "===> Building registrar"
+go build -o bin/registrar cmd/registrar/main.go
+./bin/registrar > "$REGISTRAR_LOG_PATH" 2>&1 &
+REGISTRAR_PID=$!
+echo "$REGISTRAR_PID" > "$ROOTDIR/registrar.pid"
+echo "Started registrar (PID $REGISTRAR_PID). Logs at $REGISTRAR_LOG_PATH"
+
+# Inject policy id into indexer schema before starting indexer bootstrap
+POLICY_ID_FILE="$ROOTDIR/policy_id"
+SCHEMA_FILE="$INDEXER_ROOT/schema/schema.graphql"
+if [[ ! -f "$POLICY_ID_FILE" ]]; then
+  echo "ERROR: Policy ID file not found at $POLICY_ID_FILE. Cannot update schema."
+  exit 1
+fi
+POLICY_ID=$(cat "$POLICY_ID_FILE")
+if [[ -z "$POLICY_ID" ]]; then
+  echo "ERROR: Policy ID is empty in $POLICY_ID_FILE. Cannot update schema."
+  exit 1
+fi
+if [[ ! -f "$SCHEMA_FILE" ]]; then
+  echo "ERROR: Schema file not found at $SCHEMA_FILE."
+  exit 1
+fi
+# Replace <replace_with_policy_id> with actual policy id (removing chevrons)
+sed -i.bak "s/<replace_with_policy_id>/$POLICY_ID/g" "$SCHEMA_FILE"
+
+# Start indexer bootstrap (DefraDB + block_poster)
+echo "===> Bootstrapping indexer (DefraDB/block_poster) from $INDEXER_ROOT"
+(cd "$INDEXER_ROOT" && ./scripts/bootstrap.sh "$INDEXER_ROOT/../defradb" > "$OLDPWD/$INDEXER_BOOTSTRAP_LOG_PATH" 2>&1 &)
+INDEXER_BOOTSTRAP_PID=$!
+echo "$INDEXER_BOOTSTRAP_PID" > "$ROOTDIR/indexer_bootstrap.pid"
+echo "Started indexer bootstrap (PID $INDEXER_BOOTSTRAP_PID). Logs at $INDEXER_BOOTSTRAP_LOG_PATH"
+
+sleep 5
+
+# Check if processes are running
+if ! kill -0 $SOURCEHUB_PID 2>/dev/null; then
+  echo "ERROR: sourcehubd failed to start (PID $SOURCEHUB_PID not running)" >&2
+  echo "--- sourcehubd log errors ---"
+  if [[ -f "$SOURCEHUB_LOG_PATH" ]]; then
+    tail -20 "$SOURCEHUB_LOG_PATH" || echo "Could not read log file"
+  fi
+  cleanup
+  exit 1
+fi
+if ! kill -0 $SHINZOHUBD_PID 2>/dev/null; then
+  echo "WARNING: shinzohubd failed to start (PID $SHINZOHUBD_PID not running)" >&2
+  echo "--- shinzohubd log errors ---"
+  if [[ -f "$SHINZOHUBD_LOG_PATH" ]]; then
+    tail -20 "$SHINZOHUBD_LOG_PATH" || echo "Could not read log file"
+  fi
+  echo "Continuing anyway as shinzohubd failure is expected for now..."
+fi
+if ! kill -0 $REGISTRAR_PID 2>/dev/null; then
+  echo "ERROR: registrar failed to start (PID $REGISTRAR_PID not running)" >&2
+  echo "--- registrar log errors ---"
+  if [[ -f "$REGISTRAR_LOG_PATH" ]]; then
+    tail -20 "$REGISTRAR_LOG_PATH" || echo "Could not read log file"
+  fi
+  cleanup
+  exit 1
+fi
+if ! kill -0 $INDEXER_BOOTSTRAP_PID 2>/dev/null; then
+  echo "ERROR: indexer bootstrap failed to start (PID $INDEXER_BOOTSTRAP_PID not running)" >&2
+  echo "--- indexer bootstrap log errors ---"
+  if [[ -f "$INDEXER_BOOTSTRAP_LOG_PATH" ]]; then
+    tail -20 "$INDEXER_BOOTSTRAP_LOG_PATH" || echo "Could not read log file"
+  fi
+  cleanup
+  exit 1
+fi
+
+# Run setup_policy.sh to upload policy and create groups
+echo "===> Setting up policy and groups"
+if ! scripts/setup_policy.sh; then
+  echo "ERROR: setup_policy.sh failed. Exiting bootstrap."
+  cleanup
+  exit 1
+fi
+
+# Create an empty file to indicate that services are ready
+READY_FILE="$ROOTDIR/ready"
+echo "===> Ready"
+touch "$READY_FILE"
+
 trap cleanup INT TERM EXIT
 
 # Wait forever until killed, so trap always runs
