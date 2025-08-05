@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 	"net/http"
+	"os"
 
 	"shinzohub/api"
 	"shinzohub/pkg/sourcehub"
@@ -74,7 +75,12 @@ func buildRegistrarHandler() api.ShinzoRegistrar {
 		log.Fatalf("Failed to create TxBuilder: %v", err)
 	}
 
-	acpGoClient := sourcehub.NewAcpGoClient(acpClient, &txBuilder, signer)
+	policyId := os.Getenv("POLICY_ID")
+	if policyId == "" {
+		log.Fatalf("POLICY_ID environment variable is required")
+	}
+
+	acpGoClient := sourcehub.NewAcpGoClient(acpClient, &txBuilder, signer, policyId)
 
 	registrar := api.ShinzoRegistrar{
 		Validator: &validators.RegistrarValidator{},

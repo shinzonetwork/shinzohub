@@ -126,7 +126,7 @@ echo "Started shinzohubd (PID $SHINZOHUBD_PID). Logs at $SHINZOHUBD_LOG_PATH"
 # Build and run registrar
 echo "===> Building registrar"
 go build -o bin/registrar cmd/registrar/main.go
-./bin/registrar > "$REGISTRAR_LOG_PATH" 2>&1 &
+POLICY_ID="$POLICY_ID" ./bin/registrar > "$REGISTRAR_LOG_PATH" 2>&1 &
 REGISTRAR_PID=$!
 echo "$REGISTRAR_PID" > "$ROOTDIR/registrar.pid"
 echo "Started registrar (PID $REGISTRAR_PID). Logs at $REGISTRAR_LOG_PATH"
