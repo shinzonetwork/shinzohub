@@ -123,32 +123,42 @@ SHINZOHUBD_PID=$!
 echo "$SHINZOHUBD_PID" > "$ROOTDIR/shinzohubd.pid"
 echo "Started shinzohubd (PID $SHINZOHUBD_PID). Logs at $SHINZOHUBD_LOG_PATH"
 
-# Build and run registrar
-echo "===> Building registrar"
-go build -o bin/registrar cmd/registrar/main.go
-POLICY_ID="$POLICY_ID" ./bin/registrar > "$REGISTRAR_LOG_PATH" 2>&1 &
-REGISTRAR_PID=$!
-echo "$REGISTRAR_PID" > "$ROOTDIR/registrar.pid"
-echo "Started registrar (PID $REGISTRAR_PID). Logs at $REGISTRAR_LOG_PATH"
+# Run setup_policy.sh to upload policy and create groups
+echo "===> Setting up policy and groups"
+if ! scripts/setup_policy.sh; then
+  echo "ERROR: setup_policy.sh failed. Exiting bootstrap."
+  cleanup
+  exit 1
+fi
 
-# Inject policy id into indexer schema before starting indexer bootstrap
+# Get the policy ID for registrar and schema
 POLICY_ID_FILE="$ROOTDIR/policy_id"
-SCHEMA_FILE="$INDEXER_ROOT/schema/schema.graphql"
 if [[ ! -f "$POLICY_ID_FILE" ]]; then
-  echo "ERROR: Policy ID file not found at $POLICY_ID_FILE. Cannot update schema."
+  echo "ERROR: Policy ID file not found at $POLICY_ID_FILE after policy setup."
   exit 1
 fi
 POLICY_ID=$(cat "$POLICY_ID_FILE")
 if [[ -z "$POLICY_ID" ]]; then
-  echo "ERROR: Policy ID is empty in $POLICY_ID_FILE. Cannot update schema."
+  echo "ERROR: Policy ID is empty in $POLICY_ID_FILE after policy setup."
   exit 1
 fi
+
+# Inject policy id into indexer schema before starting indexer bootstrap
+SCHEMA_FILE="$INDEXER_ROOT/schema/schema.graphql"
 if [[ ! -f "$SCHEMA_FILE" ]]; then
   echo "ERROR: Schema file not found at $SCHEMA_FILE."
   exit 1
 fi
 # Replace <replace_with_policy_id> with actual policy id (removing chevrons)
 sed -i.bak "s/<replace_with_policy_id>/$POLICY_ID/g" "$SCHEMA_FILE"
+
+# Build and run registrar (now that we have POLICY_ID)
+echo "===> Building registrar"
+go build -o bin/registrar cmd/registrar/main.go
+POLICY_ID="$POLICY_ID" ./bin/registrar > "$REGISTRAR_LOG_PATH" 2>&1 &
+REGISTRAR_PID=$!
+echo "$REGISTRAR_PID" > "$ROOTDIR/registrar.pid"
+echo "Started registrar (PID $REGISTRAR_PID). Logs at $REGISTRAR_LOG_PATH"
 
 # Start indexer bootstrap (DefraDB + block_poster)
 echo "===> Bootstrapping indexer (DefraDB/block_poster) from $INDEXER_ROOT"
@@ -192,14 +202,6 @@ if ! kill -0 $INDEXER_BOOTSTRAP_PID 2>/dev/null; then
   if [[ -f "$INDEXER_BOOTSTRAP_LOG_PATH" ]]; then
     tail -20 "$INDEXER_BOOTSTRAP_LOG_PATH" || echo "Could not read log file"
   fi
-  cleanup
-  exit 1
-fi
-
-# Run setup_policy.sh to upload policy and create groups
-echo "===> Setting up policy and groups"
-if ! scripts/setup_policy.sh; then
-  echo "ERROR: setup_policy.sh failed. Exiting bootstrap."
   cleanup
   exit 1
 fi
