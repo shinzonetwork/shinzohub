@@ -5,7 +5,7 @@ resources:
 			admin:
 				manages:
 				- writer
-				- reader
+				- syncer
 				- banned
 				types:
 				- actor
@@ -14,7 +14,7 @@ resources:
 				types:
 				- actor
 				- group->member
-			reader:
+			syncer:
 				types:
 				- actor
 				- group->member
@@ -25,20 +25,20 @@ resources:
 				types:
 				- actor
 		permissions:
-			read:
-				expr: (writer + reader) - banned
+			sync:
+				expr: (writer + syncer) - banned
 			update:
 				expr: writer - banned
 			delete:
 				expr: owner
-			query:
+			read:
 				expr: (subscriber) - banned
   view:
     relations:
       admin:
         manages:
         - writer
-        - reader
+        - syncer
         - subscriber
         - banned
         types:
@@ -51,7 +51,7 @@ resources:
         types:
         - actor
         - group->member
-      reader:
+      syncer:
         types:
         - actor
         - group->member
@@ -66,11 +66,11 @@ resources:
         - primitive
         - view
     permissions:
-      read:
-        expr: writer + reader + parent->read + subscriber - banned
+      sync:
+        expr: writer + syncer + parent->sync + subscriber - banned
       update:
-        expr: ((writer + parent->update) & parent->read) - banned
-      query:
+        expr: ((writer + parent->update) & parent->sync) - banned
+      read:
         expr: (subscriber) - banned
       delete:
         expr: owner
