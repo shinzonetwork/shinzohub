@@ -1,7 +1,7 @@
 # 02 - Access Control Policies (ACPs) Testing Environment - A Follow Up to ADR 01
 
 ## Status
-Written by Quinn Purdy on August 7, 2025
+Written by Quinn Purdy on August 8, 2025
 
 ## Context
 As we introduce ACPs to Shinzo, we a way to test and confirm that the access control guarantees described in our ACP are being enforced. This requires setting up a test environment that mirrors, as closely as possible, that of what our production (and testnet) environment will eventually look like.
