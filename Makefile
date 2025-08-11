@@ -112,6 +112,24 @@ bootstrap:
 	fi
 	@scripts/bootstrap.sh "$(SOURCEHUB_PATH)"
 
+integration-test:
+	@scripts/test_integration.sh "$(SOURCEHUB_PATH)"
+
+
+# Run tests only (assumes services are already running)
+test-acp:
+	@echo "===> Running ACP integration tests (services must be running)..."
+	@if [ ! -f ".shinzohub/ready" ]; then \
+		echo "ERROR: Services not ready. Run 'make bootstrap SOURCEHUB_PATH=../path/to/sourcehub' first."; \
+		exit 1; \
+	fi
+	@go test -v ./tests -run TestAccessControl
+
+# Quick test run with verbose output
+test-acp-v:
+	@echo "===> Running ACP integration tests with verbose output..."
+	@go test -v ./tests -run TestAccessControl
+
 stop:
 	@echo "===> Stopping all services..."
 	@SHINZO_ROOTDIR="$(shell pwd)/.shinzohub"; \
@@ -194,4 +212,4 @@ stop:
 	rm -f $$SHINZO_ROOTDIR/ready; \
 	echo "All services stopped and cleaned up."
 
-.PHONY: govet govulncheck bootstrap stop
+.PHONY: govet govulncheck bootstrap stop integration-test test-acp test-acp-v
