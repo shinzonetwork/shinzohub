@@ -2,6 +2,8 @@ package tests
 
 import (
 	"bytes"
+	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -208,43 +210,67 @@ func waitForDefraDB(url string) error {
 	return fmt.Errorf("DefraDB did not become ready within 30 seconds")
 }
 
+type addToGroupRequest struct {
+	DID string `json:"did"`
+}
+
 func setupInitialRelationships(env *TestEnvironment) error {
 	// This would set up the relationships defined in relationships.yaml
 	// For now, we'll use the registrar API to add users to groups
-
 	client := &http.Client{}
-
-	// Add indexers to indexer group
 	for username, user := range env.Users {
-		if user.IsIndexer && !user.IsBlocked && !user.IsBanned {
-			realDID := user.DID
-			fmt.Printf("Setting up indexer relationship for %s with DID: %s\n", username, realDID)
-
-			req, err := http.NewRequest("POST", env.RegistrarURL+"/request-indexer-role", nil)
-			if err != nil {
-				return err
-			}
-			// Add user DID to request body
-			// This is a simplified version - you'd need proper JSON body
-
-			resp, err := client.Do(req)
-			if err != nil {
-				return err
-			}
-			defer resp.Body.Close()
+		path := ""
+		if user.IsIndexer {
+			path = "/request-indexer-role"
+		} else if user.IsHost {
+			path = "/request-host-role"
+		} else {
+			continue
 		}
 
-		if user.IsHost && !user.IsBlocked && !user.IsBanned {
-			realDID := user.DID
-			fmt.Printf("Setting up host relationship for %s with DID: %s\n", username, realDID)
+		realDID := user.DID
+		fmt.Printf("Setting up %s relationship for %s with DID: %s\n", user.Group, username, realDID)
+		jsonBytes, err := json.Marshal(addToGroupRequest{
+			DID: realDID,
+		})
+		if err != nil {
+			return err
+		}
+		req, err := http.NewRequest("POST",
+			env.RegistrarURL+path,
+			bytes.NewBuffer(jsonBytes))
+		if err != nil {
+			return err
+		}
+		resp, err := client.Do(req)
+		if err != nil {
+			return err
+		}
+		defer resp.Body.Close()
 
-			req, err := http.NewRequest("POST", env.RegistrarURL+"/request-host-role", nil)
+		if user.IsBlocked {
+			if user.IsIndexer {
+				path = "/block-indexer"
+			} else if user.IsHost {
+				path = "/block-host"
+			} else {
+				return errors.New("Encountered fatal error setting up initial ACP relationships with SourceHub: unable to parse test configuration: encountered a user who is banned and is neither an indexer or host")
+			}
+
+			jsonBytes, err = json.Marshal(addToGroupRequest{
+				DID: realDID,
+			})
 			if err != nil {
 				return err
 			}
-			// Add user DID to request body
-
-			resp, err := client.Do(req)
+			fmt.Printf("Blocking user %s with did %s from group %s", username, realDID, user.Group)
+			req, err = http.NewRequest("POST",
+				env.RegistrarURL+path,
+				bytes.NewBuffer(jsonBytes))
+			if err != nil {
+				return err
+			}
+			resp, err = client.Do(req)
 			if err != nil {
 				return err
 			}

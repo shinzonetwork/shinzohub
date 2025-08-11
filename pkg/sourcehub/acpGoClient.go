@@ -28,7 +28,7 @@ func giveQueryAccessError(did, documentId string, err error) error {
 	return fmt.Errorf("Encountered an error giving query access to %s for document %s: %w", did, documentId, err)
 }
 
-func createDataViewError(documentId, creatorDid string, err error) error {
+func createDataFeedError(documentId, creatorDid string, err error) error {
 	return fmt.Errorf("Encountered an error creating data view for document %s by creator %s: %w", documentId, creatorDid, err)
 }
 
@@ -61,7 +61,7 @@ func NewAcpGoClient(acp *sdk.Client, txBuilder *sdk.TxBuilder, signer sdk.TxSign
 }
 
 func (client *AcpGoClient) AddToGroup(ctx context.Context, groupName string, did string) error {
-	rel := coretypes.NewActorRelationship("group", groupName, "member", did)
+	rel := coretypes.NewActorRelationship("group", groupName, "guest", did)
 	cmd := acptypes.NewSetRelationshipCmd(rel)
 
 	cmdBuilder, err := sdk.NewCmdBuilder(ctx, client.acp)
@@ -83,7 +83,7 @@ func (client *AcpGoClient) AddToGroup(ctx context.Context, groupName string, did
 }
 
 func (client *AcpGoClient) RemoveFromGroup(ctx context.Context, groupName string, did string) error {
-	rel := coretypes.NewActorRelationship("group", groupName, "member", did)
+	rel := coretypes.NewActorRelationship("group", groupName, "guest", did)
 	cmd := acptypes.NewDeleteRelationshipCmd(rel)
 
 	cmdBuilder, err := sdk.NewCmdBuilder(ctx, client.acp)
@@ -104,8 +104,30 @@ func (client *AcpGoClient) RemoveFromGroup(ctx context.Context, groupName string
 	return sendAndConfirmTx(ctx, client.acp, client.transactionBuilder, client.signer, &msgSet, func(e error) error { return removeFromGroupError(did, groupName, e) })
 }
 
+func (client *AcpGoClient) BlockFromGroup(ctx context.Context, groupName string, did string) error {
+	rel := coretypes.NewActorRelationship("group", groupName, "blocked", did)
+	cmd := acptypes.NewSetRelationshipCmd(rel)
+
+	cmdBuilder, err := sdk.NewCmdBuilder(ctx, client.acp)
+	if err != nil {
+		return addToGroupError(did, groupName, err)
+	}
+	cmdBuilder.Actor(did)
+	cmdBuilder.PolicyID(client.policyId)
+	cmdBuilder.PolicyCmd(cmd)
+	jws, err := cmdBuilder.BuildJWS(ctx)
+	if err != nil {
+		return addToGroupError(did, groupName, err)
+	}
+
+	msg := acptypes.NewMsgSignedPolicyCmdFromJWS(did, jws)
+	msgSet := sdk.MsgSet{}
+	msgSet.WithSignedPolicyCmd(msg)
+	return sendAndConfirmTx(ctx, client.acp, client.transactionBuilder, client.signer, &msgSet, func(e error) error { return addToGroupError(did, groupName, e) })
+}
+
 func (client *AcpGoClient) GiveQueryAccess(ctx context.Context, documentId string, did string) error {
-	rel := coretypes.NewActorRelationship("file", documentId, "reader", did)
+	rel := coretypes.NewActorRelationship("file", documentId, "subscriber", did)
 	cmd := acptypes.NewSetRelationshipCmd(rel)
 
 	cmdBuilder, err := sdk.NewCmdBuilder(ctx, client.acp)
@@ -126,13 +148,35 @@ func (client *AcpGoClient) GiveQueryAccess(ctx context.Context, documentId strin
 	return sendAndConfirmTx(ctx, client.acp, client.transactionBuilder, client.signer, &msgSet, func(e error) error { return giveQueryAccessError(did, documentId, e) })
 }
 
-func (client *AcpGoClient) CreateDataView(ctx context.Context, documentId string, creatorDid string, parentDocumentIds ...string) error {
+func (client *AcpGoClient) BanUserFromResource(ctx context.Context, documentId string, did string) error {
+	rel := coretypes.NewActorRelationship("file", documentId, "banned", did)
+	cmd := acptypes.NewSetRelationshipCmd(rel)
+
+	cmdBuilder, err := sdk.NewCmdBuilder(ctx, client.acp)
+	if err != nil {
+		return giveQueryAccessError(did, documentId, err)
+	}
+	cmdBuilder.Actor(did)
+	cmdBuilder.PolicyID(client.policyId)
+	cmdBuilder.PolicyCmd(cmd)
+	jws, err := cmdBuilder.BuildJWS(ctx)
+	if err != nil {
+		return giveQueryAccessError(did, documentId, err)
+	}
+
+	msg := acptypes.NewMsgSignedPolicyCmdFromJWS(did, jws)
+	msgSet := sdk.MsgSet{}
+	msgSet.WithSignedPolicyCmd(msg)
+	return sendAndConfirmTx(ctx, client.acp, client.transactionBuilder, client.signer, &msgSet, func(e error) error { return giveQueryAccessError(did, documentId, e) })
+}
+
+func (client *AcpGoClient) CreateDataFeed(ctx context.Context, documentId string, creatorDid string, parentDocumentIds ...string) error {
 	creatorRel := coretypes.NewActorRelationship("file", documentId, "creator", creatorDid)
 	creatorCmd := acptypes.NewSetRelationshipCmd(creatorRel)
 
 	cmdBuilder, err := sdk.NewCmdBuilder(ctx, client.acp)
 	if err != nil {
-		return createDataViewError(documentId, creatorDid, err)
+		return createDataFeedError(documentId, creatorDid, err)
 	}
 	cmdBuilder.Actor(creatorDid)
 	cmdBuilder.PolicyID(client.policyId)
@@ -146,7 +190,7 @@ func (client *AcpGoClient) CreateDataView(ctx context.Context, documentId string
 
 	jws, err := cmdBuilder.BuildJWS(ctx)
 	if err != nil {
-		return createDataViewError(documentId, creatorDid, err)
+		return createDataFeedError(documentId, creatorDid, err)
 	}
 
 	msg := acptypes.NewMsgSignedPolicyCmdFromJWS(creatorDid, jws)
@@ -154,6 +198,6 @@ func (client *AcpGoClient) CreateDataView(ctx context.Context, documentId string
 	msgSet.WithSignedPolicyCmd(msg)
 
 	return sendAndConfirmTx(ctx, client.acp, client.transactionBuilder, client.signer, &msgSet, func(e error) error {
-		return createDataViewError(documentId, creatorDid, e)
+		return createDataFeedError(documentId, creatorDid, e)
 	})
 }

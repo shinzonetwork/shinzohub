@@ -43,8 +43,40 @@ func main() {
 		return RegistrarResponse{Success: true}, http.StatusOK, nil
 	}))
 
+	registrarMux.HandleFunc("/block-indexer", utils.JSONHandler(func(r *http.Request, req RegistrarRequest) (RegistrarResponse, int, error) {
+		err := registrar.BlockIndexer(r.Context(), req.DID)
+		if err != nil {
+			return RegistrarResponse{Success: false, Error: err.Error()}, http.StatusBadRequest, nil
+		}
+		return RegistrarResponse{Success: true}, http.StatusOK, nil
+	}))
+
+	registrarMux.HandleFunc("/block-host", utils.JSONHandler(func(r *http.Request, req RegistrarRequest) (RegistrarResponse, int, error) {
+		err := registrar.BlockHost(r.Context(), req.DID)
+		if err != nil {
+			return RegistrarResponse{Success: false, Error: err.Error()}, http.StatusBadRequest, nil
+		}
+		return RegistrarResponse{Success: true}, http.StatusOK, nil
+	}))
+
 	registrarMux.HandleFunc("/subscribe-to-data-feed", utils.JSONHandler(func(r *http.Request, req RegistrarRequest) (RegistrarResponse, int, error) {
 		err := registrar.SubscribeToDataFeed(r.Context(), req.DID, req.DataFeedID)
+		if err != nil {
+			return RegistrarResponse{Success: false, Error: err.Error()}, http.StatusBadRequest, nil
+		}
+		return RegistrarResponse{Success: true}, http.StatusOK, nil
+	}))
+
+	registrarMux.HandleFunc("/ban-user-from-resource", utils.JSONHandler(func(r *http.Request, req RegistrarRequest) (RegistrarResponse, int, error) {
+		err := registrar.BanUserFromResource(r.Context(), req.DID, req.DataFeedID)
+		if err != nil {
+			return RegistrarResponse{Success: false, Error: err.Error()}, http.StatusBadRequest, nil
+		}
+		return RegistrarResponse{Success: true}, http.StatusOK, nil
+	}))
+
+	registrarMux.HandleFunc("/create-data-feed", utils.JSONHandler(func(r *http.Request, req RegistrarRequest) (RegistrarResponse, int, error) {
+		err := registrar.CreateDataFeed(r.Context(), req.DID, req.DataFeedID)
 		if err != nil {
 			return RegistrarResponse{Success: false, Error: err.Error()}, http.StatusBadRequest, nil
 		}
