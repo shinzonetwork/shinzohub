@@ -46,8 +46,8 @@ type TestCase struct {
 	UserDID        string
 	Resource       string
 	Action         string
-	ExpectedResult bool // true = should succeed, false = should fail
-	SetupFn        func(*TestEnvironment) error
+	ExpectedResult bool                         // true = should succeed, false = should fail
+	SetupFn        func(*TestEnvironment) error `json:"-"`
 }
 
 func setupTestEnvironment(t *testing.T) *TestEnvironment {
@@ -162,8 +162,22 @@ func TestAccessControl(t *testing.T) {
 		t.Fatalf("Failed to setup initial relationships: %v", err)
 	}
 
+	// Todo create blocks primitive, datafeed a, and datafeed b
+
 	// Run test cases
-	testCases := generateTestCases()
+	testCases, err := generateTestCases()
+	if err != nil {
+		t.Fatalf("Encountered error generating test cases: %v", err)
+	}
+
+	for _, tc := range testCases {
+		b, err := json.Marshal(tc)
+		if err != nil {
+			t.Errorf("failed to marshal test case %q: %v", tc.Name, err)
+			continue
+		}
+		t.Log(string(b))
+	}
 
 	for _, tc := range testCases {
 		t.Run(tc.Name, func(t *testing.T) {
@@ -281,91 +295,10 @@ func setupInitialRelationships(env *TestEnvironment) error {
 	return nil
 }
 
-func generateTestCases() []TestCase {
-	return []TestCase{
-		// Primitive resource tests (blocks)
-		{
-			Name:           "randomUser_can_read_blocks",
-			UserDID:        "did:user:randomUser",
-			Resource:       "primitive:blocks",
-			Action:         "read",
-			ExpectedResult: true,
-		},
-		{
-			Name:           "randomUser_cannot_update_blocks",
-			UserDID:        "did:user:randomUser",
-			Resource:       "primitive:blocks",
-			Action:         "update",
-			ExpectedResult: false,
-		},
-		{
-			Name:           "anIndexer_can_read_blocks",
-			UserDID:        "did:user:anIndexer",
-			Resource:       "primitive:blocks",
-			Action:         "read",
-			ExpectedResult: true,
-		},
-		{
-			Name:           "anIndexer_can_update_blocks",
-			UserDID:        "did:user:anIndexer",
-			Resource:       "primitive:blocks",
-			Action:         "update",
-			ExpectedResult: true,
-		},
-		{
-			Name:           "aBlockedIndexer_cannot_read_blocks",
-			UserDID:        "did:user:aBlockedIndexer",
-			Resource:       "primitive:blocks",
-			Action:         "read",
-			ExpectedResult: false,
-		},
-		{
-			Name:           "aBannedIndexer_cannot_read_blocks",
-			UserDID:        "did:user:aBannedIndexer",
-			Resource:       "primitive:blocks",
-			Action:         "read",
-			ExpectedResult: false,
-		},
+func generateTestCases() ([]TestCase, error) {
+	path := "../acp/tests.yaml"
 
-		// View resource tests (data feeds)
-		{
-			Name:           "subscriber_can_read_datafeedA",
-			UserDID:        "did:user:subscriber",
-			Resource:       "view:datafeedA",
-			Action:         "read",
-			ExpectedResult: true,
-		},
-		{
-			Name:           "subscriber_can_query_datafeedA",
-			UserDID:        "did:user:subscriber",
-			Resource:       "view:datafeedA",
-			Action:         "query",
-			ExpectedResult: true,
-		},
-		{
-			Name:           "aHost_can_read_datafeedA",
-			UserDID:        "did:user:aHost",
-			Resource:       "view:datafeedA",
-			Action:         "read",
-			ExpectedResult: true,
-		},
-		{
-			Name:           "aHost_can_update_datafeedA",
-			UserDID:        "did:user:aHost",
-			Resource:       "view:datafeedA",
-			Action:         "update",
-			ExpectedResult: true,
-		},
-		{
-			Name:           "creator_is_creator_of_datafeedA",
-			UserDID:        "did:user:creator",
-			Resource:       "view:datafeedA",
-			Action:         "creator",
-			ExpectedResult: true,
-		},
-
-		// Add more test cases based on tests.yaml...
-	}
+	return parseFile(path)
 }
 
 // resolveDID resolves an alias DID (e.g., "did:user:randomUser") to the real DID
