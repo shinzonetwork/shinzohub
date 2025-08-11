@@ -101,7 +101,7 @@ Authorizations {
   !view:datafeedA#creator@did:user:aBlockedHost
 
   view:datafeedA#sync@did:user:anIndexer
-  !view:datafeedA#update@did:user:anIndexer
+  view:datafeedA#update@did:user:anIndexer
   !view:datafeedA#read@did:user:anIndexer
   !view:datafeedA#creator@did:user:anIndexer
 
@@ -158,7 +158,7 @@ Authorizations {
   !view:datafeedB#creator@did:user:aBlockedHost
 
   view:datafeedB#sync@did:user:anIndexer
-  !view:datafeedB#update@did:user:anIndexer
+  view:datafeedB#update@did:user:anIndexer
   !view:datafeedB#read@did:user:anIndexer
   !view:datafeedB#creator@did:user:anIndexer
 
