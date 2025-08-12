@@ -201,3 +201,29 @@ func (client *AcpGoClient) CreateDataFeed(ctx context.Context, documentId string
 		return createDataFeedError(documentId, creatorDid, e)
 	})
 }
+
+func (client *AcpGoClient) VerifyAccessRequest(ctx context.Context, policyID, resourceName, objectID, permission, actorDID string) (bool, error) {
+	// Create the access request using SourceHub types
+	accessRequest := &acptypes.QueryVerifyAccessRequestRequest{
+		PolicyId: policyID,
+		AccessRequest: &coretypes.AccessRequest{
+			Operations: []*coretypes.Operation{
+				{
+					Object:     coretypes.NewObject(resourceName, objectID),
+					Permission: permission,
+				},
+			},
+			Actor: &coretypes.Actor{
+				Id: actorDID,
+			},
+		},
+	}
+	
+	// Use the SourceHub ACP query client to verify the access request
+	result, err := client.acp.ACPQueryClient().VerifyAccessRequest(ctx, accessRequest)
+	if err != nil {
+		return false, fmt.Errorf("failed to verify access request: %w", err)
+	}
+	
+	return result.Valid, nil
+}

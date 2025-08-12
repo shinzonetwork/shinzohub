@@ -2,21 +2,25 @@ package tests
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
 	"net/http"
+	"os"
 	"strings"
 	"testing"
 	"time"
 
 	"shinzohub/pkg/sourcehub"
-	"shinzohub/pkg/utils"
 	"shinzohub/pkg/validators"
 
 	// Import the SourceHub DID package
 	did "github.com/sourcenetwork/acp_core/pkg/did"
+
+	// Import SourceHub SDK for ACP client creation
+	"github.com/sourcenetwork/sourcehub/sdk"
 )
 
 const pathToTests = "../acp/tests.yaml"
@@ -36,13 +40,16 @@ type TestUser struct {
 
 // TestEnvironment holds all the components needed for testing
 type TestEnvironment struct {
-	RegistrarURL string
-	DefraDBURL   string
 	Users        map[string]*TestUser
+	DefraDBURL   string
+	RegistrarURL string
+	SourceHubURL string
 	ACPClient    sourcehub.AcpClient
 	Validator    validators.Validator
 	// Add a map to store real DIDs for each test user
 	RealDIDs map[string]string
+	// PolicyID is a placeholder for the actual policy ID used in permission checks
+	PolicyID string
 }
 
 // TestCase represents a single access control test
@@ -51,32 +58,94 @@ type TestCase struct {
 	UserDID        string
 	Resource       string
 	Action         string
-	ExpectedResult bool                         // true = should succeed, false = should fail
-	SetupFn        func(*TestEnvironment) error `json:"-"`
+	ExpectedResult bool // true = should succeed, false = should fail
 }
 
 func setupTestEnvironment(t *testing.T) *TestEnvironment {
-	// This would be set up by your bootstrap script
-	registrarURL := "http://localhost:8081"
-	defraDBURL := "http://localhost:9181"
-
-	// Create test users based on relationships.yaml, now using real DIDs
-	// todo parse this from our tests.yaml
-	users, err := parseTestUsersFromFile(pathToRelationships)
+	// Parse test files to get test users and cases
+	testUsers, err := parseTestUsersFromFile(pathToRelationships)
 	if err != nil {
-		t.Fatalf("Encountered error parsing test users from file at path %s: %v", pathToRelationships, err)
+		t.Fatalf("Failed to parse test users: %v", err)
 	}
 
 	// Generate real DIDs for each test user
-	realDIDs := generateRealDidsForTestUsers(t, users)
+	realDIDs := generateRealDidsForTestUsers(t, testUsers)
 
-	return &TestEnvironment{
-		RegistrarURL: registrarURL,
-		DefraDBURL:   defraDBURL,
-		Users:        users,
+	// Get the real policy ID from the .shinzohub/policy_id file (set during bootstrap)
+	policyID := os.Getenv("POLICY_ID")
+	if policyID == "" {
+		// Try to read from the policy_id file that bootstrap.sh creates
+		// Since tests run from tests/ directory, the .shinzohub is in the parent
+		policyIDFile := "../.shinzohub/policy_id"
+		if data, err := os.ReadFile(policyIDFile); err == nil {
+			policyID = strings.TrimSpace(string(data))
+			t.Logf("Read policy ID from file: %s", policyID)
+		} else {
+			t.Fatalf("Unable to run test suite: Could not read policy ID from %s: %v", policyIDFile, err)
+		}
+	} else {
+		t.Logf("Using policy ID from environment: %s", policyID)
+	}
+
+	// Create test environment
+	env := &TestEnvironment{
+		Users:        testUsers,
+		DefraDBURL:   "http://localhost:9181",
+		RegistrarURL: "http://localhost:8081",
+		SourceHubURL: "http://localhost:26657",
+		ACPClient:    nil, // Will be set below if SourceHub is available
 		Validator:    &validators.RegistrarValidator{},
 		RealDIDs:     realDIDs,
+		PolicyID:     policyID,
 	}
+
+	// Try to create a real SourceHub ACP client
+	// This will connect to the local SourceHub instance
+	acpClient, err := createSourceHubACPClient(env.SourceHubURL, policyID)
+	if err != nil {
+		t.Logf("Warning: Could not create SourceHub ACP client: %v", err)
+		t.Logf("Permission checking will be limited - tests may not reflect actual ACP behavior")
+		env.ACPClient = nil
+	} else {
+		env.ACPClient = acpClient
+		t.Logf("Successfully created SourceHub ACP client")
+	}
+
+	return env
+}
+
+// createSourceHubACPClient creates a real SourceHub ACP client for testing
+func createSourceHubACPClient(sourceHubURL, policyID string) (sourcehub.AcpClient, error) {
+	// Create the SourceHub SDK client
+	client, err := sdk.NewClient()
+	if err != nil {
+		return nil, fmt.Errorf("failed to create SourceHub client: %w", err)
+	}
+
+	// Create the transaction builder
+	txBuilder, err := sdk.NewTxBuilder(sdk.WithSDKClient(client))
+	if err != nil {
+		return nil, fmt.Errorf("failed to create transaction builder: %w", err)
+	}
+
+	// Create the API signer from environment (same as registrar)
+	signer, err := sourcehub.NewApiSignerFromEnv()
+	if err != nil {
+		return nil, fmt.Errorf("failed to create API signer: %w", err)
+	}
+
+	// Create and return the ACP client
+	acpGoClient := sourcehub.NewAcpGoClient(client, &txBuilder, signer, policyID)
+	return acpGoClient, nil
+}
+
+// mapKeys returns the keys of a map as a slice
+func mapKeys(m map[string]*TestUser) []string {
+	keys := make([]string, 0, len(m))
+	for k := range m {
+		keys = append(keys, k)
+	}
+	return keys
 }
 
 func printTestUsers(users map[string]*TestUser) error {
@@ -93,7 +162,7 @@ func printTestUsers(users map[string]*TestUser) error {
 func generateRealDidsForTestUsers(t *testing.T, testUsers map[string]*TestUser) map[string]string {
 	realDIDs := make(map[string]string)
 
-	testUsernames := utils.MapKeys(testUsers)
+	testUsernames := mapKeys(testUsers)
 
 	// Generate a DID for each test user
 	for _, username := range testUsernames {
@@ -112,23 +181,18 @@ func generateRealDidsForTestUsers(t *testing.T, testUsers map[string]*TestUser) 
 func TestAccessControl(t *testing.T) {
 	env := setupTestEnvironment(t)
 
-	// Log the generated DIDs for debugging
-	t.Logf("Generated DIDs for test users:")
-	for username, realDID := range env.RealDIDs {
-		t.Logf("  %s: %s", username, realDID)
-	}
-
-	// Wait for services to be ready
 	if err := waitForServices(env); err != nil {
 		t.Fatalf("Services not ready: %v", err)
 	}
 
-	// Set up initial relationships
 	if err := setupInitialRelationships(env); err != nil {
 		t.Fatalf("Failed to setup initial relationships: %v", err)
 	}
 
-	// Todo create blocks primitive, datafeed a, and datafeed b
+	// Create blocks primitive, datafeed A, and datafeed B
+	if err := createTestResources(env); err != nil {
+		t.Fatalf("Failed to create test resources: %v", err)
+	}
 
 	// Run test cases
 	testCases, err := generateTestCases()
@@ -140,6 +204,13 @@ func TestAccessControl(t *testing.T) {
 		t.Run(tc.Name, func(t *testing.T) {
 			runTestCase(t, env, tc)
 		})
+	}
+}
+
+func logRealDids(t *testing.T, env *TestEnvironment) {
+	t.Logf("Generated DIDs for test users:")
+	for username, realDID := range env.RealDIDs {
+		t.Logf("  %s: %s", username, realDID)
 	}
 }
 
@@ -197,8 +268,7 @@ type addToGroupRequest struct {
 }
 
 func setupInitialRelationships(env *TestEnvironment) error {
-	// This would set up the relationships defined in relationships.yaml
-	// For now, we'll use the registrar API to add users to groups
+	// Use the registrar API to add users to groups
 	client := &http.Client{}
 	for username, user := range env.Users {
 		path := ""
@@ -296,14 +366,16 @@ func (env *TestEnvironment) getUsernameFromAlias(aliasDID string) (string, bool)
 	return "", false
 }
 
-func runTestCase(t *testing.T, env *TestEnvironment, tc TestCase) {
-	// Set up any test-specific relationships
-	if tc.SetupFn != nil {
-		if err := tc.SetupFn(env); err != nil {
-			t.Fatalf("Test setup failed: %v", err)
-		}
-	}
+// Todo fix
+// createTestResources creates the necessary test resources:
+// For now, we're using direct permission checking instead of creating actual documents
+func createTestResources(env *TestEnvironment) error {
+	fmt.Println("Using direct permission checking - no documents need to be created")
+	fmt.Println("✓ Test resources ready for permission testing!")
+	return nil
+}
 
+func runTestCase(t *testing.T, env *TestEnvironment, tc TestCase) {
 	// Resolve the alias DID to the real DID
 	realUserDID := env.resolveDID(tc.UserDID)
 	t.Logf("Resolved %s to %s", tc.UserDID, realUserDID)
@@ -319,18 +391,49 @@ func runTestCase(t *testing.T, env *TestEnvironment, tc TestCase) {
 }
 
 func attemptAction(env *TestEnvironment, userDID, resource, action string) bool {
-	// This would actually attempt the action against DefraDB
-	// For now, this is a placeholder that would:
-	// 1. Create a request to DefraDB with the user's context
-	// 2. Check if the ACP allows the action
-	// 3. Return true if allowed, false if denied
+	// Use the SourceHub SDK to check if the user has permission to perform the action on the resource
+	// This is the proper way to test ACP enforcement by actually querying the ACP system
 
-	// In a real implementation, you'd:
-	// - Create a GraphQL query/mutation to DefraDB
-	// - Include the user's DID in the request context
-	// - Check if the operation succeeds or fails due to ACP
+	// Parse the resource to extract the resource type and ID
+	// Format: "primitive:blocks", "view:datafeedA", etc.
+	parts := strings.Split(resource, ":")
+	if len(parts) != 2 {
+		fmt.Printf("Invalid resource format: %s, expected format like 'primitive:blocks'\n", resource)
+		return false
+	}
 
-	// For now, return true for all actions to make tests pass
-	// TODO: Implement actual ACP testing
-	return true
+	resourceType := parts[0] // "primitive" or "view"
+	resourceName := parts[1] // "blocks", "datafeedA", etc.
+
+	// Get the policy ID from environment
+	policyID := env.PolicyID
+	if policyID == "" {
+		fmt.Printf("No policy ID available for permission checking\n")
+		return false
+	}
+
+	// Check if we have an ACP client available
+	if env.ACPClient == nil {
+		fmt.Printf("No ACP client available for permission checking - SourceHub ACP client not created\n")
+		fmt.Printf("This means the createSourceHubACPClient function needs to be implemented\n")
+		fmt.Printf("to create a real connection to the SourceHub instance\n")
+		return false
+	}
+
+	fmt.Printf("Checking permission: user %s wants to %s on %s (resource: %s, type: %s)\n",
+		userDID, action, resource, resourceName, resourceType)
+
+	// Use the ACP client to verify the access request
+	// For now, we'll use a test object ID since we're not creating actual documents
+	testObjectID := "test-object-" + resourceName
+
+	ctx := context.Background()
+	hasPermission, err := env.ACPClient.VerifyAccessRequest(ctx, policyID, resourceName, testObjectID, action, userDID)
+	if err != nil {
+		fmt.Printf("Error checking permission: %v\n", err)
+		return false
+	}
+
+	fmt.Printf("Permission check result: %t\n", hasPermission)
+	return hasPermission
 }
