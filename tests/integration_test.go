@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"shinzohub/pkg/sourcehub"
+	"shinzohub/pkg/utils"
 	"shinzohub/pkg/validators"
 
 	// Import the SourceHub DID package
@@ -59,15 +60,15 @@ func setupTestEnvironment(t *testing.T) *TestEnvironment {
 	registrarURL := "http://localhost:8081"
 	defraDBURL := "http://localhost:9181"
 
-	// Generate real DIDs for each test user
-	realDIDs := generateRealDidsForTestUsers(t)
-
 	// Create test users based on relationships.yaml, now using real DIDs
 	// todo parse this from our tests.yaml
 	users, err := parseTestUsersFromFile(pathToRelationships)
 	if err != nil {
 		t.Fatalf("Encountered error parsing test users from file at path %s: %v", pathToRelationships, err)
 	}
+
+	// Generate real DIDs for each test user
+	realDIDs := generateRealDidsForTestUsers(t, users)
 
 	return &TestEnvironment{
 		RegistrarURL: registrarURL,
@@ -89,15 +90,10 @@ func printTestUsers(users map[string]*TestUser) error {
 	return nil
 }
 
-func generateRealDidsForTestUsers(t *testing.T) map[string]string {
+func generateRealDidsForTestUsers(t *testing.T, testUsers map[string]*TestUser) map[string]string {
 	realDIDs := make(map[string]string)
 
-	// List of test usernames that need DIDs
-	// Todo parse this from our tests.yaml
-	testUsernames := []string{
-		"randomUser", "aHost", "anIndexer", "subscriber", "creator",
-		"aBlockedIndexer", "aBannedIndexer", "aBlockedHost", "aBannedHost", "unregisteredUser",
-	}
+	testUsernames := utils.MapKeys(testUsers)
 
 	// Generate a DID for each test user
 	for _, username := range testUsernames {
