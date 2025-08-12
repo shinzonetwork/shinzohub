@@ -7,7 +7,7 @@ import (
 	"strings"
 )
 
-func parseFile(path string) ([]TestCase, error) {
+func parseTestCasesFromFile(path string) ([]TestCase, error) {
 	file, err := os.Open(path)
 	if err != nil {
 		return nil, err
@@ -83,4 +83,72 @@ func parseFile(path string) ([]TestCase, error) {
 		return nil, err
 	}
 	return testCases, nil
+}
+
+var didUserRegex = regexp.MustCompile(`did:user:[a-zA-Z0-9_]+`)
+var groupRegex = regexp.MustCompile(`group:([a-zA-Z0-9]+)`)
+
+func parseTestUsersFromFile(path string) (map[string]*TestUser, error) {
+	file, err := os.Open(path)
+	if err != nil {
+		return nil, err
+	}
+	defer file.Close()
+
+	users := make(map[string]*TestUser)
+	scanner := bufio.NewScanner(file)
+
+	for scanner.Scan() {
+		line := strings.TrimSpace(scanner.Text())
+		if line == "" || strings.HasPrefix(line, "//") {
+			continue
+		}
+
+		// Extract did:user:<username> if present
+		did := didUserRegex.FindString(line)
+		if did == "" {
+			continue // skip lines not related to did:user
+		}
+
+		user, exists := users[did]
+		if !exists {
+			user = &TestUser{DID: did}
+			users[did] = user
+		}
+
+		// Update flags based on content of line
+		lower := strings.ToLower(line)
+
+		// Roles & flags rules based on input sample and your TestUser fields
+		user.IsIndexer = strings.Contains(lower, "group:indexer")
+		user.IsHost = strings.Contains(lower, "group:host")
+
+		if strings.Contains(lower, "subscriber") {
+			user.IsSubscriber = true
+		}
+		if strings.Contains(lower, "banned") {
+			user.IsBanned = true
+		}
+		if strings.Contains(lower, "blocked") {
+			if strings.Contains(lower, "indexer") {
+				user.IsBlockedIndexer = true
+			} else if strings.Contains(lower, "host") {
+				user.IsBlockedHost = true
+			}
+		}
+
+		// Extract group name and set user.Group
+		matches := groupRegex.FindStringSubmatch(lower)
+		if len(matches) > 1 {
+			user.Group = matches[1] // e.g. "indexer", "host", "shinzoteam"
+		} else if user.Group == "" {
+			user.Group = "" // default empty string if no group found
+		}
+	}
+
+	if err := scanner.Err(); err != nil {
+		return nil, err
+	}
+
+	return users, nil
 }

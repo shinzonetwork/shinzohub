@@ -18,15 +18,19 @@ import (
 	did "github.com/sourcenetwork/acp_core/pkg/did"
 )
 
+const pathToTests = "../acp/tests.yaml"
+const pathToRelationships = "../acp/relationships.yaml"
+
 // TestUser represents a user in our test environment
 type TestUser struct {
-	DID          string
-	Group        string
-	IsBlocked    bool
-	IsBanned     bool
-	IsIndexer    bool
-	IsHost       bool
-	IsSubscriber bool
+	DID              string
+	Group            string
+	IsBlockedIndexer bool
+	IsBlockedHost    bool
+	IsBanned         bool
+	IsIndexer        bool
+	IsHost           bool
+	IsSubscriber     bool
 }
 
 // TestEnvironment holds all the components needed for testing
@@ -60,54 +64,9 @@ func setupTestEnvironment(t *testing.T) *TestEnvironment {
 
 	// Create test users based on relationships.yaml, now using real DIDs
 	// todo parse this from our tests.yaml
-	users := map[string]*TestUser{
-		"randomUser": {
-			DID: realDIDs["randomUser"],
-		},
-		"aHost": {
-			DID:    realDIDs["aHost"],
-			Group:  "host",
-			IsHost: true,
-		},
-		"anIndexer": {
-			DID:       realDIDs["anIndexer"],
-			Group:     "indexer",
-			IsIndexer: true,
-		},
-		"subscriber": {
-			DID:          realDIDs["subscriber"],
-			IsSubscriber: true,
-		},
-		"creator": {
-			DID: realDIDs["creator"],
-		},
-		"aBlockedIndexer": {
-			DID:       realDIDs["aBlockedIndexer"],
-			Group:     "indexer",
-			IsIndexer: true,
-			IsBlocked: true,
-		},
-		"aBannedIndexer": {
-			DID:       realDIDs["aBannedIndexer"],
-			Group:     "indexer",
-			IsIndexer: true,
-			IsBanned:  true,
-		},
-		"aBlockedHost": {
-			DID:       realDIDs["aBlockedHost"],
-			Group:     "host",
-			IsHost:    true,
-			IsBlocked: true,
-		},
-		"aBannedHost": {
-			DID:      realDIDs["aBannedHost"],
-			Group:    "host",
-			IsHost:   true,
-			IsBanned: true,
-		},
-		"unregisteredUser": {
-			DID: realDIDs["unregisteredUser"],
-		},
+	users, err := parseTestUsersFromFile(pathToRelationships)
+	if err != nil {
+		t.Fatalf("Encountered error parsing test users from file at path %s: %v", pathToRelationships, err)
 	}
 
 	return &TestEnvironment{
@@ -117,6 +76,17 @@ func setupTestEnvironment(t *testing.T) *TestEnvironment {
 		Validator:    &validators.RegistrarValidator{},
 		RealDIDs:     realDIDs,
 	}
+}
+
+func printTestUsers(users map[string]*TestUser) error {
+	for did, user := range users {
+		data, err := json.Marshal(user)
+		if err != nil {
+			return err
+		}
+		fmt.Printf("%s -> %s\n", did, string(data))
+	}
+	return nil
 }
 
 func generateRealDidsForTestUsers(t *testing.T) map[string]string {
@@ -171,18 +141,20 @@ func TestAccessControl(t *testing.T) {
 	}
 
 	for _, tc := range testCases {
+		t.Run(tc.Name, func(t *testing.T) {
+			runTestCase(t, env, tc)
+		})
+	}
+}
+
+func printTestCases(t *testing.T, testCases []TestCase) {
+	for _, tc := range testCases {
 		b, err := json.Marshal(tc)
 		if err != nil {
 			t.Errorf("failed to marshal test case %q: %v", tc.Name, err)
 			continue
 		}
 		t.Log(string(b))
-	}
-
-	for _, tc := range testCases {
-		t.Run(tc.Name, func(t *testing.T) {
-			runTestCase(t, env, tc)
-		})
 	}
 }
 
@@ -262,10 +234,10 @@ func setupInitialRelationships(env *TestEnvironment) error {
 		}
 		defer resp.Body.Close()
 
-		if user.IsBlocked {
-			if user.IsIndexer {
+		if user.IsBlockedIndexer || user.IsBlockedHost {
+			if user.IsBlockedIndexer {
 				path = "/block-indexer"
-			} else if user.IsHost {
+			} else if user.IsBlockedHost {
 				path = "/block-host"
 			} else {
 				return errors.New("Encountered fatal error setting up initial ACP relationships with SourceHub: unable to parse test configuration: encountered a user who is banned and is neither an indexer or host")
@@ -296,9 +268,7 @@ func setupInitialRelationships(env *TestEnvironment) error {
 }
 
 func generateTestCases() ([]TestCase, error) {
-	path := "../acp/tests.yaml"
-
-	return parseFile(path)
+	return parseTestCasesFromFile(pathToTests)
 }
 
 // resolveDID resolves an alias DID (e.g., "did:user:randomUser") to the real DID
