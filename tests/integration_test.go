@@ -203,58 +203,47 @@ func setupTestEnvironment(t *testing.T) *TestEnvironment {
 	}
 
 	// Create test environment
+	acpClient, err := createSourceHubACPClient(policyID)
+	if err != nil {
+		t.Fatalf("Unable to create sourcehub acp client: %v", err)
+	}
 	env := &TestEnvironment{
 		Users:        testUsers,
 		DefraDBURL:   "http://localhost:9181",
 		RegistrarURL: "http://localhost:8081",
 		SourceHubURL: "http://localhost:26657",
-		ACPClient:    nil, // Will be set below if SourceHub is available
+		ACPClient:    acpClient, // Will be set below if SourceHub is available
 		Validator:    &validators.RegistrarValidator{},
 		RealDIDs:     realDIDs,
 		PolicyID:     policyID,
 	}
 
-	// Try to create a real SourceHub ACP client
-	// This will connect to the local SourceHub instance
-	acpClient, err := createSourceHubACPClient(policyID)
-	if err != nil {
-		t.Logf("Warning: Could not create SourceHub ACP client: %v", err)
-		t.Logf("Permission checking will be limited - tests may not reflect actual ACP behavior")
-		env.ACPClient = nil
-	} else {
-		env.ACPClient = acpClient
-		t.Logf("Successfully created SourceHub ACP client")
-
-		// Fund the test client signer with tokens BEFORE testing functionality
-		// This is necessary because the ACP client needs tokens to perform operations
-		t.Logf("Funding test client signer with tokens...")
-		if acpGoClient, ok := acpClient.(*sourcehub.AcpGoClient); ok {
-			// Get the actual Cosmos account address, not the DID
-			signerAddress := acpGoClient.GetSignerAddress()
-			t.Logf("Signer DID: %s", signerAddress)
-
-			// Get the account address using the new public method
-			accountAddr := acpGoClient.GetSignerAccountAddress()
-			t.Logf("Signer account address: %s", accountAddr)
-
-			if err := fundTestClientSigner(accountAddr); err != nil {
-				t.Logf("Warning: Failed to fund test client signer: %v", err)
-				t.Logf("Tests may fail due to insufficient tokens")
+	// Fund the test client signer with tokens BEFORE testing functionality
+	// This is necessary because the ACP client needs tokens to perform operations
+	t.Logf("Funding test client signer with tokens...")
+	if acpGoClient, ok := acpClient.(*sourcehub.AcpGoClient); ok {
+		// Get the actual Cosmos account address, not the DID
+		signerAddress := acpGoClient.GetSignerAddress()
+		t.Logf("Signer DID: %s", signerAddress)
+		accountAddr := acpGoClient.GetSignerAccountAddress()
+		t.Logf("Signer account address: %s", accountAddr)
+		if err := fundTestClientSigner(accountAddr); err != nil {
+			t.Fatalf("Failed to fund test client signer: %v", err)
+		} else {
+			t.Logf("✓ Successfully funded test client signer")
+			// Now test if the basic ACP client functionality works (after funding)
+			t.Logf("Testing basic ACP client functionality...")
+			ctx := context.Background()
+			// Use the actual account address instead of a DID for testing
+			// This ensures the ACP operation can succeed since we know the account has tokens
+			testAccountDid, err := acpGoClient.GetSignerDid()
+			if err != nil {
+				t.Fatalf("Unable to retrieve test signer did: %v", err)
+			}
+			if err = acpClient.AddToGroup(ctx, "test-group", testAccountDid); err != nil {
+				t.Logf("Warning: AddToGroup test failed: %v", err)
 			} else {
-				t.Logf("✓ Successfully funded test client signer")
-
-				// Now test if the basic ACP client functionality works (after funding)
-				t.Logf("Testing basic ACP client functionality...")
-				ctx := context.Background()
-
-				// Use the actual account address instead of a DID for testing
-				// This ensures the ACP operation can succeed since we know the account has tokens
-				testAccountAddr := acpGoClient.GetSignerAccountAddress()
-				if err := acpClient.AddToGroup(ctx, "test-group", testAccountAddr); err != nil {
-					t.Logf("Warning: AddToGroup test failed: %v", err)
-				} else {
-					t.Logf("✓ AddToGroup test passed")
-				}
+				t.Logf("✓ AddToGroup test passed")
 			}
 		}
 	}
