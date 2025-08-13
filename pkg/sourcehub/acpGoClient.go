@@ -157,6 +157,7 @@ func (client *AcpGoClient) AddToGroup(ctx context.Context, groupName string, did
 	cmdBuilder.Actor(did)
 	cmdBuilder.PolicyID(client.policyId)
 	cmdBuilder.PolicyCmd(cmd)
+	cmdBuilder.SetSigner(client.signer.GetSigner())
 	jws, err := cmdBuilder.BuildJWS(ctx)
 	if err != nil {
 		return addToGroupError(did, groupName, err)
@@ -179,6 +180,7 @@ func (client *AcpGoClient) RemoveFromGroup(ctx context.Context, groupName string
 	cmdBuilder.Actor(did)
 	cmdBuilder.PolicyID(client.policyId)
 	cmdBuilder.PolicyCmd(cmd)
+	cmdBuilder.SetSigner(client.signer.GetSigner())
 	jws, err := cmdBuilder.BuildJWS(ctx)
 	if err != nil {
 		return removeFromGroupError(did, groupName, err)
@@ -201,6 +203,7 @@ func (client *AcpGoClient) BlockFromGroup(ctx context.Context, groupName string,
 	cmdBuilder.Actor(did)
 	cmdBuilder.PolicyID(client.policyId)
 	cmdBuilder.PolicyCmd(cmd)
+	cmdBuilder.SetSigner(client.signer.GetSigner())
 	jws, err := cmdBuilder.BuildJWS(ctx)
 	if err != nil {
 		return addToGroupError(did, groupName, err)
@@ -223,6 +226,7 @@ func (client *AcpGoClient) GiveQueryAccess(ctx context.Context, documentId strin
 	cmdBuilder.Actor(did)
 	cmdBuilder.PolicyID(client.policyId)
 	cmdBuilder.PolicyCmd(cmd)
+	cmdBuilder.SetSigner(client.signer.GetSigner())
 	jws, err := cmdBuilder.BuildJWS(ctx)
 	if err != nil {
 		return giveQueryAccessError(did, documentId, err)
@@ -245,6 +249,7 @@ func (client *AcpGoClient) BanUserFromResource(ctx context.Context, documentId s
 	cmdBuilder.Actor(did)
 	cmdBuilder.PolicyID(client.policyId)
 	cmdBuilder.PolicyCmd(cmd)
+	cmdBuilder.SetSigner(client.signer.GetSigner())
 	jws, err := cmdBuilder.BuildJWS(ctx)
 	if err != nil {
 		return giveQueryAccessError(did, documentId, err)
@@ -274,6 +279,7 @@ func (client *AcpGoClient) CreateDataFeed(ctx context.Context, documentId string
 		cmdBuilder.PolicyCmd(parentCmd)
 	}
 
+	cmdBuilder.SetSigner(client.signer.GetSigner())
 	jws, err := cmdBuilder.BuildJWS(ctx)
 	if err != nil {
 		return createDataFeedError(documentId, creatorDid, err)
