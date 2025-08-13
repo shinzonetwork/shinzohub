@@ -400,3 +400,8 @@ func (client *AcpGoClient) GetSignerAddress() string {
 	}
 	return signerDID
 }
+
+// GetSignerAccountAddress returns the Cosmos account address of the signer
+func (client *AcpGoClient) GetSignerAccountAddress() string {
+	return client.signer.GetAccAddress()
+}

@@ -21,6 +21,14 @@ import (
 
 	// Import SourceHub SDK for ACP client creation
 	"github.com/sourcenetwork/sourcehub/sdk"
+
+	// Import Cosmos SDK for bank transactions
+	"github.com/cosmos/cosmos-sdk/codec"
+	cdctypes "github.com/cosmos/cosmos-sdk/codec/types"
+	cryptocdc "github.com/cosmos/cosmos-sdk/crypto/codec"
+	"github.com/cosmos/cosmos-sdk/crypto/keyring"
+	sdktypes "github.com/cosmos/cosmos-sdk/types"
+	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 )
 
 const pathToTests = "../acp/tests.yaml"
@@ -59,6 +67,86 @@ type TestCase struct {
 	Resource       string
 	Action         string
 	ExpectedResult bool // true = should succeed, false = should fail
+}
+
+// fundTestClientSigner sends tokens from the validator account to the test client signer
+// This function can be called during test setup to ensure the test client has tokens
+func fundTestClientSigner(targetAddress string) error {
+	fmt.Printf("Funding test client signer at address: %s\n", targetAddress)
+
+	// Create a keyring to access the validator account
+	reg := cdctypes.NewInterfaceRegistry()
+	cryptocdc.RegisterInterfaces(reg)
+	cdc := codec.NewProtoCodec(reg)
+
+	// Use the test keyring backend and the .sourcehub directory
+	kr, err := keyring.New("sourcehub", keyring.BackendTest, os.Getenv("HOME")+"/.sourcehub", nil, cdc)
+	if err != nil {
+		return fmt.Errorf("failed to create keyring: %w", err)
+	}
+
+	// Get the validator signer
+	validatorSigner, err := sdk.NewTxSignerFromKeyringKey(kr, "validator")
+	if err != nil {
+		return fmt.Errorf("failed to get validator signer: %w", err)
+	}
+
+	// Create SourceHub SDK client using the default ports
+	// Note: These should match the ports used by the local SourceHub instance
+	client, err := sdk.NewClient()
+	if err != nil {
+		return fmt.Errorf("failed to create SourceHub client: %w", err)
+	}
+	defer client.Close()
+
+	// Create transaction builder
+	txBuilder, err := sdk.NewTxBuilder(
+		sdk.WithSDKClient(client),
+		sdk.WithChainID("sourcehub-dev"),
+	)
+	if err != nil {
+		return fmt.Errorf("failed to create transaction builder: %w", err)
+	}
+
+	// Convert string addresses to AccAddress
+	validatorAddr, err := sdktypes.AccAddressFromBech32(validatorSigner.GetAccAddress())
+	if err != nil {
+		return fmt.Errorf("failed to convert validator address: %w", err)
+	}
+
+	targetAddr, err := sdktypes.AccAddressFromBech32(targetAddress)
+	if err != nil {
+		return fmt.Errorf("failed to convert target address: %w", err)
+	}
+
+	// Create a bank send message
+	amount := sdktypes.NewCoins(sdktypes.NewInt64Coin("uopen", 1000000000)) // 1 billion uopen
+	msg := banktypes.NewMsgSend(validatorAddr, targetAddr, amount)
+
+	// Build and send the transaction using the SourceHub SDK
+	// We'll use the existing transaction builder directly with the bank message
+	tx, err := txBuilder.BuildFromMsgs(context.Background(), validatorSigner, msg)
+	if err != nil {
+		return fmt.Errorf("failed to build transaction: %w", err)
+	}
+
+	resp, err := client.BroadcastTx(context.Background(), tx)
+	if err != nil {
+		return fmt.Errorf("failed to broadcast transaction: %w", err)
+	}
+
+	// Wait for the transaction to be processed
+	result, err := client.AwaitTx(context.Background(), resp.TxHash)
+	if err != nil {
+		return fmt.Errorf("failed to await transaction: %w", err)
+	}
+
+	if result.Error() != nil {
+		return fmt.Errorf("transaction failed: %w", result.Error())
+	}
+
+	fmt.Printf("Successfully funded test client signer with %s\n", amount.String())
+	return nil
 }
 
 func setupTestEnvironment(t *testing.T) *TestEnvironment {
@@ -110,13 +198,37 @@ func setupTestEnvironment(t *testing.T) *TestEnvironment {
 		env.ACPClient = acpClient
 		t.Logf("Successfully created SourceHub ACP client")
 
-		// Test if the basic ACP client methods work
-		t.Logf("Testing basic ACP client functionality...")
-		ctx := context.Background()
-		if err := acpClient.AddToGroup(ctx, "test-group", "did:test:user"); err != nil {
-			t.Logf("Warning: AddToGroup test failed: %v", err)
-		} else {
-			t.Logf("✓ AddToGroup test passed")
+		// Fund the test client signer with tokens BEFORE testing functionality
+		// This is necessary because the ACP client needs tokens to perform operations
+		t.Logf("Funding test client signer with tokens...")
+		if acpGoClient, ok := acpClient.(*sourcehub.AcpGoClient); ok {
+			// Get the actual Cosmos account address, not the DID
+			signerAddress := acpGoClient.GetSignerAddress()
+			t.Logf("Signer DID: %s", signerAddress)
+
+			// Get the account address using the new public method
+			accountAddr := acpGoClient.GetSignerAccountAddress()
+			t.Logf("Signer account address: %s", accountAddr)
+
+			if err := fundTestClientSigner(accountAddr); err != nil {
+				t.Logf("Warning: Failed to fund test client signer: %v", err)
+				t.Logf("Tests may fail due to insufficient tokens")
+			} else {
+				t.Logf("✓ Successfully funded test client signer")
+
+				// Now test if the basic ACP client functionality works (after funding)
+				t.Logf("Testing basic ACP client functionality...")
+				ctx := context.Background()
+
+				// Use the actual account address instead of a DID for testing
+				// This ensures the ACP operation can succeed since we know the account has tokens
+				testAccountAddr := acpGoClient.GetSignerAccountAddress()
+				if err := acpClient.AddToGroup(ctx, "test-group", testAccountAddr); err != nil {
+					t.Logf("Warning: AddToGroup test failed: %v", err)
+				} else {
+					t.Logf("✓ AddToGroup test passed")
+				}
+			}
 		}
 	}
 
@@ -148,6 +260,7 @@ func createSourceHubACPClient(policyID string) (sourcehub.AcpClient, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to create ACP Go client: %w", err)
 	}
+
 	return acpGoClient, nil
 }
 
@@ -394,7 +507,7 @@ func createTestResources(env *TestEnvironment) error {
 
 	// 1. Create and register the blocks primitive resource
 	// This represents the "primitive:blocks" resource from relationships.yaml
-	blocksObjectID := "test-blocks-001"
+	blocksObjectID := "testblocks"
 	fmt.Printf("Registering blocks primitive resource: %s\n", blocksObjectID)
 
 	if err := env.ACPClient.RegisterObject(ctx, env.PolicyID, "primitive", blocksObjectID); err != nil {
@@ -402,7 +515,7 @@ func createTestResources(env *TestEnvironment) error {
 	}
 
 	// 2. Create and register the datafeedA view resource
-	datafeedAObjectID := "test-datafeedA-001"
+	datafeedAObjectID := "datafeedA"
 	fmt.Printf("Registering datafeedA view resource: %s\n", datafeedAObjectID)
 
 	if err := env.ACPClient.RegisterObject(ctx, env.PolicyID, "view", datafeedAObjectID); err != nil {
@@ -410,7 +523,7 @@ func createTestResources(env *TestEnvironment) error {
 	}
 
 	// 3. Create and register the datafeedB view resource
-	datafeedBObjectID := "test-datafeedB-001"
+	datafeedBObjectID := "datafeedB"
 	fmt.Printf("Registering datafeedB view resource: %s\n", datafeedBObjectID)
 
 	if err := env.ACPClient.RegisterObject(ctx, env.PolicyID, "view", datafeedBObjectID); err != nil {
