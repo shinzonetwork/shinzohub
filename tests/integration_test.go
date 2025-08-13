@@ -240,7 +240,7 @@ func setupTestEnvironment(t *testing.T) *TestEnvironment {
 			if err != nil {
 				t.Fatalf("Unable to retrieve test signer did: %v", err)
 			}
-			if err = acpClient.AddToGroup(ctx, "test-group", testAccountDid); err != nil {
+			if err = acpClient.AddToGroup(ctx, "testgroup", testAccountDid); err != nil {
 				t.Logf("Warning: AddToGroup test failed: %v", err)
 			} else {
 				t.Logf("✓ AddToGroup test passed")
@@ -526,7 +526,7 @@ func createTestResources(env *TestEnvironment) error {
 	blocksObjectID := "testblocks"
 	fmt.Printf("Registering blocks primitive resource: %s\n", blocksObjectID)
 
-	if err := env.ACPClient.RegisterObject(ctx, env.PolicyID, "primitive", blocksObjectID); err != nil {
+	if err := env.ACPClient.RegisterObject(ctx, "primitive", blocksObjectID); err != nil {
 		return fmt.Errorf("failed to register blocks primitive: %w", err)
 	}
 
@@ -534,7 +534,7 @@ func createTestResources(env *TestEnvironment) error {
 	datafeedAObjectID := "datafeedA"
 	fmt.Printf("Registering datafeedA view resource: %s\n", datafeedAObjectID)
 
-	if err := env.ACPClient.RegisterObject(ctx, env.PolicyID, "view", datafeedAObjectID); err != nil {
+	if err := env.ACPClient.RegisterObject(ctx, "view", datafeedAObjectID); err != nil {
 		return fmt.Errorf("failed to register datafeedA view: %w", err)
 	}
 
@@ -542,7 +542,7 @@ func createTestResources(env *TestEnvironment) error {
 	datafeedBObjectID := "datafeedB"
 	fmt.Printf("Registering datafeedB view resource: %s\n", datafeedBObjectID)
 
-	if err := env.ACPClient.RegisterObject(ctx, env.PolicyID, "view", datafeedBObjectID); err != nil {
+	if err := env.ACPClient.RegisterObject(ctx, "view", datafeedBObjectID); err != nil {
 		return fmt.Errorf("failed to register datafeedB view: %w", err)
 	}
 
@@ -554,34 +554,34 @@ func createTestResources(env *TestEnvironment) error {
 	// In a real scenario, these would be the actual DIDs from relationships.yaml
 
 	// Set owner relationship on blocks
-	if err := env.ACPClient.SetRelationship(ctx, env.PolicyID, "primitive", blocksObjectID, "owner", env.ACPClient.(*sourcehub.AcpGoClient).GetSignerAddress()); err != nil {
+	if err := env.ACPClient.SetRelationship(ctx, "primitive", blocksObjectID, "owner", env.ACPClient.(*sourcehub.AcpGoClient).GetSignerAddress()); err != nil {
 		return fmt.Errorf("failed to set owner relationship on blocks: %w", err)
 	}
 
 	// Set admin relationship on blocks
-	if err := env.ACPClient.SetRelationship(ctx, env.PolicyID, "primitive", blocksObjectID, "admin", env.ACPClient.(*sourcehub.AcpGoClient).GetSignerAddress()); err != nil {
+	if err := env.ACPClient.SetRelationship(ctx, "primitive", blocksObjectID, "admin", env.ACPClient.(*sourcehub.AcpGoClient).GetSignerAddress()); err != nil {
 		return fmt.Errorf("failed to set admin relationship on blocks: %w", err)
 	}
 
 	// For datafeedA - set up key relationships
 	// Set owner relationship on datafeedA
-	if err := env.ACPClient.SetRelationship(ctx, env.PolicyID, "view", datafeedAObjectID, "owner", env.ACPClient.(*sourcehub.AcpGoClient).GetSignerAddress()); err != nil {
+	if err := env.ACPClient.SetRelationship(ctx, "view", datafeedAObjectID, "owner", env.ACPClient.(*sourcehub.AcpGoClient).GetSignerAddress()); err != nil {
 		return fmt.Errorf("failed to set owner relationship on datafeedA: %w", err)
 	}
 
 	// Set parent relationship (datafeedA -> blocks)
-	if err := env.ACPClient.SetRelationship(ctx, env.PolicyID, "view", datafeedAObjectID, "parent", blocksObjectID); err != nil {
+	if err := env.ACPClient.SetRelationship(ctx, "view", datafeedAObjectID, "parent", blocksObjectID); err != nil {
 		return fmt.Errorf("failed to set parent relationship on datafeedA: %w", err)
 	}
 
 	// For datafeedB - set up key relationships
 	// Set owner relationship on datafeedB
-	if err := env.ACPClient.SetRelationship(ctx, env.PolicyID, "view", datafeedBObjectID, "owner", env.ACPClient.(*sourcehub.AcpGoClient).GetSignerAddress()); err != nil {
+	if err := env.ACPClient.SetRelationship(ctx, "view", datafeedBObjectID, "owner", env.ACPClient.(*sourcehub.AcpGoClient).GetSignerAddress()); err != nil {
 		return fmt.Errorf("failed to set owner relationship on datafeedB: %w", err)
 	}
 
 	// Set parent relationship (datafeedB -> datafeedA)
-	if err := env.ACPClient.SetRelationship(ctx, env.PolicyID, "view", datafeedBObjectID, "parent", datafeedAObjectID); err != nil {
+	if err := env.ACPClient.SetRelationship(ctx, "view", datafeedBObjectID, "parent", datafeedAObjectID); err != nil {
 		return fmt.Errorf("failed to set parent relationship on datafeedB: %w", err)
 	}
 
@@ -641,7 +641,7 @@ func attemptAction(env *TestEnvironment, userDID, resource, action string) bool 
 
 	// Use the ACP client to verify the access request
 	// For now, we'll use a test object ID since we're not creating actual documents
-	testObjectID := "test-object-" + resourceName
+	testObjectID := "testobject" + resourceName
 
 	ctx := context.Background()
 	hasPermission, err := env.ACPClient.VerifyAccessRequest(ctx, policyID, resourceName, testObjectID, action, userDID)

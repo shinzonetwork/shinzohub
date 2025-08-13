@@ -12,7 +12,7 @@ type AcpClient interface {
 	VerifyAccessRequest(ctx context.Context, policyID, resourceName, objectID, permission, actorDID string) (bool, error)
 
 	// Additional methods for test resource setup
-	RegisterObject(ctx context.Context, policyID, resourceName, objectID string) error
-	SetRelationship(ctx context.Context, policyID, resourceName, objectID, relation, subjectDID string) error
+	RegisterObject(ctx context.Context, resourceName, objectID string) error
+	SetRelationship(ctx context.Context, resourceName, objectID, relation, subjectDID string) error
 	GetSignerAddress() string
 }

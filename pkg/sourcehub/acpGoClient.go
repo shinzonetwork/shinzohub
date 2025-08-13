@@ -133,13 +133,19 @@ func sendAndConfirmTx(ctx context.Context, acp *sdk.Client, txBuilder *sdk.TxBui
 	return nil
 }
 
-func (client *AcpGoClient) executePolicyCommand(ctx context.Context, actor string, cmd *acptypes.PolicyCmd, decorateError func(error) error) error {
+func (client *AcpGoClient) executePolicyCommand(ctx context.Context, cmd *acptypes.PolicyCmd, decorateError func(error) error) error {
+	// Get the signer's DID from their public key
+	signerDID, err := client.GetSignerDid()
+	if err != nil {
+		return decorateError(fmt.Errorf("failed to get signer DID: %w", err))
+	}
+	
 	cmdBuilder, err := sdk.NewCmdBuilder(ctx, client.acp)
 	if err != nil {
 		return decorateError(err)
 	}
 
-	cmdBuilder.Actor(actor)
+	cmdBuilder.Actor(signerDID)
 	cmdBuilder.PolicyID(client.policyId)
 	cmdBuilder.PolicyCmd(cmd)
 	cmdBuilder.SetSigner(client.signer.GetSigner())
@@ -149,32 +155,7 @@ func (client *AcpGoClient) executePolicyCommand(ctx context.Context, actor strin
 		return decorateError(err)
 	}
 
-	msg := acptypes.NewMsgSignedPolicyCmdFromJWS(actor, jws)
-	msgSet := sdk.MsgSet{}
-	msgSet.WithSignedPolicyCmd(msg)
-
-	return sendAndConfirmTx(ctx, client.acp, client.transactionBuilder, client.signer, &msgSet, decorateError)
-}
-
-// executePolicyCommandWithCustomPolicy is a helper function for commands that use a custom policy ID
-// (like RegisterObject and SetRelationship which take policyID as a parameter)
-func (client *AcpGoClient) executePolicyCommandWithCustomPolicy(ctx context.Context, actor string, policyID string, cmd *acptypes.PolicyCmd, decorateError func(error) error) error {
-	cmdBuilder, err := sdk.NewCmdBuilder(ctx, client.acp)
-	if err != nil {
-		return decorateError(err)
-	}
-
-	cmdBuilder.Actor(actor)
-	cmdBuilder.PolicyID(policyID)
-	cmdBuilder.PolicyCmd(cmd)
-	cmdBuilder.SetSigner(client.signer.GetSigner())
-
-	jws, err := cmdBuilder.BuildJWS(ctx)
-	if err != nil {
-		return decorateError(err)
-	}
-
-	msg := acptypes.NewMsgSignedPolicyCmdFromJWS(actor, jws)
+	msg := acptypes.NewMsgSignedPolicyCmdFromJWS(signerDID, jws)
 	msgSet := sdk.MsgSet{}
 	msgSet.WithSignedPolicyCmd(msg)
 
@@ -183,13 +164,19 @@ func (client *AcpGoClient) executePolicyCommandWithCustomPolicy(ctx context.Cont
 
 // executePolicyCommandWithMultipleCmds is a helper function for commands that need multiple policy commands
 // (like CreateDataFeed which has creator + parent relationships)
-func (client *AcpGoClient) executePolicyCommandWithMultipleCmds(ctx context.Context, actor string, policyID string, mainCmd *acptypes.PolicyCmd, additionalCmds []*acptypes.PolicyCmd, decorateError func(error) error) error {
+func (client *AcpGoClient) executePolicyCommandWithMultipleCmds(ctx context.Context, policyID string, mainCmd *acptypes.PolicyCmd, additionalCmds []*acptypes.PolicyCmd, decorateError func(error) error) error {
+	// Get the signer's DID from their public key
+	signerDID, err := client.GetSignerDid()
+	if err != nil {
+		return decorateError(fmt.Errorf("failed to get signer DID: %w", err))
+	}
+	
 	cmdBuilder, err := sdk.NewCmdBuilder(ctx, client.acp)
 	if err != nil {
 		return decorateError(err)
 	}
 
-	cmdBuilder.Actor(actor)
+	cmdBuilder.Actor(signerDID)
 	cmdBuilder.PolicyID(policyID)
 	cmdBuilder.PolicyCmd(mainCmd)
 
@@ -205,7 +192,7 @@ func (client *AcpGoClient) executePolicyCommandWithMultipleCmds(ctx context.Cont
 		return decorateError(err)
 	}
 
-	msg := acptypes.NewMsgSignedPolicyCmdFromJWS(actor, jws)
+	msg := acptypes.NewMsgSignedPolicyCmdFromJWS(signerDID, jws)
 	msgSet := sdk.MsgSet{}
 	msgSet.WithSignedPolicyCmd(msg)
 
@@ -229,7 +216,7 @@ func (client *AcpGoClient) AddToGroup(ctx context.Context, groupName string, did
 	rel := coretypes.NewActorRelationship("group", groupName, "guest", did)
 	cmd := acptypes.NewSetRelationshipCmd(rel)
 
-	return client.executePolicyCommand(ctx, did, cmd, func(e error) error {
+	return client.executePolicyCommand(ctx, cmd, func(e error) error {
 		return addToGroupError(did, groupName, e)
 	})
 }
@@ -238,7 +225,7 @@ func (client *AcpGoClient) RemoveFromGroup(ctx context.Context, groupName string
 	rel := coretypes.NewActorRelationship("group", groupName, "guest", did)
 	cmd := acptypes.NewDeleteRelationshipCmd(rel)
 
-	return client.executePolicyCommand(ctx, did, cmd, func(e error) error {
+	return client.executePolicyCommand(ctx, cmd, func(e error) error {
 		return removeFromGroupError(did, groupName, e)
 	})
 }
@@ -247,7 +234,7 @@ func (client *AcpGoClient) BlockFromGroup(ctx context.Context, groupName string,
 	rel := coretypes.NewActorRelationship("group", groupName, "blocked", did)
 	cmd := acptypes.NewSetRelationshipCmd(rel)
 
-	return client.executePolicyCommand(ctx, did, cmd, func(e error) error {
+	return client.executePolicyCommand(ctx, cmd, func(e error) error {
 		return addToGroupError(did, groupName, e)
 	})
 }
@@ -256,7 +243,7 @@ func (client *AcpGoClient) GiveQueryAccess(ctx context.Context, documentId strin
 	rel := coretypes.NewActorRelationship("file", documentId, "subscriber", did)
 	cmd := acptypes.NewSetRelationshipCmd(rel)
 
-	return client.executePolicyCommand(ctx, did, cmd, func(e error) error {
+	return client.executePolicyCommand(ctx, cmd, func(e error) error {
 		return giveQueryAccessError(did, documentId, e)
 	})
 }
@@ -265,7 +252,7 @@ func (client *AcpGoClient) BanUserFromResource(ctx context.Context, documentId s
 	rel := coretypes.NewActorRelationship("file", documentId, "banned", did)
 	cmd := acptypes.NewSetRelationshipCmd(rel)
 
-	return client.executePolicyCommand(ctx, did, cmd, func(e error) error {
+	return client.executePolicyCommand(ctx, cmd, func(e error) error {
 		return giveQueryAccessError(did, documentId, e)
 	})
 }
@@ -283,7 +270,7 @@ func (client *AcpGoClient) CreateDataFeed(ctx context.Context, documentId string
 		parentCmds = append(parentCmds, parentCmd)
 	}
 
-	return client.executePolicyCommandWithMultipleCmds(ctx, creatorDid, client.policyId, creatorCmd, parentCmds, func(e error) error {
+	return client.executePolicyCommandWithMultipleCmds(ctx, client.policyId, creatorCmd, parentCmds, func(e error) error {
 		return createDataFeedError(documentId, creatorDid, e)
 	})
 }
@@ -314,33 +301,21 @@ func (client *AcpGoClient) VerifyAccessRequest(ctx context.Context, policyID, re
 	return result.Valid, nil
 }
 
-func (client *AcpGoClient) RegisterObject(ctx context.Context, policyID, resourceName, objectID string) error {
+func (client *AcpGoClient) RegisterObject(ctx context.Context, resourceName, objectID string) error {
 	// Create a register object command
 	cmd := acptypes.NewRegisterObjectCmd(coretypes.NewObject(resourceName, objectID))
 
-	// Get the signer's DID from their public key
-	signerDID, err := did.DIDFromPubKey(client.signer.GetPrivateKey().PubKey())
-	if err != nil {
-		return fmt.Errorf("failed to generate DID from public key: %w", err)
-	}
-
-	return client.executePolicyCommandWithCustomPolicy(ctx, signerDID, policyID, cmd, func(e error) error {
+	return client.executePolicyCommand(ctx, cmd, func(e error) error {
 		return fmt.Errorf("failed to register object %s: %w", objectID, e)
 	})
 }
 
-func (client *AcpGoClient) SetRelationship(ctx context.Context, policyID, resourceName, objectID, relation, subjectDID string) error {
+func (client *AcpGoClient) SetRelationship(ctx context.Context, resourceName, objectID, relation, subjectDID string) error {
 	// Create a set relationship command
 	rel := coretypes.NewActorRelationship(resourceName, objectID, relation, subjectDID)
 	cmd := acptypes.NewSetRelationshipCmd(rel)
 
-	// Get the signer's DID from their public key
-	signerDID, err := did.DIDFromPubKey(client.signer.GetPrivateKey().PubKey())
-	if err != nil {
-		return fmt.Errorf("failed to generate DID from public key: %w", err)
-	}
-
-	return client.executePolicyCommandWithCustomPolicy(ctx, signerDID, policyID, cmd, func(e error) error {
+	return client.executePolicyCommand(ctx, cmd, func(e error) error {
 		return fmt.Errorf("failed to set relationship %s on %s: %w", relation, objectID, e)
 	})
 }
