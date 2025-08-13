@@ -101,7 +101,7 @@ func setupTestEnvironment(t *testing.T) *TestEnvironment {
 
 	// Try to create a real SourceHub ACP client
 	// This will connect to the local SourceHub instance
-	acpClient, err := createSourceHubACPClient(env.SourceHubURL, policyID)
+	acpClient, err := createSourceHubACPClient(policyID)
 	if err != nil {
 		t.Logf("Warning: Could not create SourceHub ACP client: %v", err)
 		t.Logf("Permission checking will be limited - tests may not reflect actual ACP behavior")
@@ -109,13 +109,22 @@ func setupTestEnvironment(t *testing.T) *TestEnvironment {
 	} else {
 		env.ACPClient = acpClient
 		t.Logf("Successfully created SourceHub ACP client")
+
+		// Test if the basic ACP client methods work
+		t.Logf("Testing basic ACP client functionality...")
+		ctx := context.Background()
+		if err := acpClient.AddToGroup(ctx, "test-group", "did:test:user"); err != nil {
+			t.Logf("Warning: AddToGroup test failed: %v", err)
+		} else {
+			t.Logf("✓ AddToGroup test passed")
+		}
 	}
 
 	return env
 }
 
 // createSourceHubACPClient creates a real SourceHub ACP client for testing
-func createSourceHubACPClient(sourceHubURL, policyID string) (sourcehub.AcpClient, error) {
+func createSourceHubACPClient(policyID string) (sourcehub.AcpClient, error) {
 	// Create the SourceHub SDK client
 	client, err := sdk.NewClient()
 	if err != nil {
@@ -135,7 +144,10 @@ func createSourceHubACPClient(sourceHubURL, policyID string) (sourcehub.AcpClien
 	}
 
 	// Create and return the ACP client
-	acpGoClient := sourcehub.NewAcpGoClient(client, &txBuilder, signer, policyID)
+	acpGoClient, err := sourcehub.NewAcpGoClient(client, &txBuilder, signer, policyID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create ACP Go client: %w", err)
+	}
 	return acpGoClient, nil
 }
 
@@ -366,12 +378,87 @@ func (env *TestEnvironment) getUsernameFromAlias(aliasDID string) (string, bool)
 	return "", false
 }
 
-// Todo fix
 // createTestResources creates the necessary test resources:
-// For now, we're using direct permission checking instead of creating actual documents
+// 1. Creates minimal test objects that represent the ACP resources
+// 2. Registers these objects with the ACP system
+// 3. Sets up the key relationships defined in relationships.yaml
 func createTestResources(env *TestEnvironment) error {
-	fmt.Println("Using direct permission checking - no documents need to be created")
-	fmt.Println("✓ Test resources ready for permission testing!")
+	fmt.Println("Creating and registering test resources with ACP system...")
+
+	// Check if we have an ACP client available
+	if env.ACPClient == nil {
+		return fmt.Errorf("no ACP client available - cannot create test resources")
+	}
+
+	ctx := context.Background()
+
+	// 1. Create and register the blocks primitive resource
+	// This represents the "primitive:blocks" resource from relationships.yaml
+	blocksObjectID := "test-blocks-001"
+	fmt.Printf("Registering blocks primitive resource: %s\n", blocksObjectID)
+
+	if err := env.ACPClient.RegisterObject(ctx, env.PolicyID, "primitive", blocksObjectID); err != nil {
+		return fmt.Errorf("failed to register blocks primitive: %w", err)
+	}
+
+	// 2. Create and register the datafeedA view resource
+	datafeedAObjectID := "test-datafeedA-001"
+	fmt.Printf("Registering datafeedA view resource: %s\n", datafeedAObjectID)
+
+	if err := env.ACPClient.RegisterObject(ctx, env.PolicyID, "view", datafeedAObjectID); err != nil {
+		return fmt.Errorf("failed to register datafeedA view: %w", err)
+	}
+
+	// 3. Create and register the datafeedB view resource
+	datafeedBObjectID := "test-datafeedB-001"
+	fmt.Printf("Registering datafeedB view resource: %s\n", datafeedBObjectID)
+
+	if err := env.ACPClient.RegisterObject(ctx, env.PolicyID, "view", datafeedBObjectID); err != nil {
+		return fmt.Errorf("failed to register datafeedB view: %w", err)
+	}
+
+	// 4. Set up key relationships that match relationships.yaml
+	fmt.Println("Setting up ACP relationships...")
+
+	// For blocks primitive - set up key relationships
+	// Note: We'll use the signer's address as the owner/admin for testing
+	// In a real scenario, these would be the actual DIDs from relationships.yaml
+
+	// Set owner relationship on blocks
+	if err := env.ACPClient.SetRelationship(ctx, env.PolicyID, "primitive", blocksObjectID, "owner", env.ACPClient.(*sourcehub.AcpGoClient).GetSignerAddress()); err != nil {
+		return fmt.Errorf("failed to set owner relationship on blocks: %w", err)
+	}
+
+	// Set admin relationship on blocks
+	if err := env.ACPClient.SetRelationship(ctx, env.PolicyID, "primitive", blocksObjectID, "admin", env.ACPClient.(*sourcehub.AcpGoClient).GetSignerAddress()); err != nil {
+		return fmt.Errorf("failed to set admin relationship on blocks: %w", err)
+	}
+
+	// For datafeedA - set up key relationships
+	// Set owner relationship on datafeedA
+	if err := env.ACPClient.SetRelationship(ctx, env.PolicyID, "view", datafeedAObjectID, "owner", env.ACPClient.(*sourcehub.AcpGoClient).GetSignerAddress()); err != nil {
+		return fmt.Errorf("failed to set owner relationship on datafeedA: %w", err)
+	}
+
+	// Set parent relationship (datafeedA -> blocks)
+	if err := env.ACPClient.SetRelationship(ctx, env.PolicyID, "view", datafeedAObjectID, "parent", blocksObjectID); err != nil {
+		return fmt.Errorf("failed to set parent relationship on datafeedA: %w", err)
+	}
+
+	// For datafeedB - set up key relationships
+	// Set owner relationship on datafeedB
+	if err := env.ACPClient.SetRelationship(ctx, env.PolicyID, "view", datafeedBObjectID, "owner", env.ACPClient.(*sourcehub.AcpGoClient).GetSignerAddress()); err != nil {
+		return fmt.Errorf("failed to set owner relationship on datafeedB: %w", err)
+	}
+
+	// Set parent relationship (datafeedB -> datafeedA)
+	if err := env.ACPClient.SetRelationship(ctx, env.PolicyID, "view", datafeedBObjectID, "parent", datafeedAObjectID); err != nil {
+		return fmt.Errorf("failed to set parent relationship on datafeedB: %w", err)
+	}
+
+	// Todo add subscribers and banned relationships
+
+	fmt.Println("✓ Test resources created and registered with ACP successfully!")
 	return nil
 }
 

@@ -112,7 +112,10 @@ func buildRegistrarHandler() api.ShinzoRegistrar {
 		log.Fatalf("POLICY_ID environment variable is required")
 	}
 
-	acpGoClient := sourcehub.NewAcpGoClient(acpClient, &txBuilder, signer, policyId)
+	acpGoClient, err := sourcehub.NewAcpGoClient(acpClient, &txBuilder, signer, policyId)
+	if err != nil {
+		log.Fatalf("Failed to create ACP Go client: %v", err)
+	}
 
 	registrar := api.ShinzoRegistrar{
 		Validator: &validators.RegistrarValidator{},

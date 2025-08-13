@@ -10,4 +10,9 @@ type AcpClient interface {
 	BanUserFromResource(ctx context.Context, documentId string, did string) error
 	CreateDataFeed(ctx context.Context, documentId string, creatorDid string, parentDocumentIds ...string) error
 	VerifyAccessRequest(ctx context.Context, policyID, resourceName, objectID, permission, actorDID string) (bool, error)
+
+	// Additional methods for test resource setup
+	RegisterObject(ctx context.Context, policyID, resourceName, objectID string) error
+	SetRelationship(ctx context.Context, policyID, resourceName, objectID, relation, subjectDID string) error
+	GetSignerAddress() string
 }

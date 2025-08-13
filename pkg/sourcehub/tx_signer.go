@@ -1,8 +1,9 @@
 package sourcehub
 
 import (
-	"os"
 	"encoding/hex"
+	"os"
+
 	"github.com/cosmos/cosmos-sdk/crypto/keys/secp256k1"
 	cryptotypes "github.com/cosmos/cosmos-sdk/crypto/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -50,4 +51,4 @@ type MissingApiSignerEnvError struct{}
 
 func (e *MissingApiSignerEnvError) Error() string {
 	return "SHINZOHUB_PRIVATE_KEY environment variable not set"
-} 
+}
