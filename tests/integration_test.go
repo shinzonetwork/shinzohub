@@ -72,7 +72,7 @@ type TestCase struct {
 // fundTestClientSigner sends tokens from the validator account to the test client signer
 // This function can be called during test setup to ensure the test client has tokens
 func fundTestClientSigner(targetAddress string) error {
-	fmt.Printf("Funding test client signer at address: %s\n", targetAddress)
+	fmt.Printf("Checking balance for address: %s\n", targetAddress)
 
 	// Create a keyring to access the validator account
 	reg := cdctypes.NewInterfaceRegistry()
@@ -99,15 +99,6 @@ func fundTestClientSigner(targetAddress string) error {
 	}
 	defer client.Close()
 
-	// Create transaction builder
-	txBuilder, err := sdk.NewTxBuilder(
-		sdk.WithSDKClient(client),
-		sdk.WithChainID("sourcehub-dev"),
-	)
-	if err != nil {
-		return fmt.Errorf("failed to create transaction builder: %w", err)
-	}
-
 	// Convert string addresses to AccAddress
 	validatorAddr, err := sdktypes.AccAddressFromBech32(validatorSigner.GetAccAddress())
 	if err != nil {
@@ -117,6 +108,42 @@ func fundTestClientSigner(targetAddress string) error {
 	targetAddr, err := sdktypes.AccAddressFromBech32(targetAddress)
 	if err != nil {
 		return fmt.Errorf("failed to convert target address: %w", err)
+	}
+
+	// First, check if the target address already has sufficient funds
+	bankClient := client.BankQueryClient()
+	balanceQuery := &banktypes.QueryBalanceRequest{
+		Address: targetAddress,
+		Denom:   "uopen",
+	}
+
+	balanceResp, err := bankClient.Balance(context.Background(), balanceQuery)
+	if err != nil {
+		fmt.Printf("Warning: Could not query balance: %v\n", err)
+		fmt.Printf("Proceeding with funding transaction...\n")
+	} else {
+		currentBalance := balanceResp.Balance.Amount.Int64()
+		requiredBalance := int64(100000000) // 100 million uopen minimum
+
+		fmt.Printf("Current balance: %d uopen\n", currentBalance)
+
+		if currentBalance >= requiredBalance {
+			fmt.Printf("Address already has sufficient funds (%d uopen >= %d uopen). Skipping funding.\n",
+				currentBalance, requiredBalance)
+			return nil
+		}
+
+		fmt.Printf("Address has insufficient funds (%d uopen < %d uopen). Proceeding with funding...\n",
+			currentBalance, requiredBalance)
+	}
+
+	// Create transaction builder
+	txBuilder, err := sdk.NewTxBuilder(
+		sdk.WithSDKClient(client),
+		sdk.WithChainID("sourcehub-dev"),
+	)
+	if err != nil {
+		return fmt.Errorf("failed to create transaction builder: %w", err)
 	}
 
 	// Create a bank send message
