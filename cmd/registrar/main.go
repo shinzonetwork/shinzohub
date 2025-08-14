@@ -3,17 +3,12 @@ package main
 import (
 	"log"
 	"net/http"
-	"os"
 
 	"shinzohub/api"
 	"shinzohub/pkg/sourcehub"
 	"shinzohub/pkg/utils"
 	"shinzohub/pkg/validators"
-
 	// Import the SourceHub DID package
-	did "github.com/sourcenetwork/acp_core/pkg/did"
-
-	"github.com/sourcenetwork/sourcehub/sdk"
 )
 
 func main() {
@@ -96,34 +91,7 @@ func main() {
 }
 
 func buildRegistrarHandler() api.ShinzoRegistrar {
-	signer, err := sourcehub.NewApiSignerFromEnv()
-	if err != nil {
-		log.Fatalf("Failed to load API signer: %v", err)
-	}
-
-	acpClient, err := sdk.NewClient()
-	if err != nil {
-		log.Fatalf("Failed to create ACP SDK client: %v", err)
-	}
-	txBuilder, err := sdk.NewTxBuilder(
-		sdk.WithSDKClient(acpClient),
-		sdk.WithChainID("sourcehub-dev"))
-	if err != nil {
-		log.Fatalf("Failed to create TxBuilder: %v", err)
-	}
-
-	policyId := os.Getenv("POLICY_ID")
-	if policyId == "" {
-		log.Fatalf("POLICY_ID environment variable is required")
-	}
-
-	// Create a DID and signer for ACP operations
-	acpDID, acpSigner, err := did.ProduceDID()
-	if err != nil {
-		log.Fatalf("Failed to create ACP DID and signer: %v", err)
-	}
-
-	acpGoClient, err := sourcehub.NewAcpGoClient(acpClient, &txBuilder, signer, acpSigner, acpDID, policyId)
+	acpGoClient, err := sourcehub.CreateAcpGoClient("sourcehub-dev")
 	if err != nil {
 		log.Fatalf("Failed to create ACP Go client: %v", err)
 	}

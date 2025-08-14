@@ -205,8 +205,11 @@ func setupTestEnvironment(t *testing.T) *TestEnvironment {
 		t.Logf("Using policy ID from environment: %s", policyID)
 	}
 
+	// Set the POLICY_ID environment variable so CreateAcpGoClient can use it
+	os.Setenv("POLICY_ID", policyID)
+
 	// Create test environment
-	acpClient, err := createSourceHubACPClient(policyID)
+	acpClient, err := sourcehub.CreateAcpGoClient("sourcehub-dev")
 	if err != nil {
 		t.Fatalf("Unable to create sourcehub acp client: %v", err)
 	}
@@ -250,43 +253,6 @@ func setupTestEnvironment(t *testing.T) *TestEnvironment {
 	}
 
 	return env
-}
-
-// createSourceHubACPClient creates a real SourceHub ACP client for testing
-func createSourceHubACPClient(policyID string) (sourcehub.AcpClient, error) {
-	// Create the SourceHub SDK client
-	client, err := sdk.NewClient()
-	if err != nil {
-		return nil, fmt.Errorf("failed to create SourceHub client: %w", err)
-	}
-
-	// Create the transaction builder
-	txBuilder, err := sdk.NewTxBuilder(
-		sdk.WithSDKClient(client),
-		sdk.WithChainID("sourcehub-dev"))
-	if err != nil {
-		return nil, fmt.Errorf("failed to create transaction builder: %w", err)
-	}
-
-	// Create the API signer from environment (same as registrar)
-	signer, err := sourcehub.NewApiSignerFromEnv()
-	if err != nil {
-		return nil, fmt.Errorf("failed to create API signer: %w", err)
-	}
-
-	// Create a DID and signer for ACP operations
-	acpDID, acpSigner, err := did.ProduceDID()
-	if err != nil {
-		return nil, fmt.Errorf("failed to create ACP DID and signer: %w", err)
-	}
-
-	// Create and return the ACP client
-	acpGoClient, err := sourcehub.NewAcpGoClient(client, &txBuilder, signer, acpSigner, acpDID, policyID)
-	if err != nil {
-		return nil, fmt.Errorf("failed to create ACP Go client: %w", err)
-	}
-
-	return acpGoClient, nil
 }
 
 // mapKeys returns the keys of a map as a slice
@@ -642,8 +608,6 @@ func attemptAction(env *TestEnvironment, userDID, resource, action string) bool 
 	// Check if we have an ACP client available
 	if env.ACPClient == nil {
 		fmt.Printf("No ACP client available for permission checking - SourceHub ACP client not created\n")
-		fmt.Printf("This means the createSourceHubACPClient function needs to be implemented\n")
-		fmt.Printf("to create a real connection to the SourceHub instance\n")
 		return false
 	}
 

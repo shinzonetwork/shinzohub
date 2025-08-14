@@ -4,7 +4,9 @@ import (
 	"context"
 	"crypto"
 	"fmt"
+	"os"
 
+	"github.com/sourcenetwork/acp_core/pkg/did"
 	coretypes "github.com/sourcenetwork/acp_core/pkg/types"
 	"github.com/sourcenetwork/sourcehub/sdk"
 	acptypes "github.com/sourcenetwork/sourcehub/x/acp/types"
@@ -91,7 +93,7 @@ func (client *AcpGoClient) executePolicyCommand(ctx context.Context, cmds []*acp
 	return sendAndConfirmTx(ctx, client.acp, client.transactionBuilder, client.signer, &msgSet, decorateError)
 }
 
-func NewAcpGoClient(acp *sdk.Client, txBuilder *sdk.TxBuilder, signer sdk.TxSigner, acpSigner crypto.Signer, acpDID string, policyID string) (*AcpGoClient, error) {
+func newAcpGoClient(acp *sdk.Client, txBuilder *sdk.TxBuilder, signer sdk.TxSigner, acpSigner crypto.Signer, acpDID string, policyID string) (*AcpGoClient, error) {
 	return &AcpGoClient{
 		acp:                acp,
 		transactionBuilder: txBuilder,
@@ -100,6 +102,40 @@ func NewAcpGoClient(acp *sdk.Client, txBuilder *sdk.TxBuilder, signer sdk.TxSign
 		acpDID:             acpDID,
 		policyId:           policyID,
 	}, nil
+}
+
+func CreateAcpGoClient(chainId string) (AcpClient, error) {
+	signer, err := NewApiSignerFromEnv()
+	if err != nil {
+		return nil, fmt.Errorf("Failed to load API signer: %v", err)
+	}
+
+	acpClient, err := sdk.NewClient()
+	if err != nil {
+		return nil, fmt.Errorf("Failed to create ACP SDK client: %v", err)
+	}
+	txBuilder, err := sdk.NewTxBuilder(
+		sdk.WithSDKClient(acpClient),
+		sdk.WithChainID(chainId))
+	if err != nil {
+		return nil, fmt.Errorf("Failed to create TxBuilder: %v", err)
+	}
+
+	policyId := os.Getenv("POLICY_ID")
+	if policyId == "" {
+		return nil, fmt.Errorf("POLICY_ID environment variable is required")
+	}
+
+	acpDID, acpSigner, err := did.ProduceDID()
+	if err != nil {
+		return nil, fmt.Errorf("Failed to create ACP DID and signer: %v", err)
+	}
+
+	acpGoClient, err := newAcpGoClient(acpClient, &txBuilder, signer, acpSigner, acpDID, policyId)
+	if err != nil {
+		return nil, fmt.Errorf("Failed to create ACP Go client: %v", err)
+	}
+	return acpGoClient, nil
 }
 
 func (client *AcpGoClient) AddToGroup(ctx context.Context, groupName string, did string) error {
