@@ -3,6 +3,7 @@ package tests
 import (
 	"bytes"
 	"context"
+	"crypto"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -56,6 +57,8 @@ type TestEnvironment struct {
 	Validator    validators.Validator
 	// Add a map to store real DIDs for each test user
 	RealDIDs map[string]string
+	// Add a map to store signers for each test user
+	Signers map[string]crypto.Signer
 	// PolicyID is a placeholder for the actual policy ID used in permission checks
 	PolicyID string
 }
@@ -184,7 +187,7 @@ func setupTestEnvironment(t *testing.T) *TestEnvironment {
 	}
 
 	// Generate real DIDs for each test user
-	realDIDs := generateRealDidsForTestUsers(t, testUsers)
+	realDIDs, signers := generateRealDidsForTestUsers(t, testUsers)
 
 	// Get the real policy ID from the .shinzohub/policy_id file (set during bootstrap)
 	policyID := os.Getenv("POLICY_ID")
@@ -215,6 +218,7 @@ func setupTestEnvironment(t *testing.T) *TestEnvironment {
 		ACPClient:    acpClient, // Will be set below if SourceHub is available
 		Validator:    &validators.RegistrarValidator{},
 		RealDIDs:     realDIDs,
+		Signers:      signers,
 		PolicyID:     policyID,
 	}
 
@@ -222,9 +226,6 @@ func setupTestEnvironment(t *testing.T) *TestEnvironment {
 	// This is necessary because the ACP client needs tokens to perform operations
 	t.Logf("Funding test client signer with tokens...")
 	if acpGoClient, ok := acpClient.(*sourcehub.AcpGoClient); ok {
-		// Get the actual Cosmos account address, not the DID
-		signerAddress := acpGoClient.GetSignerAddress()
-		t.Logf("Signer DID: %s", signerAddress)
 		accountAddr := acpGoClient.GetSignerAccountAddress()
 		t.Logf("Signer account address: %s", accountAddr)
 		if err := fundTestClientSigner(accountAddr); err != nil {
@@ -260,7 +261,9 @@ func createSourceHubACPClient(policyID string) (sourcehub.AcpClient, error) {
 	}
 
 	// Create the transaction builder
-	txBuilder, err := sdk.NewTxBuilder(sdk.WithSDKClient(client))
+	txBuilder, err := sdk.NewTxBuilder(
+		sdk.WithSDKClient(client),
+		sdk.WithChainID("sourcehub-dev"))
 	if err != nil {
 		return nil, fmt.Errorf("failed to create transaction builder: %w", err)
 	}
@@ -271,8 +274,14 @@ func createSourceHubACPClient(policyID string) (sourcehub.AcpClient, error) {
 		return nil, fmt.Errorf("failed to create API signer: %w", err)
 	}
 
+	// Create a DID and signer for ACP operations
+	acpDID, acpSigner, err := did.ProduceDID()
+	if err != nil {
+		return nil, fmt.Errorf("failed to create ACP DID and signer: %w", err)
+	}
+
 	// Create and return the ACP client
-	acpGoClient, err := sourcehub.NewAcpGoClient(client, &txBuilder, signer, policyID)
+	acpGoClient, err := sourcehub.NewAcpGoClient(client, &txBuilder, signer, acpSigner, acpDID, policyID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create ACP Go client: %w", err)
 	}
@@ -300,8 +309,9 @@ func printTestUsers(users map[string]*TestUser) error {
 	return nil
 }
 
-func generateRealDidsForTestUsers(t *testing.T, testUsers map[string]*TestUser) map[string]string {
+func generateRealDidsForTestUsers(t *testing.T, testUsers map[string]*TestUser) (map[string]string, map[string]crypto.Signer) {
 	realDIDs := make(map[string]string)
+	signers := make(map[string]crypto.Signer)
 
 	testUsernames := mapKeys(testUsers)
 
@@ -309,13 +319,14 @@ func generateRealDidsForTestUsers(t *testing.T, testUsers map[string]*TestUser) 
 	for _, username := range testUsernames {
 		// Use the ProduceDID function which generates a random key
 		// This is more appropriate for testing since usernames aren't 32 bytes
-		didStr, _, err := did.ProduceDID()
+		didStr, signer, err := did.ProduceDID()
 		if err != nil {
 			t.Fatalf("Failed to generate DID for user %s: %v", username, err)
 		}
 		realDIDs[username] = didStr
+		signers[username] = signer
 	}
-	return realDIDs
+	return realDIDs, signers
 }
 
 // TestAccessControl runs the comprehensive access control tests

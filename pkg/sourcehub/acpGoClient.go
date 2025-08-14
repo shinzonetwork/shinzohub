@@ -3,98 +3,19 @@ package sourcehub
 import (
 	"context"
 	"crypto"
-	"crypto/ecdsa"
-	"crypto/elliptic"
 	"fmt"
-	"io"
-	"math/big"
 
-	"github.com/cosmos/cosmos-sdk/crypto/keys/secp256k1"
 	coretypes "github.com/sourcenetwork/acp_core/pkg/types"
 	"github.com/sourcenetwork/sourcehub/sdk"
-	"github.com/sourcenetwork/sourcehub/x/acp/did"
 	acptypes "github.com/sourcenetwork/sourcehub/x/acp/types"
 )
-
-// ExtendedTxSigner wraps the SourceHub SDK's TxSigner and adds our GetSigner method
-type ExtendedTxSigner struct {
-	sdk.TxSigner
-	signer crypto.Signer
-}
-
-// NewExtendedTxSigner creates a new ExtendedTxSigner from a SourceHub SDK TxSigner
-func NewExtendedTxSigner(sdkSigner sdk.TxSigner) (*ExtendedTxSigner, error) {
-	// Get the private key and create a crypto.Signer wrapper
-	privKey := sdkSigner.GetPrivateKey()
-
-	// Check if it's a secp256k1 key
-	secpKey, ok := privKey.(*secp256k1.PrivKey)
-	if !ok {
-		return nil, fmt.Errorf("private key is not secp256k1 type")
-	}
-
-	// Convert the secp256k1 key to a standard Go ECDSA key
-	ecdsaKey, err := secp256k1ToECDSA(secpKey)
-	if err != nil {
-		return nil, fmt.Errorf("failed to convert secp256k1 key to ECDSA: %w", err)
-	}
-
-	signer := &secp256k1Signer{
-		privKey:  secpKey,
-		ecdsaKey: ecdsaKey,
-	}
-
-	return &ExtendedTxSigner{
-		TxSigner: sdkSigner,
-		signer:   signer,
-	}, nil
-}
-
-func (e *ExtendedTxSigner) GetSigner() crypto.Signer {
-	return e.signer
-}
-
-// secp256k1Signer wraps the Cosmos SDK secp256k1.PrivKey to implement crypto.Signer
-type secp256k1Signer struct {
-	privKey  *secp256k1.PrivKey
-	ecdsaKey *ecdsa.PrivateKey
-}
-
-func (s *secp256k1Signer) Public() crypto.PublicKey {
-	return s.ecdsaKey.Public()
-}
-
-func (s *secp256k1Signer) Sign(rand io.Reader, digest []byte, opts crypto.SignerOpts) ([]byte, error) {
-	// Use the standard Go ECDSA implementation
-	return s.ecdsaKey.Sign(rand, digest, opts)
-}
-
-// secp256k1ToECDSA converts a Cosmos SDK secp256k1.PrivKey to a standard Go ECDSA.PrivateKey
-func secp256k1ToECDSA(secpKey *secp256k1.PrivKey) (*ecdsa.PrivateKey, error) {
-	// The secp256k1 curve is equivalent to the secp256k1 curve used by Bitcoin
-	curve := elliptic.P256() // Note: This should actually be secp256k1, but Go doesn't have it built-in
-
-	// Extract the private key bytes
-	privKeyBytes := secpKey.Bytes()
-
-	// Create ECDSA private key
-	ecdsaKey := &ecdsa.PrivateKey{
-		PublicKey: ecdsa.PublicKey{
-			Curve: curve,
-		},
-		D: new(big.Int).SetBytes(privKeyBytes),
-	}
-
-	// Derive the public key from the private key
-	ecdsaKey.PublicKey.X, ecdsaKey.PublicKey.Y = curve.ScalarBaseMult(privKeyBytes)
-
-	return ecdsaKey, nil
-}
 
 type AcpGoClient struct {
 	acp                *sdk.Client
 	transactionBuilder *sdk.TxBuilder
-	signer             *ExtendedTxSigner
+	signer             sdk.TxSigner
+	acpSigner          crypto.Signer
+	acpDID             string
 	policyId           string
 }
 
@@ -114,8 +35,8 @@ func createDataFeedError(documentId, creatorDid string, err error) error {
 	return fmt.Errorf("Encountered an error creating data view for document %s by creator %s: %w", documentId, creatorDid, err)
 }
 
-func sendAndConfirmTx(ctx context.Context, acp *sdk.Client, txBuilder *sdk.TxBuilder, signer *ExtendedTxSigner, msgSet *sdk.MsgSet, decorateError func(error) error) error {
-	tx, err := txBuilder.Build(ctx, signer.TxSigner, msgSet)
+func sendAndConfirmTx(ctx context.Context, acp *sdk.Client, txBuilder *sdk.TxBuilder, signer sdk.TxSigner, msgSet *sdk.MsgSet, decorateError func(error) error) error {
+	tx, err := txBuilder.Build(ctx, signer, msgSet)
 	if err != nil {
 		return decorateError(err)
 	}
@@ -156,29 +77,27 @@ func (client *AcpGoClient) executePolicyCommand(ctx context.Context, cmds []*acp
 		cmdBuilder.PolicyCmd(cmd)
 	}
 
-	cmdBuilder.SetSigner(client.signer.GetSigner())
+	cmdBuilder.SetSigner(client.acpSigner)
 
 	jws, err := cmdBuilder.BuildJWS(ctx)
 	if err != nil {
 		return decorateError(err)
 	}
 
-	msg := acptypes.NewMsgSignedPolicyCmdFromJWS(signerDID, jws)
+	msg := acptypes.NewMsgSignedPolicyCmdFromJWS(client.signer.GetAccAddress(), jws)
 	msgSet := sdk.MsgSet{}
 	msgSet.WithSignedPolicyCmd(msg)
 
 	return sendAndConfirmTx(ctx, client.acp, client.transactionBuilder, client.signer, &msgSet, decorateError)
 }
 
-func NewAcpGoClient(acp *sdk.Client, txBuilder *sdk.TxBuilder, signer sdk.TxSigner, policyID string) (*AcpGoClient, error) {
-	extendedSigner, err := NewExtendedTxSigner(signer)
-	if err != nil {
-		return nil, fmt.Errorf("failed to create extended signer: %w", err)
-	}
+func NewAcpGoClient(acp *sdk.Client, txBuilder *sdk.TxBuilder, signer sdk.TxSigner, acpSigner crypto.Signer, acpDID string, policyID string) (*AcpGoClient, error) {
 	return &AcpGoClient{
 		acp:                acp,
 		transactionBuilder: txBuilder,
-		signer:             extendedSigner,
+		signer:             signer,
+		acpSigner:          acpSigner,
+		acpDID:             acpDID,
 		policyId:           policyID,
 	}, nil
 }
@@ -296,13 +215,8 @@ func (client *AcpGoClient) SetRelationship(ctx context.Context, resourceName, ob
 }
 
 func (client *AcpGoClient) GetSignerAddress() string {
-	// Get the signer's DID from their public key
-	signerDID, err := did.DIDFromPubKey(client.signer.GetPrivateKey().PubKey())
-	if err != nil {
-		// Fallback to account address if DID generation fails
-		return client.signer.GetAccAddress()
-	}
-	return signerDID
+	// Return the ACP DID directly
+	return client.acpDID
 }
 
 // GetSignerAccountAddress returns the Cosmos account address of the signer
@@ -311,5 +225,6 @@ func (client *AcpGoClient) GetSignerAccountAddress() string {
 }
 
 func (client *AcpGoClient) GetSignerDid() (string, error) {
-	return did.DIDFromPubKey(client.signer.GetPrivateKey().PubKey())
+	// Return the stored ACP DID
+	return client.acpDID, nil
 }
