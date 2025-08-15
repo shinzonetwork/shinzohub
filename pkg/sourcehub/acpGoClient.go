@@ -185,6 +185,15 @@ func (client *AcpGoClient) AddToGroup(ctx context.Context, groupName string, did
 	})
 }
 
+func (client *AcpGoClient) MakeGroupAdmin(ctx context.Context, groupName string, did string) error {
+	rel := coretypes.NewActorRelationship("group", groupName, "admin", did)
+	cmd := acptypes.NewSetRelationshipCmd(rel)
+
+	return client.executePolicyCommand(ctx, []*acptypes.PolicyCmd{cmd}, func(e error) error {
+		return addToGroupError(did, groupName, e)
+	})
+}
+
 func (client *AcpGoClient) RemoveFromGroup(ctx context.Context, groupName string, did string) error {
 	rel := coretypes.NewActorRelationship("group", groupName, "guest", did)
 	cmd := acptypes.NewDeleteRelationshipCmd(rel)
@@ -280,6 +289,17 @@ func (client *AcpGoClient) IsObjectRegistered(ctx context.Context, resourceName,
 	result, err := client.acp.ACPQueryClient().ObjectOwner(ctx, queryRequest)
 	if err != nil {
 		return false, fmt.Errorf("failed to query object owner: %w", err)
+	}
+
+	// Log the owner of the resource
+	if result.IsRegistered {
+		if result.Record != nil && result.Record.Metadata != nil {
+			fmt.Printf("Object %s:%s is registered with owner: %s\n", resourceName, objectID, result.Record.Metadata.OwnerDid)
+		} else {
+			fmt.Printf("Object %s:%s is registered but owner information is not available\n", resourceName, objectID)
+		}
+	} else {
+		fmt.Printf("Object %s:%s is not registered\n", resourceName, objectID)
 	}
 
 	return result.IsRegistered, nil

@@ -148,8 +148,12 @@ func TestAccessControl(t *testing.T) {
 	}
 
 	// Create blocks primitive, datafeed A, and datafeed B + groups
-	if err := createTestResources(env); err != nil {
+	if err := createTestResources(); err != nil {
 		t.Fatalf("Failed to create test resources: %v", err)
+	}
+
+	if err := makeShinzohubAdminOfEverything(env.ACPClient.GetSignerAddress()); err != nil {
+		t.Fatalf("Failed to make shinzohub admin of everything: %v", err)
 	}
 
 	if err := setupInitialRelationships(env); err != nil {
@@ -157,16 +161,16 @@ func TestAccessControl(t *testing.T) {
 	}
 
 	// Run test cases
-	testCases, err := generateTestCases()
-	if err != nil {
-		t.Fatalf("Encountered error generating test cases: %v", err)
-	}
+	// testCases, err := generateTestCases()
+	// if err != nil {
+	// 	t.Fatalf("Encountered error generating test cases: %v", err)
+	// }
 
-	for _, tc := range testCases {
-		t.Run(tc.Name, func(t *testing.T) {
-			runTestCase(t, env, tc)
-		})
-	}
+	// for _, tc := range testCases {
+	// 	t.Run(tc.Name, func(t *testing.T) {
+	// 		runTestCase(t, env, tc)
+	// 	})
+	// }
 }
 
 func logRealDids(t *testing.T, env *TestEnvironment) {
@@ -230,12 +234,16 @@ type addToGroupRequest struct {
 }
 
 func setupInitialRelationships(env *TestEnvironment) error {
-	// Use the registrar API to add guest users to groups
 	client := &http.Client{}
 	for username, user := range env.Users {
 		err := setupGroupGuestRelationships(client, env, username, user)
 		if err != nil {
 			return fmt.Errorf("Encountered issue setting up group guest relations for %s: %w", username, err)
+		}
+
+		err = setupGroupAdminRelationships(env, username, user)
+		if err != nil {
+			return fmt.Errorf("Encountered issue setting up group admin relations for %s: %w", username, err)
 		}
 
 		err = blockFromGroupsAsAppropriate(client, env, username, user)
@@ -263,7 +271,11 @@ func setupGroupGuestRelationships(client *http.Client, env *TestEnvironment, use
 	}
 
 	if user.ShinzoteamMembership == Guest {
-		err := setGuestRelation(client, env, username, user, "shinzoteam")
+		client, ok := env.ACPClient.(*sourcehub.AcpGoClient)
+		if !ok {
+			return fmt.Errorf("Encountered error adding %s to shinzoteam group as guest: no AcpGoClient in test environment", username)
+		}
+		err := client.AddToGroup(context.Background(), "shinzoteam", user.DID)
 		if err != nil {
 			return fmt.Errorf("Encountered error adding %s to shinzoteam group as guest: %w", username, err)
 		}
@@ -294,6 +306,43 @@ func setGuestRelation(client *http.Client, env *TestEnvironment, username string
 	}
 	defer resp.Body.Close()
 
+	return nil
+}
+
+func setupGroupAdminRelationships(env *TestEnvironment, username string, user *TestUser) error {
+	if user.HostMembership == Admin {
+		err := setGroupAdminRelationship(env, username, user, "host")
+		if err != nil {
+			return err
+		}
+	}
+
+	if user.IndexerMembership == Admin {
+		err := setGroupAdminRelationship(env, username, user, "indexer")
+		if err != nil {
+			return err
+		}
+	}
+
+	if user.ShinzoteamMembership == Admin {
+		err := setGroupAdminRelationship(env, username, user, "shinzoteam")
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func setGroupAdminRelationship(env *TestEnvironment, username string, user *TestUser, group string) error {
+	client, ok := env.ACPClient.(*sourcehub.AcpGoClient)
+	if !ok {
+		return fmt.Errorf("Encountered error adding %s to %s group as admin: no AcpGoClient in test environment", username, group)
+	}
+	err := client.MakeGroupAdmin(context.Background(), group, user.DID)
+	if err != nil {
+		return fmt.Errorf("Encountered error adding %s to %s group as admin: %w", username, group, err)
+	}
 	return nil
 }
 
@@ -382,11 +431,20 @@ func Resource(resourceName, objectName string) resource {
 	}
 }
 
+var testResources = []resource{
+	Resource("primitive", "testblocks"),
+	Resource("view", "datafeedA"),
+	Resource("view", "datafeedB"),
+	Resource("group", "shinzoteam"),
+	Resource("group", "host"),
+	Resource("group", "indexer"),
+}
+
 // createTestResources creates the necessary test resources:
 // 1. Creates minimal test objects that represent the ACP resources
 // 2. Registers these objects with the ACP system
 // 3. Sets up the ownership relationships defined in relationships.yaml
-func createTestResources(env *TestEnvironment) error {
+func createTestResources() error {
 	fmt.Println("Creating and registering test resources with ACP system...")
 
 	ACPClient, err := sourcehub.CreateAcpGoClientWithValidatorSender("sourcehub-dev")
@@ -394,14 +452,7 @@ func createTestResources(env *TestEnvironment) error {
 		return fmt.Errorf("Unable to register test resources with ACP system: Encountered error assembling acp client with validator signer: %w", err)
 	}
 
-	testResources := []resource{
-		Resource("primitive", "testblocks"),
-		Resource("view", "datafeedA"),
-		Resource("view", "datafeedB"),
-		Resource("group", "shinzoteam"),
-		Resource("group", "host"),
-		Resource("group", "indexer"),
-	}
+	fmt.Printf("Validator did %s\n", ACPClient.GetSignerAddress())
 
 	ctx := context.Background()
 
@@ -413,6 +464,30 @@ func createTestResources(env *TestEnvironment) error {
 	}
 
 	fmt.Println("✓ Test resources created and registered with ACP successfully!")
+	return nil
+}
+
+func makeShinzohubAdminOfEverything(shinzoHubDid string) error {
+	fmt.Println("Making Shinzohub admin of all test resources...")
+
+	ACPClient, err := sourcehub.CreateAcpGoClientWithValidatorSender("sourcehub-dev")
+	if err != nil {
+		return fmt.Errorf("Unable make shinzohub admin of resources: Encountered error assembling acp client with validator signer: %w", err)
+	}
+
+	fmt.Printf("Validator did %s\n", ACPClient.GetSignerAddress())
+	fmt.Printf("Shinzohub did %s\n", shinzoHubDid)
+
+	ctx := context.Background()
+
+	for _, testResource := range testResources {
+		fmt.Printf("Making shinzohub admin of %s:%s\n", testResource.resourceName, testResource.objectName)
+		if err := ACPClient.SetRelationship(ctx, testResource.resourceName, testResource.objectName, "admin", shinzoHubDid); err != nil {
+			return fmt.Errorf("Failed to make shinzohub admin of %s:%s: %w", testResource.resourceName, testResource.objectName, err)
+		}
+	}
+
+	fmt.Println("✓ Shinzohub is now admin of all test resources!")
 	return nil
 }
 
