@@ -124,7 +124,9 @@ func createAcpGoClient(chainId string, signer sdk.TxSigner) (AcpClient, error) {
 	}
 	txBuilder, err := sdk.NewTxBuilder(
 		sdk.WithSDKClient(acpClient),
-		sdk.WithChainID(chainId))
+		sdk.WithChainID(chainId),
+		sdk.WithFeeAmount(300),
+		sdk.WithGasLimit(300000))
 	if err != nil {
 		return nil, fmt.Errorf("Failed to create TxBuilder: %v", err)
 	}
@@ -134,7 +136,7 @@ func createAcpGoClient(chainId string, signer sdk.TxSigner) (AcpClient, error) {
 		return nil, fmt.Errorf("POLICY_ID environment variable is required")
 	}
 
-	acpDID, acpSigner, err := did.ProduceDID()
+	acpDID, acpSigner, err := did.ProduceDID() // Todo figure out some way to fix this - it gives me a random did each time instead of one derived from our signer TxSigner
 	if err != nil {
 		return nil, fmt.Errorf("Failed to create ACP DID and signer: %v", err)
 	}
@@ -346,6 +348,5 @@ func (client *AcpGoClient) GetSignerAccountAddress() string {
 }
 
 func (client *AcpGoClient) GetSignerDid() (string, error) {
-	// Return the stored ACP DID
 	return client.acpDID, nil
 }

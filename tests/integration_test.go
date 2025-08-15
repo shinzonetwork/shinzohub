@@ -51,12 +51,13 @@ type TestUser struct {
 
 // TestEnvironment holds all the components needed for testing
 type TestEnvironment struct {
-	Users        map[string]*TestUser
-	DefraDBURL   string
-	RegistrarURL string
-	SourceHubURL string
-	ACPClient    sourcehub.AcpClient
-	Validator    validators.Validator
+	Users              map[string]*TestUser
+	DefraDBURL         string
+	RegistrarURL       string
+	SourceHubURL       string
+	ShinzohubACPClient sourcehub.AcpClient
+	ValidatorACPClient sourcehub.AcpClient
+	Validator          validators.Validator
 	// Add a map to store real DIDs for each test user
 	RealDIDs map[string]string
 	// Add a map to store signers for each test user
@@ -111,16 +112,24 @@ func setupTestEnvironment(t *testing.T) *TestEnvironment {
 	if err != nil {
 		t.Fatalf("Unable to create sourcehub acp client: %v", err)
 	}
+	validatorAcpClient, err := sourcehub.CreateAcpGoClientWithValidatorSender("sourcehub-dev")
+	if err != nil {
+		t.Fatalf("Unable to create sourcehub acp client: %v", err)
+	}
+	t.Logf("ShinzoHub client address: %s | %s\n", acpClient.GetSignerAddress(), acpClient.GetSignerAccountAddress())
+	t.Logf("Validator client address: %s | %s\n", validatorAcpClient.GetSignerAddress(), validatorAcpClient.GetSignerAccountAddress())
+
 	env := &TestEnvironment{
-		Users:        testUsers,
-		DefraDBURL:   "http://localhost:9181",
-		RegistrarURL: "http://localhost:8081",
-		SourceHubURL: "http://localhost:26657",
-		ACPClient:    acpClient, // Will be set below if SourceHub is available
-		Validator:    &validators.RegistrarValidator{},
-		RealDIDs:     realDIDs,
-		Signers:      signers,
-		PolicyID:     policyID,
+		Users:              testUsers,
+		DefraDBURL:         "http://localhost:9181",
+		RegistrarURL:       "http://localhost:8081",
+		SourceHubURL:       "http://localhost:26657",
+		ShinzohubACPClient: acpClient,
+		ValidatorACPClient: validatorAcpClient,
+		Validator:          &validators.RegistrarValidator{},
+		RealDIDs:           realDIDs,
+		Signers:            signers,
+		PolicyID:           policyID,
 	}
 
 	return env
@@ -137,7 +146,7 @@ func TestAccessControl(t *testing.T) {
 	// Fund the test client signer with tokens BEFORE testing functionality
 	// This is necessary because the ACP client needs tokens to perform operations
 	t.Logf("Funding test client signer with tokens...")
-	if acpGoClient, ok := env.ACPClient.(*sourcehub.AcpGoClient); ok {
+	if acpGoClient, ok := env.ShinzohubACPClient.(*sourcehub.AcpGoClient); ok {
 		accountAddr := acpGoClient.GetSignerAccountAddress()
 		t.Logf("Signer account address: %s", accountAddr)
 		if err := fundTestClientSigner(accountAddr); err != nil {
@@ -148,11 +157,11 @@ func TestAccessControl(t *testing.T) {
 	}
 
 	// Create blocks primitive, datafeed A, and datafeed B + groups
-	if err := createTestResources(); err != nil {
+	if err := createTestResources(env); err != nil {
 		t.Fatalf("Failed to create test resources: %v", err)
 	}
 
-	if err := makeShinzohubAdminOfEverything(env.ACPClient.GetSignerAddress()); err != nil {
+	if err := makeShinzohubAdminOfEverything(env, env.ShinzohubACPClient.GetSignerAddress()); err != nil {
 		t.Fatalf("Failed to make shinzohub admin of everything: %v", err)
 	}
 
@@ -271,7 +280,7 @@ func setupGroupGuestRelationships(client *http.Client, env *TestEnvironment, use
 	}
 
 	if user.ShinzoteamMembership == Guest {
-		client, ok := env.ACPClient.(*sourcehub.AcpGoClient)
+		client, ok := env.ShinzohubACPClient.(*sourcehub.AcpGoClient)
 		if !ok {
 			return fmt.Errorf("Encountered error adding %s to shinzoteam group as guest: no AcpGoClient in test environment", username)
 		}
@@ -335,7 +344,7 @@ func setupGroupAdminRelationships(env *TestEnvironment, username string, user *T
 }
 
 func setGroupAdminRelationship(env *TestEnvironment, username string, user *TestUser, group string) error {
-	client, ok := env.ACPClient.(*sourcehub.AcpGoClient)
+	client, ok := env.ShinzohubACPClient.(*sourcehub.AcpGoClient)
 	if !ok {
 		return fmt.Errorf("Encountered error adding %s to %s group as admin: no AcpGoClient in test environment", username, group)
 	}
@@ -444,13 +453,10 @@ var testResources = []resource{
 // 1. Creates minimal test objects that represent the ACP resources
 // 2. Registers these objects with the ACP system
 // 3. Sets up the ownership relationships defined in relationships.yaml
-func createTestResources() error {
+func createTestResources(env *TestEnvironment) error {
 	fmt.Println("Creating and registering test resources with ACP system...")
 
-	ACPClient, err := sourcehub.CreateAcpGoClientWithValidatorSender("sourcehub-dev")
-	if err != nil {
-		return fmt.Errorf("Unable to register test resources with ACP system: Encountered error assembling acp client with validator signer: %w", err)
-	}
+	ACPClient := env.ValidatorACPClient
 
 	fmt.Printf("Validator did %s\n", ACPClient.GetSignerAddress())
 
@@ -467,13 +473,10 @@ func createTestResources() error {
 	return nil
 }
 
-func makeShinzohubAdminOfEverything(shinzoHubDid string) error {
+func makeShinzohubAdminOfEverything(env *TestEnvironment, shinzoHubDid string) error {
 	fmt.Println("Making Shinzohub admin of all test resources...")
 
-	ACPClient, err := sourcehub.CreateAcpGoClientWithValidatorSender("sourcehub-dev")
-	if err != nil {
-		return fmt.Errorf("Unable make shinzohub admin of resources: Encountered error assembling acp client with validator signer: %w", err)
-	}
+	ACPClient := env.ValidatorACPClient
 
 	fmt.Printf("Validator did %s\n", ACPClient.GetSignerAddress())
 	fmt.Printf("Shinzohub did %s\n", shinzoHubDid)
@@ -529,7 +532,7 @@ func attemptAction(env *TestEnvironment, userDID, resource, action string) bool 
 	}
 
 	// Check if we have an ACP client available
-	if env.ACPClient == nil {
+	if env.ShinzohubACPClient == nil {
 		fmt.Printf("No ACP client available for permission checking - SourceHub ACP client not created\n")
 		return false
 	}
@@ -542,7 +545,7 @@ func attemptAction(env *TestEnvironment, userDID, resource, action string) bool 
 	testObjectID := "testobject" + resourceName
 
 	ctx := context.Background()
-	hasPermission, err := env.ACPClient.VerifyAccessRequest(ctx, policyID, resourceName, testObjectID, action, userDID)
+	hasPermission, err := env.ShinzohubACPClient.VerifyAccessRequest(ctx, policyID, resourceName, testObjectID, action, userDID)
 	if err != nil {
 		fmt.Printf("Error checking permission: %v\n", err)
 		return false

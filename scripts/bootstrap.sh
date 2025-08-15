@@ -100,9 +100,15 @@ if ! check_port 8081; then
   exit 1
 fi
 
+# Clear Sourcehub data and re-run genesis setup - this is a workaround for now since Sourcehub manages dids in a very odd way; on each run, I get a different did from the same private key which leads to a whole bunch of issues when running tests against it; so the solution for now is just to start over again each time we boot up our test environment
+rm -R ~/.sourcehub
+echo "===> Running sourcehub genesis setup script"
+cd "$SOURCEHUB_ROOT"
+./scripts/genesis-setup.sh
+
+
 # Build and run SourceHub
 echo "===> Building SourceHub from $SOURCEHUB_ROOT"
-cd "$SOURCEHUB_ROOT"
 # Check if sourcehubd binary exists and is executable
 if [[ ! -f "./build/sourcehubd" ]] || [[ ! -x "./build/sourcehubd" ]]; then
   echo "ERROR: sourcehubd binary not found or not executable at ./build/sourcehubd"
