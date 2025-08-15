@@ -269,7 +269,34 @@ func (client *AcpGoClient) VerifyAccessRequest(ctx context.Context, policyID, re
 	return result.Valid, nil
 }
 
+func (client *AcpGoClient) IsObjectRegistered(ctx context.Context, resourceName, objectID string) (bool, error) {
+	// Create the object owner query request
+	queryRequest := &acptypes.QueryObjectOwnerRequest{
+		PolicyId: client.policyId,
+		Object:   coretypes.NewObject(resourceName, objectID),
+	}
+
+	// Use the SourceHub ACP query client to check if the object is registered
+	result, err := client.acp.ACPQueryClient().ObjectOwner(ctx, queryRequest)
+	if err != nil {
+		return false, fmt.Errorf("failed to query object owner: %w", err)
+	}
+
+	return result.IsRegistered, nil
+}
+
 func (client *AcpGoClient) RegisterObject(ctx context.Context, resourceName, objectID string) error {
+	// Check if the object is already registered
+	isRegistered, err := client.IsObjectRegistered(ctx, resourceName, objectID)
+	if err != nil {
+		return fmt.Errorf("failed to check if object %s is registered: %w", objectID, err)
+	}
+
+	if isRegistered {
+		// Object is already registered, exit early
+		return nil
+	}
+
 	// Create a register object command
 	cmd := acptypes.NewRegisterObjectCmd(coretypes.NewObject(resourceName, objectID))
 

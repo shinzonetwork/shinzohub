@@ -344,7 +344,7 @@ func createTestResources(env *TestEnvironment) error {
 	ctx := context.Background()
 
 	for _, testResource := range testResources {
-		fmt.Printf("Registering %s object on %s resource", testResource.objectName, testResource.resourceName)
+		fmt.Printf("Registering %s object on %s resource\n", testResource.objectName, testResource.resourceName)
 		if err := ACPClient.RegisterObject(ctx, testResource.resourceName, testResource.objectName); err != nil {
 			return fmt.Errorf("Failed to register %s object on %s resource: %w", testResource.objectName, testResource.resourceName, err)
 		}
