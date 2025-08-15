@@ -83,7 +83,6 @@ func setupTestEnvironment(t *testing.T) *TestEnvironment {
 	} else {
 		t.Logf("Using policy ID from environment: %s", policyID)
 	}
-
 	// Set the POLICY_ID environment variable so CreateAcpGoClient can use it
 	os.Setenv("POLICY_ID", policyID)
 
@@ -104,19 +103,6 @@ func setupTestEnvironment(t *testing.T) *TestEnvironment {
 		PolicyID:     policyID,
 	}
 
-	// Fund the test client signer with tokens BEFORE testing functionality
-	// This is necessary because the ACP client needs tokens to perform operations
-	t.Logf("Funding test client signer with tokens...")
-	if acpGoClient, ok := acpClient.(*sourcehub.AcpGoClient); ok {
-		accountAddr := acpGoClient.GetSignerAccountAddress()
-		t.Logf("Signer account address: %s", accountAddr)
-		if err := fundTestClientSigner(accountAddr); err != nil {
-			t.Fatalf("Failed to fund test client signer: %v", err)
-		} else {
-			t.Logf("✓ Successfully funded test client signer")
-		}
-	}
-
 	return env
 }
 
@@ -126,6 +112,19 @@ func TestAccessControl(t *testing.T) {
 
 	if err := waitForServices(env); err != nil {
 		t.Fatalf("Services not ready: %v", err)
+	}
+
+	// Fund the test client signer with tokens BEFORE testing functionality
+	// This is necessary because the ACP client needs tokens to perform operations
+	t.Logf("Funding test client signer with tokens...")
+	if acpGoClient, ok := env.ACPClient.(*sourcehub.AcpGoClient); ok {
+		accountAddr := acpGoClient.GetSignerAccountAddress()
+		t.Logf("Signer account address: %s", accountAddr)
+		if err := fundTestClientSigner(accountAddr); err != nil {
+			t.Fatalf("Failed to fund test client signer: %v", err)
+		} else {
+			t.Logf("✓ Successfully funded test client signer")
+		}
 	}
 
 	if err := setupInitialRelationships(env); err != nil {
@@ -355,6 +354,7 @@ func createTestResources(env *TestEnvironment) error {
 	// Note: We'll use the signer's address as the owner/admin for testing
 	// In a real scenario, these would be the actual DIDs from relationships.yaml
 
+	// Todo setting the owner should be done when registering the objects
 	// Set owner relationship on blocks
 	if err := env.ACPClient.SetRelationship(ctx, "primitive", blocksObjectID, "owner", env.ACPClient.(*sourcehub.AcpGoClient).GetSignerAddress()); err != nil {
 		return fmt.Errorf("failed to set owner relationship on blocks: %w", err)
