@@ -127,13 +127,13 @@ func TestAccessControl(t *testing.T) {
 		}
 	}
 
-	if err := setupInitialRelationships(env); err != nil {
-		t.Fatalf("Failed to setup initial relationships: %v", err)
-	}
-
-	// Create blocks primitive, datafeed A, and datafeed B
+	// Create blocks primitive, datafeed A, and datafeed B + groups
 	if err := createTestResources(env); err != nil {
 		t.Fatalf("Failed to create test resources: %v", err)
+	}
+
+	if err := setupInitialRelationships(env); err != nil {
+		t.Fatalf("Failed to setup initial relationships: %v", err)
 	}
 
 	// Run test cases
@@ -308,86 +308,47 @@ func (env *TestEnvironment) getUsernameFromAlias(aliasDID string) (string, bool)
 	return "", false
 }
 
+type resource struct {
+	resourceName string
+	objectName   string
+}
+
+func Resource(resourceName, objectName string) resource {
+	return resource{
+		resourceName: resourceName,
+		objectName:   objectName,
+	}
+}
+
 // createTestResources creates the necessary test resources:
 // 1. Creates minimal test objects that represent the ACP resources
 // 2. Registers these objects with the ACP system
-// 3. Sets up the key relationships defined in relationships.yaml
+// 3. Sets up the ownership relationships defined in relationships.yaml
 func createTestResources(env *TestEnvironment) error {
 	fmt.Println("Creating and registering test resources with ACP system...")
 
-	// Check if we have an ACP client available
-	if env.ACPClient == nil {
-		return fmt.Errorf("no ACP client available - cannot create test resources")
+	ACPClient, err := sourcehub.CreateAcpGoClientWithValidatorSender("sourcehub-dev")
+	if err != nil {
+		return fmt.Errorf("Unable to register test resources with ACP system: Encountered error assembling acp client with validator signer: %w", err)
+	}
+
+	testResources := []resource{
+		Resource("primitive", "testblocks"),
+		Resource("view", "datafeedA"),
+		Resource("view", "datafeedB"),
+		Resource("group", "shinzoteam"),
+		Resource("group", "host"),
+		Resource("group", "indexer"),
 	}
 
 	ctx := context.Background()
 
-	// 1. Create and register the blocks primitive resource
-	// This represents the "primitive:blocks" resource from relationships.yaml
-	blocksObjectID := "testblocks"
-	fmt.Printf("Registering blocks primitive resource: %s\n", blocksObjectID)
-
-	if err := env.ACPClient.RegisterObject(ctx, "primitive", blocksObjectID); err != nil {
-		return fmt.Errorf("failed to register blocks primitive: %w", err)
+	for _, testResource := range testResources {
+		fmt.Printf("Registering %s object on %s resource", testResource.objectName, testResource.resourceName)
+		if err := ACPClient.RegisterObject(ctx, testResource.resourceName, testResource.objectName); err != nil {
+			return fmt.Errorf("Failed to register %s object on %s resource: %w", testResource.objectName, testResource.resourceName, err)
+		}
 	}
-
-	// 2. Create and register the datafeedA view resource
-	datafeedAObjectID := "datafeedA"
-	fmt.Printf("Registering datafeedA view resource: %s\n", datafeedAObjectID)
-
-	if err := env.ACPClient.RegisterObject(ctx, "view", datafeedAObjectID); err != nil {
-		return fmt.Errorf("failed to register datafeedA view: %w", err)
-	}
-
-	// 3. Create and register the datafeedB view resource
-	datafeedBObjectID := "datafeedB"
-	fmt.Printf("Registering datafeedB view resource: %s\n", datafeedBObjectID)
-
-	if err := env.ACPClient.RegisterObject(ctx, "view", datafeedBObjectID); err != nil {
-		return fmt.Errorf("failed to register datafeedB view: %w", err)
-	}
-
-	// 4. Set up key relationships that match relationships.yaml
-	fmt.Println("Setting up ACP relationships...")
-
-	// For blocks primitive - set up key relationships
-	// Note: We'll use the signer's address as the owner/admin for testing
-	// In a real scenario, these would be the actual DIDs from relationships.yaml
-
-	// Todo setting the owner should be done when registering the objects
-	// Set owner relationship on blocks
-	if err := env.ACPClient.SetRelationship(ctx, "primitive", blocksObjectID, "owner", env.ACPClient.(*sourcehub.AcpGoClient).GetSignerAddress()); err != nil {
-		return fmt.Errorf("failed to set owner relationship on blocks: %w", err)
-	}
-
-	// Set admin relationship on blocks
-	if err := env.ACPClient.SetRelationship(ctx, "primitive", blocksObjectID, "admin", env.ACPClient.(*sourcehub.AcpGoClient).GetSignerAddress()); err != nil {
-		return fmt.Errorf("failed to set admin relationship on blocks: %w", err)
-	}
-
-	// For datafeedA - set up key relationships
-	// Set owner relationship on datafeedA
-	if err := env.ACPClient.SetRelationship(ctx, "view", datafeedAObjectID, "owner", env.ACPClient.(*sourcehub.AcpGoClient).GetSignerAddress()); err != nil {
-		return fmt.Errorf("failed to set owner relationship on datafeedA: %w", err)
-	}
-
-	// Set parent relationship (datafeedA -> blocks)
-	if err := env.ACPClient.SetRelationship(ctx, "view", datafeedAObjectID, "parent", blocksObjectID); err != nil {
-		return fmt.Errorf("failed to set parent relationship on datafeedA: %w", err)
-	}
-
-	// For datafeedB - set up key relationships
-	// Set owner relationship on datafeedB
-	if err := env.ACPClient.SetRelationship(ctx, "view", datafeedBObjectID, "owner", env.ACPClient.(*sourcehub.AcpGoClient).GetSignerAddress()); err != nil {
-		return fmt.Errorf("failed to set owner relationship on datafeedB: %w", err)
-	}
-
-	// Set parent relationship (datafeedB -> datafeedA)
-	if err := env.ACPClient.SetRelationship(ctx, "view", datafeedBObjectID, "parent", datafeedAObjectID); err != nil {
-		return fmt.Errorf("failed to set parent relationship on datafeedB: %w", err)
-	}
-
-	// Todo add subscribers and banned relationships
 
 	fmt.Println("✓ Test resources created and registered with ACP successfully!")
 	return nil

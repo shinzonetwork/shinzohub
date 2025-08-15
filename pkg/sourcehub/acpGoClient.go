@@ -6,6 +6,10 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/cosmos/cosmos-sdk/codec"
+	cdctypes "github.com/cosmos/cosmos-sdk/codec/types"
+	cryptocdc "github.com/cosmos/cosmos-sdk/crypto/codec"
+	"github.com/cosmos/cosmos-sdk/crypto/keyring"
 	"github.com/sourcenetwork/acp_core/pkg/did"
 	coretypes "github.com/sourcenetwork/acp_core/pkg/types"
 	"github.com/sourcenetwork/sourcehub/sdk"
@@ -110,6 +114,10 @@ func CreateAcpGoClient(chainId string) (AcpClient, error) {
 		return nil, fmt.Errorf("Failed to load API signer: %v", err)
 	}
 
+	return createAcpGoClient(chainId, signer)
+}
+
+func createAcpGoClient(chainId string, signer sdk.TxSigner) (AcpClient, error) {
 	acpClient, err := sdk.NewClient()
 	if err != nil {
 		return nil, fmt.Errorf("Failed to create ACP SDK client: %v", err)
@@ -136,6 +144,36 @@ func CreateAcpGoClient(chainId string) (AcpClient, error) {
 		return nil, fmt.Errorf("Failed to create ACP Go client: %v", err)
 	}
 	return acpGoClient, nil
+}
+
+func CreateAcpGoClientWithValidatorSender(chainId string) (AcpClient, error) {
+	signer, err := getValidatorSigner()
+	if err != nil {
+		return nil, fmt.Errorf("Failed to load API signer: %v", err)
+	}
+
+	return createAcpGoClient(chainId, signer)
+}
+
+func getValidatorSigner() (sdk.TxSigner, error) {
+	// Create a keyring to access the validator account
+	reg := cdctypes.NewInterfaceRegistry()
+	cryptocdc.RegisterInterfaces(reg)
+	cdc := codec.NewProtoCodec(reg)
+
+	// Use the test keyring backend and the .sourcehub directory
+	kr, err := keyring.New("sourcehub", keyring.BackendTest, os.Getenv("HOME")+"/.sourcehub", nil, cdc)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create keyring: %w", err)
+	}
+
+	// Get the validator signer
+	validatorSigner, err := sdk.NewTxSignerFromKeyringKey(kr, "validator")
+	if err != nil {
+		return nil, fmt.Errorf("failed to get validator signer: %w", err)
+	}
+
+	return validatorSigner, nil
 }
 
 func (client *AcpGoClient) AddToGroup(ctx context.Context, groupName string, did string) error {

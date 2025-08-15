@@ -123,8 +123,8 @@ SHINZOHUBD_PID=$!
 echo "$SHINZOHUBD_PID" > "$ROOTDIR/shinzohubd.pid"
 echo "Started shinzohubd (PID $SHINZOHUBD_PID). Logs at $SHINZOHUBD_LOG_PATH"
 
-# Run setup_policy.sh to upload policy and create groups
-echo "===> Setting up policy and groups"
+# Run setup_policy.sh to upload policy
+echo "===> Setting up policy"
 if ! scripts/setup_policy.sh; then
   echo "ERROR: setup_policy.sh failed. Exiting bootstrap."
   cleanup

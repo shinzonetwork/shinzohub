@@ -64,16 +64,4 @@ mkdir -p .shinzohub
 echo -n "$POLICY_ID" > "$POLICY_ID_FILE"
 echo "Saved policy ID to $POLICY_ID_FILE"
 
-# Create groups for this policy
-for GROUP in Host Indexer ShinzoTeam; do
-  echo "Creating group: $GROUP"
-  sourcehubd tx acp create-group "$POLICY_ID" "$GROUP" \
-    --from "$KEY_NAME" \
-    --chain-id=sourcehub-dev \
-    --keyring-backend=test \
-    --gas=auto \
-    --fees 100uopen \
-    -y
-done
-
-echo "Policy and groups setup complete." 
+echo "Policy setup complete." 
