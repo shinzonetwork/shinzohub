@@ -230,102 +230,109 @@ type addToGroupRequest struct {
 }
 
 func setupInitialRelationships(env *TestEnvironment) error {
-	// Use the registrar API to add users to groups
+	// Use the registrar API to add guest users to groups
 	client := &http.Client{}
 	for username, user := range env.Users {
-		realDID := user.DID
-
-		// Set up indexer role if user has indexer membership
-		if user.IndexerMembership != None {
-			fmt.Printf("Setting up indexer relationship for %s with DID: %s (membership level: %s)\n",
-				username, realDID, groupMembershipLevels[user.IndexerMembership])
-
-			jsonBytes, err := json.Marshal(addToGroupRequest{
-				DID: realDID,
-			})
-			if err != nil {
-				return err
-			}
-			req, err := http.NewRequest("POST",
-				env.RegistrarURL+"/request-indexer-role",
-				bytes.NewBuffer(jsonBytes))
-			if err != nil {
-				return err
-			}
-			resp, err := client.Do(req)
-			if err != nil {
-				return err
-			}
-			defer resp.Body.Close()
+		err := setupGroupGuestRelationships(client, env, username, user)
+		if err != nil {
+			return fmt.Errorf("Encountered issue setting up group guest relations for %s: %w", username, err)
 		}
 
-		// Set up host role if user has host membership
-		if user.HostMembership != None {
-			fmt.Printf("Setting up host relationship for %s with DID: %s (membership level: %s)\n",
-				username, realDID, groupMembershipLevels[user.HostMembership])
-
-			jsonBytes, err := json.Marshal(addToGroupRequest{
-				DID: realDID,
-			})
-			if err != nil {
-				return err
-			}
-			req, err := http.NewRequest("POST",
-				env.RegistrarURL+"/request-host-role",
-				bytes.NewBuffer(jsonBytes))
-			if err != nil {
-				return err
-			}
-			resp, err := client.Do(req)
-			if err != nil {
-				return err
-			}
-			defer resp.Body.Close()
-		}
-
-		// Handle blocked users
-		if user.IsBlockedIndexer {
-			fmt.Printf("Blocking indexer user %s with did %s\n", username, realDID)
-			jsonBytes, err := json.Marshal(addToGroupRequest{
-				DID: realDID,
-			})
-			if err != nil {
-				return err
-			}
-			req, err := http.NewRequest("POST",
-				env.RegistrarURL+"/block-indexer",
-				bytes.NewBuffer(jsonBytes))
-			if err != nil {
-				return err
-			}
-			resp, err := client.Do(req)
-			if err != nil {
-				return err
-			}
-			defer resp.Body.Close()
-		}
-
-		if user.IsBlockedHost {
-			fmt.Printf("Blocking host user %s with did %s\n", username, realDID)
-			jsonBytes, err := json.Marshal(addToGroupRequest{
-				DID: realDID,
-			})
-			if err != nil {
-				return err
-			}
-			req, err := http.NewRequest("POST",
-				env.RegistrarURL+"/block-host",
-				bytes.NewBuffer(jsonBytes))
-			if err != nil {
-				return err
-			}
-			resp, err := client.Do(req)
-			if err != nil {
-				return err
-			}
-			defer resp.Body.Close()
+		err = blockFromGroupsAsAppropriate(client, env, username, user)
+		if err != nil {
+			return fmt.Errorf("Encountered an issue blocking %s from groups: %w", username, err)
 		}
 	}
+
+	return nil
+}
+
+func setupGroupGuestRelationships(client *http.Client, env *TestEnvironment, username string, user *TestUser) error {
+	if user.IndexerMembership == Guest {
+		err := setGuestRelation(client, env, username, user, "indexer")
+		if err != nil {
+			return fmt.Errorf("Encountered error adding %s to indexer group as guest: %w", username, err)
+		}
+	}
+
+	if user.HostMembership == Guest {
+		err := setGuestRelation(client, env, username, user, "host")
+		if err != nil {
+			return fmt.Errorf("Encountered error adding %s to host group as guest: %w", username, err)
+		}
+	}
+
+	if user.ShinzoteamMembership == Guest {
+		err := setGuestRelation(client, env, username, user, "shinzoteam")
+		if err != nil {
+			return fmt.Errorf("Encountered error adding %s to shinzoteam group as guest: %w", username, err)
+		}
+	}
+	return nil
+}
+
+func setGuestRelation(client *http.Client, env *TestEnvironment, username string, user *TestUser, group string) error {
+	realDID := user.DID
+	fmt.Printf("Setting up %s guest relationship for %s with DID: %s\n",
+		group, username, realDID)
+
+	jsonBytes, err := json.Marshal(addToGroupRequest{
+		DID: realDID,
+	})
+	if err != nil {
+		return err
+	}
+	req, err := http.NewRequest("POST",
+		env.RegistrarURL+fmt.Sprintf("/request-%s-role", group),
+		bytes.NewBuffer(jsonBytes))
+	if err != nil {
+		return err
+	}
+	resp, err := client.Do(req)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	return nil
+}
+
+func blockFromGroupsAsAppropriate(client *http.Client, env *TestEnvironment, username string, user *TestUser) error {
+	if user.IsBlockedIndexer {
+		err := blockFromGroup(client, env, username, user, "indexer")
+		if err != nil {
+			return fmt.Errorf("Encountered error blocking %s from indexer group: %w", username, err)
+		}
+	}
+	if user.IsBlockedHost {
+		err := blockFromGroup(client, env, username, user, "host")
+		if err != nil {
+			return fmt.Errorf("Encountered error blocking %s from host group: %w", username, err)
+		}
+	}
+	return nil
+}
+
+func blockFromGroup(client *http.Client, env *TestEnvironment, username string, user *TestUser, group string) error {
+	realDID := user.DID
+	fmt.Printf("Blocking %s user %s with did %s\n", group, username, realDID)
+	jsonBytes, err := json.Marshal(addToGroupRequest{
+		DID: realDID,
+	})
+	if err != nil {
+		return err
+	}
+	req, err := http.NewRequest("POST",
+		env.RegistrarURL+fmt.Sprintf("/block-%s", group),
+		bytes.NewBuffer(jsonBytes))
+	if err != nil {
+		return err
+	}
+	resp, err := client.Do(req)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
 
 	return nil
 }
