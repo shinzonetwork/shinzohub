@@ -5,7 +5,7 @@ set -e
 POLICY_FILE="acp/shinzo.yaml"
 POLICY_NAME="shinzo"
 POLICY_ID_FILE=".shinzohub/policy_id"
-KEY_NAME="shinzohub" 
+KEY_NAME="validator" 
 
 # Helper function to find a policy ID by name
 find_policy_id_by_name() {
