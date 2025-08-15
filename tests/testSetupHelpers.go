@@ -161,7 +161,7 @@ func printTestUsers(users map[string]*TestUser) error {
 		if err != nil {
 			return err
 		}
-		fmt.Printf("%s -> %s\n", did, string(data))
+		fmt.Printf("%s\n%s\n\n", did, string(data))
 	}
 	return nil
 }

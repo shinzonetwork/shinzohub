@@ -119,9 +119,34 @@ func parseTestUsersFromFile(path string) (map[string]*TestUser, error) {
 		// Update flags based on content of line
 		lower := strings.ToLower(line)
 
-		// Roles & flags rules based on input sample and your TestUser fields
-		user.IsIndexer = strings.Contains(lower, "group:indexer")
-		user.IsHost = strings.Contains(lower, "group:host")
+		// Parse group memberships with proper roles
+		if strings.HasPrefix(lower, "group:indexer#") {
+			if strings.Contains(lower, "#owner") {
+				user.IndexerMembership = Owner
+			} else if strings.Contains(lower, "#admin") {
+				user.IndexerMembership = Admin
+			} else if strings.Contains(lower, "#guest") {
+				user.IndexerMembership = Guest
+			}
+		}
+		if strings.HasPrefix(lower, "group:host#") {
+			if strings.Contains(lower, "#owner") {
+				user.HostMembership = Owner
+			} else if strings.Contains(lower, "#admin") {
+				user.HostMembership = Admin
+			} else if strings.Contains(lower, "#guest") {
+				user.HostMembership = Guest
+			}
+		}
+		if strings.HasPrefix(lower, "group:shinzoteam#") {
+			if strings.Contains(lower, "#owner") {
+				user.ShinzoteamMembership = Owner
+			} else if strings.Contains(lower, "#admin") {
+				user.ShinzoteamMembership = Admin
+			} else if strings.Contains(lower, "#guest") {
+				user.ShinzoteamMembership = Guest
+			}
+		}
 
 		if strings.Contains(lower, "subscriber") {
 			user.IsSubscriber = true

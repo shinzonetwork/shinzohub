@@ -293,7 +293,7 @@ func (client *AcpGoClient) RegisterObject(ctx context.Context, resourceName, obj
 	}
 
 	if isRegistered {
-		// Object is already registered, exit early
+		// Object is already registered, exit early - attempting to register it again will throw an error
 		return nil
 	}
 

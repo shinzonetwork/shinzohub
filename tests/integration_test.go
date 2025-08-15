@@ -5,7 +5,6 @@ import (
 	"context"
 	"crypto"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -21,16 +20,33 @@ import (
 const pathToTests = "../acp/tests.yaml"
 const pathToRelationships = "../acp/relationships.yaml"
 
+type MembershipLevel int
+
+const (
+	None MembershipLevel = iota
+	Guest
+	Admin
+	Owner
+)
+
+var groupMembershipLevels map[MembershipLevel]string = map[MembershipLevel]string{
+	None:  "none",
+	Guest: "guest",
+	Admin: "admin",
+	Owner: "owner",
+}
+
 // TestUser represents a user in our test environment
 type TestUser struct {
-	DID              string
-	Group            string
-	IsBlockedIndexer bool
-	IsBlockedHost    bool
-	IsBanned         bool
-	IsIndexer        bool
-	IsHost           bool
-	IsSubscriber     bool
+	DID                  string
+	Group                string
+	IsBlockedIndexer     bool
+	IsBlockedHost        bool
+	IsBanned             bool
+	IsSubscriber         bool
+	IndexerMembership    MembershipLevel
+	HostMembership       MembershipLevel
+	ShinzoteamMembership MembershipLevel
 }
 
 // TestEnvironment holds all the components needed for testing
@@ -64,6 +80,10 @@ func setupTestEnvironment(t *testing.T) *TestEnvironment {
 	if err != nil {
 		t.Fatalf("Failed to parse test users: %v", err)
 	}
+
+	t.Log("@@@ Printing all parsed test users:\n")
+	printTestUsers(testUsers)
+	t.Log("@@@ Done printing all parsed test users\n")
 
 	// Generate real DIDs for each test user
 	realDIDs, signers := generateRealDidsForTestUsers(t, testUsers)
@@ -213,58 +233,93 @@ func setupInitialRelationships(env *TestEnvironment) error {
 	// Use the registrar API to add users to groups
 	client := &http.Client{}
 	for username, user := range env.Users {
-		path := ""
-		if user.IsIndexer {
-			path = "/request-indexer-role"
-		} else if user.IsHost {
-			path = "/request-host-role"
-		} else {
-			continue
-		}
-
 		realDID := user.DID
-		fmt.Printf("Setting up %s relationship for %s with DID: %s\n", user.Group, username, realDID)
-		jsonBytes, err := json.Marshal(addToGroupRequest{
-			DID: realDID,
-		})
-		if err != nil {
-			return err
-		}
-		req, err := http.NewRequest("POST",
-			env.RegistrarURL+path,
-			bytes.NewBuffer(jsonBytes))
-		if err != nil {
-			return err
-		}
-		resp, err := client.Do(req)
-		if err != nil {
-			return err
-		}
-		defer resp.Body.Close()
 
-		if user.IsBlockedIndexer || user.IsBlockedHost {
-			if user.IsBlockedIndexer {
-				path = "/block-indexer"
-			} else if user.IsBlockedHost {
-				path = "/block-host"
-			} else {
-				return errors.New("Encountered fatal error setting up initial ACP relationships with SourceHub: unable to parse test configuration: encountered a user who is banned and is neither an indexer or host")
-			}
+		// Set up indexer role if user has indexer membership
+		if user.IndexerMembership != None {
+			fmt.Printf("Setting up indexer relationship for %s with DID: %s (membership level: %s)\n",
+				username, realDID, groupMembershipLevels[user.IndexerMembership])
 
-			jsonBytes, err = json.Marshal(addToGroupRequest{
+			jsonBytes, err := json.Marshal(addToGroupRequest{
 				DID: realDID,
 			})
 			if err != nil {
 				return err
 			}
-			fmt.Printf("Blocking user %s with did %s from group %s", username, realDID, user.Group)
-			req, err = http.NewRequest("POST",
-				env.RegistrarURL+path,
+			req, err := http.NewRequest("POST",
+				env.RegistrarURL+"/request-indexer-role",
 				bytes.NewBuffer(jsonBytes))
 			if err != nil {
 				return err
 			}
-			resp, err = client.Do(req)
+			resp, err := client.Do(req)
+			if err != nil {
+				return err
+			}
+			defer resp.Body.Close()
+		}
+
+		// Set up host role if user has host membership
+		if user.HostMembership != None {
+			fmt.Printf("Setting up host relationship for %s with DID: %s (membership level: %s)\n",
+				username, realDID, groupMembershipLevels[user.HostMembership])
+
+			jsonBytes, err := json.Marshal(addToGroupRequest{
+				DID: realDID,
+			})
+			if err != nil {
+				return err
+			}
+			req, err := http.NewRequest("POST",
+				env.RegistrarURL+"/request-host-role",
+				bytes.NewBuffer(jsonBytes))
+			if err != nil {
+				return err
+			}
+			resp, err := client.Do(req)
+			if err != nil {
+				return err
+			}
+			defer resp.Body.Close()
+		}
+
+		// Handle blocked users
+		if user.IsBlockedIndexer {
+			fmt.Printf("Blocking indexer user %s with did %s\n", username, realDID)
+			jsonBytes, err := json.Marshal(addToGroupRequest{
+				DID: realDID,
+			})
+			if err != nil {
+				return err
+			}
+			req, err := http.NewRequest("POST",
+				env.RegistrarURL+"/block-indexer",
+				bytes.NewBuffer(jsonBytes))
+			if err != nil {
+				return err
+			}
+			resp, err := client.Do(req)
+			if err != nil {
+				return err
+			}
+			defer resp.Body.Close()
+		}
+
+		if user.IsBlockedHost {
+			fmt.Printf("Blocking host user %s with did %s\n", username, realDID)
+			jsonBytes, err := json.Marshal(addToGroupRequest{
+				DID: realDID,
+			})
+			if err != nil {
+				return err
+			}
+			req, err := http.NewRequest("POST",
+				env.RegistrarURL+"/block-host",
+				bytes.NewBuffer(jsonBytes))
+			if err != nil {
+				return err
+			}
+			resp, err := client.Do(req)
 			if err != nil {
 				return err
 			}
