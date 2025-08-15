@@ -129,6 +129,8 @@ SHINZOHUBD_PID=$!
 echo "$SHINZOHUBD_PID" > "$ROOTDIR/shinzohubd.pid"
 echo "Started shinzohubd (PID $SHINZOHUBD_PID). Logs at $SHINZOHUBD_LOG_PATH"
 
+sleep 5 # Allow a few seconds for genesis setup to wrap up
+
 # Run setup_policy.sh to upload policy
 echo "===> Setting up policy"
 if ! scripts/setup_policy.sh; then

@@ -344,7 +344,7 @@ func setupGroupAdminRelationships(env *TestEnvironment, username string, user *T
 }
 
 func setGroupAdminRelationship(env *TestEnvironment, username string, user *TestUser, group string) error {
-	client, ok := env.ShinzohubACPClient.(*sourcehub.AcpGoClient)
+	client, ok := env.ValidatorACPClient.(*sourcehub.AcpGoClient)
 	if !ok {
 		return fmt.Errorf("Encountered error adding %s to %s group as admin: no AcpGoClient in test environment", username, group)
 	}
