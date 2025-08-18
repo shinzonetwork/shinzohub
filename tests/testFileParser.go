@@ -2,6 +2,7 @@ package tests
 
 import (
 	"bufio"
+	"fmt"
 	"os"
 	"regexp"
 	"strings"
@@ -58,6 +59,9 @@ func parseTestCasesFromFile(path string) ([]TestCase, error) {
 				testCases = append(testCases, tc)
 			}
 		} else if section == "deleg" {
+			// Todo add these back in
+			continue
+
 			// Example: !did:user:shinzohub > view:datafeedA#admin
 			// or: did:user:shinzohub > view:datafeedB#reader
 			m := delegRegex.FindStringSubmatch(line)
@@ -176,4 +180,117 @@ func parseTestUsersFromFile(path string) (map[string]*TestUser, error) {
 	}
 
 	return users, nil
+}
+
+/*
+* AcpRelations defines in Go code the relations between one object and a did or relation
+* You can think of them as a codified representation of the relationships that are defined in the ACP playground during the design stage
+* Our tests will parse the relationships.yaml file into this representation and then apply those relations on our test (dummy) objects
+* Example 1: primitive:blocks#syncer@did:user:randomUser -> AcpRelations{ResourceName: "primitive", ObjectName: "blocks", Relation: "syncer", IsDidActor: true, Did: "did:user:randomUser"}
+* Example 2: primitive:blocks#writer@group:indexer#member -> AcpRelations{ResourceName: "primitive", ObjectName: "blocks", Relation: "writer", IsDidActor: false, GroupName: "indexer", GroupRelation: "member"}
+* Example 3: group:host#blocked@did:user:aBlockedHost -> AcpRelations{ResourceName: "group", ObjectName: "host", Relation: "blocked", IsDidActor: true, Did: "did:user:aBlockedHost"}
+ */
+type AcpRelations struct {
+	ResourceName  string
+	ObjectName    string
+	Relation      string
+	IsDidActor    bool
+	Did           string
+	GroupName     string
+	GroupRelation string
+}
+
+// ParsedRelation represents a parsed relationship with its source line from the file
+type ParsedRelation struct {
+	SourceLine string
+	Relation   AcpRelations
+}
+
+// parseAcpRelationsFromFile parses the relationships.yaml file and returns a slice of LineRelation
+func parseAcpRelationsFromFile(path string) ([]ParsedRelation, error) {
+	file, err := os.Open(path)
+	if err != nil {
+		return nil, err
+	}
+	defer file.Close()
+
+	var relations []ParsedRelation
+	scanner := bufio.NewScanner(file)
+
+	// Regex to match the pattern: resource:object#relation@actor
+	// This will capture: resource, object, relation, and the full actor part
+	relationRegex := regexp.MustCompile(`^([a-zA-Z0-9]+):([a-zA-Z0-9]+)#([a-zA-Z0-9_]+)@(.+)$`)
+
+	for scanner.Scan() {
+		line := strings.TrimSpace(scanner.Text())
+		if line == "" || strings.HasPrefix(line, "//") {
+			continue
+		}
+
+		// Skip section markers
+		if line == "Authorizations {" || line == "Delegations {" || line == "}" {
+			continue
+		}
+
+		// Parse the relationship line
+		matches := relationRegex.FindStringSubmatch(line)
+		if matches == nil {
+			continue // Skip lines that don't match the pattern
+		}
+
+		resourceName := matches[1]
+		objectName := matches[2]
+		relation := matches[3]
+		actorPart := matches[4]
+
+		// Determine if the actor is a DID or a group
+		if strings.HasPrefix(actorPart, "did:") {
+			// DID actor: did:user:randomUser
+			rel := AcpRelations{
+				ResourceName: resourceName,
+				ObjectName:   objectName,
+				Relation:     relation,
+				IsDidActor:   true,
+				Did:          actorPart,
+			}
+			relations = append(relations, ParsedRelation{
+				SourceLine: line,
+				Relation:   rel,
+			})
+		} else if strings.HasPrefix(actorPart, "group:") {
+			// Group actor: group:indexer#member
+			// Parse the group part: group:groupName#groupRelation
+			groupParts := strings.Split(actorPart, "#")
+			if len(groupParts) == 2 {
+				groupName := strings.TrimPrefix(groupParts[0], "group:")
+				groupRelation := groupParts[1]
+
+				rel := AcpRelations{
+					ResourceName:  resourceName,
+					ObjectName:    objectName,
+					Relation:      relation,
+					IsDidActor:    false,
+					GroupName:     groupName,
+					GroupRelation: groupRelation,
+				}
+				relations = append(relations, ParsedRelation{
+					SourceLine: line,
+					Relation:   rel,
+				})
+			}
+		}
+	}
+
+	if err := scanner.Err(); err != nil {
+		return nil, err
+	}
+
+	return relations, nil
+}
+
+// printParsedRelations prints all parsed relations in the format: sourceLine -> Relation
+func printParsedRelations(relations []ParsedRelation) {
+	for _, parsedRel := range relations {
+		fmt.Printf("%s -> %+v\n", parsedRel.SourceLine, parsedRel.Relation)
+	}
 }

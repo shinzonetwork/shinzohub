@@ -165,21 +165,25 @@ func TestAccessControl(t *testing.T) {
 		t.Fatalf("Failed to make shinzohub admin of everything: %v", err)
 	}
 
-	if err := setupInitialRelationships(env); err != nil {
-		t.Fatalf("Failed to setup initial relationships: %v", err)
+	if err := setupInitialGroupRelationships(env); err != nil {
+		t.Fatalf("Failed to setup initial group relationships: %v", err)
+	}
+
+	if err := setupInitialCollectionRelationships(env); err != nil { // Todo implement - this function should be giving group members or dids read/write/sync/ban/creator access to collections using the shinzohub client - note that creator may not work with current policy (I think there is no manages relation for it right now; that may need to be done by sourcehub)
+		t.Fatalf("Failed to setup initial collection relationships: %v", err)
 	}
 
 	// Run test cases
-	// testCases, err := generateTestCases()
-	// if err != nil {
-	// 	t.Fatalf("Encountered error generating test cases: %v", err)
-	// }
+	testCases, err := generateTestCases()
+	if err != nil {
+		t.Fatalf("Encountered error generating test cases: %v", err)
+	}
 
-	// for _, tc := range testCases {
-	// 	t.Run(tc.Name, func(t *testing.T) {
-	// 		runTestCase(t, env, tc)
-	// 	})
-	// }
+	for _, tc := range testCases {
+		t.Run(tc.Name, func(t *testing.T) {
+			runTestCase(t, env, tc)
+		})
+	}
 }
 
 func logRealDids(t *testing.T, env *TestEnvironment) {
@@ -242,7 +246,7 @@ type addToGroupRequest struct {
 	DID string `json:"did"`
 }
 
-func setupInitialRelationships(env *TestEnvironment) error {
+func setupInitialGroupRelationships(env *TestEnvironment) error {
 	client := &http.Client{}
 	for username, user := range env.Users {
 		err := setupGroupGuestRelationships(client, env, username, user)
@@ -491,6 +495,20 @@ func makeShinzohubAdminOfEverything(env *TestEnvironment, shinzoHubDid string) e
 	}
 
 	fmt.Println("✓ Shinzohub is now admin of all test resources!")
+	return nil
+}
+
+func setupInitialCollectionRelationships(env *TestEnvironment) error {
+	parsedRelations, err := parseAcpRelationsFromFile(pathToRelationships)
+	if err != nil {
+		return fmt.Errorf("Encountered error parsing relations file: %v", err)
+	}
+
+	fmt.Println("$$$$ Parsed the following relations:")
+	printParsedRelations(parsedRelations)
+
+	// Todo set the relations
+
 	return nil
 }
 
