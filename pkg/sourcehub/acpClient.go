@@ -15,6 +15,7 @@ type AcpClient interface {
 	RegisterObject(ctx context.Context, resourceName, objectID string) error
 	SetRelationship(ctx context.Context, resourceName, objectID, relation, subjectDID string) error
 	SetGroupRelationship(ctx context.Context, resourceName, objectID, relation, groupName, groupRelation string) error
+	SetParentRelationship(ctx context.Context, resourceName, objectID, parentResourceName, parentObjectID string) error
 	GetSignerAddress() string
 	GetSignerAccountAddress() string
 }

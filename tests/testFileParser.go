@@ -189,15 +189,19 @@ func parseTestUsersFromFile(path string) (map[string]*TestUser, error) {
 * Example 1: primitive:blocks#syncer@did:user:randomUser -> AcpRelations{ResourceName: "primitive", ObjectName: "blocks", Relation: "syncer", IsDidActor: true, Did: "did:user:randomUser"}
 * Example 2: primitive:blocks#writer@group:indexer#member -> AcpRelations{ResourceName: "primitive", ObjectName: "blocks", Relation: "writer", IsDidActor: false, GroupName: "indexer", GroupRelation: "member"}
 * Example 3: group:host#blocked@did:user:aBlockedHost -> AcpRelations{ResourceName: "group", ObjectName: "host", Relation: "blocked", IsDidActor: true, Did: "did:user:aBlockedHost"}
+* Example 4: view:datafeedA#parent@primitive:blocks -> AcpRelations{ResourceName: "view", ObjectName: "datafeedA", Relation: "parent", IsParentRelation: true, ParentResourceType: "primitive", ParentResourceName: "blocks"}
  */
 type AcpRelations struct {
-	ResourceName  string
-	ObjectName    string
-	Relation      string
-	IsDidActor    bool
-	Did           string
-	GroupName     string
-	GroupRelation string
+	ResourceName       string
+	ObjectName         string
+	Relation           string
+	IsDidActor         bool
+	Did                string
+	GroupName          string
+	GroupRelation      string
+	IsParentRelation   bool
+	ParentResourceType string
+	ParentResourceName string
 }
 
 // ParsedRelation represents a parsed relationship with its source line from the file
@@ -232,7 +236,36 @@ func parseAcpRelationsFromFile(path string) ([]ParsedRelation, error) {
 			continue
 		}
 
-		// Parse the relationship line
+		// First, check if this is a parent relation
+		if strings.Contains(line, "#parent@") {
+			// This is a parent relation: resource:object#parent@parentResource:parentObject
+			// Parse the parts manually
+			parts := strings.Split(line, "#parent@")
+			if len(parts) == 2 {
+				// Parse resource:object from the first part
+				resourceParts := strings.Split(parts[0], ":")
+				// Parse parentResource:parentObject from the second part
+				parentParts := strings.Split(parts[1], ":")
+
+				if len(resourceParts) == 2 && len(parentParts) == 2 {
+					rel := AcpRelations{
+						ResourceName:       resourceParts[0],
+						ObjectName:         resourceParts[1],
+						Relation:           "parent",
+						IsParentRelation:   true,
+						ParentResourceType: parentParts[0],
+						ParentResourceName: parentParts[1],
+					}
+					relations = append(relations, ParsedRelation{
+						SourceLine: line,
+						Relation:   rel,
+					})
+					continue
+				}
+			}
+		}
+
+		// Parse the regular relationship line
 		matches := relationRegex.FindStringSubmatch(line)
 		if matches == nil {
 			continue // Skip lines that don't match the pattern

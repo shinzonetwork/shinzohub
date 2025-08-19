@@ -36,9 +36,8 @@ trap cleanup EXIT INT TERM
 scripts/wait_for_services.sh
 
 echo "===> Running ACP integration tests..."
-go test -v ./tests -run TestAccessControl > integration_test_output.txt 2>&1 || true
+go test -v ./tests -run TestAccessControl > logs/integration_test_output.txt 2>&1 || true
 
 echo -e "\n\n===> Integration test output:"
-cat integration_test_output.txt
-rm integration_test_output.txt
-echo "===> Tests finished."
+cat logs/integration_test_output.txt
+echo "===> Tests finished. Inspect test output at logs/integration_test_output.txt"

@@ -338,13 +338,20 @@ func (client *AcpGoClient) SetRelationship(ctx context.Context, resourceName, ob
 }
 
 func (client *AcpGoClient) SetGroupRelationship(ctx context.Context, resourceName, objectID, relation, groupName, groupRelation string) error {
-	// Create a set relationship command for a group
-	// This creates a relationship like: resourceName:objectID#relation@group:groupName#groupRelation
 	rel := coretypes.NewActorSetRelationship(resourceName, objectID, relation, "group", groupName, groupRelation)
 	cmd := acptypes.NewSetRelationshipCmd(rel)
 
 	return client.executePolicyCommand(ctx, []*acptypes.PolicyCmd{cmd}, func(e error) error {
 		return fmt.Errorf("failed to set group relationship %s on %s for group %s: %w", relation, objectID, groupName, e)
+	})
+}
+
+func (client *AcpGoClient) SetParentRelationship(ctx context.Context, resourceName, objectID, parentResourceName, parentObjectID string) error {
+	rel := coretypes.NewRelationship(resourceName, objectID, "parent", parentResourceName, parentObjectID)
+	cmd := acptypes.NewSetRelationshipCmd(rel)
+
+	return client.executePolicyCommand(ctx, []*acptypes.PolicyCmd{cmd}, func(e error) error {
+		return fmt.Errorf("failed to set parent relationship on %s:%s -> %s:%s: %w", resourceName, objectID, parentResourceName, parentObjectID, e)
 	})
 }
 

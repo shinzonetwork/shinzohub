@@ -9,7 +9,6 @@ primitive:blocks#syncer@group:host#member
 primitive:blocks#syncer@did:user:randomUser
 primitive:blocks#banned@did:user:aBannedIndexer
 primitive:blocks#subscriber@did:user:subscriber
-primitive:blocks#syncer@did:user:aHost
 
 view:datafeedA#owner@did:user:sourcehub
 view:datafeedA#admin@did:user:shinzohub
@@ -19,7 +18,6 @@ view:datafeedA#subscriber@did:user:subscriber
 view:datafeedA#writer@group:host#member
 view:datafeedA#banned@did:user:aBannedHost
 view:datafeedA#parent@primitive:blocks
-view:datafeedA#syncer@did:user:aHost
 
 view:datafeedB#owner@did:user:sourcehub
 view:datafeedB#admin@did:user:shinzohub

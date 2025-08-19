@@ -53,114 +53,114 @@ Authorizations {
   view:datafeedA#sync@did:user:subscriber
   !view:datafeedA#update@did:user:subscriber
   view:datafeedA#read@did:user:subscriber
-  !view:datafeedA#creator@did:user:subscriber
+  !view:datafeedA#created@did:user:subscriber
 
   !view:datafeedA#sync@did:user:subscriberToB
   !view:datafeedA#update@did:user:subscriberToB
   !view:datafeedA#read@did:user:subscriberToB
-  !view:datafeedA#creator@did:user:subscriberToB
+  !view:datafeedA#created@did:user:subscriberToB
 
   !view:datafeedA#sync@did:user:anonsubscriber
   !view:datafeedA#update@did:user:anonsubscriber
   !view:datafeedA#read@did:user:anonsubscriber
-  !view:datafeedA#creator@did:user:anonsubscriber
+  !view:datafeedA#created@did:user:anonsubscriber
 
   view:datafeedA#sync@did:user:aHost
   view:datafeedA#update@did:user:aHost
   !view:datafeedA#read@did:user:aHost
-  !view:datafeedA#creator@did:user:aHost
+  !view:datafeedA#created@did:user:aHost
 
   !view:datafeedA#sync@did:user:creator
   !view:datafeedA#update@did:user:creator
   !view:datafeedA#read@did:user:creator
-  view:datafeedA#creator@did:user:creator
+  view:datafeedA#created@did:user:creator
 
   !view:datafeedA#sync@did:user:creatorOfB
   !view:datafeedA#update@did:user:creatorOfB
   !view:datafeedA#read@did:user:creatorOfB
-  !view:datafeedA#creator@did:user:creatorOfB
+  !view:datafeedA#created@did:user:creatorOfB
 
   !view:datafeedA#sync@did:user:addo
   !view:datafeedA#update@did:user:addo
   !view:datafeedA#read@did:user:addo
-  !view:datafeedA#creator@did:user:addo
+  !view:datafeedA#created@did:user:addo
 
   !view:datafeedA#sync@did:user:shinzohub
   !view:datafeedA#update@did:user:shinzohub
   !view:datafeedA#read@did:user:shinzohub
-  !view:datafeedA#creator@did:user:shinzohub
+  !view:datafeedA#created@did:user:shinzohub
 
   !view:datafeedA#sync@did:user:aBannedHost
   !view:datafeedA#update@did:user:aBannedHost
   !view:datafeedA#read@did:user:aBannedHost
-  !view:datafeedA#creator@did:user:aBannedHost
+  !view:datafeedA#created@did:user:aBannedHost
 
   !view:datafeedA#sync@did:user:aBlockedHost
   !view:datafeedA#update@did:user:aBlockedHost
   !view:datafeedA#read@did:user:aBlockedHost
-  !view:datafeedA#creator@did:user:aBlockedHost
+  !view:datafeedA#created@did:user:aBlockedHost
 
   view:datafeedA#sync@did:user:anIndexer
-  !view:datafeedA#update@did:user:anIndexer
+  view:datafeedA#update@did:user:anIndexer
   !view:datafeedA#read@did:user:anIndexer
-  !view:datafeedA#creator@did:user:anIndexer
+  !view:datafeedA#created@did:user:anIndexer
 
   // @@@ Tertiary data feed (a datafeed derived directly from another data feed) tests
   view:datafeedB#sync@did:user:subscriber
   !view:datafeedB#update@did:user:subscriber
   !view:datafeedB#read@did:user:subscriber
-  !view:datafeedB#creator@did:user:subscriber
+  !view:datafeedB#created@did:user:subscriber
 
   view:datafeedB#sync@did:user:subscriberToB
   !view:datafeedB#update@did:user:subscriberToB
   view:datafeedB#read@did:user:subscriberToB
-  !view:datadeefB#creator@did:user:subscriberToB
+  !view:datadeefB#created@did:user:subscriberToB
 
   !view:datafeedB#sync@did:user:anonsubscriber
   !view:datafeedB#update@did:user:anonsubscriber
   !view:datafeedB#read@did:user:anonsubscriber
-  !view:datafeedB#creator@did:user:anonsubscriber
+  !view:datafeedB#created@did:user:anonsubscriber
 
   // Members of the host group inherit write permissions on datafeedB as they have it for datafeedA and datafeedA is datafeedB's parent
   view:datafeedB#sync@did:user:aHost
   view:datafeedB#update@did:user:aHost
   !view:datafeedB#read@did:user:aHost
-  !view:datafeedB#creator@did:user:aHost
+  !view:datafeedB#created@did:user:aHost
 
   !view:datafeedB#sync@did:user:creator
   !view:datafeedB#update@did:user:creator
   !view:datafeedB#read@did:user:creator
-  !view:datafeedB#creator@did:user:creator
+  !view:datafeedB#created@did:user:creator
 
   !view:datafeedB#sync@did:user:creatorOfB
   !view:datafeedB#update@did:user:creatorOfB
   !view:datafeedB#read@did:user:creatorOfB
-  view:datafeedB#creator@did:user:creatorOfB
+  view:datafeedB#created@did:user:creatorOfB
 
   !view:datafeedB#sync@did:user:addo
   !view:datafeedB#update@did:user:addo
   !view:datafeedB#read@did:user:addo
-  !view:datafeedB#creator@did:user:addo
+  !view:datafeedB#created@did:user:addo
 
   !view:datafeedB#sync@did:user:shinzohub
   !view:datafeedB#update@did:user:shinzohub
   !view:datafeedB#read@did:user:shinzohub
-  !view:datafeedB#creator@did:user:shinzohub
+  !view:datafeedB#created@did:user:shinzohub
 
   !view:datafeedB#sync@did:user:aBannedHost
   !view:datafeedB#update@did:user:aBannedHost
   !view:datafeedB#read@did:user:aBannedHost
-  !view:datafeedB#creator@did:user:aBannedHost
+  !view:datafeedB#created@did:user:aBannedHost
 
   !view:datafeedB#sync@did:user:aBlockedHost
   !view:datafeedB#update@did:user:aBlockedHost
   !view:datafeedB#read@did:user:aBlockedHost
-  !view:datafeedB#creator@did:user:aBlockedHost
+  !view:datafeedB#created@did:user:aBlockedHost
 
   view:datafeedB#sync@did:user:anIndexer
-  !view:datafeedB#update@did:user:anIndexer
+  view:datafeedB#update@did:user:anIndexer
   !view:datafeedB#read@did:user:anIndexer
-  !view:datafeedB#creator@did:user:anIndexer
+  !view:datafeedB#created@did:user:anIndexer
 
 }
 
@@ -204,13 +204,13 @@ Delegations {
 
   did:user:addo > view:datafeedA#syncer
   did:user:addo > view:datafeedA#writer
-  !did:user:addo > view:datafeedA#creator
+  did:user:addo > view:datafeedA#creator
   !did:user:addo > view:datafeedA#admin
   !did:user:addo > view:datafeedA#owner
 
   did:user:addo > view:datafeedB#syncer
   did:user:addo > view:datafeedB#writer
-  !did:user:addo > view:datafeedB#creator
+  did:user:addo > view:datafeedB#creator
   !did:user:addo > view:datafeedB#admin
   !did:user:addo > view:datafeedB#owner
 
@@ -221,13 +221,13 @@ Delegations {
 
   did:user:duncan > view:datafeedA#syncer
   did:user:duncan > view:datafeedA#writer
-  !did:user:duncan > view:datafeedA#creator
+  did:user:duncan > view:datafeedA#creator
   !did:user:duncan > view:datafeedA#admin
   !did:user:duncan > view:datafeedA#owner
 
   did:user:duncan > view:datafeedB#syncer
   did:user:duncan > view:datafeedB#writer
-  !did:user:duncan > view:datafeedB#creator
+  did:user:duncan > view:datafeedB#creator
   !did:user:duncan > view:datafeedB#admin
   !did:user:duncan > view:datafeedB#owner
 
@@ -259,14 +259,14 @@ Delegations {
   did:user:shinzohub > view:datafeedA#syncer
   did:user:shinzohub > view:datafeedA#writer
   did:user:shinzohub > view:datafeedA#subscriber
-  !did:user:shinzohub > view:datafeedA#creator
+  did:user:shinzohub > view:datafeedA#creator
   !did:user:shinzohub > view:datafeedA#admin
   !did:user:shinzohub > view:datafeedA#owner
 
   did:user:shinzohub > view:datafeedB#syncer
   did:user:shinzohub > view:datafeedB#writer
   did:user:shinzohub > view:datafeedB#subscriber
-  !did:user:shinzohub > view:datafeedB#creator
+  did:user:shinzohub > view:datafeedB#creator
   !did:user:shinzohub > view:datafeedB#admin
   !did:user:shinzohub > view:datafeedB#owner
 }

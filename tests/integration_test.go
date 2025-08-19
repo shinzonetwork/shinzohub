@@ -122,7 +122,7 @@ func setupTestEnvironment(t *testing.T) *TestEnvironment {
 	env := &TestEnvironment{
 		Users:              testUsers,
 		DefraDBURL:         "http://localhost:9181",
-		RegistrarURL:       "http://localhost:8081",
+		RegistrarURL:       "http://localhost:8081/registrar",
 		SourceHubURL:       "http://localhost:26657",
 		ShinzohubACPClient: acpClient,
 		ValidatorACPClient: validatorAcpClient,
@@ -216,7 +216,7 @@ func waitForServices(env *TestEnvironment) error {
 
 func waitForRegistrar(url string) error {
 	for i := 0; i < 30; i++ {
-		resp, err := http.Get(url + "/registrar/")
+		resp, err := http.Get(url + "/")
 		if err == nil && resp.StatusCode == 404 {
 			// 404 is expected for root path
 			return nil
@@ -307,9 +307,10 @@ func setGuestRelation(client *http.Client, env *TestEnvironment, username string
 	if err != nil {
 		return err
 	}
-	req, err := http.NewRequest("POST",
-		env.RegistrarURL+fmt.Sprintf("/request-%s-role", group),
-		bytes.NewBuffer(jsonBytes))
+
+	requestURL := env.RegistrarURL + fmt.Sprintf("/request-%s-role", group)
+
+	req, err := http.NewRequest("POST", requestURL, bytes.NewBuffer(jsonBytes))
 	if err != nil {
 		return err
 	}
@@ -384,9 +385,10 @@ func blockFromGroup(client *http.Client, env *TestEnvironment, username string, 
 	if err != nil {
 		return err
 	}
-	req, err := http.NewRequest("POST",
-		env.RegistrarURL+fmt.Sprintf("/block-%s", group),
-		bytes.NewBuffer(jsonBytes))
+
+	requestURL := env.RegistrarURL + fmt.Sprintf("/block-%s", group)
+
+	req, err := http.NewRequest("POST", requestURL, bytes.NewBuffer(jsonBytes))
 	if err != nil {
 		return err
 	}
@@ -518,10 +520,17 @@ func setRelationship(env *TestEnvironment, relation AcpRelations) error {
 	if relation.Relation == "admin" {
 		client = env.ValidatorACPClient // Validator would be setting these relationships during deployment
 	}
+
+	if relation.IsParentRelation {
+		fmt.Printf("Setting parent relation: %s:%s -> %s:%s\n", relation.ResourceName, relation.ObjectName, relation.ParentResourceType, relation.ParentResourceName)
+		return client.SetParentRelationship(context.Background(), relation.ResourceName, relation.ObjectName, relation.ParentResourceType, relation.ParentResourceName)
+	}
+
 	if relation.IsDidActor {
-		fmt.Printf("Giving %s %s relation on %s:%s\n", env.resolveDID(relation.Did), relation.Relation, relation.ResourceName, relation.ObjectName)
+		fmt.Printf("Giving %s -> %s %s relation on %s:%s\n", relation.Did, env.resolveDID(relation.Did), relation.Relation, relation.ResourceName, relation.ObjectName)
 		return client.SetRelationship(context.Background(), relation.ResourceName, relation.ObjectName, relation.Relation, env.resolveDID(relation.Did))
 	}
+
 	fmt.Printf("Giving group:%s#%s %s relation on %s:%s\n", relation.GroupName, relation.GroupRelation, relation.Relation, relation.ResourceName, relation.ObjectName)
 	return client.SetGroupRelationship(context.Background(), relation.ResourceName, relation.ObjectName, relation.Relation, relation.GroupName, relation.GroupRelation)
 }
@@ -529,7 +538,6 @@ func setRelationship(env *TestEnvironment, relation AcpRelations) error {
 func runTestCase(t *testing.T, env *TestEnvironment, tc TestCase) {
 	// Resolve the alias DID to the real DID
 	realUserDID := env.resolveDID(tc.UserDID)
-	t.Logf("Resolved %s to %s", tc.UserDID, realUserDID)
 
 	// Attempt the action with the real DID
 	result := attemptAction(env, realUserDID, tc.Resource, tc.Action)
@@ -572,12 +580,8 @@ func attemptAction(env *TestEnvironment, userDID, resource, action string) bool 
 	fmt.Printf("Checking permission: user %s wants to %s on %s (resource: %s, type: %s)\n",
 		userDID, action, resource, resourceName, resourceType)
 
-	// Use the ACP client to verify the access request
-	// For now, we'll use a test object ID since we're not creating actual documents
-	testObjectID := resourceName
-
 	ctx := context.Background()
-	hasPermission, err := env.ShinzohubACPClient.VerifyAccessRequest(ctx, policyID, resourceName, testObjectID, action, userDID)
+	hasPermission, err := env.ShinzohubACPClient.VerifyAccessRequest(ctx, policyID, resourceType, resourceName, action, userDID)
 	if err != nil {
 		fmt.Printf("Error checking permission: %v\n", err)
 		return false
