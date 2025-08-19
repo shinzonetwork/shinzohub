@@ -82,12 +82,12 @@ func setupTestEnvironment(t *testing.T) *TestEnvironment {
 		t.Fatalf("Failed to parse test users: %v", err)
 	}
 
+	// Generate real DIDs for each test user
+	realDIDs, signers := generateRealDidsForTestUsers(t, testUsers)
+
 	t.Log("@@@ Printing all parsed test users:\n")
 	printTestUsers(testUsers)
 	t.Log("@@@ Done printing all parsed test users\n")
-
-	// Generate real DIDs for each test user
-	realDIDs, signers := generateRealDidsForTestUsers(t, testUsers)
 
 	// Get the real policy ID from the .shinzohub/policy_id file (set during bootstrap)
 	policyID := os.Getenv("POLICY_ID")
@@ -405,14 +405,9 @@ func generateTestCases() ([]TestCase, error) {
 
 // resolveDID resolves an alias DID (e.g., "did:user:randomUser") to the real DID
 func (env *TestEnvironment) resolveDID(aliasDID string) string {
-	// Check if it's an alias format: "did:user:<username>"
-	if len(aliasDID) > 10 && aliasDID[:10] == "did:user:" {
-		username := aliasDID[10:]
-		if realDID, exists := env.RealDIDs[username]; exists {
-			return realDID
-		}
+	if realDID, exists := env.RealDIDs[aliasDID]; exists {
+		return realDID
 	}
-	// If it's not an alias or not found, return as-is
 	return aliasDID
 }
 
@@ -445,7 +440,7 @@ func Resource(resourceName, objectName string) resource {
 }
 
 var testResources = []resource{
-	Resource("primitive", "testblocks"),
+	Resource("primitive", "blocks"),
 	Resource("view", "datafeedA"),
 	Resource("view", "datafeedB"),
 	Resource("group", "shinzoteam"),
@@ -504,12 +499,31 @@ func setupInitialCollectionRelationships(env *TestEnvironment) error {
 		return fmt.Errorf("Encountered error parsing relations file: %v", err)
 	}
 
-	fmt.Println("$$$$ Parsed the following relations:")
-	printParsedRelations(parsedRelations)
+	for _, parsedRelation := range parsedRelations {
+		if strings.Contains(parsedRelation.SourceLine, "sourcehub") || strings.Contains(parsedRelation.SourceLine, "shinzohub") || parsedRelation.Relation.Relation == "owner" {
+			continue // Relations set previously
+		}
 
-	// Todo set the relations
+		err := setRelationship(env, parsedRelation.Relation)
+		if err != nil {
+			return fmt.Errorf("Encountered error setting relation defined by %s : %v", parsedRelation.SourceLine, err)
+		}
+	}
 
 	return nil
+}
+
+func setRelationship(env *TestEnvironment, relation AcpRelations) error {
+	client := env.ShinzohubACPClient
+	if relation.Relation == "admin" {
+		client = env.ValidatorACPClient // Validator would be setting these relationships during deployment
+	}
+	if relation.IsDidActor {
+		fmt.Printf("Giving %s %s relation on %s:%s\n", env.resolveDID(relation.Did), relation.Relation, relation.ResourceName, relation.ObjectName)
+		return client.SetRelationship(context.Background(), relation.ResourceName, relation.ObjectName, relation.Relation, env.resolveDID(relation.Did))
+	}
+	fmt.Printf("Giving group:%s#%s %s relation on %s:%s\n", relation.GroupName, relation.GroupRelation, relation.Relation, relation.ResourceName, relation.ObjectName)
+	return client.SetGroupRelationship(context.Background(), relation.ResourceName, relation.ObjectName, relation.Relation, relation.GroupName, relation.GroupRelation)
 }
 
 func runTestCase(t *testing.T, env *TestEnvironment, tc TestCase) {
@@ -560,7 +574,7 @@ func attemptAction(env *TestEnvironment, userDID, resource, action string) bool 
 
 	// Use the ACP client to verify the access request
 	// For now, we'll use a test object ID since we're not creating actual documents
-	testObjectID := "testobject" + resourceName
+	testObjectID := resourceName
 
 	ctx := context.Background()
 	hasPermission, err := env.ShinzohubACPClient.VerifyAccessRequest(ctx, policyID, resourceName, testObjectID, action, userDID)

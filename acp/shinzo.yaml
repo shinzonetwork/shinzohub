@@ -6,6 +6,7 @@ resources:
 				manages:
 				- writer
 				- syncer
+				- subscriber
 				- banned
 				types:
 				- actor
@@ -37,6 +38,7 @@ resources:
     relations:
       admin:
         manages:
+        - creator
         - writer
         - syncer
         - subscriber

@@ -131,13 +131,12 @@ func generateRealDidsForTestUsers(t *testing.T, testUsers map[string]*TestUser) 
 	realDIDs := make(map[string]string)
 	signers := make(map[string]crypto.Signer)
 
-	testUsernames := mapKeys(testUsers)
-
 	// Generate a DID for each test user
-	for _, username := range testUsernames {
+	for username, user := range testUsers {
 		// Use the ProduceDID function which generates a random key
 		// This is more appropriate for testing since usernames aren't 32 bytes
 		didStr, signer, err := did.ProduceDID()
+		user.DID = didStr
 		if err != nil {
 			t.Fatalf("Failed to generate DID for user %s: %v", username, err)
 		}
@@ -145,14 +144,6 @@ func generateRealDidsForTestUsers(t *testing.T, testUsers map[string]*TestUser) 
 		signers[username] = signer
 	}
 	return realDIDs, signers
-}
-
-func mapKeys(m map[string]*TestUser) []string {
-	keys := make([]string, 0, len(m))
-	for k := range m {
-		keys = append(keys, k)
-	}
-	return keys
 }
 
 func printTestUsers(users map[string]*TestUser) error {

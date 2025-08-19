@@ -14,6 +14,7 @@ type AcpClient interface {
 	// Additional methods for test resource setup
 	RegisterObject(ctx context.Context, resourceName, objectID string) error
 	SetRelationship(ctx context.Context, resourceName, objectID, relation, subjectDID string) error
+	SetGroupRelationship(ctx context.Context, resourceName, objectID, relation, groupName, groupRelation string) error
 	GetSignerAddress() string
 	GetSignerAccountAddress() string
 }
