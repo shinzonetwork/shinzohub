@@ -36,7 +36,8 @@ require (
 	github.com/golang/protobuf v1.5.4
 	github.com/gorilla/mux v1.8.1
 	github.com/grpc-ecosystem/grpc-gateway v1.16.0
-	github.com/sourcenetwork/sourcehub v0.3.2
+	github.com/sourcenetwork/acp_core v0.5.4
+	github.com/sourcenetwork/sourcehub v0.3.3-0.20250819210502-4fcb0fbc55ca
 	github.com/spf13/cast v1.8.0
 	github.com/spf13/cobra v1.9.1
 	github.com/spf13/pflag v1.0.6
@@ -191,7 +192,7 @@ require (
 	github.com/getsentry/sentry-go v0.32.0 // indirect
 	github.com/ghodss/yaml v1.0.0 // indirect
 	github.com/ghostiam/protogetter v0.3.9 // indirect
-	github.com/go-chi/chi/v5 v5.2.1 // indirect
+	github.com/go-chi/chi/v5 v5.2.2 // indirect
 	github.com/go-critic/go-critic v0.12.0 // indirect
 	github.com/go-jose/go-jose/v3 v3.0.4 // indirect
 	github.com/go-jose/go-jose/v4 v4.0.5 // indirect
@@ -392,10 +393,9 @@ require (
 	github.com/sonatard/noctx v0.1.0 // indirect
 	github.com/sourcegraph/conc v0.3.0 // indirect
 	github.com/sourcegraph/go-diff v0.7.0 // indirect
-	github.com/sourcenetwork/acp_core v0.5.2 // indirect
 	github.com/sourcenetwork/raccoondb v0.2.1-0.20240722161350-d4a78b691ec8 // indirect
 	github.com/sourcenetwork/raccoondb/v2 v2.0.0 // indirect
-	github.com/sourcenetwork/zanzi v0.3.1-0.20250326181925-74d3e97fb950 // indirect
+	github.com/sourcenetwork/zanzi v0.3.1-0.20250807201848-ff8322455b4b // indirect
 	github.com/spf13/afero v1.12.0 // indirect
 	github.com/spiffe/go-spiffe/v2 v2.5.0 // indirect
 	github.com/ssgreg/nlreturn/v2 v2.2.1 // indirect
