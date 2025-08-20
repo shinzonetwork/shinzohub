@@ -1,8 +1,11 @@
 package sourcehub
 
-import "context"
+import (
+	"context"
+	"crypto"
+)
 
-type AcpClient interface {
+type ShinzoAcpClient interface {
 	AddToGroup(ctx context.Context, groupName string, did string) error
 	RemoveFromGroup(ctx context.Context, groupName string, did string) error
 	BlockFromGroup(ctx context.Context, groupName, did string) error
@@ -18,5 +21,6 @@ type AcpClient interface {
 	SetParentRelationship(ctx context.Context, resourceName, objectID, parentResourceName, parentObjectID string) error
 	GetSignerAddress() string
 	GetSignerAccountAddress() string
-	SetDid(did string)
+	GetSigner() crypto.Signer
+	SetActor(did string, signer crypto.Signer)
 }

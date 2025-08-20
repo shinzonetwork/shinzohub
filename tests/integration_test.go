@@ -58,8 +58,8 @@ type TestEnvironment struct {
 	DefraDBURL         string
 	RegistrarURL       string
 	SourceHubURL       string
-	ShinzohubACPClient sourcehub.AcpClient
-	ValidatorACPClient sourcehub.AcpClient
+	ShinzohubACPClient sourcehub.ShinzoAcpClient
+	ValidatorACPClient sourcehub.ShinzoAcpClient
 	Validator          validators.Validator
 	// Add a map to store real DIDs for each test user
 	RealDIDs map[string]string
@@ -159,7 +159,7 @@ func TestAccessControl(t *testing.T) {
 	// Fund the test client signer with tokens BEFORE testing functionality
 	// This is necessary because the ACP client needs tokens to perform operations
 	t.Logf("Funding test client signer with tokens...")
-	if acpGoClient, ok := env.ShinzohubACPClient.(*sourcehub.AcpGoClient); ok {
+	if acpGoClient, ok := env.ShinzohubACPClient.(*sourcehub.ShinzoAcpGoClient); ok {
 		accountAddr := acpGoClient.GetSignerAccountAddress()
 		t.Logf("Signer account address: %s", accountAddr)
 		if err := fundTestClientSigner(accountAddr); err != nil {
@@ -297,7 +297,7 @@ func setupGroupGuestRelationships(client *http.Client, env *TestEnvironment, use
 	}
 
 	if user.ShinzoteamMembership == Guest {
-		client, ok := env.ShinzohubACPClient.(*sourcehub.AcpGoClient)
+		client, ok := env.ShinzohubACPClient.(*sourcehub.ShinzoAcpGoClient)
 		if !ok {
 			return fmt.Errorf("Encountered error adding %s to shinzoteam group as guest: no AcpGoClient in test environment", username)
 		}
@@ -362,7 +362,7 @@ func setupGroupAdminRelationships(env *TestEnvironment, username string, user *T
 }
 
 func setGroupAdminRelationship(env *TestEnvironment, username string, user *TestUser, group string) error {
-	client, ok := env.ValidatorACPClient.(*sourcehub.AcpGoClient)
+	client, ok := env.ValidatorACPClient.(*sourcehub.ShinzoAcpGoClient)
 	if !ok {
 		return fmt.Errorf("Encountered error adding %s to %s group as admin: no AcpGoClient in test environment", username, group)
 	}
@@ -424,6 +424,13 @@ func (env *TestEnvironment) resolveDID(aliasDID string) string {
 		return realDID
 	}
 	return aliasDID
+}
+
+func (env *TestEnvironment) getSigner(aliasDID string) crypto.Signer {
+	if signer, exists := env.Signers[aliasDID]; exists {
+		return signer
+	}
+	return nil
 }
 
 // getRealDID returns the real DID for a given username
@@ -555,7 +562,11 @@ func runTestCase(t *testing.T, env *TestEnvironment, tc TestCase) {
 	// Attempt the action with the real DID
 	var result bool
 	if strings.HasPrefix(tc.Action, "_can_manage_") {
-		result = attemptManage(env, realUserDID, tc.Resource, tc.Action)
+		userSigner := env.getSigner(tc.UserDID)
+		if userSigner == nil {
+			t.Errorf("No crypto.Signer found for %s", tc.UserDID)
+		}
+		result = attemptManage(env, realUserDID, tc.Resource, tc.Action, userSigner)
 	} else {
 		result = attemptAction(env, realUserDID, tc.Resource, tc.Action)
 	}
@@ -613,7 +624,7 @@ func parseResource(resource string) (resourceType, resourceName string, err erro
 	return resourceType, resourceName, nil
 }
 
-func attemptManage(env *TestEnvironment, userDID, resource, action string) bool {
+func attemptManage(env *TestEnvironment, userDID, resource, action string, userSigner crypto.Signer) bool {
 	resourceType, resourceName, err := parseResource(resource)
 	if err != nil {
 		fmt.Printf("Encountered error attempting action %s by %s on %s: %v", action, userDID, resource, err)
@@ -639,8 +650,9 @@ func attemptManage(env *TestEnvironment, userDID, resource, action string) bool 
 	action = strings.TrimPrefix(action, "_can_manage_")
 
 	validatorDid := env.ValidatorACPClient.GetSignerAddress()
-	env.ValidatorACPClient.SetDid(userDID) // Temporarily set the actor did to be the user did so we see if they have permissions to manage the given relation
-	defer env.ValidatorACPClient.SetDid(validatorDid)
+	validatorSigner := env.ValidatorACPClient.GetSigner()
+	env.ValidatorACPClient.SetActor(userDID, userSigner) // Temporarily set the actor to be the user so we see if they have permissions to manage the given relation
+	defer env.ValidatorACPClient.SetActor(validatorDid, validatorSigner)
 	randomDid, _, err := did.ProduceDID()
 	if err != nil {
 		fmt.Printf("Encountered error attempting action %s by %s on %s: Unable to generate random did: %v", action, userDID, resource, err)

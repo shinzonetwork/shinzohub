@@ -193,8 +193,7 @@ Delegations {
   !did:user:duncan > group:shinzoteam#admin
   !did:user:duncan > group:shinzoteam#owner
   did:user:addo > group:shinzoteam#guest
-  did:user:addo > group:shinzoteam#admin
-  did:user:addo > group:shinzoteam#owner 
+  !did:user:addo > group:shinzoteam#admin
 
   // Shinzo team file administration 
   !did:user:addo > primitive:blocks#syncer

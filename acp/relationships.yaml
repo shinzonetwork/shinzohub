@@ -27,7 +27,7 @@ view:datafeedB#subscriber@did:user:subscriberToB
 view:datafeedB#parent@view:datafeedA
 
 group:shinzoteam#owner@did:user:sourcehub 
-group:shinzoteam#owner@did:user:addo 
+group:shinzoteam#admin@did:user:addo 
 group:shinzoteam#admin@did:user:duncan
 group:shinzoteam#admin@did:user:shinzohub
 group:shinzoteam#guest@did:user:quinn

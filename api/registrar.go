@@ -8,7 +8,7 @@ import (
 
 type ShinzoRegistrar struct {
 	Validator validators.Validator
-	Acp       sourcehub.AcpClient
+	Acp       sourcehub.ShinzoAcpClient
 }
 
 const IndexerGroup string = "Indexer"

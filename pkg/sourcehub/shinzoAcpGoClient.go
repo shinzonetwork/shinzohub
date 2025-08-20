@@ -16,7 +16,7 @@ import (
 	acptypes "github.com/sourcenetwork/sourcehub/x/acp/types"
 )
 
-type AcpGoClient struct {
+type ShinzoAcpGoClient struct {
 	acp                *sdk.Client
 	transactionBuilder *sdk.TxBuilder
 	signer             sdk.TxSigner
@@ -60,7 +60,7 @@ func sendAndConfirmTx(ctx context.Context, acp *sdk.Client, txBuilder *sdk.TxBui
 	return nil
 }
 
-func (client *AcpGoClient) executePolicyCommand(ctx context.Context, cmds []*acptypes.PolicyCmd, decorateError func(error) error) error {
+func (client *ShinzoAcpGoClient) executePolicyCommand(ctx context.Context, cmds []*acptypes.PolicyCmd, decorateError func(error) error) error {
 	if len(cmds) == 0 {
 		return decorateError(fmt.Errorf("no policy commands provided"))
 	}
@@ -97,8 +97,8 @@ func (client *AcpGoClient) executePolicyCommand(ctx context.Context, cmds []*acp
 	return sendAndConfirmTx(ctx, client.acp, client.transactionBuilder, client.signer, &msgSet, decorateError)
 }
 
-func newAcpGoClient(acp *sdk.Client, txBuilder *sdk.TxBuilder, signer sdk.TxSigner, acpSigner crypto.Signer, acpDID string, policyID string) (*AcpGoClient, error) {
-	return &AcpGoClient{
+func newAcpGoClient(acp *sdk.Client, txBuilder *sdk.TxBuilder, signer sdk.TxSigner, acpSigner crypto.Signer, acpDID string, policyID string) (*ShinzoAcpGoClient, error) {
+	return &ShinzoAcpGoClient{
 		acp:                acp,
 		transactionBuilder: txBuilder,
 		signer:             signer,
@@ -108,7 +108,7 @@ func newAcpGoClient(acp *sdk.Client, txBuilder *sdk.TxBuilder, signer sdk.TxSign
 	}, nil
 }
 
-func CreateAcpGoClient(chainId string) (AcpClient, error) {
+func CreateAcpGoClient(chainId string) (ShinzoAcpClient, error) {
 	signer, err := NewApiSignerFromEnv()
 	if err != nil {
 		return nil, fmt.Errorf("Failed to load API signer: %v", err)
@@ -117,7 +117,7 @@ func CreateAcpGoClient(chainId string) (AcpClient, error) {
 	return createAcpGoClient(chainId, signer)
 }
 
-func createAcpGoClient(chainId string, signer sdk.TxSigner) (AcpClient, error) {
+func createAcpGoClient(chainId string, signer sdk.TxSigner) (ShinzoAcpClient, error) {
 	acpClient, err := sdk.NewClient()
 	if err != nil {
 		return nil, fmt.Errorf("Failed to create ACP SDK client: %v", err)
@@ -148,7 +148,7 @@ func createAcpGoClient(chainId string, signer sdk.TxSigner) (AcpClient, error) {
 	return acpGoClient, nil
 }
 
-func CreateAcpGoClientWithValidatorSender(chainId string) (AcpClient, error) {
+func CreateAcpGoClientWithValidatorSender(chainId string) (ShinzoAcpClient, error) {
 	signer, err := getValidatorSigner()
 	if err != nil {
 		return nil, fmt.Errorf("Failed to load API signer: %v", err)
@@ -178,7 +178,7 @@ func getValidatorSigner() (sdk.TxSigner, error) {
 	return validatorSigner, nil
 }
 
-func (client *AcpGoClient) AddToGroup(ctx context.Context, groupName string, did string) error {
+func (client *ShinzoAcpGoClient) AddToGroup(ctx context.Context, groupName string, did string) error {
 	rel := coretypes.NewActorRelationship("group", groupName, "guest", did)
 	cmd := acptypes.NewSetRelationshipCmd(rel)
 
@@ -187,7 +187,7 @@ func (client *AcpGoClient) AddToGroup(ctx context.Context, groupName string, did
 	})
 }
 
-func (client *AcpGoClient) MakeGroupAdmin(ctx context.Context, groupName string, did string) error {
+func (client *ShinzoAcpGoClient) MakeGroupAdmin(ctx context.Context, groupName string, did string) error {
 	rel := coretypes.NewActorRelationship("group", groupName, "admin", did)
 	cmd := acptypes.NewSetRelationshipCmd(rel)
 
@@ -196,7 +196,7 @@ func (client *AcpGoClient) MakeGroupAdmin(ctx context.Context, groupName string,
 	})
 }
 
-func (client *AcpGoClient) RemoveFromGroup(ctx context.Context, groupName string, did string) error {
+func (client *ShinzoAcpGoClient) RemoveFromGroup(ctx context.Context, groupName string, did string) error {
 	rel := coretypes.NewActorRelationship("group", groupName, "guest", did)
 	cmd := acptypes.NewDeleteRelationshipCmd(rel)
 
@@ -205,7 +205,7 @@ func (client *AcpGoClient) RemoveFromGroup(ctx context.Context, groupName string
 	})
 }
 
-func (client *AcpGoClient) BlockFromGroup(ctx context.Context, groupName string, did string) error {
+func (client *ShinzoAcpGoClient) BlockFromGroup(ctx context.Context, groupName string, did string) error {
 	rel := coretypes.NewActorRelationship("group", groupName, "blocked", did)
 	cmd := acptypes.NewSetRelationshipCmd(rel)
 
@@ -214,7 +214,7 @@ func (client *AcpGoClient) BlockFromGroup(ctx context.Context, groupName string,
 	})
 }
 
-func (client *AcpGoClient) GiveQueryAccess(ctx context.Context, documentId string, did string) error {
+func (client *ShinzoAcpGoClient) GiveQueryAccess(ctx context.Context, documentId string, did string) error {
 	rel := coretypes.NewActorRelationship("file", documentId, "subscriber", did)
 	cmd := acptypes.NewSetRelationshipCmd(rel)
 
@@ -223,7 +223,7 @@ func (client *AcpGoClient) GiveQueryAccess(ctx context.Context, documentId strin
 	})
 }
 
-func (client *AcpGoClient) BanUserFromResource(ctx context.Context, documentId string, did string) error {
+func (client *ShinzoAcpGoClient) BanUserFromResource(ctx context.Context, documentId string, did string) error {
 	rel := coretypes.NewActorRelationship("file", documentId, "banned", did)
 	cmd := acptypes.NewSetRelationshipCmd(rel)
 
@@ -232,7 +232,7 @@ func (client *AcpGoClient) BanUserFromResource(ctx context.Context, documentId s
 	})
 }
 
-func (client *AcpGoClient) CreateDataFeed(ctx context.Context, documentId string, creatorDid string, parentDocumentIds ...string) error {
+func (client *ShinzoAcpGoClient) CreateDataFeed(ctx context.Context, documentId string, creatorDid string, parentDocumentIds ...string) error {
 	// Create the main creator relationship command
 	creatorRel := coretypes.NewActorRelationship("file", documentId, "creator", creatorDid)
 	creatorCmd := acptypes.NewSetRelationshipCmd(creatorRel)
@@ -254,7 +254,7 @@ func (client *AcpGoClient) CreateDataFeed(ctx context.Context, documentId string
 	})
 }
 
-func (client *AcpGoClient) VerifyAccessRequest(ctx context.Context, policyID, resourceName, objectID, permission, actorDID string) (bool, error) {
+func (client *ShinzoAcpGoClient) VerifyAccessRequest(ctx context.Context, policyID, resourceName, objectID, permission, actorDID string) (bool, error) {
 	// Create the access request using SourceHub types
 	accessRequest := &acptypes.QueryVerifyAccessRequestRequest{
 		PolicyId: policyID,
@@ -280,7 +280,7 @@ func (client *AcpGoClient) VerifyAccessRequest(ctx context.Context, policyID, re
 	return result.Valid, nil
 }
 
-func (client *AcpGoClient) IsObjectRegistered(ctx context.Context, resourceName, objectID string) (bool, error) {
+func (client *ShinzoAcpGoClient) IsObjectRegistered(ctx context.Context, resourceName, objectID string) (bool, error) {
 	// Create the object owner query request
 	queryRequest := &acptypes.QueryObjectOwnerRequest{
 		PolicyId: client.policyId,
@@ -307,7 +307,7 @@ func (client *AcpGoClient) IsObjectRegistered(ctx context.Context, resourceName,
 	return result.IsRegistered, nil
 }
 
-func (client *AcpGoClient) RegisterObject(ctx context.Context, resourceName, objectID string) error {
+func (client *ShinzoAcpGoClient) RegisterObject(ctx context.Context, resourceName, objectID string) error {
 	// Check if the object is already registered
 	isRegistered, err := client.IsObjectRegistered(ctx, resourceName, objectID)
 	if err != nil {
@@ -327,7 +327,7 @@ func (client *AcpGoClient) RegisterObject(ctx context.Context, resourceName, obj
 	})
 }
 
-func (client *AcpGoClient) SetRelationship(ctx context.Context, resourceName, objectID, relation, subjectDID string) error {
+func (client *ShinzoAcpGoClient) SetRelationship(ctx context.Context, resourceName, objectID, relation, subjectDID string) error {
 	// Create a set relationship command
 	rel := coretypes.NewActorRelationship(resourceName, objectID, relation, subjectDID)
 	cmd := acptypes.NewSetRelationshipCmd(rel)
@@ -337,7 +337,7 @@ func (client *AcpGoClient) SetRelationship(ctx context.Context, resourceName, ob
 	})
 }
 
-func (client *AcpGoClient) SetGroupRelationship(ctx context.Context, resourceName, objectID, relation, groupName, groupRelation string) error {
+func (client *ShinzoAcpGoClient) SetGroupRelationship(ctx context.Context, resourceName, objectID, relation, groupName, groupRelation string) error {
 	rel := coretypes.NewActorSetRelationship(resourceName, objectID, relation, "group", groupName, groupRelation)
 	cmd := acptypes.NewSetRelationshipCmd(rel)
 
@@ -346,7 +346,7 @@ func (client *AcpGoClient) SetGroupRelationship(ctx context.Context, resourceNam
 	})
 }
 
-func (client *AcpGoClient) SetParentRelationship(ctx context.Context, resourceName, objectID, parentResourceName, parentObjectID string) error {
+func (client *ShinzoAcpGoClient) SetParentRelationship(ctx context.Context, resourceName, objectID, parentResourceName, parentObjectID string) error {
 	rel := coretypes.NewRelationship(resourceName, objectID, "parent", parentResourceName, parentObjectID)
 	cmd := acptypes.NewSetRelationshipCmd(rel)
 
@@ -355,20 +355,25 @@ func (client *AcpGoClient) SetParentRelationship(ctx context.Context, resourceNa
 	})
 }
 
-func (client *AcpGoClient) GetSignerAddress() string {
+func (client *ShinzoAcpGoClient) GetSignerAddress() string {
 	// Return the ACP DID directly
 	return client.acpDID
 }
 
 // GetSignerAccountAddress returns the Cosmos account address of the signer
-func (client *AcpGoClient) GetSignerAccountAddress() string {
+func (client *ShinzoAcpGoClient) GetSignerAccountAddress() string {
 	return client.signer.GetAccAddress()
 }
 
-func (client *AcpGoClient) GetSignerDid() (string, error) {
+func (client *ShinzoAcpGoClient) GetSignerDid() (string, error) {
 	return client.acpDID, nil
 }
 
-func (client *AcpGoClient) SetDid(did string) {
+func (client *ShinzoAcpGoClient) GetSigner() crypto.Signer {
+	return client.acpSigner
+}
+
+func (client *ShinzoAcpGoClient) SetActor(did string, signer crypto.Signer) {
 	client.acpDID = did
+	client.acpSigner = signer
 }
