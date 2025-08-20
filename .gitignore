@@ -12,6 +12,7 @@ release/
 logs/
 .shinzohub/
 /bin
+.env
 
 # MacOS
 .DS_STORE

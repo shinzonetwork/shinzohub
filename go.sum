@@ -1233,8 +1233,6 @@ github.com/gin-contrib/sse v0.1.0 h1:Y/yl/+YNO8GZSjAhjMsSuLt29uWRFHdHYUb5lYOV9qE
 github.com/gin-contrib/sse v0.1.0/go.mod h1:RHrZQHXnP2xjPF+u1gW/2HnVO7nvIa9PG3Gm+fLHvGI=
 github.com/gin-gonic/gin v1.9.1 h1:4idEAncQnU5cB7BeOkPtxjfCSye0AAm1R0RVIqJ+Jmg=
 github.com/gin-gonic/gin v1.9.1/go.mod h1:hPrL7YrpYKXt5YId3A/Tnip5kqbEAP+KLuI3SUcPTeU=
-github.com/go-chi/chi/v5 v5.2.1 h1:KOIHODQj58PmL80G2Eak4WdvUzjSJSm0vG72crDCqb8=
-github.com/go-chi/chi/v5 v5.2.1/go.mod h1:L2yAIGWB3H+phAw1NxKwWM+7eUH/lU8pOMm5hHcoops=
 github.com/go-chi/chi/v5 v5.2.2 h1:CMwsvRVTbXVytCk1Wd72Zy1LAsAh9GxMmSNWLHCG618=
 github.com/go-chi/chi/v5 v5.2.2/go.mod h1:L2yAIGWB3H+phAw1NxKwWM+7eUH/lU8pOMm5hHcoops=
 github.com/go-critic/go-critic v0.6.3/go.mod h1:c6b3ZP1MQ7o6lPR7Rv3lEf7pYQUmAcx8ABHgdZCQt/k=
@@ -1742,6 +1740,8 @@ github.com/jmespath/go-jmespath/internal/testify v1.5.1/go.mod h1:L3OGu8Wl2/fWfC
 github.com/jmhodges/levigo v1.0.0 h1:q5EC36kV79HWeTBWsod3mG11EgStG3qArTKcvlksN1U=
 github.com/jmhodges/levigo v1.0.0/go.mod h1:Q6Qx+uH3RAqyK4rFQroq9RL7mdkABMcfhEI+nNuzMJQ=
 github.com/jmoiron/sqlx v1.2.0/go.mod h1:1FEQNm3xlJgrMD+FBdI9+xvCksHtbpVBBw5dYhBSsks=
+github.com/joho/godotenv v1.5.1 h1:7eLL/+HRGLY0ldzfGMeQkb7vMd0as4CfYvUVzLqw0N0=
+github.com/joho/godotenv v1.5.1/go.mod h1:f4LDr5Voq0i2e/R5DDNOoa2zzDfwtkZa6DnEwAbqwq4=
 github.com/jonboulle/clockwork v0.1.0/go.mod h1:Ii8DK3G1RaLaWxj9trq07+26W01tbo22gdxWY5EU2bo=
 github.com/jonboulle/clockwork v0.2.0/go.mod h1:Pkfl5aHPm1nk2H9h0bjmnJD/BcgbGXUBGnn1kMkgxc8=
 github.com/josharian/txtarfs v0.0.0-20210218200122-0702f000015a/go.mod h1:izVPOvVRsHiKkeGCT6tYBNWyDVuzj9wAaBb5R9qamfw=
@@ -2345,8 +2345,6 @@ github.com/sourcegraph/conc v0.3.0/go.mod h1:Sdozi7LEKbFPqYX2/J+iBAM6HpqSLTASQIK
 github.com/sourcegraph/go-diff v0.6.1/go.mod h1:iBszgVvyxdc8SFZ7gm69go2KDdt3ag071iBaWPF6cjs=
 github.com/sourcegraph/go-diff v0.7.0 h1:9uLlrd5T46OXs5qpp8L/MTltk0zikUGi0sNNyCpA8G0=
 github.com/sourcegraph/go-diff v0.7.0/go.mod h1:iBszgVvyxdc8SFZ7gm69go2KDdt3ag071iBaWPF6cjs=
-github.com/sourcenetwork/acp_core v0.5.2 h1:H3R4aGuwLKmSTKBopHj5mRRf60g+fblTFCRORSnL1dM=
-github.com/sourcenetwork/acp_core v0.5.2/go.mod h1:w6zmiGx7z7wRmlu9+ugBPgdoTEF2sLLsWb6Xy2qhWnE=
 github.com/sourcenetwork/acp_core v0.5.4 h1:uRLQvtic6gX9rkPkNZJn3zW7S7s978hdFlyeaa0HLMc=
 github.com/sourcenetwork/acp_core v0.5.4/go.mod h1:4qPncBFNPVAFhZE4vMTypudy5i/YgXPoBKeSglJwdfM=
 github.com/sourcenetwork/corekv v0.0.0-20250122161438-c4cec0f30dbe h1:xML1pxD5zf14MAqjCkW584ri6yjp6go+ud83wpMzWtM=
@@ -2355,12 +2353,8 @@ github.com/sourcenetwork/raccoondb v0.2.1-0.20240722161350-d4a78b691ec8 h1:d0jNo
 github.com/sourcenetwork/raccoondb v0.2.1-0.20240722161350-d4a78b691ec8/go.mod h1:/WJdZWouiY199DypsN0xaP5PF0zy3rka3FxH5Y8o9Bc=
 github.com/sourcenetwork/raccoondb/v2 v2.0.0 h1:Gb0SjsZUbrbkHCEg7PyyNs0+2IzPxjE/BkEQnlu1nfA=
 github.com/sourcenetwork/raccoondb/v2 v2.0.0/go.mod h1:tPKAWHUgYcSoXNMt01iWJ+Y51AQYc2knY93IjmmbejY=
-github.com/sourcenetwork/sourcehub v0.3.2 h1:4F3Ajvj+6FB5Te1PWs0zBj0pdgIWDLV6XjnJ3HX04SE=
-github.com/sourcenetwork/sourcehub v0.3.2/go.mod h1:QcXNXLj4GyxwDp2mICtPakHxf/Gk6wXM1HvpY5mY0co=
 github.com/sourcenetwork/sourcehub v0.3.3-0.20250819210502-4fcb0fbc55ca h1:xi7I7bkB6J9scVtM4OBRKS6Cjj/+7Z7DS3qUTerRuqU=
 github.com/sourcenetwork/sourcehub v0.3.3-0.20250819210502-4fcb0fbc55ca/go.mod h1:t+sJbWca01RV1YNmh0APN3/1RZW7rbZ484nMRcqLMkY=
-github.com/sourcenetwork/zanzi v0.3.1-0.20250326181925-74d3e97fb950 h1:3IrUxIt7IyrzWUR3Pq1gNy9qHAvNutkfdIQGfVZcMKQ=
-github.com/sourcenetwork/zanzi v0.3.1-0.20250326181925-74d3e97fb950/go.mod h1:XzPxq660MYb5q5EAHvvfqkyZtfJ8jzdmn/5OW5ha89A=
 github.com/sourcenetwork/zanzi v0.3.1-0.20250807201848-ff8322455b4b h1:H0tLqqXqXr7nRDIeYUXoFVsN3CYXqr+oGJ8ltDAXCAk=
 github.com/sourcenetwork/zanzi v0.3.1-0.20250807201848-ff8322455b4b/go.mod h1:XzPxq660MYb5q5EAHvvfqkyZtfJ8jzdmn/5OW5ha89A=
 github.com/spaolacci/murmur3 v0.0.0-20180118202830-f09979ecbc72/go.mod h1:JwIasOWyU6f++ZhiEuf87xNszmSA2myDM2Kzu9HwQUA=

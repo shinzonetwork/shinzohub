@@ -8,10 +8,14 @@ import (
 	"shinzohub/pkg/sourcehub"
 	"shinzohub/pkg/utils"
 	"shinzohub/pkg/validators"
+
+	"github.com/joho/godotenv"
 	// Import the SourceHub DID package
 )
 
 func main() {
+	godotenv.Load()
+
 	registrar := buildRegistrarHandler()
 
 	type RegistrarRequest struct {

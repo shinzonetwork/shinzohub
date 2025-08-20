@@ -36,6 +36,7 @@ require (
 	github.com/golang/protobuf v1.5.4
 	github.com/gorilla/mux v1.8.1
 	github.com/grpc-ecosystem/grpc-gateway v1.16.0
+	github.com/joho/godotenv v1.5.1
 	github.com/sourcenetwork/acp_core v0.5.4
 	github.com/sourcenetwork/sourcehub v0.3.3-0.20250819210502-4fcb0fbc55ca
 	github.com/spf13/cast v1.8.0
@@ -222,7 +223,6 @@ require (
 	github.com/gogo/protobuf v1.3.2 // indirect
 	github.com/golang/glog v1.2.4 // indirect
 	github.com/golang/groupcache v0.0.0-20241129210726-2c02b8208cf8 // indirect
-	github.com/golang/mock v1.6.0 // indirect
 	github.com/golang/snappy v0.0.5-0.20220116011046-fa5810519dcb // indirect
 	github.com/golangci/dupl v0.0.0-20250308024227-f665c8d69b32 // indirect
 	github.com/golangci/go-printf-func-name v0.1.0 // indirect

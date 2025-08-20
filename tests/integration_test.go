@@ -15,6 +15,8 @@ import (
 
 	"shinzohub/pkg/sourcehub"
 	"shinzohub/pkg/validators"
+
+	"github.com/joho/godotenv"
 )
 
 const pathToTests = "../acp/tests.yaml"
@@ -73,6 +75,16 @@ type TestCase struct {
 	Resource       string
 	Action         string
 	ExpectedResult bool // true = should succeed, false = should fail
+}
+
+func init() {
+	fmt.Println("Loading .env file...")
+	err := godotenv.Load("../.env")
+	if err != nil {
+		fmt.Printf("Error loading .env: %v\n", err)
+	} else {
+		fmt.Println("Successfully loaded .env file")
+	}
 }
 
 func setupTestEnvironment(t *testing.T) *TestEnvironment {
