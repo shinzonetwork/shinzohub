@@ -18,4 +18,5 @@ type AcpClient interface {
 	SetParentRelationship(ctx context.Context, resourceName, objectID, parentResourceName, parentObjectID string) error
 	GetSignerAddress() string
 	GetSignerAccountAddress() string
+	SetDid(did string)
 }

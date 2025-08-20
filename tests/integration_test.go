@@ -17,6 +17,7 @@ import (
 	"shinzohub/pkg/validators"
 
 	"github.com/joho/godotenv"
+	"github.com/sourcenetwork/acp_core/pkg/did"
 )
 
 const pathToTests = "../acp/tests.yaml"
@@ -552,7 +553,12 @@ func runTestCase(t *testing.T, env *TestEnvironment, tc TestCase) {
 	realUserDID := env.resolveDID(tc.UserDID)
 
 	// Attempt the action with the real DID
-	result := attemptAction(env, realUserDID, tc.Resource, tc.Action)
+	var result bool
+	if strings.HasPrefix(tc.Action, "_can_manage_") {
+		result = attemptManage(env, realUserDID, tc.Resource, tc.Action)
+	} else {
+		result = attemptAction(env, realUserDID, tc.Resource, tc.Action)
+	}
 
 	// Verify the result
 	if result != tc.ExpectedResult {
@@ -562,19 +568,11 @@ func runTestCase(t *testing.T, env *TestEnvironment, tc TestCase) {
 }
 
 func attemptAction(env *TestEnvironment, userDID, resource, action string) bool {
-	// Use the SourceHub SDK to check if the user has permission to perform the action on the resource
-	// This is the proper way to test ACP enforcement by actually querying the ACP system
-
-	// Parse the resource to extract the resource type and ID
-	// Format: "primitive:blocks", "view:datafeedA", etc.
-	parts := strings.Split(resource, ":")
-	if len(parts) != 2 {
-		fmt.Printf("Invalid resource format: %s, expected format like 'primitive:blocks'\n", resource)
+	resourceType, resourceName, err := parseResource(resource)
+	if err != nil {
+		fmt.Printf("Encountered error attempting action %s by %s on %s: %v", action, userDID, resource, err)
 		return false
 	}
-
-	resourceType := parts[0] // "primitive" or "view"
-	resourceName := parts[1] // "blocks", "datafeedA", etc.
 
 	// Get the policy ID from environment
 	policyID := env.PolicyID
@@ -601,4 +599,56 @@ func attemptAction(env *TestEnvironment, userDID, resource, action string) bool 
 
 	fmt.Printf("Permission check result: %t\n", hasPermission)
 	return hasPermission
+}
+
+func parseResource(resource string) (resourceType, resourceName string, err error) {
+	parts := strings.Split(resource, ":")
+	if len(parts) != 2 {
+		return "", "", fmt.Errorf("Invalid resource format: %s, expected format like 'primitive:blocks'\n", resource)
+	}
+
+	resourceType = parts[0] // "primitive" or "view"
+	resourceName = parts[1] // "blocks", "datafeedA", etc.
+
+	return resourceType, resourceName, nil
+}
+
+func attemptManage(env *TestEnvironment, userDID, resource, action string) bool {
+	resourceType, resourceName, err := parseResource(resource)
+	if err != nil {
+		fmt.Printf("Encountered error attempting action %s by %s on %s: %v", action, userDID, resource, err)
+		return false
+	}
+
+	// Get the policy ID from environment
+	policyID := env.PolicyID
+	if policyID == "" {
+		fmt.Printf("No policy ID available for permission checking\n")
+		return false
+	}
+
+	// Check if we have an ACP client available
+	if env.ValidatorACPClient == nil {
+		fmt.Printf("No ACP client available for permission checking - SourceHub ACP client not created\n")
+		return false
+	}
+
+	fmt.Printf("Checking permission: user %s wants to %s on %s (resource: %s, type: %s)\n",
+		userDID, action, resource, resourceName, resourceType)
+
+	action = strings.TrimPrefix(action, "_can_manage_")
+
+	validatorDid := env.ValidatorACPClient.GetSignerAddress()
+	env.ValidatorACPClient.SetDid(userDID) // Temporarily set the actor did to be the user did so we see if they have permissions to manage the given relation
+	defer env.ValidatorACPClient.SetDid(validatorDid)
+	randomDid, _, err := did.ProduceDID()
+	if err != nil {
+		fmt.Printf("Encountered error attempting action %s by %s on %s: Unable to generate random did: %v", action, userDID, resource, err)
+		return false
+	}
+	err = env.ValidatorACPClient.SetRelationship(context.Background(), resourceType, resourceName, action, randomDid)
+	if err != nil {
+		return false
+	}
+	return true
 }

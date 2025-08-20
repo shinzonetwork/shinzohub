@@ -368,3 +368,7 @@ func (client *AcpGoClient) GetSignerAccountAddress() string {
 func (client *AcpGoClient) GetSignerDid() (string, error) {
 	return client.acpDID, nil
 }
+
+func (client *AcpGoClient) SetDid(did string) {
+	client.acpDID = did
+}

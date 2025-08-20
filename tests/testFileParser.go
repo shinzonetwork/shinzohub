@@ -59,9 +59,6 @@ func parseTestCasesFromFile(path string) ([]TestCase, error) {
 				testCases = append(testCases, tc)
 			}
 		} else if section == "deleg" {
-			// Todo add these back in
-			continue
-
 			// Example: !did:user:shinzohub > view:datafeedA#admin
 			// or: did:user:shinzohub > view:datafeedB#reader
 			m := delegRegex.FindStringSubmatch(line)
