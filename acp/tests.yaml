@@ -1,4 +1,4 @@
-// These are not real tests! They will not run!
+// These are real tests! They will be parsed and then ran by our integration test suite.
 // These have been exported from the playground. They serve as a useful visualization of some of the guarantees around the Access Control Policies in Shinzo
 // http://acp-playground.stage.infra.source.network/
 

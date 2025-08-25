@@ -120,14 +120,9 @@ integration-test:
 test-acp:
 	@echo "===> Running ACP integration tests (services must be running)..."
 	@if [ ! -f ".shinzohub/ready" ]; then \
-		echo "ERROR: Services not ready. Run 'make bootstrap SOURCEHUB_PATH=../path/to/sourcehub' first."; \
+		echo "ERROR: Services not ready. Run 'make bootstrap' first."; \
 		exit 1; \
 	fi
-	@go test -v ./tests -run TestAccessControl
-
-# Quick test run with verbose output
-test-acp-v:
-	@echo "===> Running ACP integration tests with verbose output..."
 	@go test -v ./tests -run TestAccessControl
 
 stop:
