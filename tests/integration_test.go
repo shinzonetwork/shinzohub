@@ -98,10 +98,6 @@ func setupTestEnvironment(t *testing.T) *TestEnvironment {
 	// Generate real DIDs for each test user
 	realDIDs, signers := generateRealDidsForTestUsers(t, testUsers)
 
-	t.Log("@@@ Printing all parsed test users:\n")
-	printTestUsers(testUsers)
-	t.Log("@@@ Done printing all parsed test users\n")
-
 	// Get the real policy ID from the .shinzohub/policy_id file (set during bootstrap)
 	policyID := os.Getenv("POLICY_ID")
 	if policyID == "" {
