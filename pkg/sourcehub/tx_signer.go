@@ -19,8 +19,8 @@ type ApiSigner struct {
 	address string
 }
 
-func NewApiSignerFromEnv() (*ApiSigner, error) {
-	hexKey := os.Getenv("SHINZOHUB_PRIVATE_KEY")
+func NewApiSignerFromEnv(environmentVariableKey string) (*ApiSigner, error) {
+	hexKey := os.Getenv(environmentVariableKey)
 	if hexKey == "" {
 		return nil, ErrMissingApiSignerEnv
 	}

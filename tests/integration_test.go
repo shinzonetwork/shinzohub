@@ -121,11 +121,11 @@ func setupTestEnvironment(t *testing.T) *TestEnvironment {
 	os.Setenv("POLICY_ID", policyID)
 
 	// Create test environment
-	acpClient, err := sourcehub.CreateAcpGoClient("sourcehub-dev")
+	acpClient, err := sourcehub.CreateShinzoAcpGoClient("sourcehub-dev")
 	if err != nil {
 		t.Fatalf("Unable to create sourcehub acp client: %v", err)
 	}
-	validatorAcpClient, err := sourcehub.CreateAcpGoClientWithValidatorSender("sourcehub-dev")
+	validatorAcpClient, err := sourcehub.CreateShinzoAcpGoClientWithValidatorSender("sourcehub-dev")
 	if err != nil {
 		t.Fatalf("Unable to create sourcehub acp client: %v", err)
 	}

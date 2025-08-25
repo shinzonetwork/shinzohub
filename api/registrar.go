@@ -88,7 +88,7 @@ func (registrar *ShinzoRegistrar) SubscribeToDataFeed(ctx context.Context, did s
 	return nil
 }
 
-func (registrar *ShinzoRegistrar) BanUserFromResource(ctx context.Context, did string, dataFeedId string) error {
+func (registrar *ShinzoRegistrar) BanUserFromView(ctx context.Context, did string, dataFeedId string) error {
 	err := registrar.Validator.ValidateDid(did)
 	if err != nil {
 		return err
@@ -98,7 +98,7 @@ func (registrar *ShinzoRegistrar) BanUserFromResource(ctx context.Context, did s
 		return err
 	}
 
-	err = registrar.Acp.BanUserFromResource(ctx, dataFeedId, did)
+	err = registrar.Acp.BanUserFromView(ctx, dataFeedId, did)
 	if err != nil {
 		return err
 	}

@@ -70,7 +70,7 @@ func main() {
 	}))
 
 	registrarMux.HandleFunc("/ban-user-from-resource", utils.JSONHandler(func(r *http.Request, req RegistrarRequest) (RegistrarResponse, int, error) {
-		err := registrar.BanUserFromResource(r.Context(), req.DID, req.DataFeedID)
+		err := registrar.BanUserFromView(r.Context(), req.DID, req.DataFeedID)
 		if err != nil {
 			return RegistrarResponse{Success: false, Error: err.Error()}, http.StatusBadRequest, nil
 		}
@@ -95,7 +95,7 @@ func main() {
 }
 
 func buildRegistrarHandler() api.ShinzoRegistrar {
-	acpGoClient, err := sourcehub.CreateAcpGoClient("sourcehub-dev")
+	acpGoClient, err := sourcehub.CreateShinzoAcpGoClient("sourcehub-dev")
 	if err != nil {
 		log.Fatalf("Failed to create ACP Go client: %v", err)
 	}
