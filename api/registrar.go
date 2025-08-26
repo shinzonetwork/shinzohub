@@ -106,7 +106,7 @@ func (registrar *ShinzoRegistrar) BanUserFromView(ctx context.Context, did strin
 	return nil
 }
 
-func (registrar *ShinzoRegistrar) CreateDataFeed(ctx context.Context, did string, dataFeedId string) error {
+func (registrar *ShinzoRegistrar) CreateDataFeed(ctx context.Context, did string, dataFeedId string, parentDocumentIds []string) error {
 	err := registrar.Validator.ValidateDid(did)
 	if err != nil {
 		return err
@@ -116,7 +116,7 @@ func (registrar *ShinzoRegistrar) CreateDataFeed(ctx context.Context, did string
 		return err
 	}
 
-	err = registrar.Acp.CreateDataFeed(ctx, dataFeedId, did)
+	err = registrar.Acp.CreateDataFeed(ctx, dataFeedId, did, parentDocumentIds...)
 	if err != nil {
 		return err
 	}

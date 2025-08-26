@@ -4,6 +4,7 @@
 
 primitive:blocks#owner@did:user:sourcehub
 primitive:blocks#admin@did:user:shinzohub
+primitive:blocks#admin@group:shinzoteam#administrator
 primitive:blocks#writer@group:indexer#member
 primitive:blocks#syncer@group:host#member
 primitive:blocks#syncer@did:user:randomUser

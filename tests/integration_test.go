@@ -13,6 +13,7 @@ import (
 	"testing"
 	"time"
 
+	"shinzohub/pkg/registrar"
 	"shinzohub/pkg/sourcehub"
 	"shinzohub/pkg/validators"
 
@@ -59,7 +60,7 @@ type TestEnvironment struct {
 	RegistrarURL       string
 	SourceHubURL       string
 	ShinzohubACPClient sourcehub.ShinzoAcpClient
-	ValidatorACPClient sourcehub.ShinzoAcpClient
+	ValidatorACPClient sourcehub.AcpClient
 	Validator          validators.Validator
 	// Add a map to store real DIDs for each test user
 	RealDIDs map[string]string
@@ -119,14 +120,12 @@ func setupTestEnvironment(t *testing.T) *TestEnvironment {
 	// Create test environment
 	acpClient, err := sourcehub.CreateShinzoAcpGoClient("sourcehub-dev")
 	if err != nil {
-		t.Fatalf("Unable to create sourcehub acp client: %v", err)
+		t.Fatalf("Unable to create shinzohub acp client: %v", err)
 	}
-	validatorAcpClient, err := sourcehub.CreateShinzoAcpGoClientWithValidatorSender("sourcehub-dev")
+	validatorAcpClient, err := sourcehub.CreateAcpGoClientFromKeychain("sourcehub-dev", "validator")
 	if err != nil {
 		t.Fatalf("Unable to create sourcehub acp client: %v", err)
 	}
-	t.Logf("ShinzoHub client address: %s | %s\n", acpClient.GetSignerAddress(), acpClient.GetSignerAccountAddress())
-	t.Logf("Validator client address: %s | %s\n", validatorAcpClient.GetSignerAddress(), validatorAcpClient.GetSignerAccountAddress())
 
 	env := &TestEnvironment{
 		Users:              testUsers,
@@ -148,6 +147,9 @@ func setupTestEnvironment(t *testing.T) *TestEnvironment {
 func TestAccessControl(t *testing.T) {
 	env := setupTestEnvironment(t)
 
+	registrarService := startRegistrarService(t, env.ShinzohubACPClient)
+	defer registrarService.Stop()
+
 	if err := waitForServices(env); err != nil {
 		t.Fatalf("Services not ready: %v", err)
 	}
@@ -156,9 +158,7 @@ func TestAccessControl(t *testing.T) {
 	// This is necessary because the ACP client needs tokens to perform operations
 	t.Logf("Funding test client signer with tokens...")
 	if acpGoClient, ok := env.ShinzohubACPClient.(*sourcehub.ShinzoAcpGoClient); ok {
-		accountAddr := acpGoClient.GetSignerAccountAddress()
-		t.Logf("Signer account address: %s", accountAddr)
-		if err := fundTestClientSigner(accountAddr); err != nil {
+		if err := fundTestClientSigner(*acpGoClient); err != nil {
 			t.Fatalf("Failed to fund test client signer: %v", err)
 		} else {
 			t.Logf("✓ Successfully funded test client signer")
@@ -170,7 +170,7 @@ func TestAccessControl(t *testing.T) {
 		t.Fatalf("Failed to create test resources: %v", err)
 	}
 
-	if err := makeShinzohubAdminOfEverything(env, env.ShinzohubACPClient.GetSignerAddress()); err != nil {
+	if err := makeShinzoAdminOfEverything(env, env.ShinzohubACPClient.GetActorDid()); err != nil {
 		t.Fatalf("Failed to make shinzohub admin of everything: %v", err)
 	}
 
@@ -178,7 +178,16 @@ func TestAccessControl(t *testing.T) {
 		t.Fatalf("Failed to setup initial group relationships: %v", err)
 	}
 
-	if err := setupInitialCollectionRelationships(env); err != nil { // Todo implement - this function should be giving group members or dids read/write/sync/ban/creator access to collections using the shinzohub client - note that creator may not work with current policy (I think there is no manages relation for it right now; that may need to be done by sourcehub)
+	parsedRelations, err := parseAcpRelationsFromFile(pathToRelationships)
+	if err != nil {
+		t.Fatalf("Encountered error parsing relations file: %v", err)
+	}
+
+	if err := setupShinzoTeam(env, parsedRelations); err != nil {
+		t.Fatalf("Failed to setup shinzoteam: %v", err)
+	}
+
+	if err := setupInitialCollectionRelationships(env, parsedRelations); err != nil {
 		t.Fatalf("Failed to setup initial collection relationships: %v", err)
 	}
 
@@ -193,6 +202,24 @@ func TestAccessControl(t *testing.T) {
 			runTestCase(t, env, tc)
 		})
 	}
+}
+
+func startRegistrarService(t *testing.T, acpClient sourcehub.ShinzoAcpClient) *registrar.RegistrarService {
+	service := registrar.NewRegistrarService(acpClient)
+
+	go func() {
+		if err := service.Start(":8081"); err != nil && err != http.ErrServerClosed {
+			t.Errorf("Registrar service failed: %v", err)
+		}
+	}()
+
+	time.Sleep(500 * time.Millisecond)
+
+	if err := waitForRegistrar("http://localhost:8081/registrar"); err != nil {
+		t.Fatalf("Registrar service failed to start properly: %v", err)
+	}
+
+	return service
 }
 
 func logRealDids(t *testing.T, env *TestEnvironment) {
@@ -358,11 +385,8 @@ func setupGroupAdminRelationships(env *TestEnvironment, username string, user *T
 }
 
 func setGroupAdminRelationship(env *TestEnvironment, username string, user *TestUser, group string) error {
-	client, ok := env.ValidatorACPClient.(*sourcehub.ShinzoAcpGoClient)
-	if !ok {
-		return fmt.Errorf("Encountered error adding %s to %s group as admin: no AcpGoClient in test environment", username, group)
-	}
-	err := client.MakeGroupAdmin(context.Background(), group, user.DID)
+	client := env.ValidatorACPClient
+	err := client.SetActorRelationship(context.Background(), "group", group, "admin", user.DID)
 	if err != nil {
 		return fmt.Errorf("Encountered error adding %s to %s group as admin: %w", username, group, err)
 	}
@@ -475,7 +499,7 @@ func createTestResources(env *TestEnvironment) error {
 
 	ACPClient := env.ValidatorACPClient
 
-	fmt.Printf("Validator did %s\n", ACPClient.GetSignerAddress())
+	fmt.Printf("Validator did %s\n", ACPClient.GetActor().Did)
 
 	ctx := context.Background()
 
@@ -490,35 +514,63 @@ func createTestResources(env *TestEnvironment) error {
 	return nil
 }
 
-func makeShinzohubAdminOfEverything(env *TestEnvironment, shinzoHubDid string) error {
+func makeShinzoAdminOfEverything(env *TestEnvironment, shinzoHubDid string) error {
 	fmt.Println("Making Shinzohub admin of all test resources...")
 
 	ACPClient := env.ValidatorACPClient
 
-	fmt.Printf("Validator did %s\n", ACPClient.GetSignerAddress())
+	fmt.Printf("Validator did %s\n", ACPClient.GetActor().Did)
 	fmt.Printf("Shinzohub did %s\n", shinzoHubDid)
 
 	ctx := context.Background()
 
 	for _, testResource := range testResources {
 		fmt.Printf("Making shinzohub admin of %s:%s\n", testResource.resourceName, testResource.objectName)
-		if err := ACPClient.SetRelationship(ctx, testResource.resourceName, testResource.objectName, "admin", shinzoHubDid); err != nil {
+		if err := ACPClient.SetActorRelationship(ctx, testResource.resourceName, testResource.objectName, "admin", shinzoHubDid); err != nil {
 			return fmt.Errorf("Failed to make shinzohub admin of %s:%s: %w", testResource.resourceName, testResource.objectName, err)
+		}
+		if testResource.resourceName == "group" && testResource.objectName == "shinzoteam" {
+			continue
+		}
+		fmt.Printf("Making shinzoteam administrators admins of %s:%s\n", testResource.resourceName, testResource.objectName)
+		if err := ACPClient.SetActorSetRelationship(ctx, testResource.resourceName, testResource.objectName, "admin", "group", "shinzoteam", "administrator"); err != nil {
+			return fmt.Errorf("Failed to make shinzoteam administrators admins of %s:%s: %w", testResource.resourceName, testResource.objectName, err)
 		}
 	}
 
-	fmt.Println("✓ Shinzohub is now admin of all test resources!")
+	fmt.Println("✓ Shinzo is now admin of all test resources!")
 	return nil
 }
 
-func setupInitialCollectionRelationships(env *TestEnvironment) error {
-	parsedRelations, err := parseAcpRelationsFromFile(pathToRelationships)
+func setupShinzoTeam(env *TestEnvironment, parsedRelations []ParsedRelation) error {
+	fmt.Println("Setting up shinzoteam...")
+
+	for _, parsedRelation := range parsedRelations {
+		if parsedRelation.Relation.ObjectName == "shinzoteam" && !(strings.Contains(parsedRelation.Relation.Did, "sourcehub") || strings.Contains(parsedRelation.Relation.Did, "shinzohub")) {
+			fmt.Printf("Validator Adding %s -> %s to group:shinzoteam as %s\n", parsedRelation.Relation.Did, env.resolveDID(parsedRelation.Relation.Did), parsedRelation.Relation.Relation)
+			err := env.ValidatorACPClient.SetActorRelationship(context.Background(), "group", parsedRelation.Relation.ObjectName, parsedRelation.Relation.Relation, env.resolveDID(parsedRelation.Relation.Did))
+			if err != nil {
+				return fmt.Errorf("Encountered error adding %s -> %s to group:shinzoteam as %s: %v", parsedRelation.Relation.Did, env.resolveDID(parsedRelation.Relation.Did), parsedRelation.Relation.Relation, err)
+			}
+		}
+	}
+
+	fmt.Println("✓ shinzoteam is now setup")
+
+	return nil
+}
+
+func setupInitialCollectionRelationships(env *TestEnvironment, parsedRelations []ParsedRelation) error {
+	parentedRelations := convertToParentedResources(parsedRelations)
+	err := setParentedAndCreatorRelations(env, parentedRelations)
 	if err != nil {
-		return fmt.Errorf("Encountered error parsing relations file: %v", err)
+		return fmt.Errorf("Encountered error setting parented and creator relations: %v", err)
 	}
 
 	for _, parsedRelation := range parsedRelations {
-		if strings.Contains(parsedRelation.SourceLine, "sourcehub") || strings.Contains(parsedRelation.SourceLine, "shinzohub") || parsedRelation.Relation.Relation == "owner" {
+		if strings.Contains(parsedRelation.SourceLine, "sourcehub") || strings.Contains(parsedRelation.SourceLine, "shinzohub") ||
+			parsedRelation.Relation.Relation == "owner" || parsedRelation.Relation.Relation == "admin" ||
+			parsedRelation.Relation.Relation == "creator" || parsedRelation.Relation.Relation == "parent" {
 			continue // Relations set previously
 		}
 
@@ -531,24 +583,76 @@ func setupInitialCollectionRelationships(env *TestEnvironment) error {
 	return nil
 }
 
-func setRelationship(env *TestEnvironment, relation AcpRelations) error {
-	client := env.ShinzohubACPClient
-	if relation.Relation == "admin" {
-		client = env.ValidatorACPClient // Validator would be setting these relationships during deployment
+func setParentedAndCreatorRelations(env *TestEnvironment, relations []ParentedResource) error {
+	client := &http.Client{}
+
+	for _, relation := range relations {
+		// Convert parent resources to parent resource IDs
+		var parentResourceIDs []string
+		for _, parent := range relation.Parents {
+			parentID := fmt.Sprintf("%s:%s", parent.ResourceType, parent.ResourceName)
+			parentResourceIDs = append(parentResourceIDs, parentID)
+		}
+
+		// Create the request payload
+		request := struct {
+			DID               string   `json:"did"`
+			DataFeedID        string   `json:"dataFeedId"`
+			ParentResourceIDs []string `json:"parentResourceIds"`
+		}{
+			DID:               env.resolveDID(relation.CreatorDid),
+			DataFeedID:        relation.ObjectName,
+			ParentResourceIDs: parentResourceIDs,
+		}
+
+		// Marshal the request to JSON
+		jsonBytes, err := json.Marshal(request)
+		if err != nil {
+			return fmt.Errorf("failed to marshal request for %s:%s: %w", relation.ResourceName, relation.ObjectName, err)
+		}
+
+		// Make the API call to create-data-feed
+		requestURL := env.RegistrarURL + "/create-data-feed"
+
+		// Print curl equivalent request
+		fmt.Printf("CURL: curl -X POST '%s' -H 'Content-Type: application/json' -d '%s'\n", requestURL, string(jsonBytes))
+
+		req, err := http.NewRequest("POST", requestURL, bytes.NewBuffer(jsonBytes))
+		if err != nil {
+			return fmt.Errorf("failed to create request for %s:%s: %w", relation.ResourceName, relation.ObjectName, err)
+		}
+
+		req.Header.Set("Content-Type", "application/json")
+
+		resp, err := client.Do(req)
+		if err != nil {
+			return fmt.Errorf("failed to make request for %s:%s: %w", relation.ResourceName, relation.ObjectName, err)
+		}
+		defer resp.Body.Close()
+
+		// Check response status
+		if resp.StatusCode != http.StatusOK {
+			body, _ := io.ReadAll(resp.Body)
+			return fmt.Errorf("create-data-feed failed for %s:%s with status %d: %s",
+				relation.ResourceName, relation.ObjectName, resp.StatusCode, string(body))
+		}
 	}
 
-	if relation.IsParentRelation {
-		fmt.Printf("Setting parent relation: %s:%s -> %s:%s\n", relation.ResourceName, relation.ObjectName, relation.ParentResourceType, relation.ParentResourceName)
-		return client.SetParentRelationship(context.Background(), relation.ResourceName, relation.ObjectName, relation.ParentResourceType, relation.ParentResourceName)
-	}
+	return nil
+}
+
+func setRelationship(env *TestEnvironment, relation AcpRelations) error {
+	client := env.ValidatorACPClient
 
 	if relation.IsDidActor {
-		fmt.Printf("Giving %s -> %s %s relation on %s:%s\n", relation.Did, env.resolveDID(relation.Did), relation.Relation, relation.ResourceName, relation.ObjectName)
-		return client.SetRelationship(context.Background(), relation.ResourceName, relation.ObjectName, relation.Relation, env.resolveDID(relation.Did))
+		fmt.Printf("!Validator! Giving %s -> %s %s relation on %s:%s\n", relation.Did, env.resolveDID(relation.Did), relation.Relation, relation.ResourceName, relation.ObjectName)
+		return client.SetActorRelationship(context.Background(), relation.ResourceName, relation.ObjectName, relation.Relation, env.resolveDID(relation.Did))
+	} else if relation.GroupRelation != "" {
+		fmt.Printf("!Validator! Giving group:%s#%s %s relation on %s:%s\n", relation.GroupName, relation.GroupRelation, relation.Relation, relation.ResourceName, relation.ObjectName)
+		return client.SetActorSetRelationship(context.Background(), relation.ResourceName, relation.ObjectName, relation.Relation, "group", relation.GroupName, relation.GroupRelation)
+	} else {
+		return fmt.Errorf("Error setting relationship %v: unexpected actor, must be did", relation)
 	}
-
-	fmt.Printf("Giving group:%s#%s %s relation on %s:%s\n", relation.GroupName, relation.GroupRelation, relation.Relation, relation.ResourceName, relation.ObjectName)
-	return client.SetGroupRelationship(context.Background(), relation.ResourceName, relation.ObjectName, relation.Relation, relation.GroupName, relation.GroupRelation)
 }
 
 func runTestCase(t *testing.T, env *TestEnvironment, tc TestCase) {
@@ -645,16 +749,15 @@ func attemptManage(env *TestEnvironment, userDID, resource, action string, userS
 
 	action = strings.TrimPrefix(action, "_can_manage_")
 
-	validatorDid := env.ValidatorACPClient.GetSignerAddress()
-	validatorSigner := env.ValidatorACPClient.GetSigner()
-	env.ValidatorACPClient.SetActor(userDID, userSigner) // Temporarily set the actor to be the user so we see if they have permissions to manage the given relation
-	defer env.ValidatorACPClient.SetActor(validatorDid, validatorSigner)
+	validatorActor := env.ValidatorACPClient.GetActor()
+	env.ValidatorACPClient.SetActor(&sourcehub.AcpActor{Did: userDID, Signer: userSigner}) // Temporarily set the actor to be the user so we see if they have permissions to manage the given relation
+	defer env.ValidatorACPClient.SetActor(&validatorActor)
 	randomDid, _, err := did.ProduceDID()
 	if err != nil {
 		fmt.Printf("Encountered error attempting action %s by %s on %s: Unable to generate random did: %v", action, userDID, resource, err)
 		return false
 	}
-	err = env.ValidatorACPClient.SetRelationship(context.Background(), resourceType, resourceName, action, randomDid)
+	err = env.ValidatorACPClient.SetActorRelationship(context.Background(), resourceType, resourceName, action, randomDid)
 	if err != nil {
 		return false
 	}

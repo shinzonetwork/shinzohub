@@ -5,70 +5,16 @@ import (
 	"crypto"
 	"encoding/json"
 	"fmt"
-	"os"
+	"shinzohub/pkg/sourcehub"
 	"testing"
 
 	"github.com/sourcenetwork/acp_core/pkg/did"
-	"github.com/sourcenetwork/sourcehub/sdk"
-
-	// Import Cosmos SDK for bank transactions
-	"github.com/cosmos/cosmos-sdk/codec"
-	cdctypes "github.com/cosmos/cosmos-sdk/codec/types"
-	cryptocdc "github.com/cosmos/cosmos-sdk/crypto/codec"
-	"github.com/cosmos/cosmos-sdk/crypto/keyring"
-	sdktypes "github.com/cosmos/cosmos-sdk/types"
-	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 )
 
-// fundTestClientSigner sends tokens from the validator account to the test client signer
-// This function can be called during test setup to ensure the test client has tokens
-func fundTestClientSigner(targetAddress string) error {
-	fmt.Printf("Checking balance for address: %s\n", targetAddress)
+func fundTestClientSigner(shinzoClient sourcehub.ShinzoAcpGoClient) error {
+	client := shinzoClient.Acp
 
-	// Create a keyring to access the validator account
-	reg := cdctypes.NewInterfaceRegistry()
-	cryptocdc.RegisterInterfaces(reg)
-	cdc := codec.NewProtoCodec(reg)
-
-	// Use the test keyring backend and the .sourcehub directory
-	kr, err := keyring.New("sourcehub", keyring.BackendTest, os.Getenv("HOME")+"/.sourcehub", nil, cdc)
-	if err != nil {
-		return fmt.Errorf("failed to create keyring: %w", err)
-	}
-
-	// Get the validator signer
-	validatorSigner, err := sdk.NewTxSignerFromKeyringKey(kr, "validator")
-	if err != nil {
-		return fmt.Errorf("failed to get validator signer: %w", err)
-	}
-
-	// Create SourceHub SDK client using the default ports
-	// Note: These should match the ports used by the local SourceHub instance
-	client, err := sdk.NewClient()
-	if err != nil {
-		return fmt.Errorf("failed to create SourceHub client: %w", err)
-	}
-	defer client.Close()
-
-	// Convert string addresses to AccAddress
-	validatorAddr, err := sdktypes.AccAddressFromBech32(validatorSigner.GetAccAddress())
-	if err != nil {
-		return fmt.Errorf("failed to convert validator address: %w", err)
-	}
-
-	targetAddr, err := sdktypes.AccAddressFromBech32(targetAddress)
-	if err != nil {
-		return fmt.Errorf("failed to convert target address: %w", err)
-	}
-
-	// First, check if the target address already has sufficient funds
-	bankClient := client.BankQueryClient()
-	balanceQuery := &banktypes.QueryBalanceRequest{
-		Address: targetAddress,
-		Denom:   "uopen",
-	}
-
-	balanceResp, err := bankClient.Balance(context.Background(), balanceQuery)
+	balanceResp, err := client.GetBalanceInUOpen(context.Background())
 	if err != nil {
 		fmt.Printf("Warning: Could not query balance: %v\n", err)
 		fmt.Printf("Proceeding with funding transaction...\n")
@@ -87,43 +33,14 @@ func fundTestClientSigner(targetAddress string) error {
 		fmt.Printf("Address has insufficient funds (%d uopen < %d uopen). Proceeding with funding...\n",
 			currentBalance, requiredBalance)
 	}
+	amount := 100000000
 
-	// Create transaction builder
-	txBuilder, err := sdk.NewTxBuilder(
-		sdk.WithSDKClient(client),
-		sdk.WithChainID("sourcehub-dev"),
-	)
+	err = client.FundAccount(context.Background(), "validator", 100000000)
 	if err != nil {
-		return fmt.Errorf("failed to create transaction builder: %w", err)
+		return fmt.Errorf("Encountered error funding account: %v", err)
 	}
 
-	// Create a bank send message
-	amount := sdktypes.NewCoins(sdktypes.NewInt64Coin("uopen", 1000000000)) // 1 billion uopen
-	msg := banktypes.NewMsgSend(validatorAddr, targetAddr, amount)
-
-	// Build and send the transaction using the SourceHub SDK
-	// We'll use the existing transaction builder directly with the bank message
-	tx, err := txBuilder.BuildFromMsgs(context.Background(), validatorSigner, msg)
-	if err != nil {
-		return fmt.Errorf("failed to build transaction: %w", err)
-	}
-
-	resp, err := client.BroadcastTx(context.Background(), tx)
-	if err != nil {
-		return fmt.Errorf("failed to broadcast transaction: %w", err)
-	}
-
-	// Wait for the transaction to be processed
-	result, err := client.AwaitTx(context.Background(), resp.TxHash)
-	if err != nil {
-		return fmt.Errorf("failed to await transaction: %w", err)
-	}
-
-	if result.Error() != nil {
-		return fmt.Errorf("transaction failed: %w", result.Error())
-	}
-
-	fmt.Printf("Successfully funded test client signer with %s\n", amount.String())
+	fmt.Printf("Successfully funded test client signer with %d uopen\n", amount)
 	return nil
 }
 

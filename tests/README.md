@@ -42,6 +42,8 @@ This will:
 3. Setup breakpoints
 4. In your IDE, navigate to `tests/integration_test.go` and click to debug the `TestAccessControl` test entrypoint
 
+Don't forget to stop and restart `bootstrap` each time! This resets the sourcehub instance.
+
 ### Troubleshooting
 
 If you're encountering issues running the tests, there are a few things to try.

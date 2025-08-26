@@ -10,7 +10,6 @@ ROOTDIR="$(pwd)/.shinzohub"
 LOGDIR="logs"
 SOURCEHUB_LOG_PATH="$LOGDIR/sourcehub_logs.txt"
 SHINZOHUBD_LOG_PATH="$LOGDIR/shinzohubd_logs.txt"
-REGISTRAR_LOG_PATH="$LOGDIR/registrar_logs.txt"
 INDEXER_BOOTSTRAP_LOG_PATH="$LOGDIR/indexer_bootstrap_logs.txt"
 
 # Expand ~ to $HOME if present
@@ -61,11 +60,6 @@ cleanup() {
   if [[ -f "$ROOTDIR/shinzohubd.pid" ]]; then
     kill -9 $(cat "$ROOTDIR/shinzohubd.pid") 2>/dev/null || true
     rm -f "$ROOTDIR/shinzohubd.pid"
-  fi
-  echo "Stopping registrar..."
-  if [[ -f "$ROOTDIR/registrar.pid" ]]; then
-    kill -9 $(cat "$ROOTDIR/registrar.pid") 2>/dev/null || true
-    rm -f "$ROOTDIR/registrar.pid"
   fi
   echo "Stopping indexer bootstrap..."
   if [[ -f "$ROOTDIR/indexer_bootstrap.pid" ]]; then
@@ -160,18 +154,12 @@ fi
 # Replace <replace_with_policy_id> with actual policy id (removing chevrons)
 sed -i.bak "s/<replace_with_policy_id>/$POLICY_ID/g" "$SCHEMA_FILE"
 
-# Build and run registrar (now that we have POLICY_ID)
-echo "===> Building registrar"
-go build -o bin/registrar cmd/registrar/main.go
-POLICY_ID="$POLICY_ID" ./bin/registrar > "$REGISTRAR_LOG_PATH" 2>&1 &
-REGISTRAR_PID=$!
-echo "$REGISTRAR_PID" > "$ROOTDIR/registrar.pid"
-echo "Started registrar (PID $REGISTRAR_PID). Logs at $REGISTRAR_LOG_PATH"
-
 # Start indexer bootstrap (DefraDB + block_poster)
 echo "===> Bootstrapping indexer (DefraDB/block_poster) from $INDEXER_ROOT"
-(cd "$INDEXER_ROOT" && ./scripts/bootstrap.sh "$INDEXER_ROOT/../defradb" > "$OLDPWD/$INDEXER_BOOTSTRAP_LOG_PATH" 2>&1 &)
+cd "$INDEXER_ROOT"
+./scripts/bootstrap.sh "$INDEXER_ROOT/../defradb" > "$OLDPWD/$INDEXER_BOOTSTRAP_LOG_PATH" 2>&1 &
 INDEXER_BOOTSTRAP_PID=$!
+cd "$OLDPWD"
 echo "$INDEXER_BOOTSTRAP_PID" > "$ROOTDIR/indexer_bootstrap.pid"
 echo "Started indexer bootstrap (PID $INDEXER_BOOTSTRAP_PID). Logs at $INDEXER_BOOTSTRAP_LOG_PATH"
 
@@ -194,15 +182,6 @@ if ! kill -0 $SHINZOHUBD_PID 2>/dev/null; then
     tail -20 "$SHINZOHUBD_LOG_PATH" || echo "Could not read log file"
   fi
   echo "Continuing anyway as shinzohubd failure is expected for now..."
-fi
-if ! kill -0 $REGISTRAR_PID 2>/dev/null; then
-  echo "ERROR: registrar failed to start (PID $REGISTRAR_PID not running)" >&2
-  echo "--- registrar log errors ---"
-  if [[ -f "$REGISTRAR_LOG_PATH" ]]; then
-    tail -20 "$REGISTRAR_LOG_PATH" || echo "Could not read log file"
-  fi
-  cleanup
-  exit 1
 fi
 if ! kill -0 $INDEXER_BOOTSTRAP_PID 2>/dev/null; then
   echo "ERROR: indexer bootstrap failed to start (PID $INDEXER_BOOTSTRAP_PID not running)" >&2

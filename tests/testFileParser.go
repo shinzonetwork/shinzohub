@@ -324,3 +324,57 @@ func printParsedRelations(relations []ParsedRelation) {
 		fmt.Printf("%s -> %+v\n", parsedRel.SourceLine, parsedRel.Relation)
 	}
 }
+
+type ParentedResource struct {
+	ResourceName string
+	ObjectName   string
+	CreatorDid   string
+	Parents      []ParentResource
+}
+
+type ParentResource struct {
+	ResourceType string
+	ResourceName string
+}
+
+func convertToParentedResources(relations []ParsedRelation) []ParentedResource {
+	resourceMap := make(map[string]*ParentedResource)
+
+	// First pass: collect all resources that have creator relations
+	for _, parsedRel := range relations {
+		if parsedRel.Relation.Relation == "creator" && parsedRel.Relation.IsDidActor {
+			key := parsedRel.Relation.ResourceName + ":" + parsedRel.Relation.ObjectName
+
+			resourceMap[key] = &ParentedResource{
+				ResourceName: parsedRel.Relation.ResourceName,
+				ObjectName:   parsedRel.Relation.ObjectName,
+				CreatorDid:   parsedRel.Relation.Did,
+				Parents:      []ParentResource{},
+			}
+		}
+	}
+
+	// Second pass: add parent relations to existing resources
+	for _, parsedRel := range relations {
+		if parsedRel.Relation.IsParentRelation {
+			key := parsedRel.Relation.ResourceName + ":" + parsedRel.Relation.ObjectName
+			if resource, exists := resourceMap[key]; exists {
+				parent := ParentResource{
+					ResourceType: parsedRel.Relation.ParentResourceType,
+					ResourceName: parsedRel.Relation.ParentResourceName,
+				}
+				resource.Parents = append(resource.Parents, parent)
+			}
+		}
+	}
+
+	// Filter to only include resources with at least one parent
+	var result []ParentedResource
+	for _, resource := range resourceMap {
+		if len(resource.Parents) > 0 {
+			result = append(result, *resource)
+		}
+	}
+
+	return result
+}

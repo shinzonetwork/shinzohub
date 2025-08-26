@@ -2,15 +2,15 @@ package sourcehub
 
 import (
 	"context"
-	"crypto"
 	"fmt"
+	"strings"
 
 	coretypes "github.com/sourcenetwork/acp_core/pkg/types"
 	acptypes "github.com/sourcenetwork/sourcehub/x/acp/types"
 )
 
 type ShinzoAcpGoClient struct {
-	acp AcpClient
+	Acp AcpClient
 }
 
 func addToGroupError(did, groupName string, err error) error {
@@ -31,7 +31,7 @@ func createDataFeedError(documentId, creatorDid string, err error) error {
 
 func newShinzoAcpGoClient(acp AcpClient) (*ShinzoAcpGoClient, error) {
 	return &ShinzoAcpGoClient{
-		acp: acp,
+		Acp: acp,
 	}, nil
 }
 
@@ -58,27 +58,27 @@ func CreateShinzoAcpGoClientWithValidatorSender(chainId string) (ShinzoAcpClient
 }
 
 func (client *ShinzoAcpGoClient) AddToGroup(ctx context.Context, groupName string, did string) error {
-	return client.acp.SetActorRelationship(ctx, "group", groupName, "guest", did)
+	return client.Acp.SetActorRelationship(ctx, "group", groupName, "guest", did)
 }
 
 func (client *ShinzoAcpGoClient) MakeGroupAdmin(ctx context.Context, groupName string, did string) error {
-	return client.acp.SetActorRelationship(ctx, "group", groupName, "admin", did)
+	return client.Acp.SetActorRelationship(ctx, "group", groupName, "admin", did)
 }
 
 func (client *ShinzoAcpGoClient) RemoveFromGroup(ctx context.Context, groupName string, did string) error {
-	return client.acp.DeleteActorRelationship(ctx, "group", groupName, "guest", did)
+	return client.Acp.DeleteActorRelationship(ctx, "group", groupName, "guest", did)
 }
 
 func (client *ShinzoAcpGoClient) BlockFromGroup(ctx context.Context, groupName string, did string) error {
-	return client.acp.SetActorRelationship(ctx, "group", groupName, "blocked", did)
+	return client.Acp.SetActorRelationship(ctx, "group", groupName, "blocked", did)
 }
 
 func (client *ShinzoAcpGoClient) GiveQueryAccess(ctx context.Context, documentId string, did string) error {
-	return client.acp.SetActorRelationship(ctx, "view", documentId, "subscriber", did)
+	return client.Acp.SetActorRelationship(ctx, "view", documentId, "subscriber", did)
 }
 
 func (client *ShinzoAcpGoClient) BanUserFromView(ctx context.Context, documentId string, did string) error {
-	return client.acp.SetActorRelationship(ctx, "view", documentId, "banned", did)
+	return client.Acp.SetActorRelationship(ctx, "view", documentId, "banned", did)
 }
 
 func (client *ShinzoAcpGoClient) CreateDataFeed(ctx context.Context, documentId string, creatorDid string, parentDocumentIds ...string) error {
@@ -89,7 +89,8 @@ func (client *ShinzoAcpGoClient) CreateDataFeed(ctx context.Context, documentId 
 	// Create parent relationship commands if any
 	var parentCmds []*acptypes.PolicyCmd
 	for _, parentId := range parentDocumentIds {
-		parentRel := coretypes.NewActorRelationship("view", documentId, "parent", parentId)
+		parent := strings.Split(parentId, ":")
+		parentRel := coretypes.NewRelationship("view", documentId, "parent", parent[0], parent[1])
 		parentCmd := acptypes.NewSetRelationshipCmd(parentRel)
 		parentCmds = append(parentCmds, parentCmd)
 	}
@@ -98,49 +99,15 @@ func (client *ShinzoAcpGoClient) CreateDataFeed(ctx context.Context, documentId 
 	allCmds := []*acptypes.PolicyCmd{creatorCmd}
 	allCmds = append(allCmds, parentCmds...)
 
-	return client.acp.ExecutePolicyCommands(ctx, allCmds, func(e error) error {
+	return client.Acp.ExecutePolicyCommands(ctx, allCmds, func(e error) error {
 		return createDataFeedError(documentId, creatorDid, e)
 	})
 }
 
 func (client *ShinzoAcpGoClient) VerifyAccessRequest(ctx context.Context, policyID, resourceName, objectID, permission, actorDID string) (bool, error) {
-	return client.acp.VerifyAccessRequest(ctx, resourceName, objectID, permission, actorDID)
+	return client.Acp.VerifyAccessRequest(ctx, resourceName, objectID, permission, actorDID)
 }
 
-func (client *ShinzoAcpGoClient) RegisterObject(ctx context.Context, resourceName, objectID string) error {
-	return client.acp.RegisterObject(ctx, resourceName, objectID)
-}
-
-func (client *ShinzoAcpGoClient) SetRelationship(ctx context.Context, resourceName, objectID, relation, subjectDID string) error {
-	return client.acp.SetActorRelationship(ctx, resourceName, objectID, relation, subjectDID)
-}
-
-func (client *ShinzoAcpGoClient) SetGroupRelationship(ctx context.Context, resourceName, objectID, relation, groupName, groupRelation string) error {
-	return client.acp.SetActorSetRelationship(ctx, resourceName, objectID, relation, "group", groupName, groupRelation)
-}
-
-func (client *ShinzoAcpGoClient) SetParentRelationship(ctx context.Context, resourceName, objectID, parentResourceName, parentObjectID string) error {
-	return client.acp.SetRelationship(ctx, resourceName, objectID, "parent", parentResourceName, parentObjectID)
-}
-
-func (client *ShinzoAcpGoClient) GetSignerAddress() string {
-	// Return the ACP DID directly
-	return client.acp.GetActor().Did
-}
-
-// GetSignerAccountAddress returns the Cosmos account address of the signer
-func (client *ShinzoAcpGoClient) GetSignerAccountAddress() string {
-	return client.acp.GetSigner().GetAccAddress()
-}
-
-func (client *ShinzoAcpGoClient) GetSignerDid() (string, error) {
-	return client.acp.GetActor().Did, nil
-}
-
-func (client *ShinzoAcpGoClient) GetSigner() crypto.Signer {
-	return client.acp.GetActor().Signer
-}
-
-func (client *ShinzoAcpGoClient) SetActor(did string, signer crypto.Signer) {
-	client.acp.SetActor(&AcpActor{Did: did, Signer: signer})
+func (client *ShinzoAcpGoClient) GetActorDid() string {
+	return client.Acp.GetActor().Did
 }

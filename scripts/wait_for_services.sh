@@ -19,20 +19,20 @@ for i in {1..30}; do
   sleep 1
 done
 
-# Wait for registrar to be ready
-echo "Checking registrar at http://localhost:8081..."
+# Wait for sourcehub to be ready
+echo "Checking sourcehub at http://localhost:26657..."
 for i in {1..60}; do
-    if curl -s http://localhost:8081/registrar/ > /dev/null 2>&1; then
-        echo "✓ Registrar is responding"
+    if curl -s http://localhost:26657 > /dev/null 2>&1; then
+        echo "✓ Sourcehub is responding"
         break
     fi
     
     if [ $i -eq 60 ]; then
-        echo "✗ Registrar failed to start within 60 seconds"
+        echo "✗ Sourcehub failed to start within 60 seconds"
         exit 1
     fi
     
-    echo "Waiting for registrar... (attempt $i/60)"
+    echo "Waiting for sourcehub... (attempt $i/60)"
     sleep 1
 done
 
