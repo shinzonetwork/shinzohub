@@ -196,8 +196,8 @@ Delegations {
   !did:user:addo > group:shinzoteam#admin
 
   // Shinzo team file administration 
-  !did:user:addo > primitive:blocks#syncer
-  !did:user:addo > primitive:blocks#writer
+  did:user:addo > primitive:blocks#syncer
+  did:user:addo > primitive:blocks#writer
   !did:user:addo > primitive:blocks#admin
   !did:user:addo > primitive:blocks#owner
 
@@ -213,8 +213,8 @@ Delegations {
   !did:user:addo > view:datafeedB#admin
   !did:user:addo > view:datafeedB#owner
 
-  !did:user:duncan > primitive:blocks#syncer
-  !did:user:duncan > primitive:blocks#writer
+  did:user:duncan > primitive:blocks#syncer
+  did:user:duncan > primitive:blocks#writer
   !did:user:duncan > primitive:blocks#admin
   !did:user:duncan > primitive:blocks#owner
 

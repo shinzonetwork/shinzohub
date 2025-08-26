@@ -27,7 +27,7 @@ resources:
 				- actor
 		permissions:
 			sync:
-				expr: (writer + syncer) - banned
+				expr: (writer + syncer + subscriber) - banned
 			update:
 				expr: writer - banned
 			delete:
