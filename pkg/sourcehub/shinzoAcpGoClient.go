@@ -4,9 +4,6 @@ import (
 	"context"
 	"fmt"
 	"strings"
-
-	coretypes "github.com/sourcenetwork/acp_core/pkg/types"
-	acptypes "github.com/sourcenetwork/sourcehub/x/acp/types"
 )
 
 type ShinzoAcpGoClient struct {
@@ -78,26 +75,28 @@ func (client *ShinzoAcpGoClient) BanUserFromView(ctx context.Context, documentId
 }
 
 func (client *ShinzoAcpGoClient) CreateDataFeed(ctx context.Context, documentId string, creatorDid string, parentDocumentIds ...string) error {
-	// Create the main creator relationship command
-	creatorRel := coretypes.NewActorRelationship("view", documentId, "creator", creatorDid)
-	creatorCmd := acptypes.NewSetRelationshipCmd(creatorRel)
-
-	// Create parent relationship commands if any
-	var parentCmds []*acptypes.PolicyCmd
-	for _, parentId := range parentDocumentIds {
-		parent := strings.Split(parentId, ":")
-		parentRel := coretypes.NewRelationship("view", documentId, "parent", parent[0], parent[1])
-		parentCmd := acptypes.NewSetRelationshipCmd(parentRel)
-		parentCmds = append(parentCmds, parentCmd)
+	documents := len(parentDocumentIds)
+	if documents < 1 {
+		return fmt.Errorf("Unable to create data feed: Must have at least one parent document")
 	}
 
-	// Combine all commands into a single slice
-	allCmds := []*acptypes.PolicyCmd{creatorCmd}
-	allCmds = append(allCmds, parentCmds...)
+	err := client.Acp.SetActorRelationship(ctx, "view", documentId, "creator", creatorDid)
+	if err != nil {
+		return fmt.Errorf("Encountered error setting %s as the creator of view:%s: %v", creatorDid, documentId, err)
+	}
 
-	return client.Acp.ExecutePolicyCommands(ctx, allCmds, func(e error) error {
-		return createDataFeedError(documentId, creatorDid, e)
-	})
+	for _, parent := range parentDocumentIds {
+		parentInfo := strings.Split(parent, ":")
+		if len(parentInfo) != 2 {
+			return fmt.Errorf("Received invalid parent document id: %s | expected in the form of resourceType:resourceName")
+		}
+		err = client.Acp.SetRelationship(ctx, "view", documentId, "parent", parentInfo[0], parentInfo[1])
+		if err != nil {
+			return fmt.Errorf("Encountered error setting %s as the parent of view:%s: %v", parent, documentId, err)
+		}
+	}
+
+	return nil
 }
 
 func (client *ShinzoAcpGoClient) VerifyAccessRequest(ctx context.Context, policyID, resourceName, objectID, permission, actorDID string) (bool, error) {
