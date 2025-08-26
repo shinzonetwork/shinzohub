@@ -657,19 +657,15 @@ func setRelationship(env *TestEnvironment, relation AcpRelations) error {
 }
 
 func runTestCase(t *testing.T, env *TestEnvironment, tc TestCase) {
-	// Resolve the alias DID to the real DID
-	realUserDID := env.resolveDID(tc.UserDID)
-
-	// Attempt the action with the real DID
 	var result bool
 	if strings.HasPrefix(tc.Action, "_can_manage_") {
 		userSigner := env.getSigner(tc.UserDID)
 		if userSigner == nil {
 			t.Errorf("No crypto.Signer found for %s", tc.UserDID)
 		}
-		result = attemptManage(env, realUserDID, tc.Resource, tc.Action, userSigner)
+		result = attemptManage(env, tc.UserDID, tc.Resource, tc.Action, userSigner)
 	} else {
-		result = attemptAction(env, realUserDID, tc.Resource, tc.Action)
+		result = attemptAction(env, tc.UserDID, tc.Resource, tc.Action)
 	}
 
 	// Verify the result
@@ -699,11 +695,13 @@ func attemptAction(env *TestEnvironment, userDID, resource, action string) bool 
 		return false
 	}
 
-	fmt.Printf("Checking permission: user %s wants to %s on %s (resource: %s, type: %s)\n",
-		userDID, action, resource, resourceName, resourceType)
+	realDid := env.resolveDID(userDID)
+
+	fmt.Printf("Checking permission: user %s -> %s wants to %s on %s (resource: %s, type: %s)\n",
+		userDID, realDid, action, resource, resourceName, resourceType)
 
 	ctx := context.Background()
-	hasPermission, err := env.ShinzohubACPClient.VerifyAccessRequest(ctx, policyID, resourceType, resourceName, action, userDID)
+	hasPermission, err := env.ShinzohubACPClient.VerifyAccessRequest(ctx, policyID, resourceType, resourceName, action, realDid)
 	if err != nil {
 		fmt.Printf("Error checking permission: %v\n", err)
 		return false
@@ -745,13 +743,15 @@ func attemptManage(env *TestEnvironment, userDID, resource, action string, userS
 		return false
 	}
 
-	fmt.Printf("Checking permission: user %s wants to %s on %s (resource: %s, type: %s)\n",
-		userDID, action, resource, resourceName, resourceType)
+	realDid := env.resolveDID(userDID)
+
+	fmt.Printf("Checking permission: user %s -> %s wants to %s on %s (resource: %s, type: %s)\n",
+		userDID, realDid, action, resource, resourceName, resourceType)
 
 	action = strings.TrimPrefix(action, "_can_manage_")
 
 	validatorActor := env.ValidatorACPClient.GetActor()
-	env.ValidatorACPClient.SetActor(&sourcehub.AcpActor{Did: userDID, Signer: userSigner}) // Temporarily set the actor to be the user so we see if they have permissions to manage the given relation
+	env.ValidatorACPClient.SetActor(&sourcehub.AcpActor{Did: realDid, Signer: userSigner}) // Temporarily set the actor to be the user so we see if they have permissions to manage the given relation
 	defer env.ValidatorACPClient.SetActor(&validatorActor)
 	randomDid, _, err := did.ProduceDID()
 	if err != nil {
