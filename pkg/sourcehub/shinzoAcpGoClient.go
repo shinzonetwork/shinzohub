@@ -61,10 +61,6 @@ func (client *ShinzoAcpGoClient) AddToGroup(ctx context.Context, groupName strin
 	return client.Acp.SetActorRelationship(ctx, "group", groupName, "guest", did)
 }
 
-func (client *ShinzoAcpGoClient) MakeGroupAdmin(ctx context.Context, groupName string, did string) error {
-	return client.Acp.SetActorRelationship(ctx, "group", groupName, "admin", did)
-}
-
 func (client *ShinzoAcpGoClient) RemoveFromGroup(ctx context.Context, groupName string, did string) error {
 	return client.Acp.DeleteActorRelationship(ctx, "group", groupName, "guest", did)
 }

@@ -11,8 +11,8 @@ type ShinzoRegistrar struct {
 	Acp       sourcehub.ShinzoAcpClient
 }
 
-const IndexerGroup string = "Indexer"
-const HostGroup string = "Host"
+const IndexerGroup string = "indexer"
+const HostGroup string = "host"
 
 func (registrar *ShinzoRegistrar) RequestIndexerRole(ctx context.Context, did string) error {
 	err := registrar.Validator.ValidateDid(did)

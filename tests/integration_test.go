@@ -570,7 +570,8 @@ func setupInitialCollectionRelationships(env *TestEnvironment, parsedRelations [
 	for _, parsedRelation := range parsedRelations {
 		if strings.Contains(parsedRelation.SourceLine, "sourcehub") || strings.Contains(parsedRelation.SourceLine, "shinzohub") ||
 			parsedRelation.Relation.Relation == "owner" || parsedRelation.Relation.Relation == "admin" ||
-			parsedRelation.Relation.Relation == "creator" || parsedRelation.Relation.Relation == "parent" {
+			parsedRelation.Relation.Relation == "creator" || parsedRelation.Relation.Relation == "parent" ||
+			parsedRelation.Relation.Relation == "guest" || parsedRelation.Relation.Relation == "blocked" {
 			continue // Relations set previously
 		}
 
