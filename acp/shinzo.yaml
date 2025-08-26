@@ -72,7 +72,7 @@ resources:
       sync:
         expr: writer + syncer + parent->sync + subscriber - banned
       update:
-        expr: ((writer + parent->update) & parent->sync) - banned
+        expr: ((writer + parent->update)) - banned
       read:
         expr: (subscriber) - banned
       delete:

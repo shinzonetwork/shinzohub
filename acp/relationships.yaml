@@ -48,3 +48,4 @@ group:host#admin@group:shinzoteam#administrator
 group:host#guest@did:user:aHost
 group:host#guest@did:user:aBlockedHost
 group:host#blocked@did:user:aBlockedHost
+group:host#guest@did:user:aBannedHost
