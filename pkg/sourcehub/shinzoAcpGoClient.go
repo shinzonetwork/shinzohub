@@ -78,20 +78,24 @@ func (client *ShinzoAcpGoClient) BanUserFromView(ctx context.Context, documentId
 }
 
 func (client *ShinzoAcpGoClient) CreateDataFeed(ctx context.Context, documentId string, creatorDid string, parentDocumentIds ...string) error {
-	// Create the main creator relationship command
+	if len(parentDocumentIds) < 1 {
+		return createDataFeedError(documentId, creatorDid, fmt.Errorf("Must provide at lease one parent document id"))
+	}
+
 	creatorRel := coretypes.NewActorRelationship("view", documentId, "creator", creatorDid)
 	creatorCmd := acptypes.NewSetRelationshipCmd(creatorRel)
 
-	// Create parent relationship commands if any
 	var parentCmds []*acptypes.PolicyCmd
 	for _, parentId := range parentDocumentIds {
 		parent := strings.Split(parentId, ":")
+		if len(parent) != 2 {
+			return createDataFeedError(documentId, creatorDid, fmt.Errorf("Invalid parentDocumentId encountered: %s ; must be in the form of resourceType:resourceName", parentId))
+		}
 		parentRel := coretypes.NewRelationship("view", documentId, "parent", parent[0], parent[1])
 		parentCmd := acptypes.NewSetRelationshipCmd(parentRel)
 		parentCmds = append(parentCmds, parentCmd)
 	}
 
-	// Combine all commands into a single slice
 	allCmds := []*acptypes.PolicyCmd{creatorCmd}
 	allCmds = append(allCmds, parentCmds...)
 

@@ -252,8 +252,8 @@ func createAcpGoClient(chainId string, signer sdk.TxSigner) (*AcpGoClient, error
 	txBuilder, err := sdk.NewTxBuilder(
 		sdk.WithSDKClient(acpClient),
 		sdk.WithChainID(chainId),
-		sdk.WithFeeAmount(300),
-		sdk.WithGasLimit(300000))
+		sdk.WithFeeAmount(5000),
+		sdk.WithGasLimit(5000000))
 	if err != nil {
 		return nil, fmt.Errorf("Failed to create TxBuilder: %v", err)
 	}
@@ -308,30 +308,27 @@ func (client *AcpGoClient) ExecutePolicyCommands(ctx context.Context, cmds []*ac
 	}
 
 	signerDID := client.actor.Did
-
-	cmdBuilder, err := sdk.NewCmdBuilder(ctx, client.acp)
-	if err != nil {
-		return decorateError(err)
-	}
-
-	cmdBuilder.Actor(signerDID)
-	cmdBuilder.PolicyID(client.policyId)
-
-	// Add all commands
-	for _, cmd := range cmds {
-		cmdBuilder.PolicyCmd(cmd)
-	}
-
-	cmdBuilder.SetSigner(client.actor.Signer)
-
-	jws, err := cmdBuilder.BuildJWS(ctx)
-	if err != nil {
-		return decorateError(err)
-	}
-
-	msg := acptypes.NewMsgSignedPolicyCmdFromJWS(client.signer.GetAccAddress(), jws)
 	msgSet := sdk.MsgSet{}
-	msgSet.WithSignedPolicyCmd(msg)
+
+	for _, cmd := range cmds {
+		cmdBuilder, err := sdk.NewCmdBuilder(ctx, client.acp)
+		if err != nil {
+			return decorateError(err)
+		}
+
+		cmdBuilder.Actor(signerDID)
+		cmdBuilder.PolicyID(client.policyId)
+		cmdBuilder.PolicyCmd(cmd)
+		cmdBuilder.SetSigner(client.actor.Signer)
+
+		jws, err := cmdBuilder.BuildJWS(ctx)
+		if err != nil {
+			return decorateError(err)
+		}
+
+		msg := acptypes.NewMsgSignedPolicyCmdFromJWS(client.signer.GetAccAddress(), jws)
+		msgSet.WithSignedPolicyCmd(msg)
+	}
 
 	return client.sendAndConfirmTx(ctx, &msgSet, decorateError)
 }
