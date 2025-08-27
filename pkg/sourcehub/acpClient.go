@@ -6,6 +6,7 @@ import (
 
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	"github.com/sourcenetwork/sourcehub/sdk"
+	acptypes "github.com/sourcenetwork/sourcehub/x/acp/types"
 )
 
 type AcpActor struct {
@@ -27,4 +28,5 @@ type AcpClient interface {
 	VerifyAccessRequest(ctx context.Context, resourceType, resourceName, permission, actorDid string) (bool, error)
 	GetBalanceInUOpen(ctx context.Context) (*banktypes.QueryBalanceResponse, error)
 	FundAccount(ctx context.Context, fundingAccountAlias string, fundingAmount uint64) error
+	ExecutePolicyCommands(ctx context.Context, cmds []*acptypes.PolicyCmd, decorateError func(error) error) error
 }

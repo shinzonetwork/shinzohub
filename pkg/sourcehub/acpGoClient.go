@@ -62,7 +62,7 @@ func (client *AcpGoClient) RegisterObject(ctx context.Context, resourceName, obj
 
 	cmd := acptypes.NewRegisterObjectCmd(coretypes.NewObject(resourceName, objectID))
 
-	return client.executePolicyCommand(ctx, cmd, func(e error) error {
+	return client.ExecutePolicyCommands(ctx, []*acptypes.PolicyCmd{cmd}, func(e error) error {
 		return fmt.Errorf("failed to register object %s: %w", objectID, e)
 	})
 }
@@ -85,7 +85,7 @@ func (client *AcpGoClient) SetActorRelationship(ctx context.Context, resourceTyp
 	rel := coretypes.NewActorRelationship(resourceType, resourceName, relation, actorDid)
 	cmd := acptypes.NewSetRelationshipCmd(rel)
 
-	return client.executePolicyCommand(ctx, cmd, func(e error) error {
+	return client.ExecutePolicyCommands(ctx, []*acptypes.PolicyCmd{cmd}, func(e error) error {
 		return fmt.Errorf("failed to set relationship %s on %s:%s: %w", relation, resourceType, resourceName, e)
 	})
 }
@@ -94,7 +94,7 @@ func (client *AcpGoClient) SetRelationship(ctx context.Context, resourceType, re
 	rel := coretypes.NewRelationship(resourceType, resourceName, relation, subjectResourceType, subjectResourceName)
 	cmd := acptypes.NewSetRelationshipCmd(rel)
 
-	return client.executePolicyCommand(ctx, cmd, func(e error) error {
+	return client.ExecutePolicyCommands(ctx, []*acptypes.PolicyCmd{cmd}, func(e error) error {
 		return fmt.Errorf("failed to set relationship %s on %s:%s: %w", relation, resourceType, resourceName, e)
 	})
 }
@@ -103,7 +103,7 @@ func (client *AcpGoClient) SetActorSetRelationship(ctx context.Context, resource
 	rel := coretypes.NewActorSetRelationship(resourceType, resourceName, relation, subjectResourceType, subjectResourceName, subjectRelation)
 	cmd := acptypes.NewSetRelationshipCmd(rel)
 
-	return client.executePolicyCommand(ctx, cmd, func(e error) error {
+	return client.ExecutePolicyCommands(ctx, []*acptypes.PolicyCmd{cmd}, func(e error) error {
 		return fmt.Errorf("failed to set relation %s on %s:%s for  %s:%s#%s: %w", relation, resourceType, resourceName, subjectResourceType, subjectResourceName, subjectRelation, e)
 	})
 }
@@ -112,7 +112,7 @@ func (client *AcpGoClient) DeleteActorRelationship(ctx context.Context, resource
 	rel := coretypes.NewActorRelationship(resourceType, resourceName, relation, actorDid)
 	cmd := acptypes.NewDeleteRelationshipCmd(rel)
 
-	return client.executePolicyCommand(ctx, cmd, func(e error) error {
+	return client.ExecutePolicyCommands(ctx, []*acptypes.PolicyCmd{cmd}, func(e error) error {
 		return fmt.Errorf("failed to set relationship %s on %s:%s: %w", relation, resourceType, resourceName, e)
 	})
 }
@@ -121,7 +121,7 @@ func (client *AcpGoClient) DeleteRelationship(ctx context.Context, resourceType,
 	rel := coretypes.NewRelationship(resourceType, resourceName, relation, subjectResourceType, subjectResourceName)
 	cmd := acptypes.NewDeleteRelationshipCmd(rel)
 
-	return client.executePolicyCommand(ctx, cmd, func(e error) error {
+	return client.ExecutePolicyCommands(ctx, []*acptypes.PolicyCmd{cmd}, func(e error) error {
 		return fmt.Errorf("failed to set relationship %s on %s:%s: %w", relation, resourceType, resourceName, e)
 	})
 }
@@ -130,7 +130,7 @@ func (client *AcpGoClient) DeleteActorSetRelationship(ctx context.Context, resou
 	rel := coretypes.NewActorSetRelationship(resourceType, resourceName, relation, subjectResourceType, subjectResourceName, subjectRelation)
 	cmd := acptypes.NewDeleteRelationshipCmd(rel)
 
-	return client.executePolicyCommand(ctx, cmd, func(e error) error {
+	return client.ExecutePolicyCommands(ctx, []*acptypes.PolicyCmd{cmd}, func(e error) error {
 		return fmt.Errorf("failed to set relation %s on %s:%s for  %s:%s#%s: %w", relation, resourceType, resourceName, subjectResourceType, subjectResourceName, subjectRelation, e)
 	})
 }
@@ -302,7 +302,11 @@ func getKeyring() (keyring.Keyring, error) {
 	return kr, nil
 }
 
-func (client *AcpGoClient) executePolicyCommand(ctx context.Context, cmd *acptypes.PolicyCmd, decorateError func(error) error) error {
+func (client *AcpGoClient) ExecutePolicyCommands(ctx context.Context, cmds []*acptypes.PolicyCmd, decorateError func(error) error) error {
+	if len(cmds) == 0 {
+		return decorateError(fmt.Errorf("no policy commands provided"))
+	}
+
 	signerDID := client.actor.Did
 
 	cmdBuilder, err := sdk.NewCmdBuilder(ctx, client.acp)
@@ -312,7 +316,12 @@ func (client *AcpGoClient) executePolicyCommand(ctx context.Context, cmd *acptyp
 
 	cmdBuilder.Actor(signerDID)
 	cmdBuilder.PolicyID(client.policyId)
-	cmdBuilder.PolicyCmd(cmd)
+
+	// Add all commands
+	for _, cmd := range cmds {
+		cmdBuilder.PolicyCmd(cmd)
+	}
+
 	cmdBuilder.SetSigner(client.actor.Signer)
 
 	jws, err := cmdBuilder.BuildJWS(ctx)
