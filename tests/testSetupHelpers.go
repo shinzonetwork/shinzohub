@@ -11,26 +11,26 @@ import (
 	"github.com/sourcenetwork/acp_core/pkg/did"
 )
 
-func fundTestClientSigner(shinzoClient sourcehub.ShinzoAcpGoClient) error {
+func fundTestClientSigner(t *testing.T, shinzoClient sourcehub.ShinzoAcpGoClient) error {
 	client := shinzoClient.Acp
 
 	balanceResp, err := client.GetBalanceInUOpen(context.Background())
 	if err != nil {
-		fmt.Printf("Warning: Could not query balance: %v\n", err)
-		fmt.Printf("Proceeding with funding transaction...\n")
+		t.Logf("Warning: Could not query balance: %v\n", err)
+		t.Logf("Proceeding with funding transaction...\n")
 	} else {
 		currentBalance := balanceResp.Balance.Amount.Int64()
 		requiredBalance := int64(100000000) // 100 million uopen minimum
 
-		fmt.Printf("Current balance: %d uopen\n", currentBalance)
+		t.Logf("Current balance: %d uopen\n", currentBalance)
 
 		if currentBalance >= requiredBalance {
-			fmt.Printf("Address already has sufficient funds (%d uopen >= %d uopen). Skipping funding.\n",
+			t.Logf("Address already has sufficient funds (%d uopen >= %d uopen). Skipping funding.\n",
 				currentBalance, requiredBalance)
 			return nil
 		}
 
-		fmt.Printf("Address has insufficient funds (%d uopen < %d uopen). Proceeding with funding...\n",
+		t.Logf("Address has insufficient funds (%d uopen < %d uopen). Proceeding with funding...\n",
 			currentBalance, requiredBalance)
 	}
 	amount := 100000000
@@ -40,7 +40,7 @@ func fundTestClientSigner(shinzoClient sourcehub.ShinzoAcpGoClient) error {
 		return fmt.Errorf("Encountered error funding account: %v", err)
 	}
 
-	fmt.Printf("Successfully funded test client signer with %d uopen\n", amount)
+	t.Logf("Successfully funded test client signer with %d uopen\n", amount)
 	return nil
 }
 
@@ -63,13 +63,13 @@ func generateRealDidsForTestUsers(t *testing.T, testUsers map[string]*TestUser) 
 	return realDIDs, signers
 }
 
-func printTestUsers(users map[string]*TestUser) error {
+func printTestUsers(t *testing.T, users map[string]*TestUser) error {
 	for did, user := range users {
 		data, err := json.Marshal(user)
 		if err != nil {
 			return err
 		}
-		fmt.Printf("%s\n%s\n\n", did, string(data))
+		t.Logf("%s\n%s\n\n", did, string(data))
 	}
 	return nil
 }
