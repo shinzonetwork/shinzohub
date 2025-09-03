@@ -1,23 +1,22 @@
-# This file is auto-generated from Ignite. You can edit
-# the file content but do not change the file name or path.
-#
-# buf.gen.pulsar.yaml
-#
 version: v1
 managed:
   enabled: true
   go_package_prefix:
-    default: shinzohub/api
+    default: github.com/rollchains/shinzo/api
     except:
       - buf.build/googleapis/googleapis
       - buf.build/cosmos/gogo-proto
       - buf.build/cosmos/cosmos-proto
     override:
-      buf.build/cosmos/cosmos-sdk: cosmossdk.io/api
+      buf.build/cosmos/cosmos-sdk: cosmossdk.io/api # required to import the Cosmos SDK api module for the orm
 plugins:
   - name: go-pulsar
-    out: ./api
+    out: ..
     opt: paths=source_relative
   - name: go-grpc
-    out: ./api
+    out: ..
+    opt: paths=source_relative
+    # go install cosmossdk.io/orm/cmd/protoc-gen-go-cosmos-orm@latest
+  - name: go-cosmos-orm
+    out: ..
     opt: paths=source_relative
