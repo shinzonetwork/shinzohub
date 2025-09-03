@@ -108,6 +108,7 @@ from_scratch () {
 
   ## abci
   update_test_genesis '.consensus["params"]["abci"]["vote_extensions_enable_height"]="1"'
+  update_test_genesis '.consensus["params"]["block"]["max_bytes"]="104857600"'
 
   # === CUSTOM MODULES ===
   # tokenfactory
