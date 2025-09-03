@@ -20,8 +20,8 @@ import (
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 
 	evmoskeyring "github.com/cosmos/evm/crypto/keyring"
-	"github.com/rollchains/shinzo/app"
-	"github.com/rollchains/shinzo/app/params"
+	"github.com/shinzonetwork/shinzohub/app"
+	"github.com/shinzonetwork/shinzohub/app/params"
 )
 
 // NewRootCmd creates a new root command for chain app. It is called once in the

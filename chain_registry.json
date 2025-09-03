@@ -36,7 +36,7 @@
     }
   },
   "codebase": {
-    "git_repo": "https://github.com/rollchains/shinzo",
+    "git_repo": "https://github.com/shinzonetwork/shinzohub",
     "recommended_version": "v1.0.0",
     "compatible_versions": [
       "v0.9.0"
@@ -54,7 +54,7 @@
     ],
     "genesis": {
       "name": "v1",
-      "genesis_url": "https://github.com/rollchains/shinzo/networks/raw/main/genesis.json"
+      "genesis_url": "https://github.com/shinzonetwork/shinzohub/networks/raw/main/genesis.json"
     },
     "versions": [
       {

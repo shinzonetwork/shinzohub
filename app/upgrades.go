@@ -5,8 +5,8 @@ import (
 
 	upgradetypes "cosmossdk.io/x/upgrade/types"
 
-	"github.com/rollchains/shinzo/app/upgrades"
-	"github.com/rollchains/shinzo/app/upgrades/noop"
+	"github.com/shinzonetwork/shinzohub/app/upgrades"
+	"github.com/shinzonetwork/shinzohub/app/upgrades/noop"
 )
 
 // Upgrades list of chain upgrades

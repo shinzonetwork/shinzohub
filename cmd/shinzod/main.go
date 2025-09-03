@@ -6,7 +6,7 @@ import (
 
 	svrcmd "github.com/cosmos/cosmos-sdk/server/cmd"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/rollchains/shinzo/app"
+	"github.com/shinzonetwork/shinzohub/app"
 )
 
 func main() {

@@ -172,7 +172,7 @@ import (
 	_ "github.com/cosmos/evm/x/vm/core/tracers/native"
 	evmkeeper "github.com/cosmos/evm/x/vm/keeper"
 	evmtypes "github.com/cosmos/evm/x/vm/types"
-	chainante "github.com/rollchains/shinzo/app/ante"
+	chainante "github.com/shinzonetwork/shinzohub/app/ante"
 )
 
 const (

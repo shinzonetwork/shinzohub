@@ -2,7 +2,7 @@ project_name: shinzo
 
 release:
   github:
-    owner: rollchains
+    owner: shinzonetwork
     name: shinzo
   name_template: '{{.Tag}}'
 

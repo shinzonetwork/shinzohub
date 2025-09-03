@@ -1,4 +1,4 @@
-module github.com/rollchains/shinzo
+module github.com/shinzonetwork/shinzohub
 
 go 1.23.6
 

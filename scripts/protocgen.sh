@@ -2,7 +2,7 @@
 
 set -e
 
-GO_MOD_PACKAGE="github.com/rollchains/shinzo"
+GO_MOD_PACKAGE="github.com/shinzonetwork/shinzohub"
 
 echo "Generating gogo proto code"
 cd proto

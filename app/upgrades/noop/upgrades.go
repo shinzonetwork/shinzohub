@@ -8,7 +8,7 @@ import (
 
 	"github.com/cosmos/cosmos-sdk/types/module"
 
-	"github.com/rollchains/shinzo/app/upgrades"
+	"github.com/shinzonetwork/shinzohub/app/upgrades"
 )
 
 // NewUpgrade constructor
