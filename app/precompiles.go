@@ -24,11 +24,22 @@ import (
 	transferkeeper "github.com/cosmos/evm/x/ibc/transfer/keeper"
 	"github.com/cosmos/evm/x/vm/core/vm"
 	evmkeeper "github.com/cosmos/evm/x/vm/keeper"
+	evmtypes "github.com/cosmos/evm/x/vm/types"
 	channelkeeper "github.com/cosmos/ibc-go/v8/modules/core/04-channel/keeper"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/shinzonetwork/shinzohub/app/precompiles/viewregistry"
 )
 
 const bech32PrecompileBaseGas = 6_000
+
+func GetAvailableStaticPrecompiles() []string {
+	customAvailableStaticPrecompiles := []string{
+		viewregistry.ViewregistryPrecompileAddress,
+		// register custom address here
+	}
+
+	return append(evmtypes.AvailableStaticPrecompiles, customAvailableStaticPrecompiles...)
+}
 
 // NewAvailableStaticPrecompiles returns the list of all available static precompiled contracts from EVM.
 //
@@ -115,6 +126,14 @@ func NewAvailableStaticPrecompiles(
 	precompiles[govPrecompile.Address()] = govPrecompile
 	precompiles[slashingPrecompile.Address()] = slashingPrecompile
 	precompiles[evidencePrecompile.Address()] = evidencePrecompile
+
+	// register custom precompiles
+	viewRegistryPrecompile, err := viewregistry.NewPrecompile(bech32PrecompileBaseGas)
+	if err != nil {
+		panic(fmt.Errorf("failed to instantiate view registry precompile: %w", err))
+	}
+
+	precompiles[viewRegistryPrecompile.Address()] = viewRegistryPrecompile
 
 	return precompiles
 }
