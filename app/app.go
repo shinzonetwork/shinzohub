@@ -1490,7 +1490,7 @@ func BlockedAddresses() map[string]bool {
 	// allow the following addresses to receive funds
 	delete(blockedAddrs, authtypes.NewModuleAddress(govtypes.ModuleName).String())
 
-	blockedPrecompilesHex := evmtypes.AvailableStaticPrecompiles
+	blockedPrecompilesHex := GetAvailableStaticPrecompiles()
 	for _, addr := range vm.PrecompiledAddressesBerlin {
 		blockedPrecompilesHex = append(blockedPrecompilesHex, addr.Hex())
 	}
