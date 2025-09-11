@@ -1,0 +1,168 @@
+{
+    "chains": [
+        {
+            "name": "shinzohub",
+            "chain_id": "localchain_9000-1",
+            "docker_image": {
+                "repository": "shinzohub",
+                "version": "local",
+                "uid-gid": ""
+            },
+            "gas_prices": "0.0ushinzo",
+            "gas_adjustment": 2,
+            "genesis": {
+                "modify": [
+                    {
+                        "key": "app_state.gov.params.voting_period",
+                        "value": "10s"
+                    },
+                    {
+                        "key": "app_state.gov.params.max_deposit_period",
+                        "value": "10s"
+                    },
+                    {
+                        "key": "app_state.gov.params.min_deposit.0.denom",
+                        "value": "ushinzo"
+                    },
+                    {
+                        "key": "app_state.gov.params.min_deposit.0.amount",
+                        "value": "1"
+                    }
+                ],
+                "accounts": [
+                    {
+                        "name": "acc0",
+                        "amount": "25000000000%DENOM%",
+                        "address": "shinzo13a6zjh96w9z9y2defkktdc6vn4r5h3s7xp24me",
+                        "mnemonic": "decorate bright ozone fork gallery riot bus exhaust worth way bone indoor calm squirrel merry zero scheme cotton until shop any excess stage laundry"
+                    },
+                    {
+                        "name": "acc1",
+                        "amount": "24000000000%DENOM%",
+                        "address": "shinzo1xehj0xc24k2c740jslfyd4d6mt8c4dczuu8f32",
+                        "mnemonic": "wealth flavor believe regret funny network recall kiss grape useless pepper cram hint member few certain unveil rather brick bargain curious require crowd raise"
+                    },
+                    {
+                        "name": "user0",
+                        "amount": "100000%DENOM%",
+                        "address": "shinzo1mcz04v9ujdhy8ks6gcx7p0k0krk7vxh9yxh2rd",
+                        "mnemonic": "cage cave walnut film breeze sorry shadow all almost afford castle field van usual still fiction smooth veteran matter neck swift kiss helmet lobster"
+                    },
+                    {
+                        "name": "user1",
+                        "amount": "100000%DENOM%",
+                        "address": "shinzo1jzuzyfyvzraqcuesn8z8qs3vvjznmlfdu95492",
+                        "mnemonic": "truly visual boost cabbage reject bronze good remind twist rib spike promote ten opinion napkin cook pipe universe cigar smoke outside online board verb"
+                    }
+                ]
+            },
+            "config_file_overrides": [
+                {
+                    "file": "config/app.toml",
+                    "paths": {
+                        "api.enabled-unsafe-cors": true
+                    }
+                },
+                {
+                    "file": "config/config.toml",
+                    "paths": {
+                        "rpc.cors_allowed_origins": [
+                            "*"
+                        ]
+                    }
+                }
+            ],
+            "ibc_paths": [
+                "localchain_9000-1_localchain_9000-2"
+            ],
+            "number_vals": 1,
+            "number_node": 0,
+            "chain_type": "cosmos",
+            "coin_type": 60,
+            "binary": "shinzohubd",
+            "bech32_prefix": "shinzo",
+            "denom": "ushinzo",
+            "trusting_period": "336h",
+            "debugging": false,
+            "block_time": "2000ms",
+            "host_port_override": {
+                "1317": "1317",
+                "26656": "26656",
+                "26657": "26657",
+                "9090": "9090"
+            },
+            "ics_version_override": {}
+        },
+        {
+            "name": "shinzohub",
+            "chain_id": "localchain_9000-2",
+            "docker_image": {
+                "repository": "shinzohub",
+                "version": "local",
+                "uid-gid": ""
+            },
+            "gas_prices": "0.0ushinzo",
+            "gas_adjustment": 2,
+            "genesis": {
+                "modify": [
+                    {
+                        "key": "app_state.gov.params.voting_period",
+                        "value": "3s"
+                    },
+                    {
+                        "key": "app_state.gov.params.max_deposit_period",
+                        "value": "10s"
+                    },
+                    {
+                        "key": "app_state.gov.params.min_deposit.0.denom",
+                        "value": "ushinzo"
+                    },
+                    {
+                        "key": "app_state.gov.params.min_deposit.0.amount",
+                        "value": "1"
+                    }
+                ],
+                "accounts": [
+                    {
+                        "name": "acc0",
+                        "amount": "25000000000%DENOM%",
+                        "address": "shinzo13a6zjh96w9z9y2defkktdc6vn4r5h3s7xp24me",
+                        "mnemonic": "decorate bright ozone fork gallery riot bus exhaust worth way bone indoor calm squirrel merry zero scheme cotton until shop any excess stage laundry"
+                    },
+                    {
+                        "name": "acc1",
+                        "amount": "24000000000%DENOM%",
+                        "address": "shinzo1xehj0xc24k2c740jslfyd4d6mt8c4dczuu8f32",
+                        "mnemonic": "wealth flavor believe regret funny network recall kiss grape useless pepper cram hint member few certain unveil rather brick bargain curious require crowd raise"
+                    },
+                    {
+                        "name": "user0",
+                        "amount": "100000%DENOM%",
+                        "address": "shinzo1tfhwkdq9z74p5gguzy0ngms0q93d7h2eekmnng",
+                        "mnemonic": "equal oppose credit reunion shrug mom lake slot file onion gaze profit arena devote obvious key daring fame this clerk sudden poverty spirit spring"
+                    },
+                    {
+                        "name": "user1",
+                        "amount": "100000%DENOM%",
+                        "address": "shinzo1vnhg39eyjc9kusk93ng8azstrhrhafhsd0yfpc",
+                        "mnemonic": "novel year anxiety end dish loop ankle excite grief hole extend blouse memory gasp hello empower toe chapter foam congress above duty dune brief"
+                    }
+                ]
+            },
+            "ibc_paths": [
+                "localchain_9000-1_localchain_9000-2"
+            ],
+            "number_vals": 1,
+            "number_node": 0,
+            "chain_type": "cosmos",
+            "coin_type": 60,
+            "binary": "shinzohubd",
+            "bech32_prefix": "shinzo",
+            "denom": "ushinzo",
+            "trusting_period": "336h",
+            "debugging": false,
+            "block_time": "2000ms",
+            "ics_version_override": {}
+        }
+    ]
+}

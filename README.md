@@ -1,50 +1,34 @@
-# shinzohub
-**shinzohub** is a blockchain built using Cosmos SDK and Tendermint and created with [Ignite CLI](https://ignite.com/cli).
+# Generated With [Spawn](https://github.com/rollchains/spawn)
 
-## Get started
+## Module Scaffolding
 
-```
-ignite chain serve
-```
+- `spawn module new <name>` *Generates a Cosmos module template*
 
-`serve` command installs dependencies, builds, initializes, and starts your blockchain in development.
+## Content Generation
 
-### Configure
+- `make proto-gen` *Generates go code from proto files, stubs interfaces*
 
-Your blockchain in development can be configured with `config.yml`. To learn more, see the [Ignite CLI docs](https://docs.ignite.com).
+## Testnet
 
-### Web Frontend
+- `make testnet` *IBC testnet from chain <-> local cosmos-hub*
+- `make sh-testnet` *Single node, no IBC. quick iteration*
+- `local-ic chains` *See available testnets from the chains/ directory*
+- `local-ic start <name>` *Starts a local chain with the given name*
 
-Additionally, Ignite CLI offers a frontend scaffolding feature (based on Vue) to help you quickly build a web frontend for your blockchain:
+## Local Images
 
-Use: `ignite scaffold vue`
-This command can be run within your scaffolded blockchain project.
+- `make install`      *Builds the chain's binary*
+- `make local-image`  *Builds the chain's docker image*
 
+## Testing
 
-For more information see the [monorepo for Ignite front-end development](https://github.com/ignite/web).
+- `go test ./... -v` *Unit test*
+- `make ictest-*`  *E2E testing*
 
-## Release
-To release a new version of your blockchain, create and push a new tag with `v` prefix. A new draft release with the configured targets will be created.
+## Webapp Template
 
-```
-git tag v0.1
-git push origin v0.1
-```
+Generate the template base with spawn. Requires [npm](https://nodejs.org/en/download/package-manager) and [yarn](https://classic.yarnpkg.com/lang/en/docs/install) to be installed.
 
-After a draft release is created, make your final changes from the release page and publish it.
+- `make generate-webapp` *[Cosmology Webapp Template](https://github.com/cosmology-tech/create-cosmos-app)*
 
-### Install
-To install the latest version of your blockchain node's binary, execute the following command on your machine:
-
-```
-curl https://get.ignite.com/username/shinzohub@latest! | sudo bash
-```
-`username/shinzohub` should match the `username` and `repo_name` of the Github repository to which the source code was pushed. Learn more about [the install process](https://github.com/allinbits/starport-installer).
-
-## Learn more
-
-- [Ignite CLI](https://ignite.com/cli)
-- [Tutorials](https://docs.ignite.com/guide)
-- [Ignite CLI docs](https://docs.ignite.com)
-- [Cosmos SDK docs](https://docs.cosmos.network)
-- [Developer Chat](https://discord.gg/ignite)
+Start the testnet with `make testnet`, and open the webapp `cd ./web && yarn dev`

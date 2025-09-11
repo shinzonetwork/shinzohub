@@ -4,17 +4,33 @@ import (
 	"fmt"
 	"os"
 
-	clienthelpers "cosmossdk.io/client/v2/helpers"
 	svrcmd "github.com/cosmos/cosmos-sdk/server/cmd"
-
-	"shinzohub/app"
-	"shinzohub/cmd/shinzohubd/cmd"
+	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/shinzonetwork/shinzohub/app"
 )
 
 func main() {
-	rootCmd := cmd.NewRootCmd()
-	if err := svrcmd.Execute(rootCmd, clienthelpers.EnvPrefix, app.DefaultNodeHome); err != nil {
+	setupSDKConfig()
+
+	rootCmd := NewRootCmd()
+
+	if err := svrcmd.Execute(rootCmd, "", app.DefaultNodeHome); err != nil {
 		fmt.Fprintln(rootCmd.OutOrStderr(), err)
 		os.Exit(1)
 	}
+}
+
+func setupSDKConfig() {
+	config := sdk.GetConfig()
+	SetBech32Prefixes(config)
+	config.SetCoinType(app.CoinType)
+	config.SetPurpose(44)
+	config.Seal()
+}
+
+// SetBech32Prefixes sets the global prefixes to be used when serializing addresses and public keys to Bech32 strings.
+func SetBech32Prefixes(config *sdk.Config) {
+	config.SetBech32PrefixForAccount(app.Bech32PrefixAccAddr, app.Bech32PrefixAccPub)
+	config.SetBech32PrefixForValidator(app.Bech32PrefixValAddr, app.Bech32PrefixValPub)
+	config.SetBech32PrefixForConsensusNode(app.Bech32PrefixConsAddr, app.Bech32PrefixConsPub)
 }

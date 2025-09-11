@@ -1,0 +1,16 @@
+{
+  "display": {
+    "name": "shinzohub",
+    "description": "shinzohub is an Interchain blockchain.",
+    "links": {
+      "logo": "https://raw.githubusercontent.com/cosmos/chain-registry/master/cosmoshub/images/atom.png",
+      "discord": "https://discord.gg/your-discord",
+      "email": "example@example.com",
+      "github": "https://github.com/shinzonetwork/shinzohub",
+      "telegram": "https://t.me/example",
+      "twitter": "https://twitter.com/example_account",
+      "website": "https://example.com",
+      "whitepaper": "https://bitcoin.org/bitcoin.pdf"
+    }
+  }
+}
