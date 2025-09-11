@@ -19,7 +19,6 @@ import (
 	txmodule "github.com/cosmos/cosmos-sdk/x/auth/tx/config"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 
-	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
 	evmoskeyring "github.com/cosmos/evm/crypto/keyring"
 	"github.com/shinzonetwork/shinzohub/app"
 	"github.com/shinzonetwork/shinzohub/app/params"
@@ -32,7 +31,6 @@ func NewRootCmd() *cobra.Command {
 	// note, this is not necessary when using app wiring, as depinject can be directly used (see root_v2.go)
 	tempApp := app.NewChainApp(
 		log.NewNopLogger(), dbm.NewMemDB(), nil, false, simtestutil.NewAppOptionsWithFlagHome(tempDir()),
-		[]wasmkeeper.Option{},
 		app.EVMAppOptions,
 	)
 	encodingConfig := params.EncodingConfig{

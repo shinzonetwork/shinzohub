@@ -15,9 +15,7 @@ import (
 	sdkmath "cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	wasm "github.com/CosmWasm/wasmd/x/wasm/types"
 	ibcconntypes "github.com/cosmos/ibc-go/v8/modules/core/03-connection/types"
-	tokenfactory "github.com/strangelove-ventures/tokenfactory/x/tokenfactory/types"
 
 	cryptotypes "github.com/cosmos/cosmos-sdk/crypto/types"
 	"github.com/cosmos/evm/crypto/ethsecp256k1"
@@ -50,9 +48,6 @@ var (
 		cosmos.NewGenesisKV("app_state.gov.params.max_deposit_period", MaxDepositPeriod),
 		cosmos.NewGenesisKV("app_state.gov.params.min_deposit.0.denom", Denom),
 		cosmos.NewGenesisKV("app_state.gov.params.min_deposit.0.amount", "1"),
-		// tokenfactory: set create cost in set denom or in gas usage.
-		cosmos.NewGenesisKV("app_state.tokenfactory.params.denom_creation_fee", nil),
-		cosmos.NewGenesisKV("app_state.tokenfactory.params.denom_creation_gas_consume", 1), // cost 1 gas to create a new denom
 		cosmos.NewGenesisKV("app_state.feemarket.params.no_base_fee", true),
 		cosmos.NewGenesisKV("app_state.feemarket.params.base_fee", "0.000000000000000000"),
 		cosmos.NewGenesisKV("app_state.evm.params.evm_denom", Denom),
@@ -109,8 +104,6 @@ var (
 func GetEncodingConfig() *moduletestutil.TestEncodingConfig {
 	cfg := cosmos.DefaultEncoding()
 	// TODO: add encoding types here for the modules you want to use
-	wasm.RegisterInterfaces(cfg.InterfaceRegistry)
-	tokenfactory.RegisterInterfaces(cfg.InterfaceRegistry)
 	evmtypes.RegisterInterfaces(cfg.InterfaceRegistry)
 	cfg.InterfaceRegistry.RegisterImplementations((*cryptotypes.PubKey)(nil), &ethsecp256k1.PubKey{})
 	cfg.InterfaceRegistry.RegisterImplementations((*cryptotypes.PrivKey)(nil), &ethsecp256k1.PrivKey{})

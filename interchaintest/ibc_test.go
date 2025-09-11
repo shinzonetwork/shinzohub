@@ -26,7 +26,6 @@ func TestIBCBasic(t *testing.T) {
 	client, network := interchaintest.DockerSetup(t)
 
 	cs := &DefaultChainSpec
-	cs.ModifyGenesis = cosmos.ModifyGenesis([]cosmos.GenesisKV{cosmos.NewGenesisKV("app_state.ratelimit.blacklisted_denoms", []string{})})
 
 	cf := interchaintest.NewBuiltinChainFactory(zaptest.NewLogger(t), []*interchaintest.ChainSpec{
 		cs,

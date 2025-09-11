@@ -14,7 +14,6 @@ import (
 	simtestutil "github.com/cosmos/cosmos-sdk/testutil/sims"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
 	"github.com/shinzonetwork/shinzohub/app/params"
 )
 
@@ -29,7 +28,6 @@ func MakeEncodingConfig(t testing.TB) params.EncodingConfig {
 		nil,
 		true,
 		simtestutil.NewAppOptionsWithFlagHome(t.TempDir()),
-		[]wasmkeeper.Option{},
 		EVMAppOptions,
 	)
 	return makeEncodingConfig(tempApp)

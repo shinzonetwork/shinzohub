@@ -231,10 +231,6 @@ github.com/ChainSafe/go-schnorrkel v1.0.0 h1:3aDA67lAykLaG1y3AOjs88dMxC88PgUuHRr
 github.com/ChainSafe/go-schnorrkel v1.0.0/go.mod h1:dpzHYVxLZcp8pjlV+O+UR8K0Hp/z7vcchBSbMBEhCw4=
 github.com/ComposableFi/go-subkey/v2 v2.0.0-tm03420 h1:oknQF/iIhf5lVjbwjsVDzDByupRhga8nhA3NAmwyHDA=
 github.com/ComposableFi/go-subkey/v2 v2.0.0-tm03420/go.mod h1:KYkiMX5AbOlXXYfxkrYPrRPV6EbVUALTQh5ptUOJzu8=
-github.com/CosmWasm/wasmd v0.50.0 h1:NVaGqCSTRfb9UTDHJwT6nQIWcb6VjlQl88iI+u1+qjE=
-github.com/CosmWasm/wasmd v0.50.0/go.mod h1:UjmShW4l9YxaMytwJZ7IB7MWzHiynSZP3DdWrG0FRtk=
-github.com/CosmWasm/wasmvm v1.5.4 h1:Opqy65ubJ8bMsT08dn85VjRdsLJVPIAgIXif92qOMGc=
-github.com/CosmWasm/wasmvm v1.5.4/go.mod h1:Q0bSEtlktzh7W2hhEaifrFp1Erx11ckQZmjq8FLCyys=
 github.com/DataDog/datadog-go v3.2.0+incompatible h1:qSG2N4FghB1He/r2mFrWKCaL7dXCilEuNEeAn20fdD4=
 github.com/DataDog/datadog-go v3.2.0+incompatible/go.mod h1:LButxg5PwREeZtORoXG3tL4fMGNddJ+vMq1mwgfaqoQ=
 github.com/DataDog/zstd v1.5.5 h1:oWf5W7GtOLgp6bciQYDmhHHjdhYkALu6S/5Ni9ZgSvQ=
@@ -1128,8 +1124,6 @@ github.com/strangelove-ventures/cosmos-sdk v0.0.0-20250317212103-0767f8c5b1e5 h1
 github.com/strangelove-ventures/cosmos-sdk v0.0.0-20250317212103-0767f8c5b1e5/go.mod h1:PHUr2nW1WC6isM2ar72DLQ/Cd/ibvUntm/YU6ML/eG0=
 github.com/strangelove-ventures/interchaintest/v8 v8.8.1 h1:F7xqxZ8Nl9ttKHQqVjgJ2lCQrQxiRjJq6EVdA/YaGeY=
 github.com/strangelove-ventures/interchaintest/v8 v8.8.1/go.mod h1:AFFimVWInij/cZMjNbKYMW6EgX0SjHKmIl/GS/akMd8=
-github.com/strangelove-ventures/tokenfactory v0.50.3 h1:MccxHYUHjMHDOxcmx/HJs1mU4zVhli1f4sz3126Wzr8=
-github.com/strangelove-ventures/tokenfactory v0.50.3/go.mod h1:z0hlFofihDchAZxyzu0P/XxM+FSUAC+RmncklvTdcDg=
 github.com/streadway/amqp v0.0.0-20190404075320-75d898a42a94/go.mod h1:AZpEONHx3DKn8O/DFsRAY58/XVQiIPMTMB1SddzLXVw=
 github.com/streadway/amqp v0.0.0-20190827072141-edfb9018d271/go.mod h1:AZpEONHx3DKn8O/DFsRAY58/XVQiIPMTMB1SddzLXVw=
 github.com/streadway/handy v0.0.0-20190108123426-d5acb3125c2a/go.mod h1:qNTQ5P5JnDBl6z3cMAg/SywNDC5ABu5ApDIw6lUbRmI=

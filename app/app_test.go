@@ -13,8 +13,6 @@ import (
 	simtestutil "github.com/cosmos/cosmos-sdk/testutil/sims"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/msgservice"
-
-	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
 )
 
 func TestAppExport(t *testing.T) {
@@ -36,10 +34,8 @@ func TestAppExport(t *testing.T) {
 	require.NoError(t, err)
 
 	// Making a new app object with the db, so that initchain hasn't been called
-	var wasmOpts []wasmkeeper.Option = nil
 	newGapp := NewChainApp(
 		logger, db, nil, true, simtestutil.NewAppOptionsWithFlagHome(t.TempDir()),
-		wasmOpts,
 		EVMAppOptions,
 	)
 	_, err = newGapp.ExportAppStateAndValidators(false, []string{}, nil)

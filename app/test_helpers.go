@@ -42,18 +42,15 @@ import (
 	minttypes "github.com/cosmos/cosmos-sdk/x/mint/types"
 	slashingtypes "github.com/cosmos/cosmos-sdk/x/slashing/types"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
-
-	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
 )
 
 const chainID = "testing"
 
 // SetupOptions defines arguments that are passed into `ChainApp` constructor.
 type SetupOptions struct {
-	Logger   log.Logger
-	DB       *dbm.MemDB
-	AppOpts  servertypes.AppOptions
-	WasmOpts []wasmkeeper.Option
+	Logger  log.Logger
+	DB      *dbm.MemDB
+	AppOpts servertypes.AppOptions
 }
 
 func setup(
@@ -61,7 +58,6 @@ func setup(
 	chainID string,
 	withGenesis bool,
 	invCheckPeriod uint,
-	wasmOpts ...wasmkeeper.Option,
 ) (*ChainApp, GenesisState) {
 	db := dbm.NewMemDB()
 	nodeHome := t.TempDir()
@@ -82,7 +78,6 @@ func setup(
 		nil,
 		true,
 		appOptions,
-		wasmOpts,
 		EVMAppOptions,
 		bam.SetChainID(chainID),
 		bam.SetSnapshot(snapshotStore, snapshottypes.SnapshotOptions{KeepRecent: 2}),
@@ -117,7 +112,6 @@ func NewChainAppWithCustomOptions(t *testing.T, isCheckTx bool, options SetupOpt
 		options.DB,
 		nil, true,
 		options.AppOpts,
-		options.WasmOpts,
 		EVMAppOptions,
 	)
 	genesisState := app.DefaultGenesis()
@@ -145,7 +139,6 @@ func NewChainAppWithCustomOptions(t *testing.T, isCheckTx bool, options SetupOpt
 // Setup initializes a new ChainApp. A Nop logger is set in ChainApp.
 func Setup(
 	t *testing.T,
-	wasmOpts ...wasmkeeper.Option,
 ) *ChainApp {
 	t.Helper()
 
@@ -170,7 +163,6 @@ func Setup(
 		valSet,
 		[]authtypes.GenesisAccount{acc},
 		chainID,
-		wasmOpts,
 		balance,
 	)
 
@@ -186,14 +178,12 @@ func SetupWithGenesisValSet(
 	valSet *cmttypes.ValidatorSet,
 	genAccs []authtypes.GenesisAccount,
 	chainID string,
-	wasmOpts []wasmkeeper.Option,
 	balances ...banktypes.Balance,
 ) *ChainApp {
 	t.Helper()
 
 	app, genesisState := setup(
 		t, chainID, true, 5,
-		wasmOpts...,
 	)
 	genesisState, err := GenesisStateWithValSet(app.AppCodec(), genesisState, valSet, genAccs, balances...)
 	require.NoError(t, err)
@@ -294,8 +284,6 @@ func initAccountWithCoins(app *ChainApp, ctx sdk.Context, addr sdk.AccAddress, c
 	}
 }
 
-var emptyWasmOptions = []wasmkeeper.Option{}
-
 // NewTestNetworkFixture returns a new ChainApp AppConstructor for network simulation tests
 func NewTestNetworkFixture() network.TestFixture {
 	dir, err := os.MkdirTemp("", "simapp")
@@ -305,14 +293,12 @@ func NewTestNetworkFixture() network.TestFixture {
 	defer os.RemoveAll(dir)
 
 	app := NewChainApp(log.NewNopLogger(), dbm.NewMemDB(), nil, true, simtestutil.NewAppOptionsWithFlagHome(dir),
-		nil,
 		EVMAppOptions,
 	)
 	appCtr := func(val network.ValidatorI) servertypes.Application {
 		return NewChainApp(
 			val.GetCtx().Logger, dbm.NewMemDB(), nil, true,
 			simtestutil.NewAppOptionsWithFlagHome(val.GetCtx().Config.RootDir),
-			emptyWasmOptions,
 			EVMAppOptions,
 			bam.SetPruning(pruningtypes.NewPruningOptionsFromString(val.GetAppConfig().Pruning)),
 			bam.SetMinGasPrices(val.GetAppConfig().MinGasPrices),

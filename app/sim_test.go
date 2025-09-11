@@ -31,8 +31,6 @@ import (
 	simcli "github.com/cosmos/cosmos-sdk/x/simulation/client/cli"
 	slashingtypes "github.com/cosmos/cosmos-sdk/x/slashing/types"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
-
-	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
 )
 
 // SimAppChainID hardcoded chainID for simulation
@@ -124,7 +122,6 @@ func TestAppImportExport(t *testing.T) {
 	}()
 
 	newApp := NewChainApp(log.NewNopLogger(), newDB, nil, true, appOptions,
-		nil,
 		EVMAppOptions,
 		fauxMerkleModeOpt, baseapp.SetChainID(SimAppChainID))
 
@@ -159,7 +156,6 @@ func TestAppImportExport(t *testing.T) {
 		authzkeeper.StoreKey:   {authzkeeper.GrantQueuePrefix},
 		feegrant.StoreKey:      {feegrant.FeeAllowanceQueueKeyPrefix},
 		slashingtypes.StoreKey: {slashingtypes.ValidatorMissedBlockBitmapKeyPrefix},
-		wasmtypes.StoreKey:     {wasmtypes.TXCounterPrefix},
 	}
 
 	storeKeys := app.GetStoreKeys()
@@ -241,7 +237,6 @@ func TestAppSimulationAfterImport(t *testing.T) {
 	}()
 
 	newApp := NewChainApp(log.NewNopLogger(), newDB, nil, true, appOptions,
-		nil,
 		EVMAppOptions,
 		fauxMerkleModeOpt, baseapp.SetChainID(SimAppChainID))
 
@@ -285,7 +280,6 @@ func setupSimulationApp(t *testing.T, msg string) (simtypes.Config, dbm.DB, simt
 	appOptions[server.FlagInvCheckPeriod] = simcli.FlagPeriodValue
 
 	app := NewChainApp(logger, db, nil, true, appOptions,
-		nil,
 		EVMAppOptions,
 		fauxMerkleModeOpt, baseapp.SetChainID(SimAppChainID))
 	return config, db, appOptions, app
@@ -339,7 +333,6 @@ func TestAppStateDeterminism(t *testing.T) {
 
 			db := dbm.NewMemDB()
 			app := NewChainApp(logger, db, nil, true, appOptions,
-				nil,
 				EVMAppOptions,
 				interBlockCacheOpt(), baseapp.SetChainID(SimAppChainID))
 

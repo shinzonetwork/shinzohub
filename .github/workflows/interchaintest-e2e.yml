@@ -76,8 +76,6 @@ jobs:
         # names of `make` commands to run tests
         test:
           - "ictest-basic"
-          - "ictest-wasm"
-          - "ictest-tokenfactory"
       fail-fast: false
 
     steps:

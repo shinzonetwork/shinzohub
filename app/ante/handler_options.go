@@ -4,13 +4,10 @@ import (
 	"context"
 
 	addresscodec "cosmossdk.io/core/address"
-	corestoretypes "cosmossdk.io/core/store"
 	errorsmod "cosmossdk.io/errors"
 	storetypes "cosmossdk.io/store/types"
 	circuitkeeper "cosmossdk.io/x/circuit/keeper"
 	txsigning "cosmossdk.io/x/tx/signing"
-	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
-	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	errortypes "github.com/cosmos/cosmos-sdk/types/errors"
@@ -51,10 +48,6 @@ type HandlerOptions struct {
 	SigGasConsumer         func(meter storetypes.GasMeter, sig signing.SignatureV2, params authtypes.Params) error
 	TxFeeChecker           ante.TxFeeChecker // safe to be nil
 
-	WasmConfig            *wasmtypes.WasmConfig
-	WasmKeeper            *wasmkeeper.Keeper
-	TXCounterStoreService corestoretypes.KVStoreService
-
 	MaxTxGasWanted  uint64
 	FeeMarketKeeper anteinterfaces.FeeMarketKeeper
 	EvmKeeper       anteinterfaces.EVMKeeper
@@ -82,16 +75,6 @@ func (options HandlerOptions) Validate() error {
 	}
 	if options.CircuitKeeper == nil {
 		return errorsmod.Wrap(errortypes.ErrLogic, "circuit keeper is required for ante builder")
-	}
-
-	if options.WasmConfig == nil {
-		return errorsmod.Wrap(errortypes.ErrLogic, "wasm config is required for ante builder")
-	}
-	if options.TXCounterStoreService == nil {
-		return errorsmod.Wrap(errortypes.ErrLogic, "wasm store service is required for ante builder")
-	}
-	if options.WasmKeeper == nil {
-		return errorsmod.Wrap(errortypes.ErrLogic, "wasm keeper is required for ante builder")
 	}
 
 	if options.TxFeeChecker == nil {

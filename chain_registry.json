@@ -46,8 +46,8 @@
       "type": "tendermint",
       "version": "0.38"
     },
-    "cosmwasm_version": "0.50",
-    "cosmwasm_enabled": true,
+    "cosmwasm_version": "",
+    "cosmwasm_enabled": false,
     "ibc_go_version": "8",
     "ics_enabled": [
       "ics20-1"
