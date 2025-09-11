@@ -47,9 +47,6 @@ func initCometBFTConfig() *cmtcfg.Config {
 	// cfg.P2P.MaxNumInboundPeers = 100
 	// cfg.P2P.MaxNumOutboundPeers = 40
 
-	cfg.Mempool.MaxTxBytes = 25 * 1024 * 1024   // 25 MB per tx
-	cfg.Mempool.MaxTxsBytes = 100 * 1024 * 1024 // 100 MB total mempool
-
 	return cfg
 }
 
@@ -95,6 +92,8 @@ func initAppConfig() (string, interface{}) {
 
 	customAppTemplate += evmosserverconfig.DefaultEVMConfigTemplate
 
+	// customAppConfig.EVM.EVMChainID = app.ChainID18Decimals // TODO: This may be a good idea if the config/app.toml evm-chain-id is a pain. Question is for a testnet.
+
 	return customAppTemplate, customAppConfig
 }
 
@@ -111,8 +110,8 @@ func initRootCmd(
 		cmtcli.NewCompletionCmd(rootCmd, true),
 		debug.Cmd(),
 		confixcmd.ConfigCommand(),
-		pruning.Cmd(newApp, app.DefaultNodeHome),
-		snapshot.Cmd(newApp),
+		pruning.Cmd(newAppWrapper(), app.DefaultNodeHome),
+		snapshot.Cmd(newAppWrapper()),
 	)
 
 	// add EVM' flavored TM commands to start server, etc.
@@ -209,13 +208,20 @@ func txCommand() *cobra.Command {
 	return cmd
 }
 
+// newAppWrapper creates a wrapper for SDK commands that expect servertypes.Application
+func newAppWrapper() servertypes.AppCreator {
+	return func(logger log.Logger, db dbm.DB, traceStore io.Writer, appOpts servertypes.AppOptions) servertypes.Application {
+		return newApp(logger, db, traceStore, appOpts)
+	}
+}
+
 // newApp creates the application
 func newApp(
 	logger log.Logger,
 	db dbm.DB,
 	traceStore io.Writer,
 	appOpts servertypes.AppOptions,
-) servertypes.Application {
+) evmosserver.Application {
 	baseappOptions := sdkserver.DefaultBaseappOptions(appOpts)
 
 	if cast.ToBool(appOpts.Get("telemetry.enabled")) {
@@ -224,6 +230,7 @@ func newApp(
 	return app.NewChainApp(
 		logger, db, traceStore, true,
 		appOpts,
+		app.ChainID18Decimals,
 		app.EVMAppOptions,
 		baseappOptions...,
 	)
@@ -262,6 +269,7 @@ func appExport(
 		traceStore,
 		height == -1,
 		appOpts,
+		app.ChainID18Decimals,
 		app.EVMAppOptions,
 	)
 

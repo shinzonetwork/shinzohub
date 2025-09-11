@@ -2,7 +2,7 @@
     "chains": [
         {
             "name": "shinzohub",
-            "chain_id": "localchain_9000-1",
+            "chain_id": "9001",
             "docker_image": {
                 "repository": "shinzohub",
                 "version": "local",

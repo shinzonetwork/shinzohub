@@ -2,7 +2,7 @@
     "chains": [
         {
             "name": "shinzohub",
-            "chain_id": "localchain_9000-1",
+            "chain_id": "9001",
             "docker_image": {
                 "repository": "shinzohub",
                 "version": "local",
@@ -73,7 +73,7 @@
                 }
             ],
             "ibc_paths": [
-                "localchain_9000-1_localchain_9000-2"
+                "9001_localchain_9000-2"
             ],
             "number_vals": 1,
             "number_node": 0,
@@ -150,7 +150,7 @@
                 ]
             },
             "ibc_paths": [
-                "localchain_9000-1_localchain_9000-2"
+                "9001_localchain_9000-2"
             ],
             "number_vals": 1,
             "number_node": 0,

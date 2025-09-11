@@ -2,6 +2,7 @@ package ante
 
 import (
 	"context"
+	"time"
 
 	addresscodec "cosmossdk.io/core/address"
 	errorsmod "cosmossdk.io/errors"
@@ -15,7 +16,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/auth/ante"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	anteinterfaces "github.com/cosmos/evm/ante/interfaces"
-	ibckeeper "github.com/cosmos/ibc-go/v8/modules/core/keeper"
+	ibckeeper "github.com/cosmos/ibc-go/v10/modules/core/keeper"
 )
 
 // BankKeeper defines the contract needed for supply related APIs (noalias)
@@ -34,6 +35,9 @@ type AccountKeeper interface {
 	GetParams(ctx context.Context) (params authtypes.Params)
 	GetSequence(ctx context.Context, addr sdk.AccAddress) (uint64, error)
 	AddressCodec() addresscodec.Codec
+	UnorderedTransactionsEnabled() bool
+	RemoveExpiredUnorderedNonces(ctx sdk.Context) error
+	TryAddUnorderedNonce(ctx sdk.Context, sender []byte, timestamp time.Time) error
 }
 
 // HandlerOptions defines the list of module keepers required to run the EVM

@@ -7,10 +7,10 @@ import (
 	storetypes "cosmossdk.io/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	cmn "github.com/cosmos/evm/precompiles/common"
-
-	"github.com/cosmos/evm/x/vm/core/vm"
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/core/tracing"
+	"github.com/ethereum/go-ethereum/core/vm"
 )
 
 const (
@@ -58,7 +58,7 @@ func (p Precompile) Run(evm *vm.EVM, contract *vm.Contract, readOnly bool) (bz [
 		return nil, fmt.Errorf("cannot receive funds, received: %s", contract.Value().String())
 	}
 
-	ctx, stateDB, snapshot, method, initialGas, args, err := p.RunSetup(evm, contract, readOnly, p.IsTransaction)
+	ctx, stateDB, method, initialGas, args, err := p.RunSetup(evm, contract, readOnly, p.IsTransaction)
 	if err != nil {
 		return nil, err
 	}
@@ -74,13 +74,13 @@ func (p Precompile) Run(evm *vm.EVM, contract *vm.Contract, readOnly bool) (bz [
 
 	cost := ctx.GasMeter().GasConsumed() - initialGas
 
-	if !contract.UseGas(cost) {
+	if !contract.UseGas(uint64(cost), nil, tracing.GasChangeUnspecified) {
 		return nil, vm.ErrOutOfGas
 	}
 
-	if err := p.AddJournalEntries(stateDB, snapshot); err != nil {
-		return nil, err
-	}
+	// if err := p.AddJournalEntries(stateDB, snapshot); err != nil {
+	// 	return nil, err
+	// }
 
 	return bz, nil
 }

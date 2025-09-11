@@ -122,6 +122,7 @@ func TestAppImportExport(t *testing.T) {
 	}()
 
 	newApp := NewChainApp(log.NewNopLogger(), newDB, nil, true, appOptions,
+		ChainID18Decimals,
 		EVMAppOptions,
 		fauxMerkleModeOpt, baseapp.SetChainID(SimAppChainID))
 
@@ -237,6 +238,7 @@ func TestAppSimulationAfterImport(t *testing.T) {
 	}()
 
 	newApp := NewChainApp(log.NewNopLogger(), newDB, nil, true, appOptions,
+		ChainID18Decimals,
 		EVMAppOptions,
 		fauxMerkleModeOpt, baseapp.SetChainID(SimAppChainID))
 
@@ -280,6 +282,7 @@ func setupSimulationApp(t *testing.T, msg string) (simtypes.Config, dbm.DB, simt
 	appOptions[server.FlagInvCheckPeriod] = simcli.FlagPeriodValue
 
 	app := NewChainApp(logger, db, nil, true, appOptions,
+		ChainID18Decimals,
 		EVMAppOptions,
 		fauxMerkleModeOpt, baseapp.SetChainID(SimAppChainID))
 	return config, db, appOptions, app
@@ -333,6 +336,7 @@ func TestAppStateDeterminism(t *testing.T) {
 
 			db := dbm.NewMemDB()
 			app := NewChainApp(logger, db, nil, true, appOptions,
+				ChainID18Decimals,
 				EVMAppOptions,
 				interBlockCacheOpt(), baseapp.SetChainID(SimAppChainID))
 

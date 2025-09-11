@@ -31,6 +31,7 @@ func NewRootCmd() *cobra.Command {
 	// note, this is not necessary when using app wiring, as depinject can be directly used (see root_v2.go)
 	tempApp := app.NewChainApp(
 		log.NewNopLogger(), dbm.NewMemDB(), nil, false, simtestutil.NewAppOptionsWithFlagHome(tempDir()),
+		app.ChainID18Decimals,
 		app.EVMAppOptions,
 	)
 	encodingConfig := params.EncodingConfig{

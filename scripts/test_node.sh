@@ -2,15 +2,15 @@
 # Run this script to quickly install, setup, and run the current version of the network without docker.
 #
 # Examples:
-# CHAIN_ID="localchain_9000-1" HOME_DIR="~/.shinzohub" BLOCK_TIME="1000ms" CLEAN=true sh scripts/test_node.sh
-# CHAIN_ID="localchain_9000-2" HOME_DIR="~/.shinzohub" CLEAN=true RPC=36657 REST=2317 PROFF=6061 P2P=36656 GRPC=8090 GRPC_WEB=8091 ROSETTA=8081 BLOCK_TIME="500ms" sh scripts/test_node.sh
+# CHAIN_ID="9001" HOME_DIR="~/.shinzohub" BLOCK_TIME="1000ms" CLEAN=true sh scripts/test_node.sh
+# CHAIN_ID="9002" HOME_DIR="~/.shinzohub" CLEAN=true RPC=36657 REST=2317 PROFF=6061 P2P=36656 GRPC=8090 GRPC_WEB=8091 ROSETTA=8081 BLOCK_TIME="500ms" sh scripts/test_node.sh
 
 set -eu
 
 export KEY="acc0"
 export KEY2="acc1"
 
-export CHAIN_ID=${CHAIN_ID:-"localchain_9000-1"}
+export CHAIN_ID=${CHAIN_ID:-"9001"}
 export MONIKER="localvalidator"
 export KEYALGO="eth_secp256k1"
 export KEYRING=${KEYRING:-"test"}
@@ -92,7 +92,7 @@ from_scratch () {
 
   update_test_genesis `printf '.app_state["evm"]["params"]["evm_denom"]="%s"' $DENOM`
   update_test_genesis '.app_state["evm"]["params"]["active_static_precompiles"]=["0x0000000000000000000000000000000000000100","0x0000000000000000000000000000000000000210","0x0000000000000000000000000000000000000400","0x0000000000000000000000000000000000000800","0x0000000000000000000000000000000000000801","0x0000000000000000000000000000000000000802","0x0000000000000000000000000000000000000803","0x0000000000000000000000000000000000000804","0x0000000000000000000000000000000000000805"]'
-  update_test_genesis '.app_state["erc20"]["params"]["native_precompiles"]=["0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE"]' # https://eips.ethereum.org/EIPS/eip-7528
+  update_test_genesis '.app_state["erc20"]["native_precompiles"]=["0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE"]' # https://eips.ethereum.org/EIPS/eip-7528
   update_test_genesis `printf '.app_state["erc20"]["token_pairs"]=[{contract_owner:1,erc20_address:"0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE",denom:"%s",enabled:true}]' $DENOM`
   update_test_genesis '.app_state["feemarket"]["params"]["no_base_fee"]=true'
   update_test_genesis '.app_state["feemarket"]["params"]["base_fee"]="0.000000000000000000"'
@@ -111,10 +111,6 @@ from_scratch () {
   update_test_genesis '.consensus["params"]["abci"]["vote_extensions_enable_height"]="1"'
 
   # === CUSTOM MODULES ===
-  # tokenfactory
-  update_test_genesis '.app_state["tokenfactory"]["params"]["denom_creation_fee"]=[]'
-  update_test_genesis '.app_state["tokenfactory"]["params"]["denom_creation_gas_consume"]=100000'
-
 
   BASE_GENESIS_ALLOCATIONS="100000000000000000000000000$DENOM,100000000test"
 
@@ -165,5 +161,8 @@ sed -i -e 's/address = ":8080"/address = "0.0.0.0:'$ROSETTA'"/g' $HOME_DIR/confi
 
 # Faster blocks
 sed -i -e 's/timeout_commit = "5s"/timeout_commit = "'$BLOCK_TIME'"/g' $HOME_DIR/config/config.toml
+
+# Fix chain-id
+sed -i -e 's/evm-chain-id = 262144/evm-chain-id = '$CHAIN_ID'/g' $HOME_DIR/config/app.toml
 
 $BINARY start --pruning=nothing  --minimum-gas-prices=0$DENOM --rpc.laddr="tcp://0.0.0.0:$RPC" --home $HOME_DIR --json-rpc.api=eth,txpool,personal,net,debug,web3 --chain-id="$CHAIN_ID"

@@ -78,6 +78,7 @@ func setup(
 		nil,
 		true,
 		appOptions,
+		ChainID18Decimals,
 		EVMAppOptions,
 		bam.SetChainID(chainID),
 		bam.SetSnapshot(snapshotStore, snapshottypes.SnapshotOptions{KeepRecent: 2}),
@@ -112,6 +113,7 @@ func NewChainAppWithCustomOptions(t *testing.T, isCheckTx bool, options SetupOpt
 		options.DB,
 		nil, true,
 		options.AppOpts,
+		ChainID18Decimals,
 		EVMAppOptions,
 	)
 	genesisState := app.DefaultGenesis()
@@ -293,12 +295,14 @@ func NewTestNetworkFixture() network.TestFixture {
 	defer os.RemoveAll(dir)
 
 	app := NewChainApp(log.NewNopLogger(), dbm.NewMemDB(), nil, true, simtestutil.NewAppOptionsWithFlagHome(dir),
+		ChainID18Decimals,
 		EVMAppOptions,
 	)
 	appCtr := func(val network.ValidatorI) servertypes.Application {
 		return NewChainApp(
 			val.GetCtx().Logger, dbm.NewMemDB(), nil, true,
 			simtestutil.NewAppOptionsWithFlagHome(val.GetCtx().Config.RootDir),
+			ChainID18Decimals,
 			EVMAppOptions,
 			bam.SetPruning(pruningtypes.NewPruningOptionsFromString(val.GetAppConfig().Pruning)),
 			bam.SetMinGasPrices(val.GetAppConfig().MinGasPrices),

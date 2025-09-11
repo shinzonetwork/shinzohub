@@ -5,13 +5,13 @@ import (
 	"testing"
 
 	"cosmossdk.io/math"
-	transfertypes "github.com/cosmos/ibc-go/v8/modules/apps/transfer/types"
-	"github.com/strangelove-ventures/interchaintest/v8"
-	"github.com/strangelove-ventures/interchaintest/v8/chain/cosmos"
-	"github.com/strangelove-ventures/interchaintest/v8/ibc"
-	interchaintestrelayer "github.com/strangelove-ventures/interchaintest/v8/relayer"
-	"github.com/strangelove-ventures/interchaintest/v8/testreporter"
-	"github.com/strangelove-ventures/interchaintest/v8/testutil"
+	transfertypes "github.com/cosmos/ibc-go/v10/modules/apps/transfer/types"
+	"github.com/cosmos/interchaintest/v10"
+	"github.com/cosmos/interchaintest/v10/chain/cosmos"
+	"github.com/cosmos/interchaintest/v10/ibc"
+	interchaintestrelayer "github.com/cosmos/interchaintest/v10/relayer"
+	"github.com/cosmos/interchaintest/v10/testreporter"
+	"github.com/cosmos/interchaintest/v10/testutil"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/zap/zapcore"
 	"go.uber.org/zap/zaptest"
@@ -39,23 +39,25 @@ func TestIBCBasic(t *testing.T) {
 
 	// Relayer Factory
 	r := interchaintest.NewBuiltinRelayerFactory(
-		ibc.CosmosRly,
+		ibc.Hermes,
 		zaptest.NewLogger(t, zaptest.Level(zapcore.DebugLevel)),
-		interchaintestrelayer.CustomDockerImage(RelayerRepo, RelayerVersion, "100:1000"),
-		interchaintestrelayer.StartupFlags("--processor", "events", "--block-history", "200"),
+		interchaintestrelayer.CustomDockerImage("ghcr.io/informalsystems/hermes", "1.13.1", "1000:1000"),
+		interchaintestrelayer.HermesPkType(map[string]string{
+			"9001":  "/cosmos.evm.crypto.v1.ethsecp256k1.PubKey",
+			"90012": "/cosmos.evm.crypto.v1.ethsecp256k1.PubKey",
+		}),
 	).Build(t, client, network)
 
 	ic := interchaintest.NewInterchain().
 		AddChain(chainA).
 		AddChain(chainB).
-		AddRelayer(r, "relayer")
-
-	ic = ic.AddLink(interchaintest.InterchainLink{
-		Chain1:  chainA,
-		Chain2:  chainB,
-		Relayer: r,
-		Path:    ibcPath,
-	})
+		AddRelayer(r, "relayer").
+		AddLink(interchaintest.InterchainLink{
+			Chain1:  chainA,
+			Chain2:  chainB,
+			Relayer: r,
+			Path:    ibcPath,
+		})
 
 	// Build interchain
 	require.NoError(t, ic.Build(ctx, eRep, interchaintest.InterchainBuildOptions{
@@ -110,7 +112,7 @@ func TestIBCBasic(t *testing.T) {
 	require.True(t, aNewBal.Equal(expectedBal))
 
 	// Trace IBC Denom
-	srcDenomTrace := transfertypes.ParseDenomTrace(transfertypes.GetPrefixedDenom("transfer", bChannelID, chainA.Config().Denom))
+	srcDenomTrace := transfertypes.ExtractDenomFromPath(transfertypes.NewDenom(chainA.Config().Denom, transfertypes.NewHop("transfer", bChannelID)).Path())
 	dstIbcDenom := srcDenomTrace.IBCDenom()
 
 	// Test destination wallet has increased funds

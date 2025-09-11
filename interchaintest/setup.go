@@ -7,15 +7,13 @@ import (
 
 	"github.com/cosmos/cosmos-sdk/crypto/keyring"
 	moduletestutil "github.com/cosmos/cosmos-sdk/types/module/testutil"
-	"github.com/strangelove-ventures/interchaintest/v8"
-	"github.com/strangelove-ventures/interchaintest/v8/chain/cosmos"
-	"github.com/strangelove-ventures/interchaintest/v8/ibc"
-	"github.com/strangelove-ventures/interchaintest/v8/testutil"
+	"github.com/cosmos/interchaintest/v10"
+	"github.com/cosmos/interchaintest/v10/chain/cosmos"
+	"github.com/cosmos/interchaintest/v10/ibc"
+	"github.com/cosmos/interchaintest/v10/testutil"
 
 	sdkmath "cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-
-	ibcconntypes "github.com/cosmos/ibc-go/v8/modules/core/03-connection/types"
 
 	cryptotypes "github.com/cosmos/cosmos-sdk/crypto/types"
 	"github.com/cosmos/evm/crypto/ethsecp256k1"
@@ -26,19 +24,19 @@ var (
 	VotingPeriod     = "15s"
 	MaxDepositPeriod = "10s"
 
-	Denom = "ushinzo"
-	Name  = "shinzohub"
+	Denom = "areal"
+	Name  = "bankd"
 
-	ChainID = "localchain_9000-1"
-	Binary  = "shinzohubd"
-	Bech32  = "shinzo"
+	ChainID = "9001"
+	Binary  = "bankd"
+	Bech32  = "wallet"
 	ibcPath = "ibc-path"
 
 	NumberVals         = 1
 	NumberFullNodes    = 0
 	GenesisFundsAmount = sdkmath.NewInt(1000_000000) // 1k tokens
 
-	ChainImage = ibc.NewDockerImage("shinzohub", "local", "1025:1025")
+	ChainImage = ibc.NewDockerImage("bankd", "local", "1025:1025")
 
 	Precompiles = []string{"0x0000000000000000000000000000000000000100", "0x0000000000000000000000000000000000000400", "0x0000000000000000000000000000000000000800", "0x0000000000000000000000000000000000000801", "0x0000000000000000000000000000000000000802", "0x0000000000000000000000000000000000000803", "0x0000000000000000000000000000000000000804", "0x0000000000000000000000000000000000000805"}
 
@@ -48,6 +46,7 @@ var (
 		cosmos.NewGenesisKV("app_state.gov.params.max_deposit_period", MaxDepositPeriod),
 		cosmos.NewGenesisKV("app_state.gov.params.min_deposit.0.denom", Denom),
 		cosmos.NewGenesisKV("app_state.gov.params.min_deposit.0.amount", "1"),
+		// evm
 		cosmos.NewGenesisKV("app_state.feemarket.params.no_base_fee", true),
 		cosmos.NewGenesisKV("app_state.feemarket.params.base_fee", "0.000000000000000000"),
 		cosmos.NewGenesisKV("app_state.evm.params.evm_denom", Denom),
@@ -58,19 +57,19 @@ var (
 		Images: []ibc.DockerImage{
 			ChainImage,
 		},
-		GasAdjustment:  1.5,
-		ModifyGenesis:  cosmos.ModifyGenesis(DefaultGenesis),
-		EncodingConfig: GetEncodingConfig(),
-		Type:           "cosmos",
-		Name:           Name,
-		ChainID:        ChainID,
-		Bin:            Binary,
-		Bech32Prefix:   Bech32,
-		Denom:          Denom,
-
-		CoinType:       "60",
-		GasPrices:      "0" + Denom,
-		TrustingPeriod: "504h",
+		GasAdjustment:    1.5,
+		ModifyGenesis:    cosmos.ModifyGenesis(DefaultGenesis),
+		EncodingConfig:   GetEncodingConfig(),
+		Type:             "cosmos",
+		Name:             Name,
+		ChainID:          ChainID,
+		Bin:              Binary,
+		Bech32Prefix:     Bech32,
+		Denom:            Denom,
+		CoinType:         "60",
+		GasPrices:        "0" + Denom,
+		TrustingPeriod:   "504h",
+		SigningAlgorithm: "eth_secp256k1",
 	}
 
 	DefaultChainSpec = interchaintest.ChainSpec{
@@ -191,7 +190,7 @@ func TxCommandBuilderNode(ctx context.Context, node *cosmos.ChainNode, cmd []str
 
 func getTransferChannel(channels []ibc.ChannelOutput) (string, error) {
 	for _, channel := range channels {
-		if channel.PortID == "transfer" && channel.State == ibcconntypes.OPEN.String() {
+		if channel.PortID == "transfer" && channel.State == "Open" {
 			return channel.ChannelID, nil
 		}
 	}
