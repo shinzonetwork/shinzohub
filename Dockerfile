@@ -1,4 +1,4 @@
-FROM golang:1.23.6-alpine3.20 AS build-env
+FROM golang:1.24-alpine3.20 AS build-env
 
 SHELL ["/bin/sh", "-ecuxo", "pipefail"]
 
@@ -8,29 +8,25 @@ RUN set -eux; apk add --no-cache \
     git \
     linux-headers \
     bash \
-    binutils-gold
+    binutils-gold \
+    just
 
 WORKDIR /code
 
 ADD go.mod go.sum ./
 RUN go mod download
+
 # Copy over code
 COPY . /code
 
-# force it to use static lib (from above) not standard libgo_cosmwasm.so file
-# then log output of file /code/bin/shinzohubd
-# then ensure static linking
-RUN LEDGER_ENABLED=false BUILD_TAGS=muslc LINK_STATICALLY=true make build \
-  && file /code/build/shinzohubd \
-  && echo "Ensuring binary is statically linked ..." \
-  && (file /code/build/shinzohubd | grep "statically linked")
+RUN LEDGER_ENABLED=false BUILD_TAGS=muslc just build
 
 # --------------------------------------------------------
 FROM alpine:3.21
 
 COPY --from=build-env /code/build/shinzohubd /usr/bin/shinzohubd
 
-RUN apk add --no-cache ca-certificates curl make bash jq sed
+RUN apk add --no-cache ca-certificates curl make just bash jq sed
 
 WORKDIR /opt
 
