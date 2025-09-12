@@ -1,3 +1,6 @@
+# Justfile
+set shell := ["bash", "-eu", "-o", "pipefail", "-c"]
+
 coverage_threshold := "15"
 packages_unit := "go list ./... | grep -v '/tests/e2e'"
 build_dir := env_var_or_default("BUILD_DIR", join(justfile_directory(), "build"))
@@ -10,15 +13,30 @@ ledger_enabled := env_var_or_default("LEDGER_ENABLED", "true")
 ###                                  Build                                  ###
 ###############################################################################
 
+# Always produce ./build/shinzohubd
 build: verify-deps
-	@echo "⚙️  Building binary..."
+	@echo "⚙️  Building binary to {{build_dir}}..."
+	@mkdir -p "{{build_dir}}"
 	@LEDGER_ENABLED={{ledger_enabled}} \
-	SOURCE_PATH=./... \
 	VERSION={{version}} \
 	COMMIT={{commit}} \
 	CMT_VERSION={{cmt_version}} \
-	BUILD_DIR={{build_dir}} \
+	BUILD_DIR="{{build_dir}}" \
+	BINARY_NAME=shinzohubd \
+	MAIN_PKG=./cmd/shinzohubd \
 	{{justfile_directory()}}/scripts/build.sh
+	@if [ ! -f "{{build_dir}}/shinzohubd" ]; then \
+	  echo "Binary not found at {{build_dir}}/shinzohubd. Searching..."; \
+	  found="$(find . -type f -name shinzohubd -perm -111 | head -n1)"; \
+	  if [ -n "$found" ]; then \
+	    echo "Found at $found. Copying to {{build_dir}}/shinzohubd"; \
+	    cp "$found" "{{build_dir}}/shinzohubd"; \
+	  else \
+	    echo "Build script did not produce shinzohubd. Check scripts/build.sh"; \
+	    exit 1; \
+	  fi; \
+	fi
+	@echo "✅ OK → {{build_dir}}/shinzohubd"
 
 build-linux-amd64:
 	GOOS=linux GOARCH=amd64 LEDGER_ENABLED=false just build
@@ -26,9 +44,23 @@ build-linux-amd64:
 build-linux-arm64:
 	GOOS=linux GOARCH=arm64 LEDGER_ENABLED=false just build
 
+# Install to ~/.local/bin (no GOPATH/asdf headaches)
 install: build
-	@echo "🚀 Installing binary to GOPATH/bin..."
-	@cp {{build_dir}}/shinzohubd $(go env GOPATH)/bin/shinzohubd
+	@echo "🚀 Installing binary..."
+	@dest="${HOME}/.local/bin"; \
+	mkdir -p "$dest"; \
+	cp "{{build_dir}}/shinzohubd" "$dest/shinzohubd"; \
+	echo "✅ Installed to $dest/shinzohubd"; \
+	if command -v asdf >/dev/null 2>&1; then asdf reshim golang || true; fi
+
+# Optional: install into GOPATH/bin
+install-gopath: build
+	@echo "🚀 Installing to GOPATH/bin..."
+	@gbin="$(go env GOPATH)/bin"; \
+	mkdir -p "$gbin"; \
+	cp "{{build_dir}}/shinzohubd" "$gbin/shinzohubd"; \
+	echo "✅ Installed to $gbin/shinzohubd"; \
+	if command -v asdf >/dev/null 2>&1; then asdf reshim golang || true; fi
 
 verify-deps:
 	@echo "🛠  Ensuring dependencies have not been modified ..."
@@ -37,7 +69,7 @@ verify-deps:
 
 clean:
 	@echo "🧹  Cleaning up..."
-	@rm -rf {{build_dir}}
+	@rm -rf "{{build_dir}}"
 
 ###############################################################################
 ###                                  Tests                                  ###
@@ -53,12 +85,12 @@ test-unit:
 test-coverage:
 	#!/usr/bin/env bash
 	set -euo pipefail
-
+	command -v bc >/dev/null 2>&1 || { echo "bc not found. Install bc."; exit 1; }
 	coverage_total="$([ -f cover.out ] && go tool cover -func=cover.out | grep total | grep -Eo '[0-9]+\.[0-9]+' || echo 0)"
 	echo "Threshold:                {{coverage_threshold}}%"
-	echo "Current test coverage is: $coverage_total%"
-	if [ "$(echo "$coverage_total < {{coverage_threshold}}" | bc -l)" -eq 1 ]; then \
-		echo "Test coverage is lower than threshold ☠️"; \
+	echo "Current test coverage is: $$coverage_total%"
+	if [ "$(echo "$$coverage_total < {{coverage_threshold}}" | bc -l)" -eq 1 ]; then \
+		echo "Test coverage is lower than threshold"; \
 		exit 1; \
 	fi
 
@@ -68,11 +100,11 @@ test-coverage:
 
 lint:
 	@echo "🧹  Linting..."
-	@go tool golangci-lint run --config .golangci.yml
+	@golangci-lint run --config .golangci.yml
 
 lint-fix:
 	@echo "🧹  Linting and fixing..."
-	@go tool golangci-lint run --config .golangci.yml --fix
+	@golangci-lint run --config .golangci.yml --fix
 
 ###############################################################################
 ###                                Protobuf                                 ###
@@ -81,10 +113,7 @@ lint-fix:
 proto-all: proto-format proto-lint proto-gen
 
 proto-deps:
-	# Note: These should not be required to manually install locally since tools
-	# can be executed via Go's toolchain directly. However, Buf, specifically in
-	# remote environments (e.g. CI), expects plugins to be installed in $PATH.
-	@echo "⚙️  Installing Protobuf dependencies..."
+	@echo "⚙️  Installing Protobuf deps..."
 	@go install github.com/cosmos/cosmos-proto/cmd/protoc-gen-go-pulsar@v1.0.0-beta.5
 	@go install github.com/cosmos/gogoproto/protoc-gen-gocosmos@v1.7.0
 	@go install github.com/grpc-ecosystem/grpc-gateway/protoc-gen-grpc-gateway@v1.16.0
@@ -97,11 +126,11 @@ proto-gen:
 
 proto-lint:
 	@echo "⚙️  Linting Protobuf files..."
-	@go tool buf lint ./proto --error-format=json
+	@buf lint ./proto --error-format=json
 
 proto-format:
 	@echo "⚙️  Formatting Protobuf files..."
-	@go tool buf format ./proto -w
+	@buf format ./proto -w
 
 ###############################################################################
 ###                                   E2E                                   ###
@@ -132,25 +161,13 @@ ictest-ratelimit:
 	@cd interchaintest && go test -race -v -run TestIBCRateLimit .
 
 ###############################################################################
-###                                 Testnet                                 ###
+###                                   Dev                                    ###
 ###############################################################################
-
-# setup-testnet: sh-testnet is-localic-installed install local-image set-testnet-configs setup-testnet-keys
-
-# # Run this before testnet keys are added
-# # This chain id is used in the testnet.json as well
-# set-testnet-configs:
-# 	shinzohubd config set client chain-id 9001
-# 	shinzohubd config set client keyring-backend test
-# 	shinzohubd config set client output text
-
-# # import keys from testnet.json into test keyring
-# setup-testnet-keys:
-# 	-`echo "decorate bright ozone fork gallery riot bus exhaust worth way bone indoor calm squirrel merry zero scheme cotton until shop any excess stage laundry" | shinzohubd keys add acc0 --recover`
-# 	-`echo "wealth flavor believe regret funny network recall kiss grape useless pepper cram hint member few certain unveil rather brick bargain curious require crowd raise" | shinzohubd keys add acc1 --recover`
-
-# testnet: setup-testnet
-# 	spawn local-ic start testnet
 
 sh-testnet: verify-deps
 	CHAIN_ID="9001" BLOCK_TIME="1000ms" CLEAN=true sh scripts/test_node.sh
+
+doctor:
+	@echo "artifact   = {{build_dir}}/shinzohubd"
+	@echo "exists?    = $$(test -f {{build_dir}}/shinzohubd && echo yes || echo no)"
+	@echo "which bin  = $$(command -v shinzohubd || echo 'not on PATH')"

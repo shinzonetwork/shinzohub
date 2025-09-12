@@ -155,6 +155,8 @@ import (
 	_ "github.com/ethereum/go-ethereum/eth/tracers/js"
 	_ "github.com/ethereum/go-ethereum/eth/tracers/native"
 	chainante "github.com/shinzonetwork/shinzohub/app/ante"
+
+	ibctm "github.com/cosmos/ibc-go/v10/modules/light-clients/07-tendermint"
 )
 
 const (
@@ -764,6 +766,11 @@ func NewChainApp(
 	ibcRouter.AddRoute(icahosttypes.SubModuleName, icaHostStack)
 	app.IBCKeeper.SetRouter(ibcRouter)
 
+	clientKeeper := app.IBCKeeper.ClientKeeper
+	storeProvider := app.IBCKeeper.ClientKeeper.GetStoreProvider()
+	tmLightClientModule := ibctm.NewLightClientModule(appCodec, storeProvider)
+	clientKeeper.AddRoute(ibctm.ModuleName, &tmLightClientModule)
+
 	// --- Module Options ---
 
 	// NOTE: we may consider parsing `appOpts` inside module constructors. For the moment
@@ -806,6 +813,7 @@ func NewChainApp(
 		ica.NewAppModule(&app.ICAControllerKeeper, &app.ICAHostKeeper),
 		// ibctm.NewAppModule(tmLightClientModule),
 		crisis.NewAppModule(app.CrisisKeeper, skipGenesisInvariants, app.GetSubspace(crisistypes.ModuleName)),
+		ibctm.NewAppModule(tmLightClientModule),
 		// custom
 		cosmosevmvm.NewAppModule(app.EVMKeeper, app.AccountKeeper, app.AccountKeeper.AddressCodec()),
 		feemarket.NewAppModule(app.FeeMarketKeeper),
