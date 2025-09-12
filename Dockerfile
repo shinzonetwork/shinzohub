@@ -16,17 +16,20 @@ WORKDIR /code
 ADD go.mod go.sum ./
 RUN go mod download
 
-# Copy over code
-COPY . /code
-
-RUN LEDGER_ENABLED=false BUILD_TAGS=muslc just build
+# force it to use static lib (from above) not standard libgo_cosmwasm.so file
+# then log output of file /code/bin/shinzohubd
+# then ensure static linking
+RUN LEDGER_ENABLED=false BUILD_TAGS=muslc LINK_STATICALLY=true make build \
+  && file /code/build/shinzohubd \
+  && echo "Ensuring binary is statically linked ..." \
+  && (file /code/build/shinzohubd | grep "statically linked")
 
 # --------------------------------------------------------
 FROM alpine:3.21
 
 COPY --from=build-env /code/build/shinzohubd /usr/bin/shinzohubd
 
-RUN apk add --no-cache ca-certificates curl make just bash jq sed
+RUN apk add --no-cache ca-certificates curl make bash jq sed
 
 WORKDIR /opt
 
