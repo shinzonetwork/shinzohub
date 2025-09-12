@@ -1,0 +1,127 @@
+version: "2"
+run:
+  tests: true
+  allow-parallel-runners: true
+linters:
+  default: none
+  enable:
+    - revive
+    - bodyclose
+    - copyloopvar
+    - depguard
+    - dogsled
+    - dupl
+    - errcheck
+    - errorlint
+    - funlen
+    - goconst
+    - gocritic
+    - gosec
+    - govet
+    - ineffassign
+    - misspell
+    - nakedret
+    - nolintlint
+    - prealloc
+    - sqlclosecheck
+    - staticcheck
+    - thelper
+    - unconvert
+    - unparam
+    - unused
+    - whitespace
+  settings:
+    depguard:
+      rules:
+        main:
+          files:
+            - '**/*.go'
+          deny:
+            - pkg: github.com/sirupsen/logrus
+              desc: use zerolog instead
+            - pkg: github.com/pkg/errors
+              desc: deprecated; should be replaced by standard lib errors package
+    dogsled:
+      max-blank-identifiers: 4
+    dupl:
+      threshold: 200
+    funlen:
+      lines: 300
+      statements: 200
+    gocritic:
+      disabled-checks:
+        - regexpMust
+        - appendAssign
+        - ifElseChain
+    gosec:
+      excludes:
+        - G107
+        - G404
+      confidence: medium
+    misspell:
+      locale: US
+    nolintlint:
+      require-explanation: true
+      require-specific: false
+      allow-unused: false
+    revive:
+      rules:
+        - name: redefines-builtin-id
+          disabled: true
+    staticcheck:
+      checks:
+        - all
+  exclusions:
+    generated: lax
+    presets:
+      - comments
+      - common-false-positives
+      - legacy
+      - std-error-handling
+    rules:
+      - linters:
+          - staticcheck
+        text: 'ST1003:'
+      - linters:
+          - staticcheck
+        path: migrations
+        text: 'SA1019:'
+      - linters:
+          - dupl
+          - gosec
+        path: _test\.go
+      - linters:
+          - nolintlint
+        text: leading space
+    paths:
+      - .*\.pb\.go$
+      - .*\.pb\.gw\.go$
+      - .*\.pulsar\.go$
+      - third_party$
+      - builtin$
+      - examples$
+issues:
+  max-issues-per-linter: 10000
+  max-same-issues: 10000
+formatters:
+  enable:
+    - gci
+    - gofumpt
+  settings:
+    gci:
+      sections:
+        - standard
+        - default
+        - prefix(github.com/shinzonetwork)
+      custom-order: true
+    gofumpt:
+      extra-rules: true
+  exclusions:
+    generated: lax
+    paths:
+      - .*\.pb\.go$
+      - .*\.pb\.gw\.go$
+      - .*\.pulsar\.go$
+      - third_party$
+      - builtin$
+      - examples$
