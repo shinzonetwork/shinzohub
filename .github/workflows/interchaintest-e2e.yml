@@ -1,14 +1,14 @@
-name: E2E
+name: ICT E2E
 
 on:
-  push:
+  pull_request:
 
 permissions:
   contents: read
   packages: write
 
 env:
-  GO_VERSION: 1.22.3
+  GO_VERSION: 1.24.6
   TAR_PATH: /tmp/docker-image.tar
   IMAGE_NAME: docker-image
 
@@ -22,8 +22,8 @@ jobs:
     steps:
       - id: go-cache-paths
         run: |
-          echo "::set-output name=go-build::$(go env GOCACHE)"
-          echo "::set-output name=go-mod::$(go env GOMODCACHE)"
+          echo "go-build=$(go env GOCACHE)" >> $GITHUB_OUTPUT
+          echo "go-mod=$(go env GOMODCACHE)" >> $GITHUB_OUTPUT
 
       - name: Checkout
         uses: actions/checkout@v4
@@ -32,20 +32,16 @@ jobs:
         uses: actions/setup-go@v4
         with:
           go-version: ${{ env.GO_VERSION }}
+          cache: false  # we use cache/restore
 
-      # Cache go mod cache, used to speedup builds
-      - name: Go Mod Cache
+      # Cache go mod cache for interchaintest module
+      - name: Go Mod Cache - Interchaintest
         uses: actions/cache@v4
         with:
           path: ${{ steps.go-cache-paths.outputs.go-mod }}
-          key: ${{ runner.os }}-go-mod-${{ hashFiles('**/go.sum') }}
-
-      # Cache go build cache, used to speedup go test
-      - name: Go Build Cache
-        uses: actions/cache@v4
-        with:
-          path: ${{ steps.go-cache-paths.outputs.go-build }}
-          key: ${{ runner.os }}-go-build-${{ hashFiles('**/go.sum') }}
+          key: ${{ runner.os }}-go-mod-ict-${{ hashFiles('interchaintest/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-mod-ict-
 
       - name: Download Go Dependencies
         run: |
@@ -59,7 +55,7 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: .
-          tags: shinzohub:local
+          tags: bankd:local
           outputs: type=docker,dest=${{ env.TAR_PATH }}
 
       - name: Upload artifact
@@ -76,29 +72,32 @@ jobs:
         # names of `make` commands to run tests
         test:
           - "ictest-basic"
+          - "ictest-ibc"
       fail-fast: false
 
     steps:
       - id: go-cache-paths
         run: |
-          echo "::set-output name=go-build::$(go env GOCACHE)"
-          echo "::set-output name=go-mod::$(go env GOMODCACHE)"
+          echo "go-build=$(go env GOCACHE)" >> $GITHUB_OUTPUT
+          echo "go-mod=$(go env GOMODCACHE)" >> $GITHUB_OUTPUT
 
       - name: Set up Go ${{ env.GO_VERSION }}
         uses: actions/setup-go@v4
         with:
           go-version: ${{ env.GO_VERSION }}
-          cache-dependency-path: interchaintest/go.sum
+          cache: false # we use cache/restore
 
       - name: checkout chain
         uses: actions/checkout@v4
 
-      # Cache go build cache, used to speedup go test
-      - name: Go Build Cache
-        uses: actions/cache@v4
+      # Restore go mod cache for interchaintest module (read-only)
+      - name: Restore Go Mod Cache - Interchaintest
+        uses: actions/cache/restore@v4
         with:
-          path: ${{ steps.go-cache-paths.outputs.go-build }}
-          key: ${{ runner.os }}-go-build-${{ hashFiles('**/go.sum') }}
+          path: ${{ steps.go-cache-paths.outputs.go-mod }}
+          key: ${{ runner.os }}-go-mod-ict-${{ hashFiles('interchaintest/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-mod-ict-
 
       - name: Download Tarball Artifact
         uses: actions/download-artifact@v4
