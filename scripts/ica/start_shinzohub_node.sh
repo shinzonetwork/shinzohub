@@ -8,17 +8,17 @@
 set -eu
 
 export KEY="acc0"
-export KEY2="acc1"
+export KEY2="hermes"
 
 export CHAIN_ID=${CHAIN_ID:-"9001"}
 export MONIKER="localvalidator"
 export KEYALGO="eth_secp256k1"
 export KEYRING=${KEYRING:-"test"}
 export HOME_DIR=$(eval echo "${HOME_DIR:-"~/.shinzohub"}")
-export BINARY="./build/shinzohubd"
+export BINARY="../../build/shinzohubd"
 export DENOM=${DENOM:-ushinzo}
 
-export CLEAN=${CLEAN:-"false"}
+export CLEAN=${CLEAN:-"true"}
 export RPC=${RPC:-"26657"}
 export REST=${REST:-"1317"}
 export PROFF=${PROFF:-"6060"}
@@ -27,19 +27,6 @@ export GRPC=${GRPC:-"9090"}
 export GRPC_WEB=${GRPC_WEB:-"9091"}
 export ROSETTA=${ROSETTA:-"8080"}
 export BLOCK_TIME=${BLOCK_TIME:-"5s"}
-
-# if which binary does not exist, install it
-if [ -z `which $BINARY` ]; then
-  just install
-
-  if [ -z `which $BINARY` ]; then
-    echo "Ensure $BINARY is installed and in your PATH"
-    exit 1
-  fi
-fi
-
-command -v $BINARY > /dev/null 2>&1 || { echo >&2 "$BINARY command not found. Ensure this is setup / properly installed in your GOPATH (just install)."; exit 1; }
-command -v jq > /dev/null 2>&1 || { echo >&2 "jq not installed. More info: https://stedolan.github.io/jq/download/"; exit 1; }
 
 set_config() {
   $BINARY config set client chain-id $CHAIN_ID
@@ -68,11 +55,11 @@ from_scratch () {
     echo $mnemonic | $BINARY keys add $key --keyring-backend $KEYRING --algo $KEYALGO --home $HOME_DIR --recover
   }
 
+  # shinzo1g4zla6r5erlf364x5lcgvff6rmek4uwxwlfzs8
+  add_key $KEY "divert tenant reveal hire thing jar carry lonely magic oak audit fiber earth catalog cheap merry print clown portion speak daring giant weird slight"
   # shinzo140fehngcrxvhdt84x729p3f0qmkmea8nq3rk92
-  add_key $KEY "decorate bright ozone fork gallery riot bus exhaust worth way bone indoor calm squirrel merry zero scheme cotton until shop any excess stage laundry"
-  # shinzo1r6yue0vuyj9m7xw78npspt9drq2tmtvgvv9hkp
-  add_key $KEY2 "wealth flavor believe regret funny network recall kiss grape useless pepper cram hint member few certain unveil rather brick bargain curious require crowd raise"
-
+  add_key $KEY2 "decorate bright ozone fork gallery riot bus exhaust worth way bone indoor calm squirrel merry zero scheme cotton until shop any excess stage laundry"
+  
   $BINARY init $MONIKER --chain-id $CHAIN_ID --default-denom $DENOM --home $HOME_DIR
 
   update_test_genesis () {
@@ -110,6 +97,9 @@ from_scratch () {
   ## abci
   update_test_genesis '.consensus["params"]["abci"]["vote_extensions_enable_height"]="1"'
 
+  # enable ICA controller on ShinzoHub
+  update_test_genesis '.app_state["interchainaccounts"]["controller_genesis_state"]["params"]["controller_enabled"]=true'
+
   # === CUSTOM MODULES ===
 
   BASE_GENESIS_ALLOCATIONS="100000000000000000000000000$DENOM,100000000test"
@@ -137,8 +127,6 @@ if [ "$CLEAN" != "false" ]; then
   from_scratch
 fi
 
-echo "Starting node..."
-
 # Opens the RPC endpoint to outside connections
 sed -i -e 's/laddr = "tcp:\/\/127.0.0.1:26657"/c\laddr = "tcp:\/\/0.0.0.0:'$RPC'"/g' $HOME_DIR/config/config.toml
 sed -i -e 's/cors_allowed_origins = \[\]/cors_allowed_origins = \["\*"\]/g' $HOME_DIR/config/config.toml
@@ -165,4 +153,5 @@ sed -i -e 's/timeout_commit = "5s"/timeout_commit = "'$BLOCK_TIME'"/g' $HOME_DIR
 # Fix chain-id
 sed -i -e 's/evm-chain-id = 262144/evm-chain-id = '$CHAIN_ID'/g' $HOME_DIR/config/app.toml
 
+echo "Starting Shinzohub..."
 $BINARY start --pruning=nothing  --minimum-gas-prices=0$DENOM --rpc.laddr="tcp://0.0.0.0:$RPC" --home $HOME_DIR --json-rpc.api=eth,txpool,personal,net,debug,web3 --chain-id="$CHAIN_ID"

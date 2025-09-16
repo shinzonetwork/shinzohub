@@ -157,6 +157,9 @@ import (
 	chainante "github.com/shinzonetwork/shinzohub/app/ante"
 
 	ibctm "github.com/cosmos/ibc-go/v10/modules/light-clients/07-tendermint"
+	sourcehub "github.com/shinzonetwork/shinzohub/x/sourcehub"
+	sourcehubkeeper "github.com/shinzonetwork/shinzohub/x/sourcehub/keeper"
+	sourcehubtypes "github.com/shinzonetwork/shinzohub/x/sourcehub/types"
 )
 
 const (
@@ -225,6 +228,8 @@ var maccPerms = map[string][]string{
 	evmtypes.ModuleName:         {authtypes.Minter, authtypes.Burner},
 	feemarkettypes.ModuleName:   nil,
 	erc20types.ModuleName:       {authtypes.Minter, authtypes.Burner},
+
+	sourcehubtypes.ModuleName: nil,
 }
 
 var (
@@ -281,6 +286,7 @@ type ChainApp struct {
 	ScopedTransferKeeper      capabilitykeeper.ScopedKeeper
 	ScopedIBCFeeKeeper        capabilitykeeper.ScopedKeeper
 
+	SourcehubKeeper sourcehubkeeper.Keeper
 	// the module manager
 	ModuleManager      *module.Manager
 	BasicModuleManager module.BasicManager
@@ -390,6 +396,8 @@ func NewChainApp(
 		evmtypes.StoreKey,
 		feemarkettypes.StoreKey,
 		erc20types.StoreKey,
+
+		sourcehubtypes.StoreKey,
 	)
 
 	tkeys := storetypes.NewTransientStoreKeys(
@@ -672,25 +680,6 @@ func NewChainApp(
 		&app.TransferKeeper,
 	)
 
-	// NOTE: we are adding all available EVM extensions.
-	// Not all of them need to be enabled, which can be configured on a per-chain basis.
-	corePrecompiles := NewAvailableStaticPrecompiles(
-		*app.StakingKeeper,
-		app.DistrKeeper,
-		app.BankKeeper, // TODO: PreciseBankKeeper
-		app.Erc20Keeper,
-		app.AuthzKeeper, // TODO: get off fork so we can support this
-		app.TransferKeeper,
-		*app.IBCKeeper.ChannelKeeper,
-		app.EVMKeeper,
-		app.GovKeeper,
-		app.SlashingKeeper,
-		appCodec,
-	)
-	app.EVMKeeper.WithStaticPrecompiles(
-		corePrecompiles,
-	)
-
 	// Create Transfer Keepers
 	app.TransferKeeper = ibctransferkeeper.NewKeeper(
 		appCodec,
@@ -732,6 +721,32 @@ func NewChainApp(
 		app.IBCKeeper.ChannelKeeper,
 		app.MsgServiceRouter(),
 		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
+	)
+
+	app.SourcehubKeeper = sourcehubkeeper.NewKeeper(
+		appCodec,
+		runtime.NewKVStoreService(keys[sourcehubtypes.StoreKey]),
+		app.ICAControllerKeeper,
+	)
+
+	// NOTE: we are adding all available EVM extensions.
+	// Not all of them need to be enabled, which can be configured on a per-chain basis.
+	corePrecompiles := NewAvailableStaticPrecompiles(
+		*app.StakingKeeper,
+		app.DistrKeeper,
+		app.BankKeeper, // TODO: PreciseBankKeeper
+		app.Erc20Keeper,
+		app.AuthzKeeper, // TODO: get off fork so we can support this
+		app.TransferKeeper,
+		*app.IBCKeeper.ChannelKeeper,
+		app.EVMKeeper,
+		app.GovKeeper,
+		app.SlashingKeeper,
+		app.SourcehubKeeper,
+		appCodec,
+	)
+	app.EVMKeeper.WithStaticPrecompiles(
+		corePrecompiles,
 	)
 
 	// The last arguments can contain custom message handlers, and custom query handlers,
@@ -818,6 +833,14 @@ func NewChainApp(
 		cosmosevmvm.NewAppModule(app.EVMKeeper, app.AccountKeeper, app.AccountKeeper.AddressCodec()),
 		feemarket.NewAppModule(app.FeeMarketKeeper),
 		erc20.NewAppModule(app.Erc20Keeper, app.AccountKeeper),
+
+		sourcehub.NewAppModule(
+			appCodec,
+			app.SourcehubKeeper,
+			app.ICAControllerKeeper,
+			runtime.NewKVStoreService(keys[sourcehubtypes.StoreKey]),
+			app.interfaceRegistry,
+		),
 	)
 
 	// BasicModuleManager defines the module BasicManager is in charge of setting up basic,
@@ -859,6 +882,8 @@ func NewChainApp(
 		ibctransfertypes.ModuleName,
 		ibcexported.ModuleName,
 		icatypes.ModuleName,
+
+		sourcehubtypes.ModuleName,
 	)
 
 	app.ModuleManager.SetOrderEndBlockers(
@@ -874,6 +899,8 @@ func NewChainApp(
 		ibctransfertypes.ModuleName,
 		ibcexported.ModuleName,
 		icatypes.ModuleName,
+
+		sourcehubtypes.ModuleName,
 	)
 
 	// NOTE: The genutils module must occur after staking so that pools are
@@ -916,6 +943,8 @@ func NewChainApp(
 		ibctransfertypes.ModuleName,
 		ibcexported.ModuleName,
 		icatypes.ModuleName,
+
+		sourcehubtypes.ModuleName,
 	}
 	app.ModuleManager.SetOrderInitGenesis(genesisModuleOrder...)
 	app.ModuleManager.SetOrderExportGenesis(genesisModuleOrder...)

@@ -1,0 +1,23 @@
+syntax = "proto3";
+
+package shinzonetwork.sourcehub.v1;
+
+option go_package = "github.com/shinzonetwork/shinzohub/x/sourcehub/types";
+
+// GenesisState defines the sourcehub module's genesis state.
+message GenesisState {
+  // IBC controller connection to use
+  string controller_connection_id = 1;
+
+  // IBC host connection to use
+  string host_connection_id = 2;
+
+  // ICS-27 version identifier
+  string version = 3;
+
+  // Encoding type (e.g., "proto3")
+  string encoding = 4;
+
+  // Transaction type (e.g., "sdk_multi_msg")
+  string tx_type = 5;
+}

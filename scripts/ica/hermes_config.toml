@@ -36,7 +36,7 @@ trust_threshold = '2/3'
 address_type = { derivation = 'cosmos' }
 
 [[chains]]
-id = 'shinzohub_9000-1'
+id = '9001'
 type = 'CosmosSdk'
 rpc_addr = 'http://127.0.0.1:26657'
 grpc_addr = 'http://127.0.0.1:9090'
@@ -48,7 +48,7 @@ key_name = 'shinzo'
 store_prefix = 'ibc'
 default_gas = 100000
 max_gas = 4000000
-gas_price = { price = 0.0, denom = 'ushinzo' }
+gas_price = { price = 0.00001, denom = 'ushinzo' }
 gas_multiplier = 1.2
 clock_drift = '10s'
 trusting_period = '14days'

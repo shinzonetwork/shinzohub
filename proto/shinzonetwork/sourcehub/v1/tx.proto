@@ -1,0 +1,24 @@
+syntax = "proto3";
+
+package shinzonetwork.sourcehub.v1;
+
+import "cosmos/msg/v1/msg.proto";
+
+option go_package = "github.com/shinzonetwork/shinzohub/x/sourcehub/types";
+
+// Msg defines the Msg service.
+service Msg {
+  option (cosmos.msg.v1.service) = true;
+
+  rpc RegisterSourcehubICA(MsgRegisterSourcehubICA) returns (MsgRegisterSourcehubICAResponse);
+}
+
+message MsgRegisterSourcehubICA {
+  option (cosmos.msg.v1.signer) = "signer";
+
+  string signer        = 1;
+  string controller_connection_id = 2;
+  string host_connection_id = 3;
+}
+
+message MsgRegisterSourcehubICAResponse {}

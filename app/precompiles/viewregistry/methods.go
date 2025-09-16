@@ -22,6 +22,12 @@ func (p Precompile) ViewRegistryRegister(ctx sdk.Context, contract *vm.Contract,
 		return nil, fmt.Errorf("invalid type for value")
 	}
 
+	err := p.sourcehubKeeper.SendPolicy(ctx, "name: ica test policy") // TODO: add actual policy
+	if err != nil {
+		// convert into an EVM revert instead of panic
+		return nil, vm.ErrExecutionReverted
+	}
+
 	// Key = keccak256(msg.sender, value)
 	key := crypto.Keccak256Hash(contract.Caller().Bytes(), value)
 
