@@ -1,34 +1,165 @@
-# Generated With [Spawn](https://github.com/rollchains/spawn)
+# Shinzohub
 
-## Module Scaffolding
+Shinzohub is a Cosmos SDK–based blockchain project with EVM compatibility and custom modules. This repo provides everything you need to build, install, and run the chain locally.
 
-- `spawn module new <name>` *Generates a Cosmos module template*
+---
 
-## Content Generation
+## ⚡️ Requirements
 
-- `make proto-gen` *Generates go code from proto files, stubs interfaces*
+Before you start, ensure you have the following installed:
 
-## Testnet
+- **Go** ≥ 1.24
+- **Make**  
+- **Git**  
+- **Protobuf compiler (`protoc`)**  
+- [Buf](https://buf.build/docs/installation) (for linting/formatting Protobuf)  
+- Optional: [asdf](https://asdf-vm.com/) (if you manage your Go version via asdf)  
 
-- `make testnet` *IBC testnet from chain <-> local cosmos-hub*
-- `make sh-testnet` *Single node, no IBC. quick iteration*
-- `local-ic chains` *See available testnets from the chains/ directory*
-- `local-ic start <name>` *Starts a local chain with the given name*
+---
 
-## Local Images
+## 🔨 Building
 
-- `make install`      *Builds the chain's binary*
-- `make local-image`  *Builds the chain's docker image*
+By default, binaries are built into `./build`.
 
-## Testing
+### Build for your local system
+```bash
+make build
+```
 
-- `go test ./... -v` *Unit test*
-- `make ictest-*`  *E2E testing*
+Result:
+```
+./build/shinzohubd
+```
 
-## Webapp Template
+### Cross-compile for Linux
+```bash
+make build-linux-amd64
+make build-linux-arm64
+```
 
-Generate the template base with spawn. Requires [npm](https://nodejs.org/en/download/package-manager) and [yarn](https://classic.yarnpkg.com/lang/en/docs/install) to be installed.
+---
 
-- `make generate-webapp` *[Cosmology Webapp Template](https://github.com/cosmology-tech/create-cosmos-app)*
+## 🚀 Installing
 
-Start the testnet with `make testnet`, and open the webapp `cd ./web && yarn dev`
+### To your local bin (`~/.local/bin`)
+```bash
+make install
+```
+
+Afterwards, confirm:
+```bash
+shinzohubd version
+```
+
+### To GOPATH/bin
+```bash
+make install-gopath
+```
+
+---
+
+## 🧹 Cleaning
+
+Remove all build artifacts:
+```bash
+make clean
+```
+
+---
+
+## 🛠 Verifying Dependencies
+
+To ensure Go modules are tidy and not corrupted:
+```bash
+make verify-deps
+```
+
+---
+
+## 📦 Protobuf
+
+Protobuf files live under `./proto`.
+
+### Install Protobuf dependencies
+```bash
+make proto-deps
+```
+
+### Generate Protobuf code
+```bash
+make proto-gen
+```
+
+### Lint Protobuf definitions
+```bash
+make proto-lint
+```
+
+### Format Protobuf files
+```bash
+make proto-format
+```
+
+Or run all in one go:
+```bash
+make proto-all
+```
+
+---
+
+## 🌐 Development
+
+### Start a local testnet
+```bash
+make sh-testnet
+```
+
+This spins up a chain with:
+
+- `CHAIN_ID=9001`  
+- `BLOCK_TIME=1000ms`  
+- Fresh state each run (`CLEAN=true`)  
+
+### Doctor check
+Quick project health check:
+```bash
+make doctor
+```
+
+Output will confirm:
+- If the build artifact exists
+- If `shinzohubd` is on your PATH  
+
+---
+
+## 📝 Notes
+
+- You can override build settings via environment variables:  
+  - `BUILD_DIR` → change binary output directory  
+  - `LEDGER_ENABLED` → enable/disable Ledger support (default: `true`)  
+
+Example:
+```bash
+BUILD_DIR=/tmp/shinzohub LEDGER_ENABLED=false make build
+```
+
+---
+
+## ✅ Quickstart
+
+```bash
+# 1. Verify dependencies
+make verify-deps
+
+# 2. Build the binary
+make build
+
+# 3. Install it
+make install
+
+# 4. Check installation
+shinzohubd version
+
+# 5. Run a local testnet
+make sh-testnet
+```
