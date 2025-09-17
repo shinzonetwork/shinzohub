@@ -16,8 +16,6 @@ func NoOpEVMOptions(_ uint64) error {
 	return nil
 }
 
-var sealed = false
-
 // ChainsCoinInfo is a map of the chain id and its corresponding EvmCoinInfo
 // that allows initializing the app with different coin info based on the
 // chain id

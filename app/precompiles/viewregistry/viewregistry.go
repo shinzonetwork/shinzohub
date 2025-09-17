@@ -78,10 +78,6 @@ func (p Precompile) Run(evm *vm.EVM, contract *vm.Contract, readOnly bool) (bz [
 		return nil, vm.ErrOutOfGas
 	}
 
-	// if err := p.AddJournalEntries(stateDB, snapshot); err != nil {
-	// 	return nil, err
-	// }
-
 	return bz, nil
 }
 
