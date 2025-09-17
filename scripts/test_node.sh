@@ -30,7 +30,7 @@ export BLOCK_TIME=${BLOCK_TIME:-"5s"}
 
 # if which binary does not exist, install it
 if [ -z `which $BINARY` ]; then
-  just install
+  make install
 
   if [ -z `which $BINARY` ]; then
     echo "Ensure $BINARY is installed and in your PATH"
@@ -38,7 +38,7 @@ if [ -z `which $BINARY` ]; then
   fi
 fi
 
-command -v $BINARY > /dev/null 2>&1 || { echo >&2 "$BINARY command not found. Ensure this is setup / properly installed in your GOPATH (just install)."; exit 1; }
+command -v $BINARY > /dev/null 2>&1 || { echo >&2 "$BINARY command not found. Ensure this is setup / properly installed in your GOPATH (make install)."; exit 1; }
 command -v jq > /dev/null 2>&1 || { echo >&2 "jq not installed. More info: https://stedolan.github.io/jq/download/"; exit 1; }
 
 set_config() {
@@ -50,7 +50,7 @@ set_config
 
 from_scratch () {
   # Fresh install on current branch
-  just install
+  make install
 
   # remove existing daemon files.
   if [ ${#HOME_DIR} -le 2 ]; then
