@@ -30,3 +30,13 @@ func (m msgServer) RegisterSourcehubICA(goCtx context.Context, msg *types.MsgReg
 
 	return &types.MsgRegisterSourcehubICAResponse{}, nil
 }
+
+func (m msgServer) RequestStreamAccess(goCtx context.Context, msg *types.MsgRequestStreamAccess) (*types.MsgRequestStreamAccessResponse, error) {
+	ctx := sdk.UnwrapSDKContext(goCtx)
+
+	if err := m.Keeper.RequestStreamAccess(ctx, msg.StreamId, msg.Did); err != nil {
+		return nil, err
+	}
+
+	return &types.MsgRequestStreamAccessResponse{}, nil
+}

@@ -20,6 +20,7 @@ const _ = grpc.SupportPackageIsVersion9
 
 const (
 	Msg_RegisterSourcehubICA_FullMethodName = "/shinzonetwork.sourcehub.v1.Msg/RegisterSourcehubICA"
+	Msg_RequestStreamAccess_FullMethodName  = "/shinzonetwork.sourcehub.v1.Msg/RequestStreamAccess"
 )
 
 // MsgClient is the client API for Msg service.
@@ -29,6 +30,7 @@ const (
 // Msg defines the Msg service.
 type MsgClient interface {
 	RegisterSourcehubICA(ctx context.Context, in *MsgRegisterSourcehubICA, opts ...grpc.CallOption) (*MsgRegisterSourcehubICAResponse, error)
+	RequestStreamAccess(ctx context.Context, in *MsgRequestStreamAccess, opts ...grpc.CallOption) (*MsgRequestStreamAccessResponse, error)
 }
 
 type msgClient struct {
@@ -49,6 +51,16 @@ func (c *msgClient) RegisterSourcehubICA(ctx context.Context, in *MsgRegisterSou
 	return out, nil
 }
 
+func (c *msgClient) RequestStreamAccess(ctx context.Context, in *MsgRequestStreamAccess, opts ...grpc.CallOption) (*MsgRequestStreamAccessResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(MsgRequestStreamAccessResponse)
+	err := c.cc.Invoke(ctx, Msg_RequestStreamAccess_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // MsgServer is the server API for Msg service.
 // All implementations must embed UnimplementedMsgServer
 // for forward compatibility.
@@ -56,6 +68,7 @@ func (c *msgClient) RegisterSourcehubICA(ctx context.Context, in *MsgRegisterSou
 // Msg defines the Msg service.
 type MsgServer interface {
 	RegisterSourcehubICA(context.Context, *MsgRegisterSourcehubICA) (*MsgRegisterSourcehubICAResponse, error)
+	RequestStreamAccess(context.Context, *MsgRequestStreamAccess) (*MsgRequestStreamAccessResponse, error)
 	mustEmbedUnimplementedMsgServer()
 }
 
@@ -68,6 +81,9 @@ type UnimplementedMsgServer struct{}
 
 func (UnimplementedMsgServer) RegisterSourcehubICA(context.Context, *MsgRegisterSourcehubICA) (*MsgRegisterSourcehubICAResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method RegisterSourcehubICA not implemented")
+}
+func (UnimplementedMsgServer) RequestStreamAccess(context.Context, *MsgRequestStreamAccess) (*MsgRequestStreamAccessResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method RequestStreamAccess not implemented")
 }
 func (UnimplementedMsgServer) mustEmbedUnimplementedMsgServer() {}
 func (UnimplementedMsgServer) testEmbeddedByValue()             {}
@@ -108,6 +124,24 @@ func _Msg_RegisterSourcehubICA_Handler(srv interface{}, ctx context.Context, dec
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Msg_RequestStreamAccess_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(MsgRequestStreamAccess)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MsgServer).RequestStreamAccess(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Msg_RequestStreamAccess_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MsgServer).RequestStreamAccess(ctx, req.(*MsgRequestStreamAccess))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Msg_ServiceDesc is the grpc.ServiceDesc for Msg service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -118,6 +152,10 @@ var Msg_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "RegisterSourcehubICA",
 			Handler:    _Msg_RegisterSourcehubICA_Handler,
+		},
+		{
+			MethodName: "RequestStreamAccess",
+			Handler:    _Msg_RequestStreamAccess_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

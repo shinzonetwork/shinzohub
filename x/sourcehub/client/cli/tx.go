@@ -21,6 +21,8 @@ func GetTxCmd() *cobra.Command {
 	}
 
 	cmd.AddCommand(CmdRegisterSourcehubICA())
+	cmd.AddCommand(CmdRequestStreamAccess()) // <-- add new command here
+
 	return cmd
 }
 
@@ -40,8 +42,8 @@ func CmdRegisterSourcehubICA() *cobra.Command {
 
 			msg := &types.MsgRegisterSourcehubICA{
 				Signer:                 clientCtx.GetFromAddress().String(),
-				HostConnectionId:       controllerConnectionID,
-				ControllerConnectionId: hostConnectionID,
+				ControllerConnectionId: controllerConnectionID,
+				HostConnectionId:       hostConnectionID,
 			}
 
 			if err := msg.ValidateBasic(); err != nil {
@@ -51,6 +53,39 @@ func CmdRegisterSourcehubICA() *cobra.Command {
 			return tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), msg)
 		},
 	}
+
+	flags.AddTxFlagsToCmd(cmd)
+	return cmd
+}
+
+func CmdRequestStreamAccess() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "request-stream [stream-id] [did]",
+		Short: "Request access to a stream by providing a stream ID and a DID",
+		Args:  cobra.ExactArgs(2),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			streamID := args[0]
+			did := args[1]
+
+			clientCtx, err := client.GetClientTxContext(cmd)
+			if err != nil {
+				return err
+			}
+
+			msg := &types.MsgRequestStreamAccess{
+				Signer:   clientCtx.GetFromAddress().String(),
+				StreamId: streamID,
+				Did:      did,
+			}
+
+			if err := msg.ValidateBasic(); err != nil {
+				return err
+			}
+
+			return tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), msg)
+		},
+	}
+
 	flags.AddTxFlagsToCmd(cmd)
 	return cmd
 }

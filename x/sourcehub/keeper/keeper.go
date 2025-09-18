@@ -76,3 +76,49 @@ func (k Keeper) SendPolicy(ctx sdk.Context, policy string) error {
 	_, err = k.IcaCtrlKeeper.SendTx(ctx, connectionID, portID, packetData, timeout)
 	return err
 }
+
+func (k Keeper) RequestStreamAccess(ctx sdk.Context, streamId, did string) error {
+	connectionID := k.GetControllerConnectionID(ctx)
+	if connectionID == "" {
+		return fmt.Errorf("no connection ID set in module state")
+	}
+
+	portID := fmt.Sprintf("icacontroller-%s", types.ModuleAddress.String())
+
+	addr, _ := k.IcaCtrlKeeper.GetInterchainAccountAddress(ctx, connectionID, portID)
+	if addr == "" {
+		return fmt.Errorf("ICA address not found for portID %s on connection %s", portID, connectionID)
+	}
+
+	// mt := coretypes.PolicyMarshalingType_SHORT_YAML
+
+	// msg := &acptypes.MsgCheckAccess{
+	// 	Creator:     addr,
+	// 	Policy:      policy,
+	// 	MarshalType: mt,
+	// }
+
+	// anyMsg, err := codectypes.NewAnyWithValue(msg)
+	// if err != nil {
+	// 	return err
+	// }
+
+	// cosmosTx := &icatypes.CosmosTx{Messages: []*codectypes.Any{anyMsg}}
+	// bz, err := gogoproto.Marshal(cosmosTx)
+	// if err != nil {
+	// 	return err
+	// }
+
+	// packetData := icatypes.InterchainAccountPacketData{
+	// 	Type: icatypes.EXECUTE_TX,
+	// 	Data: bz,
+	// 	Memo: "",
+	// }
+
+	// timeout := uint64(ctx.BlockTime().Add(5 * time.Minute).UnixNano())
+
+	// _, err = k.IcaCtrlKeeper.SendTx(ctx, connectionID, portID, packetData, timeout)
+	// return err
+
+	return nil
+}

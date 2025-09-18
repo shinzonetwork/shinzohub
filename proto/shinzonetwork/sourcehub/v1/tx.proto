@@ -11,6 +11,7 @@ service Msg {
   option (cosmos.msg.v1.service) = true;
 
   rpc RegisterSourcehubICA(MsgRegisterSourcehubICA) returns (MsgRegisterSourcehubICAResponse);
+  rpc RequestStreamAccess(MsgRequestStreamAccess) returns (MsgRequestStreamAccessResponse);
 }
 
 message MsgRegisterSourcehubICA {
@@ -22,3 +23,13 @@ message MsgRegisterSourcehubICA {
 }
 
 message MsgRegisterSourcehubICAResponse {}
+
+message MsgRequestStreamAccess {
+  option (cosmos.msg.v1.signer) = "signer";
+
+  string signer      = 1;
+  string stream_id    = 2;
+  string did = 3;
+}
+
+message MsgRequestStreamAccessResponse {}
