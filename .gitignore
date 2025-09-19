@@ -5,3 +5,5 @@ build/
 
 # Create cosmos app
 web/
+
+**/.DS_Store
