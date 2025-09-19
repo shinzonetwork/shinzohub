@@ -109,6 +109,17 @@ make proto-all
 
 ## 🌐 Development
 
+### Doctor check
+Quick project health check:
+```bash
+make doctor
+```
+
+Output will confirm:
+- If the build artifact exists
+- If `shinzohubd` is on your PATH  
+
+
 ### Start a local testnet
 ```bash
 make sh-testnet
@@ -119,16 +130,6 @@ This spins up a chain with:
 - `CHAIN_ID=9001`  
 - `BLOCK_TIME=1000ms`  
 - Fresh state each run (`CLEAN=true`)  
-
-### Doctor check
-Quick project health check:
-```bash
-make doctor
-```
-
-Output will confirm:
-- If the build artifact exists
-- If `shinzohubd` is on your PATH  
 
 ---
 
