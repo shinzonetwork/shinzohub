@@ -94,7 +94,7 @@ build/shinzohubd tx sourcehub register-ica connection-0 connection-0 \
   --from acc0 \
   --chain-id 9001 \
   --keyring-backend test \
-  --home ~/.shinzo \
+  --home ~/.shinzohub \
   --node tcp://127.0.0.1:26657 \
   --gas auto --gas-adjustment 1.5 --fees 9000ushinzo \
   --yes
@@ -190,7 +190,51 @@ This proves the **IBC + ICA workflow** is working end-to-end, and you can now se
 
 ---
 
-## 6. Test the Precompile (View + Policy Creation)
+## 6. Register the Shinzo Policy
+
+With Sourcehub running, open a new terminal and run:
+
+```bash
+./scripts/ica/register_shinzo_policy.sh
+```
+
+This executes:
+
+```bash
+build/shinzohubd tx sourcehub register-policy \
+  --from acc0 \
+  --chain-id 9001 \
+  --keyring-backend test \
+  --home ~/.shinzohub \
+  --node tcp://127.0.0.1:26657 \
+  --gas auto --gas-adjustment 1.5 --fees 9000ushinzo \
+  --yes
+```
+
+If successful, it create a new acp policy for **ShinzoHub on SourceHub**.
+
+### Query the created policy
+
+On **SourceHub**, run:
+
+```bash
+sourcehubd q acp policy-ids --node "tcp://127.0.0.1:27686"
+```
+
+Example output:
+
+```
+ids:
+- df5dea5c508a6eadd3f8a1312c6f33d04a08c67e1ea7c90332a7a61a46d7ad51
+```
+
+This confirms that a new **policy** was created as a result of the precompile call.  
+
+👉 Remember to adjust the `--node` flag (and the binary path) if your SourceHub build directory differs.
+
+---
+
+## 7. Test the Precompile (View Creation)
 
 Once the ICA channel is open, you can also test the connection by calling the **ViewRegistry precompile** on ShinzoHub.  
 
@@ -225,21 +269,53 @@ This transaction registers the view `"hello"` and triggers policy creation.
 
 ---
 
-### Query the created policy
+## 8. Advanced Query Example
 
-On **SourceHub**, run:
+You can also register full **JSON view definitions** as the payload. For example:
+
+```json
+{
+  "query": "Log {address topics data transactionHash blockNumber}",
+  "sdl": "type FilteredAndDecodedLogs @materialized(if: false) {transactionHash: String}",
+  "transform": {"lenses":[]}
+}
+```
+
+### Send it
 
 ```bash
-sourcehubd q acp policy-ids --node "tcp://127.0.0.1:27686"
+curl -X POST http://localhost:8545   -H "Content-Type: application/json"   --data-raw '{
+    "jsonrpc":"2.0",
+    "method":"eth_sendTransaction",
+    "params":[{
+      "from":"0xabd39bcd18199976acf5379450c52f06edbcf4f3",
+      "to":"0x0000000000000000000000000000000000000210",
+      "gas":"0x100000",
+      "value":"0x0",
+      "data":"0x82fbdc9c000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000b27b227175657279223a224c6f67207b6164647265737320746f706963732064617461207472616e73616374696f6e4861736820626c6f636b4e756d6265727d222c2273646c223a22747970652046696c7465726564416e644465636f6465644c6f677320406d6174657269616c697a65642869663a2066616c736529207b7472616e73616374696f6e486173683a20537472696e677d222c227472616e73666f726d223a7b226c656e736573223a5b5d7d7d0000000000000000000000000000"
+    }],
+    "id":1
+  }'
 ```
 
-Example output:
+This transaction carries the full JSON view definition ABI-encoded as `bytes`.
 
+---
+
+## 9. Request Stream Access
+
+With Hermes running, open a new terminal and run:
+
+```bash
+./scripts/ica/request_stream_access.sh
 ```
-ids:
-- df5dea5c508a6eadd3f8a1312c6f33d04a08c67e1ea7c90332a7a61a46d7ad51
+
+This executes:
+
+```bash
+build/shinzohubd tx sourcehub request-stream view FilteredAndDecodedLogs_0xc5... testuserdid  --from acc0   --chain-id 9001   --keyring-backend test   --home ~/.shinzohub   --node tcp://127.0.0.1:26657   --gas auto --gas-adjustment 1.5 --fees 9000ushinzo   --yes
 ```
 
-This confirms that a new **policy** was created as a result of the precompile call.  
+This sends a request to give the user did access to the an object.
 
-👉 Remember to adjust the `--node` flag (and the binary path) if your SourceHub build directory differs.
+---

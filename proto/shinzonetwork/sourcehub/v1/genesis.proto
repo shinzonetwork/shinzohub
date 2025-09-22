@@ -20,4 +20,7 @@ message GenesisState {
 
   // Transaction type (e.g., "sdk_multi_msg")
   string tx_type = 5;
+
+  // Policy ID for shinzohub on sourcehub
+  string policy_id = 6;
 }

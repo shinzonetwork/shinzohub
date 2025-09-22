@@ -21,7 +21,8 @@ func GetTxCmd() *cobra.Command {
 	}
 
 	cmd.AddCommand(CmdRegisterSourcehubICA())
-	cmd.AddCommand(CmdRequestStreamAccess()) // <-- add new command here
+	cmd.AddCommand(CmdRequestStreamAccess())
+	cmd.AddCommand(CmdRegisterShinzoPolicy())
 
 	return cmd
 }
@@ -60,12 +61,13 @@ func CmdRegisterSourcehubICA() *cobra.Command {
 
 func CmdRequestStreamAccess() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "request-stream [stream-id] [did]",
+		Use:   "request-stream [resource] [stream-id] [did]",
 		Short: "Request access to a stream by providing a stream ID and a DID",
-		Args:  cobra.ExactArgs(2),
+		Args:  cobra.ExactArgs(3),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			streamID := args[0]
-			did := args[1]
+			resource := args[0]
+			streamID := args[1]
+			did := args[2]
 
 			clientCtx, err := client.GetClientTxContext(cmd)
 			if err != nil {
@@ -74,8 +76,36 @@ func CmdRequestStreamAccess() *cobra.Command {
 
 			msg := &types.MsgRequestStreamAccess{
 				Signer:   clientCtx.GetFromAddress().String(),
+				Resource: resource,
 				StreamId: streamID,
 				Did:      did,
+			}
+
+			if err := msg.ValidateBasic(); err != nil {
+				return err
+			}
+
+			return tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), msg)
+		},
+	}
+
+	flags.AddTxFlagsToCmd(cmd)
+	return cmd
+}
+
+func CmdRegisterShinzoPolicy() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "register-policy",
+		Short: "Register shinzohub default policy to sourcehub",
+		Args:  cobra.ExactArgs(0),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			clientCtx, err := client.GetClientTxContext(cmd)
+			if err != nil {
+				return err
+			}
+
+			msg := &types.MsgRegisterShinzoPolicy{
+				Signer: clientCtx.GetFromAddress().String(),
 			}
 
 			if err := msg.ValidateBasic(); err != nil {

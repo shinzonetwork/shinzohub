@@ -1,9 +1,6 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-export SHINZOHUB_CONNECTION_ID="connection-0"
-export SOURCEHUB_CONNECTION_ID="connection-0"
-
 export KEY="acc0"
 export CHAIN_ID=${CHAIN_ID:-"9001"}
 export KEYRING=${KEYRING:-"test"}
@@ -11,7 +8,7 @@ export HOME_DIR=$(eval echo "${HOME_DIR:-"~/.shinzohub"}")
 export BINARY="./build/shinzohubd"
 export RPC=${RPC:-"26657"}
 
-$BINARY tx sourcehub register-ica $SHINZOHUB_CONNECTION_ID $SOURCEHUB_CONNECTION_ID \
+$BINARY tx sourcehub register-policy \
   --from $KEY \
   --keyring-backend $KEYRING \
   --chain-id $CHAIN_ID \

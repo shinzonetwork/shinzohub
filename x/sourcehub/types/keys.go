@@ -23,4 +23,6 @@ const (
 	KeyVersion          = "version"
 	KeyEncoding         = "encoding"
 	KeyTxType           = "tx_type"
+	PolicyId            = "policy_id"
+	ViewResourceName    = "view"
 )

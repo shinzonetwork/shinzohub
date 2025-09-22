@@ -9,7 +9,7 @@ rm -rf $HERMES_HOME
 mkdir $HERMES_HOME
 mkdir $HERMES_HOME/bin/
 tar -C $HERMES_HOME/bin/ -vxzf $HOME/hermes-v1.13.3-aarch64-apple-darwin.tar.gz
-cp ./hermes_config.toml "$HERMES_HOME/config.toml"
+cp ./scripts/ica/hermes_config.toml "$HERMES_HOME/config.toml"
 
 xattr -d com.apple.quarantine "$HERMES_HOME/bin/hermes" || true
 

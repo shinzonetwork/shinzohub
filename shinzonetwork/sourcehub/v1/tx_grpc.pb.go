@@ -20,6 +20,7 @@ const _ = grpc.SupportPackageIsVersion9
 
 const (
 	Msg_RegisterSourcehubICA_FullMethodName = "/shinzonetwork.sourcehub.v1.Msg/RegisterSourcehubICA"
+	Msg_RegisterShinzoPolicy_FullMethodName = "/shinzonetwork.sourcehub.v1.Msg/RegisterShinzoPolicy"
 	Msg_RequestStreamAccess_FullMethodName  = "/shinzonetwork.sourcehub.v1.Msg/RequestStreamAccess"
 )
 
@@ -30,6 +31,7 @@ const (
 // Msg defines the Msg service.
 type MsgClient interface {
 	RegisterSourcehubICA(ctx context.Context, in *MsgRegisterSourcehubICA, opts ...grpc.CallOption) (*MsgRegisterSourcehubICAResponse, error)
+	RegisterShinzoPolicy(ctx context.Context, in *MsgRegisterShinzoPolicy, opts ...grpc.CallOption) (*MsgRegisterShinzoPolicyResponse, error)
 	RequestStreamAccess(ctx context.Context, in *MsgRequestStreamAccess, opts ...grpc.CallOption) (*MsgRequestStreamAccessResponse, error)
 }
 
@@ -45,6 +47,16 @@ func (c *msgClient) RegisterSourcehubICA(ctx context.Context, in *MsgRegisterSou
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(MsgRegisterSourcehubICAResponse)
 	err := c.cc.Invoke(ctx, Msg_RegisterSourcehubICA_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *msgClient) RegisterShinzoPolicy(ctx context.Context, in *MsgRegisterShinzoPolicy, opts ...grpc.CallOption) (*MsgRegisterShinzoPolicyResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(MsgRegisterShinzoPolicyResponse)
+	err := c.cc.Invoke(ctx, Msg_RegisterShinzoPolicy_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -68,6 +80,7 @@ func (c *msgClient) RequestStreamAccess(ctx context.Context, in *MsgRequestStrea
 // Msg defines the Msg service.
 type MsgServer interface {
 	RegisterSourcehubICA(context.Context, *MsgRegisterSourcehubICA) (*MsgRegisterSourcehubICAResponse, error)
+	RegisterShinzoPolicy(context.Context, *MsgRegisterShinzoPolicy) (*MsgRegisterShinzoPolicyResponse, error)
 	RequestStreamAccess(context.Context, *MsgRequestStreamAccess) (*MsgRequestStreamAccessResponse, error)
 	mustEmbedUnimplementedMsgServer()
 }
@@ -81,6 +94,9 @@ type UnimplementedMsgServer struct{}
 
 func (UnimplementedMsgServer) RegisterSourcehubICA(context.Context, *MsgRegisterSourcehubICA) (*MsgRegisterSourcehubICAResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method RegisterSourcehubICA not implemented")
+}
+func (UnimplementedMsgServer) RegisterShinzoPolicy(context.Context, *MsgRegisterShinzoPolicy) (*MsgRegisterShinzoPolicyResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method RegisterShinzoPolicy not implemented")
 }
 func (UnimplementedMsgServer) RequestStreamAccess(context.Context, *MsgRequestStreamAccess) (*MsgRequestStreamAccessResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method RequestStreamAccess not implemented")
@@ -124,6 +140,24 @@ func _Msg_RegisterSourcehubICA_Handler(srv interface{}, ctx context.Context, dec
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Msg_RegisterShinzoPolicy_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(MsgRegisterShinzoPolicy)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MsgServer).RegisterShinzoPolicy(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Msg_RegisterShinzoPolicy_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MsgServer).RegisterShinzoPolicy(ctx, req.(*MsgRegisterShinzoPolicy))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _Msg_RequestStreamAccess_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(MsgRequestStreamAccess)
 	if err := dec(in); err != nil {
@@ -152,6 +186,10 @@ var Msg_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "RegisterSourcehubICA",
 			Handler:    _Msg_RegisterSourcehubICA_Handler,
+		},
+		{
+			MethodName: "RegisterShinzoPolicy",
+			Handler:    _Msg_RegisterShinzoPolicy_Handler,
 		},
 		{
 			MethodName: "RequestStreamAccess",

@@ -124,17 +124,98 @@ func (m *MsgRegisterSourcehubICAResponse) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_MsgRegisterSourcehubICAResponse proto.InternalMessageInfo
 
+type MsgRegisterShinzoPolicy struct {
+	Signer string `protobuf:"bytes,1,opt,name=signer,proto3" json:"signer,omitempty"`
+}
+
+func (m *MsgRegisterShinzoPolicy) Reset()         { *m = MsgRegisterShinzoPolicy{} }
+func (m *MsgRegisterShinzoPolicy) String() string { return proto.CompactTextString(m) }
+func (*MsgRegisterShinzoPolicy) ProtoMessage()    {}
+func (*MsgRegisterShinzoPolicy) Descriptor() ([]byte, []int) {
+	return fileDescriptor_975530337db1a5de, []int{2}
+}
+func (m *MsgRegisterShinzoPolicy) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *MsgRegisterShinzoPolicy) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_MsgRegisterShinzoPolicy.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *MsgRegisterShinzoPolicy) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_MsgRegisterShinzoPolicy.Merge(m, src)
+}
+func (m *MsgRegisterShinzoPolicy) XXX_Size() int {
+	return m.Size()
+}
+func (m *MsgRegisterShinzoPolicy) XXX_DiscardUnknown() {
+	xxx_messageInfo_MsgRegisterShinzoPolicy.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_MsgRegisterShinzoPolicy proto.InternalMessageInfo
+
+func (m *MsgRegisterShinzoPolicy) GetSigner() string {
+	if m != nil {
+		return m.Signer
+	}
+	return ""
+}
+
+type MsgRegisterShinzoPolicyResponse struct {
+}
+
+func (m *MsgRegisterShinzoPolicyResponse) Reset()         { *m = MsgRegisterShinzoPolicyResponse{} }
+func (m *MsgRegisterShinzoPolicyResponse) String() string { return proto.CompactTextString(m) }
+func (*MsgRegisterShinzoPolicyResponse) ProtoMessage()    {}
+func (*MsgRegisterShinzoPolicyResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_975530337db1a5de, []int{3}
+}
+func (m *MsgRegisterShinzoPolicyResponse) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *MsgRegisterShinzoPolicyResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_MsgRegisterShinzoPolicyResponse.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *MsgRegisterShinzoPolicyResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_MsgRegisterShinzoPolicyResponse.Merge(m, src)
+}
+func (m *MsgRegisterShinzoPolicyResponse) XXX_Size() int {
+	return m.Size()
+}
+func (m *MsgRegisterShinzoPolicyResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_MsgRegisterShinzoPolicyResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_MsgRegisterShinzoPolicyResponse proto.InternalMessageInfo
+
 type MsgRequestStreamAccess struct {
 	Signer   string `protobuf:"bytes,1,opt,name=signer,proto3" json:"signer,omitempty"`
-	StreamId string `protobuf:"bytes,2,opt,name=stream_id,json=streamId,proto3" json:"stream_id,omitempty"`
-	Did      string `protobuf:"bytes,3,opt,name=did,proto3" json:"did,omitempty"`
+	Resource string `protobuf:"bytes,2,opt,name=resource,proto3" json:"resource,omitempty"`
+	StreamId string `protobuf:"bytes,3,opt,name=stream_id,json=streamId,proto3" json:"stream_id,omitempty"`
+	Did      string `protobuf:"bytes,4,opt,name=did,proto3" json:"did,omitempty"`
 }
 
 func (m *MsgRequestStreamAccess) Reset()         { *m = MsgRequestStreamAccess{} }
 func (m *MsgRequestStreamAccess) String() string { return proto.CompactTextString(m) }
 func (*MsgRequestStreamAccess) ProtoMessage()    {}
 func (*MsgRequestStreamAccess) Descriptor() ([]byte, []int) {
-	return fileDescriptor_975530337db1a5de, []int{2}
+	return fileDescriptor_975530337db1a5de, []int{4}
 }
 func (m *MsgRequestStreamAccess) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -170,6 +251,13 @@ func (m *MsgRequestStreamAccess) GetSigner() string {
 	return ""
 }
 
+func (m *MsgRequestStreamAccess) GetResource() string {
+	if m != nil {
+		return m.Resource
+	}
+	return ""
+}
+
 func (m *MsgRequestStreamAccess) GetStreamId() string {
 	if m != nil {
 		return m.StreamId
@@ -191,7 +279,7 @@ func (m *MsgRequestStreamAccessResponse) Reset()         { *m = MsgRequestStream
 func (m *MsgRequestStreamAccessResponse) String() string { return proto.CompactTextString(m) }
 func (*MsgRequestStreamAccessResponse) ProtoMessage()    {}
 func (*MsgRequestStreamAccessResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_975530337db1a5de, []int{3}
+	return fileDescriptor_975530337db1a5de, []int{5}
 }
 func (m *MsgRequestStreamAccessResponse) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -223,6 +311,8 @@ var xxx_messageInfo_MsgRequestStreamAccessResponse proto.InternalMessageInfo
 func init() {
 	proto.RegisterType((*MsgRegisterSourcehubICA)(nil), "shinzonetwork.sourcehub.v1.MsgRegisterSourcehubICA")
 	proto.RegisterType((*MsgRegisterSourcehubICAResponse)(nil), "shinzonetwork.sourcehub.v1.MsgRegisterSourcehubICAResponse")
+	proto.RegisterType((*MsgRegisterShinzoPolicy)(nil), "shinzonetwork.sourcehub.v1.MsgRegisterShinzoPolicy")
+	proto.RegisterType((*MsgRegisterShinzoPolicyResponse)(nil), "shinzonetwork.sourcehub.v1.MsgRegisterShinzoPolicyResponse")
 	proto.RegisterType((*MsgRequestStreamAccess)(nil), "shinzonetwork.sourcehub.v1.MsgRequestStreamAccess")
 	proto.RegisterType((*MsgRequestStreamAccessResponse)(nil), "shinzonetwork.sourcehub.v1.MsgRequestStreamAccessResponse")
 }
@@ -232,7 +322,7 @@ func init() {
 }
 
 var fileDescriptor_975530337db1a5de = []byte{
-	// 387 bytes of a gzipped FileDescriptorProto
+	// 441 bytes of a gzipped FileDescriptorProto
 	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xe2, 0x52, 0x2e, 0xce, 0xc8, 0xcc,
 	0xab, 0xca, 0xcf, 0x4b, 0x2d, 0x29, 0xcf, 0x2f, 0xca, 0xd6, 0x2f, 0xce, 0x2f, 0x2d, 0x4a, 0x4e,
 	0xcd, 0x28, 0x4d, 0xd2, 0x2f, 0x33, 0xd4, 0x2f, 0xa9, 0xd0, 0x2b, 0x28, 0xca, 0x2f, 0xc9, 0x17,
@@ -245,19 +335,22 @@ var fileDescriptor_975530337db1a5de = []byte{
 	0x4c, 0x91, 0x60, 0x02, 0xab, 0x14, 0x43, 0xc8, 0x3b, 0xc3, 0xa5, 0x3d, 0x53, 0x84, 0x74, 0xb8,
 	0x84, 0x32, 0xf2, 0x8b, 0x4b, 0xd0, 0xf4, 0x30, 0x83, 0xf5, 0x08, 0x80, 0x64, 0x90, 0x55, 0x5b,
 	0x71, 0x37, 0x3d, 0xdf, 0xa0, 0x05, 0xb5, 0x54, 0x49, 0x91, 0x4b, 0x1e, 0x87, 0x3b, 0x83, 0x52,
-	0x8b, 0x0b, 0xf2, 0xf3, 0x8a, 0x53, 0x95, 0x72, 0xb8, 0xc4, 0xc0, 0x4a, 0x0a, 0x4b, 0x53, 0x8b,
-	0x4b, 0x82, 0x4b, 0x8a, 0x52, 0x13, 0x73, 0x1d, 0x93, 0x93, 0x53, 0x8b, 0x8b, 0x71, 0xfa, 0x44,
-	0x9a, 0x8b, 0xb3, 0x18, 0xac, 0x0e, 0xe1, 0x74, 0x0e, 0x88, 0x80, 0x67, 0x8a, 0x90, 0x00, 0x17,
-	0x73, 0x0a, 0xdc, 0x75, 0x20, 0x26, 0xaa, 0x83, 0x14, 0xb8, 0xe4, 0xb0, 0xdb, 0x06, 0x73, 0x8f,
-	0xd1, 0x7c, 0x26, 0x2e, 0x66, 0xdf, 0xe2, 0x74, 0xa1, 0x0e, 0x46, 0x2e, 0x11, 0xac, 0x01, 0x6c,
-	0xac, 0x87, 0x3b, 0xca, 0xf4, 0x70, 0xf8, 0x56, 0xca, 0x9a, 0x0c, 0x4d, 0x30, 0x27, 0x09, 0xb5,
-	0x32, 0x72, 0x09, 0x63, 0x0b, 0x20, 0x23, 0x82, 0x86, 0x62, 0xe8, 0x91, 0xb2, 0x22, 0x5d, 0x0f,
-	0xcc, 0x1d, 0x52, 0xac, 0x0d, 0xcf, 0x37, 0x68, 0x31, 0x3a, 0xf9, 0x9d, 0x78, 0x24, 0xc7, 0x78,
-	0xe1, 0x91, 0x1c, 0xe3, 0x83, 0x47, 0x72, 0x8c, 0x13, 0x1e, 0xcb, 0x31, 0x5c, 0x78, 0x2c, 0xc7,
-	0x70, 0xe3, 0xb1, 0x1c, 0x43, 0x94, 0x49, 0x7a, 0x66, 0x09, 0xc8, 0xa8, 0xe4, 0xfc, 0x5c, 0x7d,
-	0xb4, 0xc4, 0x0f, 0xe6, 0x81, 0x12, 0x7f, 0x05, 0x52, 0x46, 0x28, 0xa9, 0x2c, 0x48, 0x2d, 0x4e,
-	0x62, 0x03, 0x27, 0x6a, 0x63, 0x40, 0x00, 0x00, 0x00, 0xff, 0xff, 0x4e, 0xe8, 0x0b, 0x2d, 0x30,
-	0x03, 0x00, 0x00,
+	0x8b, 0x0b, 0xf2, 0xf3, 0x8a, 0x53, 0x95, 0xec, 0x50, 0xbd, 0x02, 0x0e, 0x8d, 0x80, 0xfc, 0x9c,
+	0xcc, 0xe4, 0x4a, 0x5c, 0x5e, 0xc1, 0x6b, 0x05, 0x92, 0x7e, 0xb8, 0x15, 0x1d, 0x8c, 0x5c, 0x62,
+	0x60, 0x35, 0x85, 0xa5, 0xa9, 0xc5, 0x25, 0xc1, 0x25, 0x45, 0xa9, 0x89, 0xb9, 0x8e, 0xc9, 0xc9,
+	0xa9, 0xc5, 0xc5, 0x38, 0x43, 0x4b, 0x8a, 0x8b, 0xa3, 0x28, 0x15, 0x12, 0x19, 0xd0, 0xd0, 0x81,
+	0xf3, 0x85, 0xa4, 0xb9, 0x38, 0x8b, 0xc1, 0x66, 0x20, 0x82, 0x81, 0x03, 0x22, 0xe0, 0x99, 0x22,
+	0x24, 0xc0, 0xc5, 0x9c, 0x92, 0x99, 0x22, 0xc1, 0x02, 0x16, 0x06, 0x31, 0x51, 0x5d, 0xab, 0xc0,
+	0x25, 0x87, 0xdd, 0x25, 0x30, 0xc7, 0x1a, 0xad, 0x62, 0xe6, 0x62, 0xf6, 0x2d, 0x4e, 0x17, 0xea,
+	0x60, 0xe4, 0x12, 0xc1, 0x1a, 0xc1, 0xc6, 0x7a, 0xb8, 0x93, 0x8c, 0x1e, 0x8e, 0xd0, 0x96, 0xb2,
+	0x26, 0x43, 0x13, 0xcc, 0x49, 0xa8, 0x4e, 0x41, 0x8e, 0x20, 0xa2, 0x9d, 0x82, 0xa4, 0x89, 0x78,
+	0xa7, 0x60, 0x89, 0x4a, 0xa1, 0x56, 0x46, 0x2e, 0x61, 0x6c, 0xf1, 0x68, 0x44, 0xd0, 0x50, 0x0c,
+	0x3d, 0x52, 0x56, 0xa4, 0xeb, 0x81, 0xb9, 0x43, 0x8a, 0xb5, 0xe1, 0xf9, 0x06, 0x2d, 0x46, 0x27,
+	0xbf, 0x13, 0x8f, 0xe4, 0x18, 0x2f, 0x3c, 0x92, 0x63, 0x7c, 0xf0, 0x48, 0x8e, 0x71, 0xc2, 0x63,
+	0x39, 0x86, 0x0b, 0x8f, 0xe5, 0x18, 0x6e, 0x3c, 0x96, 0x63, 0x88, 0x32, 0x49, 0xcf, 0x2c, 0x01,
+	0x19, 0x95, 0x9c, 0x9f, 0xab, 0x8f, 0x56, 0x0e, 0x80, 0x79, 0xa0, 0x72, 0xa0, 0x02, 0xa9, 0x4c,
+	0x28, 0xa9, 0x2c, 0x48, 0x2d, 0x4e, 0x62, 0x03, 0xe7, 0x6f, 0x63, 0x40, 0x00, 0x00, 0x00, 0xff,
+	0xff, 0x03, 0x07, 0xa0, 0x11, 0x3b, 0x04, 0x00, 0x00,
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -273,6 +366,7 @@ const _ = grpc.SupportPackageIsVersion4
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://godoc.org/google.golang.org/grpc#ClientConn.NewStream.
 type MsgClient interface {
 	RegisterSourcehubICA(ctx context.Context, in *MsgRegisterSourcehubICA, opts ...grpc.CallOption) (*MsgRegisterSourcehubICAResponse, error)
+	RegisterShinzoPolicy(ctx context.Context, in *MsgRegisterShinzoPolicy, opts ...grpc.CallOption) (*MsgRegisterShinzoPolicyResponse, error)
 	RequestStreamAccess(ctx context.Context, in *MsgRequestStreamAccess, opts ...grpc.CallOption) (*MsgRequestStreamAccessResponse, error)
 }
 
@@ -293,6 +387,15 @@ func (c *msgClient) RegisterSourcehubICA(ctx context.Context, in *MsgRegisterSou
 	return out, nil
 }
 
+func (c *msgClient) RegisterShinzoPolicy(ctx context.Context, in *MsgRegisterShinzoPolicy, opts ...grpc.CallOption) (*MsgRegisterShinzoPolicyResponse, error) {
+	out := new(MsgRegisterShinzoPolicyResponse)
+	err := c.cc.Invoke(ctx, "/shinzonetwork.sourcehub.v1.Msg/RegisterShinzoPolicy", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *msgClient) RequestStreamAccess(ctx context.Context, in *MsgRequestStreamAccess, opts ...grpc.CallOption) (*MsgRequestStreamAccessResponse, error) {
 	out := new(MsgRequestStreamAccessResponse)
 	err := c.cc.Invoke(ctx, "/shinzonetwork.sourcehub.v1.Msg/RequestStreamAccess", in, out, opts...)
@@ -305,6 +408,7 @@ func (c *msgClient) RequestStreamAccess(ctx context.Context, in *MsgRequestStrea
 // MsgServer is the server API for Msg service.
 type MsgServer interface {
 	RegisterSourcehubICA(context.Context, *MsgRegisterSourcehubICA) (*MsgRegisterSourcehubICAResponse, error)
+	RegisterShinzoPolicy(context.Context, *MsgRegisterShinzoPolicy) (*MsgRegisterShinzoPolicyResponse, error)
 	RequestStreamAccess(context.Context, *MsgRequestStreamAccess) (*MsgRequestStreamAccessResponse, error)
 }
 
@@ -314,6 +418,9 @@ type UnimplementedMsgServer struct {
 
 func (*UnimplementedMsgServer) RegisterSourcehubICA(ctx context.Context, req *MsgRegisterSourcehubICA) (*MsgRegisterSourcehubICAResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method RegisterSourcehubICA not implemented")
+}
+func (*UnimplementedMsgServer) RegisterShinzoPolicy(ctx context.Context, req *MsgRegisterShinzoPolicy) (*MsgRegisterShinzoPolicyResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method RegisterShinzoPolicy not implemented")
 }
 func (*UnimplementedMsgServer) RequestStreamAccess(ctx context.Context, req *MsgRequestStreamAccess) (*MsgRequestStreamAccessResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method RequestStreamAccess not implemented")
@@ -337,6 +444,24 @@ func _Msg_RegisterSourcehubICA_Handler(srv interface{}, ctx context.Context, dec
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(MsgServer).RegisterSourcehubICA(ctx, req.(*MsgRegisterSourcehubICA))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Msg_RegisterShinzoPolicy_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(MsgRegisterShinzoPolicy)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MsgServer).RegisterShinzoPolicy(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/shinzonetwork.sourcehub.v1.Msg/RegisterShinzoPolicy",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MsgServer).RegisterShinzoPolicy(ctx, req.(*MsgRegisterShinzoPolicy))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -367,6 +492,10 @@ var _Msg_serviceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "RegisterSourcehubICA",
 			Handler:    _Msg_RegisterSourcehubICA_Handler,
+		},
+		{
+			MethodName: "RegisterShinzoPolicy",
+			Handler:    _Msg_RegisterShinzoPolicy_Handler,
 		},
 		{
 			MethodName: "RequestStreamAccess",
@@ -444,6 +573,59 @@ func (m *MsgRegisterSourcehubICAResponse) MarshalToSizedBuffer(dAtA []byte) (int
 	return len(dAtA) - i, nil
 }
 
+func (m *MsgRegisterShinzoPolicy) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *MsgRegisterShinzoPolicy) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *MsgRegisterShinzoPolicy) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if len(m.Signer) > 0 {
+		i -= len(m.Signer)
+		copy(dAtA[i:], m.Signer)
+		i = encodeVarintTx(dAtA, i, uint64(len(m.Signer)))
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *MsgRegisterShinzoPolicyResponse) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *MsgRegisterShinzoPolicyResponse) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *MsgRegisterShinzoPolicyResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	return len(dAtA) - i, nil
+}
+
 func (m *MsgRequestStreamAccess) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
@@ -469,12 +651,19 @@ func (m *MsgRequestStreamAccess) MarshalToSizedBuffer(dAtA []byte) (int, error) 
 		copy(dAtA[i:], m.Did)
 		i = encodeVarintTx(dAtA, i, uint64(len(m.Did)))
 		i--
-		dAtA[i] = 0x1a
+		dAtA[i] = 0x22
 	}
 	if len(m.StreamId) > 0 {
 		i -= len(m.StreamId)
 		copy(dAtA[i:], m.StreamId)
 		i = encodeVarintTx(dAtA, i, uint64(len(m.StreamId)))
+		i--
+		dAtA[i] = 0x1a
+	}
+	if len(m.Resource) > 0 {
+		i -= len(m.Resource)
+		copy(dAtA[i:], m.Resource)
+		i = encodeVarintTx(dAtA, i, uint64(len(m.Resource)))
 		i--
 		dAtA[i] = 0x12
 	}
@@ -552,6 +741,28 @@ func (m *MsgRegisterSourcehubICAResponse) Size() (n int) {
 	return n
 }
 
+func (m *MsgRegisterShinzoPolicy) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	l = len(m.Signer)
+	if l > 0 {
+		n += 1 + l + sovTx(uint64(l))
+	}
+	return n
+}
+
+func (m *MsgRegisterShinzoPolicyResponse) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	return n
+}
+
 func (m *MsgRequestStreamAccess) Size() (n int) {
 	if m == nil {
 		return 0
@@ -559,6 +770,10 @@ func (m *MsgRequestStreamAccess) Size() (n int) {
 	var l int
 	_ = l
 	l = len(m.Signer)
+	if l > 0 {
+		n += 1 + l + sovTx(uint64(l))
+	}
+	l = len(m.Resource)
 	if l > 0 {
 		n += 1 + l + sovTx(uint64(l))
 	}
@@ -784,6 +999,138 @@ func (m *MsgRegisterSourcehubICAResponse) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
+func (m *MsgRegisterShinzoPolicy) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowTx
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: MsgRegisterShinzoPolicy: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: MsgRegisterShinzoPolicy: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Signer", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthTx
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthTx
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Signer = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipTx(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthTx
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *MsgRegisterShinzoPolicyResponse) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowTx
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: MsgRegisterShinzoPolicyResponse: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: MsgRegisterShinzoPolicyResponse: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		default:
+			iNdEx = preIndex
+			skippy, err := skipTx(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthTx
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
 func (m *MsgRequestStreamAccess) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -847,6 +1194,38 @@ func (m *MsgRequestStreamAccess) Unmarshal(dAtA []byte) error {
 			iNdEx = postIndex
 		case 2:
 			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Resource", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthTx
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthTx
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Resource = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 3:
+			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field StreamId", wireType)
 			}
 			var stringLen uint64
@@ -877,7 +1256,7 @@ func (m *MsgRequestStreamAccess) Unmarshal(dAtA []byte) error {
 			}
 			m.StreamId = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
-		case 3:
+		case 4:
 			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field Did", wireType)
 			}

@@ -16,6 +16,7 @@ func (k Keeper) InitGenesis(ctx sdk.Context, gs types.GenesisState) {
 	k.SetVersion(ctx, gs.Version)
 	k.SetEncoding(ctx, gs.Encoding)
 	k.SetTxType(ctx, gs.TxType)
+	k.SetPolicyId(ctx, gs.PolicyId)
 }
 
 // ExportGenesis returns the module's exported genesis state.
@@ -26,5 +27,6 @@ func (k Keeper) ExportGenesis(ctx sdk.Context) *types.GenesisState {
 		Version:                k.GetVersion(ctx),
 		Encoding:               k.GetEncoding(ctx),
 		TxType:                 k.GetTxType(ctx),
+		PolicyId:               k.GetPolicyId(ctx),
 	}
 }

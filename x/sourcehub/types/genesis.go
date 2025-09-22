@@ -8,6 +8,7 @@ func DefaultGenesis() *GenesisState {
 		Version:                "ics27-1",
 		Encoding:               "proto3",
 		TxType:                 "sdk_multi_msg",
+		PolicyId:               "",
 	}
 }
 

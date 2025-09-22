@@ -15,7 +15,7 @@ export MONIKER="localvalidator"
 export KEYALGO="eth_secp256k1"
 export KEYRING=${KEYRING:-"test"}
 export HOME_DIR=$(eval echo "${HOME_DIR:-"~/.shinzohub"}")
-export BINARY="../../build/shinzohubd"
+export BINARY="./build/shinzohubd"
 export DENOM=${DENOM:-ushinzo}
 
 export CLEAN=${CLEAN:-"true"}
@@ -26,7 +26,7 @@ export P2P=${P2P:-"26656"}
 export GRPC=${GRPC:-"9090"}
 export GRPC_WEB=${GRPC_WEB:-"9091"}
 export ROSETTA=${ROSETTA:-"8080"}
-export BLOCK_TIME=${BLOCK_TIME:-"5s"}
+export BLOCK_TIME=${BLOCK_TIME:-"1s"}
 
 set_config() {
   $BINARY config set client chain-id $CHAIN_ID
@@ -37,7 +37,7 @@ set_config
 
 from_scratch () {
   # Fresh install on current branch
-  just install
+  make install
 
   # remove existing daemon files.
   if [ ${#HOME_DIR} -le 2 ]; then
@@ -99,6 +99,7 @@ from_scratch () {
 
   # enable ICA controller on ShinzoHub
   update_test_genesis '.app_state["interchainaccounts"]["controller_genesis_state"]["params"]["controller_enabled"]=true'
+  update_test_genesis '.app_state["sourcehub"]["policy_id"]="692b3f99bf9f0d87d84adb8723eba9c43c5d1b57f54d3e763fa1a0d6e5bdcb32"'
 
   # === CUSTOM MODULES ===
 
