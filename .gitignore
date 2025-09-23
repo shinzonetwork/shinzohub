@@ -7,3 +7,15 @@ release/
 *.dot
 *.log
 *.ign
+
+# Dev env
+logs/
+.shinzohub/
+/bin
+.env
+
+# MacOS
+.DS_STORE
+
+# VSCode
+.history/
