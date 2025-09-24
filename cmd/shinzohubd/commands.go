@@ -47,6 +47,9 @@ func initCometBFTConfig() *cmtcfg.Config {
 	// cfg.P2P.MaxNumInboundPeers = 100
 	// cfg.P2P.MaxNumOutboundPeers = 40
 
+	cfg.Mempool.MaxTxsBytes = 104857600 * 10
+	cfg.Mempool.MaxTxBytes = 104857600
+
 	return cfg
 }
 
