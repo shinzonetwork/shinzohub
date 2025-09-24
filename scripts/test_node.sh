@@ -15,7 +15,7 @@ export MONIKER="localvalidator"
 export KEYALGO="eth_secp256k1"
 export KEYRING=${KEYRING:-"test"}
 export HOME_DIR=$(eval echo "${HOME_DIR:-"~/.shinzohub"}")
-export BINARY=${BINARY:-shinzohubd}
+export BINARY="./build/shinzohubd"
 export DENOM=${DENOM:-ushinzo}
 
 export CLEAN=${CLEAN:-"false"}
