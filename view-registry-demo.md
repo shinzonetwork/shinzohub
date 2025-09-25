@@ -214,4 +214,60 @@ Both event systems fire from the same transaction. This makes your precompile us
 
 ---
 
+## 8. Advanced Query Example
+
+The precompile also accepts **arbitrary JSON payloads** as views, not just plain strings. For example:
+
+```json
+{
+  "query": "Log {address topics data transactionHash blockNumber}",
+  "sdl": "type FilteredAndDecodedLogs @materialized(if: false) {transactionHash: String}",
+  "transform": {"lenses": []}
+}
+```
+
+This describes a view with:
+- **query**: which fields to capture
+- **sdl**: schema definition
+- **transform**: optional transforms
+
+### Sending it
+
+```bash
+curl -X POST http://localhost:8545   -H "Content-Type: application/json"   --data-raw '{
+    "jsonrpc":"2.0",
+    "method":"eth_sendTransaction",
+    "params":[{
+      "from":"0xabd39bcd18199976acf5379450c52f06edbcf4f3",
+      "to":"0x0000000000000000000000000000000000000210",
+      "gas":"0x100000",
+      "value":"0x0",
+      "data":"0x82fbdc9c000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000b27b227175657279223a224c6f67207b6164647265737320746f706963732064617461207472616e73616374696f6e4861736820626c6f636b4e756d6265727d222c2273646c223a22747970652046696c7465726564416e644465636f6465644c6f677320406d6174657269616c697a65642869663a2066616c736529207b7472616e73616374696f6e486173683a20537472696e677d222c227472616e73666f726d223a7b226c656e736573223a5b5d7d7d0000000000000000000000000000"
+    }],
+    "id":1
+  }'
+```
+
+This transaction carries the full JSON view definition ABI-encoded as `bytes`.
+
+### Events
+
+When processed:
+- **Cosmos event** → includes `view` attribute containing the JSON
+- **EVM log** → raw ABI log with the same data
+
+This shows how you can register structured views directly on-chain.
+
+---
+
+## 9. What you get
+
+* **Cosmos Event (Tendermint)** → human-readable attributes like `view = { ... }`
+* **EVM Log (Ethereum)** → ABI-encoded logs for Ethereum tools
+
+Both systems emit from the same transaction, making the precompile usable in **both Cosmos and Ethereum ecosystems**.
+
+
+---
+
 ✨ That’s it — you now have live end-to-end proof that the **ViewRegistry precompile works on ShinzoHub**, with events accessible through **both Cosmos and Ethereum APIs**.

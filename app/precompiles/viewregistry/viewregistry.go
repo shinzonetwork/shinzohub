@@ -11,6 +11,8 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/tracing"
 	"github.com/ethereum/go-ethereum/core/vm"
+
+	sourcehubkeeper "github.com/shinzonetwork/shinzohub/x/sourcehub/keeper"
 )
 
 const (
@@ -26,10 +28,11 @@ var _ vm.PrecompiledContract = &Precompile{}
 
 type Precompile struct {
 	cmn.Precompile
-	baseGas uint64
+	baseGas         uint64
+	sourcehubKeeper sourcehubkeeper.Keeper
 }
 
-func NewPrecompile(baseGas uint64) (*Precompile, error) {
+func NewPrecompile(baseGas uint64, sourcehubKeeper sourcehubkeeper.Keeper) (*Precompile, error) {
 	newABI, err := cmn.LoadABI(f, "abi.json")
 	if err != nil {
 		return nil, err
@@ -41,7 +44,8 @@ func NewPrecompile(baseGas uint64) (*Precompile, error) {
 			KvGasConfig:          storetypes.GasConfig{},
 			TransientKVGasConfig: storetypes.GasConfig{},
 		},
-		baseGas: baseGas,
+		baseGas:         baseGas,
+		sourcehubKeeper: sourcehubKeeper,
 	}, nil
 }
 

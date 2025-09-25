@@ -29,6 +29,8 @@ import (
 	evmkeeper "github.com/cosmos/evm/x/vm/keeper"
 	evmtypes "github.com/cosmos/evm/x/vm/types"
 	channelkeeper "github.com/cosmos/ibc-go/v10/modules/core/04-channel/keeper"
+	sourcehubkeeper "github.com/shinzonetwork/shinzohub/x/sourcehub/keeper"
+
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/vm"
 	"github.com/shinzonetwork/shinzohub/app/precompiles/viewregistry"
@@ -85,6 +87,7 @@ func NewAvailableStaticPrecompiles(
 	evmKeeper *evmkeeper.Keeper,
 	govKeeper govkeeper.Keeper,
 	slashingKeeper slashingkeeper.Keeper,
+	sourcehubKeeper sourcehubkeeper.Keeper,
 	codec codec.Codec,
 	opts ...Option,
 ) map[common.Address]vm.PrecompiledContract {
@@ -146,7 +149,7 @@ func NewAvailableStaticPrecompiles(
 	}
 
 	// register custom precompiles
-	viewRegistryPrecompile, err := viewregistry.NewPrecompile(viewRegsitryPrecompileBaseGas)
+	viewRegistryPrecompile, err := viewregistry.NewPrecompile(viewRegsitryPrecompileBaseGas, sourcehubKeeper)
 	if err != nil {
 		panic(fmt.Errorf("failed to instantiate view registry precompile: %w", err))
 	}

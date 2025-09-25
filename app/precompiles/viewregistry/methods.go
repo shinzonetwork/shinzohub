@@ -2,6 +2,7 @@ package viewregistry
 
 import (
 	"fmt"
+	"regexp"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/ethereum/go-ethereum/accounts/abi"
@@ -22,8 +23,25 @@ func (p Precompile) ViewRegistryRegister(ctx sdk.Context, contract *vm.Contract,
 		return nil, fmt.Errorf("invalid type for value")
 	}
 
-	// Key = keccak256(msg.sender, value)
+	re := regexp.MustCompile(`type\s+([A-Za-z0-9_]+)`) // TODO: more robost regex to get sdl type
+	matches := re.FindStringSubmatch(string(value))
+	if len(matches) < 2 {
+		return nil, vm.ErrExecutionReverted
+	}
+
+	ResourceName := matches[1]
+
 	key := crypto.Keccak256Hash(contract.Caller().Bytes(), value)
+
+	id := fmt.Sprintf("%s_%s", ResourceName, key)
+
+	// replace the old resource name with the new resource name
+	value = []byte(re.ReplaceAllString(string(value), "type "+id))
+
+	err := p.sourcehubKeeper.RegisterObject(ctx, id)
+	if err != nil {
+		return nil, vm.ErrExecutionReverted
+	}
 
 	// Store in StateDB using the precompile's own address as the account
 	stateDB.SetState(contract.Address(), key, common.BytesToHash(value))
