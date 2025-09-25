@@ -36,10 +36,17 @@ func (m msgServer) RequestStreamAccess(goCtx context.Context, msg *types.MsgRequ
 
 	actor := fmt.Sprintf("did:key:%s", msg.Did)
 
+	resMap := map[string]string{"0": "primitive", "1": "view"}
+
+	resource, ok := resMap[msg.Resource]
+	if !ok {
+		return nil, fmt.Errorf("invalid resource %q, expected \"0\" or \"1\"", msg.Resource)
+	}
+
 	cmd := acptypes.NewMsgDirectPolicyCmd(
 		addr,
 		policyId,
-		acptypes.NewSetRelationshipCmd(coretypes.NewActorRelationship(msg.Resource, msg.StreamId, "subscriber", actor)),
+		acptypes.NewSetRelationshipCmd(coretypes.NewActorRelationship(resource, msg.StreamId, "subscriber", actor)),
 	)
 
 	anyMsg, err := codectypes.NewAnyWithValue(cmd)
