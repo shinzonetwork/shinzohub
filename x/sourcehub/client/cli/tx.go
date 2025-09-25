@@ -2,6 +2,7 @@ package cli
 
 import (
 	"fmt"
+	"strconv"
 
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/flags"
@@ -65,9 +66,13 @@ func CmdRequestStreamAccess() *cobra.Command {
 		Short: "Request access to a stream by providing a stream ID and a DID",
 		Args:  cobra.ExactArgs(3),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			resource := args[0]
 			streamID := args[1]
 			did := args[2]
+
+			resourceInt, err := strconv.Atoi(args[0])
+			if err != nil {
+				return fmt.Errorf("invalid resource: %w", err)
+			}
 
 			clientCtx, err := client.GetClientTxContext(cmd)
 			if err != nil {
@@ -76,7 +81,7 @@ func CmdRequestStreamAccess() *cobra.Command {
 
 			msg := &types.MsgRequestStreamAccess{
 				Signer:   clientCtx.GetFromAddress().String(),
-				Resource: resource,
+				Resource: types.Resource(resourceInt),
 				StreamId: streamID,
 				Did:      did,
 			}

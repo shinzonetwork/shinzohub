@@ -33,13 +33,19 @@ message MsgRegisterShinzoPolicy {
 
 message MsgRegisterShinzoPolicyResponse {}
 
+enum Resource {
+  RESOURCE_PRIMITIVE = 0;
+  RESOURCE_VIEW   = 1;
+}
+
 message MsgRequestStreamAccess {
   option (cosmos.msg.v1.signer) = "signer";
 
-  string signer      = 1;
-  string resource = 2;
-  string stream_id    = 3;
-  string did = 4;
+  string signer    = 1;
+  Resource resource = 2;
+  string stream_id = 3;
+  string did       = 4;
+  uint64 expiration = 5;
 }
 
 message MsgRequestStreamAccessResponse {}

@@ -36,9 +36,9 @@ func (m msgServer) RequestStreamAccess(goCtx context.Context, msg *types.MsgRequ
 
 	actor := fmt.Sprintf("did:key:%s", msg.Did)
 
-	resMap := map[string]string{"0": "primitive", "1": "view"}
+	resMap := map[uint]string{0: "primitive", 1: "view"}
 
-	resource, ok := resMap[msg.Resource]
+	resource, ok := resMap[uint(msg.Resource)]
 	if !ok {
 		return nil, fmt.Errorf("invalid resource %q, expected \"0\" or \"1\"", msg.Resource)
 	}
