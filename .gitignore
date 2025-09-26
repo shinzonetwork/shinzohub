@@ -1,21 +1,9 @@
-vue/node_modules
-vue/dist
-release/
-.idea/
-.vscode/
-.DS_Store
-*.dot
-*.log
-*.ign
+# Built with https://github.com/rollchains/spawn
+configs/logs.json
+dist/
+build/
 
-# Dev env
-logs/
-.shinzohub/
-/bin
-.env
+# Create cosmos app
+web/
 
-# MacOS
-.DS_STORE
-
-# VSCode
-.history/
+**/.DS_Store

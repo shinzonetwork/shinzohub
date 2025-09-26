@@ -1,210 +1,107 @@
-BRANCH := $(shell git rev-parse --abbrev-ref HEAD)
+SHELL := bash -eu -o pipefail -c
+
+BUILD_DIR ?= $(CURDIR)/build
+VERSION := $(shell git describe --tags --always --match "v*" | sed 's/^v//')
 COMMIT := $(shell git log -1 --format='%H')
-APPNAME := shinzohub
+CMT_VERSION := $(shell go list -m github.com/cometbft/cometbft | sed 's:.* ::')
+LEDGER_ENABLED ?= true
 
-# do not override user values
-ifeq (,$(VERSION))
-  VERSION := $(shell git describe --exact-match 2>/dev/null)
-  # if VERSION is empty, then populate it with branch name and raw commit hash
-  ifeq (,$(VERSION))
-    VERSION := $(BRANCH)-$(COMMIT)
-  endif
-endif
+###############################################################################
+###                                  Build                                  ###
+###############################################################################
 
-# Update the ldflags with the app, client & server names
-ldflags = -X github.com/cosmos/cosmos-sdk/version.Name=$(APPNAME) \
-	-X github.com/cosmos/cosmos-sdk/version.AppName=$(APPNAME)d \
-	-X github.com/cosmos/cosmos-sdk/version.Version=$(VERSION) \
-	-X github.com/cosmos/cosmos-sdk/version.Commit=$(COMMIT)
+# Always produce ./build/shinzohubd
+build: verify-deps
+	@echo "⚙️  Building binary to $(BUILD_DIR)..."
+	@mkdir -p "$(BUILD_DIR)"
+	@LEDGER_ENABLED=$(LEDGER_ENABLED) \
+	VERSION=$(VERSION) \
+	COMMIT=$(COMMIT) \
+	CMT_VERSION=$(CMT_VERSION) \
+	BUILD_DIR="$(BUILD_DIR)" \
+	BINARY_NAME=shinzohubd \
+	MAIN_PKG=./cmd/shinzohubd \
+	$(CURDIR)/scripts/build.sh
+	@if [ ! -f "$(BUILD_DIR)/shinzohubd" ]; then \
+	  echo "Binary not found at $(BUILD_DIR)/shinzohubd. Searching..."; \
+	  found="$$(find . -type f -name shinzohubd -perm -111 | head -n1)"; \
+	  if [ -n "$$found" ]; then \
+	    echo "Found at $$found. Copying to $(BUILD_DIR)/shinzohubd"; \
+	    cp "$$found" "$(BUILD_DIR)/shinzohubd"; \
+	  else \
+	    echo "Build script did not produce shinzohubd. Check scripts/build.sh"; \
+	    exit 1; \
+	  fi; \
+	fi
+	@echo "✅ OK → $(BUILD_DIR)/shinzohubd"
 
-BUILD_FLAGS := -ldflags '$(ldflags)'
+build-linux-amd64:
+	GOOS=linux GOARCH=amd64 LEDGER_ENABLED=false $(MAKE) build
 
-##############
-###  Test  ###
-##############
+build-linux-arm64:
+	GOOS=linux GOARCH=arm64 LEDGER_ENABLED=false $(MAKE) build
 
-test-unit:
-	@echo Running unit tests...
-	@go test -mod=readonly -v -timeout 30m ./...
+# Install to ~/.local/bin (no GOPATH/asdf headaches)
+install: build
+	@echo "🚀 Installing binary..."
+	@dest="$$HOME/.local/bin"; \
+	mkdir -p "$$dest"; \
+	cp "$(BUILD_DIR)/shinzohubd" "$$dest/shinzohubd"; \
+	echo "✅ Installed to $$dest/shinzohubd"; \
+	if command -v asdf >/dev/null 2>&1; then asdf reshim golang || true; fi
 
-test-race:
-	@echo Running unit tests with race condition reporting...
-	@go test -mod=readonly -v -race -timeout 30m ./...
+# Optional: install into GOPATH/bin
+install-gopath: build
+	@echo "🚀 Installing to GOPATH/bin..."
+	@gbin="$$(go env GOPATH)/bin"; \
+	mkdir -p "$$gbin"; \
+	cp "$(BUILD_DIR)/shinzohubd" "$$gbin/shinzohubd"; \
+	echo "✅ Installed to $$gbin/shinzohubd"; \
+	if command -v asdf >/dev/null 2>&1; then asdf reshim golang || true; fi
 
-test-cover:
-	@echo Running unit tests and creating coverage report...
-	@go test -mod=readonly -v -timeout 30m -coverprofile=$(COVER_FILE) -covermode=atomic ./...
-	@go tool cover -html=$(COVER_FILE) -o $(COVER_HTML_FILE)
-	@rm $(COVER_FILE)
-
-bench:
-	@echo Running unit tests with benchmarking...
-	@go test -mod=readonly -v -timeout 30m -bench=. ./...
-
-test: govet govulncheck test-unit
-
-.PHONY: test test-unit test-race test-cover bench
-
-#################
-###  Install  ###
-#################
-
-all: install
-
-install:
-	@echo "--> ensure dependencies have not been modified"
+verify-deps:
+	@echo "🛠  Ensuring dependencies have not been modified ..."
 	@go mod verify
-	@echo "--> installing $(APPNAME)d"
-	@go install $(BUILD_FLAGS) -mod=readonly ./cmd/$(APPNAME)d
+	@go mod tidy
 
-.PHONY: all install
+clean:
+	@echo "🧹  Cleaning up..."
+	@rm -rf "$(BUILD_DIR)"
 
-##################
-###  Protobuf  ###
-##################
+###############################################################################
+###                                Protobuf                                 ###
+###############################################################################
 
-# Use this target if you do not want to use Ignite for generating proto files
+proto-all: proto-format proto-lint proto-gen
 
 proto-deps:
-	@echo "Installing proto deps"
-	@echo "Proto deps present, run 'go tool' to see them"
+	@echo "⚙️  Installing Protobuf deps..."
+	@go install github.com/cosmos/cosmos-proto/cmd/protoc-gen-go-pulsar@v1.0.0-beta.5
+	@go install github.com/cosmos/gogoproto/protoc-gen-gocosmos@v1.7.0
+	@go install github.com/grpc-ecosystem/grpc-gateway/protoc-gen-grpc-gateway@v1.16.0
+	@go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@v1.1.0
+	@go install google.golang.org/protobuf/cmd/protoc-gen-go@v1.36.8
 
 proto-gen:
-	@echo "Generating protobuf files..."
-	@ignite generate proto-go --yes
+	@echo "⚙️  Generating Protobuf files..."
+	@sh ./scripts/protocgen.sh true
 
-.PHONY: proto-gen
+proto-lint:
+	@echo "⚙️  Linting Protobuf files..."
+	@buf lint ./proto --error-format=json
 
-#################
-###  Linting  ###
-#################
+proto-format:
+	@echo "⚙️  Formatting Protobuf files..."
+	@buf format ./proto -w
 
-lint:
-	@echo "--> Running linter"
-	@go tool github.com/golangci/golangci-lint/cmd/golangci-lint run ./... --timeout 15m
+###############################################################################
+###                                   Dev                                    ###
+###############################################################################
 
-lint-fix:
-	@echo "--> Running linter and fixing issues"
-	@go tool github.com/golangci/golangci-lint/cmd/golangci-lint run ./... --fix --timeout 15m
+sh-testnet: verify-deps
+	CHAIN_ID="9001" BLOCK_TIME="1000ms" CLEAN=true sh scripts/test_node.sh
 
-.PHONY: lint lint-fix
-
-###################
-### Development ###
-###################
-
-govet:
-	@echo Running go vet...
-	@go vet ./...
-
-govulncheck:
-	@echo Running govulncheck...
-	@go tool golang.org/x/vuln/cmd/govulncheck@latest
-	@govulncheck ./...
-
-DEFRA_PATH ?=
-
-bootstrap:
-	@if [ -z "$(SOURCEHUB_PATH)" ]; then \
-		echo "ERROR: You must pass SOURCEHUB_PATH or set it as an environment variable. Usage:"; \
-		echo " make bootstrap SOURCEHUB_PATH=../path/to/sourcehub"; \
-		exit 1; \
-	fi
-	@scripts/bootstrap.sh "$(SOURCEHUB_PATH)"
-
-integration-test:
-	@scripts/test_integration.sh "$(SOURCEHUB_PATH)"
-
-
-# Run tests only (assumes services are already running)
-test-acp:
-	@echo "===> Running ACP integration tests (services must be running)..."
-	@if [ ! -f ".shinzohub/ready" ]; then \
-		echo "ERROR: Services not ready. Run 'make bootstrap' first."; \
-		exit 1; \
-	fi
-	@go test -v ./tests -run TestAccessControl
-
-stop:
-	@echo "===> Stopping all services..."
-	@SHINZO_ROOTDIR="$(shell pwd)/.shinzohub"; \
-	INDEXER_ROOT="$(shell pwd)/../indexer"; \
-	SCHEMA_FILE="$$INDEXER_ROOT/schema/schema.graphql"; \
-	POLICY_ID_FILE="$$SHINZO_ROOTDIR/policy_id"; \
-	\
-	# Stop sourcehubd \
-	echo "Stopping sourcehubd..."; \
-	SOURCEHUB_PIDS=$$(ps aux | grep '[s]ourcehubd' | awk '{print $$2}'); \
-	if [ -n "$$SOURCEHUB_PIDS" ]; then \
-	  echo "Killing sourcehubd PIDs: $$SOURCEHUB_PIDS"; \
-	  echo "$$SOURCEHUB_PIDS" | xargs -r kill -9 2>/dev/null; \
-	else \
-	  echo "No sourcehubd processes found"; \
-	fi; \
-	rm -f $$SHINZO_ROOTDIR/sourcehubd.pid; \
-	\
-	# Stop shinzohubd \
-	echo "Stopping shinzohubd..."; \
-	SHINZOHUBD_PIDS=$$(ps aux | grep '[s]hinzohubd' | awk '{print $$2}'); \
-	if [ -n "$$SHINZOHUBD_PIDS" ]; then \
-	  echo "Killing shinzohubd PIDs: $$SHINZOHUBD_PIDS"; \
-	  echo "$$SHINZOHUBD_PIDS" | xargs -r kill -9 2>/dev/null; \
-	else \
-	  echo "No shinzohubd processes found"; \
-	fi; \
-	rm -f $$SHINZO_ROOTDIR/shinzohubd.pid; \
-	\
-	# Stop registrar \
-	echo "Stopping registrar..."; \
-	REGISTRAR_PIDS=$$(ps aux | grep '[r]egistrar' | awk '{print $$2}'); \
-	if [ -n "$$REGISTRAR_PIDS" ]; then \
-	  echo "Killing registrar PIDs: $$REGISTRAR_PIDS"; \
-	  echo "$$REGISTRAR_PIDS" | xargs -r kill -9 2>/dev/null; \
-	else \
-	  echo "No registrar processes found"; \
-	fi; \
-	rm -f $$SHINZO_ROOTDIR/registrar.pid; \
-	\
-	# Stop indexer bootstrap \
-	echo "Stopping indexer bootstrap..."; \
-	if [ -f "$$SHINZO_ROOTDIR/indexer_bootstrap.pid" ]; then \
-	  kill -9 $$(cat $$SHINZO_ROOTDIR/indexer_bootstrap.pid) 2>/dev/null || true; \
-	  rm -f $$SHINZO_ROOTDIR/indexer_bootstrap.pid; \
-	fi; \
-	\
-	# Stop defradb processes \
-	echo "Stopping defradb processes..."; \
-	DEFRA_PIDS=$$(ps aux | grep '[d]efradb start --rootdir ' | awk '{print $$2}'); \
-	if [ -n "$$DEFRA_PIDS" ]; then \
-	  echo "Killing defradb PIDs: $$DEFRA_PIDS"; \
-	  echo "$$DEFRA_PIDS" | xargs -r kill -9 2>/dev/null; \
-	else \
-	  echo "No defradb processes found"; \
-	fi; \
-	\
-	# Stop block_poster processes \
-	echo "Stopping block_poster processes..."; \
-	POSTER_PIDS=$$(ps aux | grep '[b]lock_poster' | awk '{print $$2}'); \
-	if [ -n "$$POSTER_PIDS" ]; then \
-	  echo "Killing block_poster PIDs: $$POSTER_PIDS"; \
-	  echo "$$POSTER_PIDS" | xargs -r kill -9 2>/dev/null; \
-	else \
-	  echo "No block_poster processes found"; \
-	fi; \
-	\
-	# Restore schema file if it was modified \
-	if [ -f "$$SCHEMA_FILE" ] && [ -f "$$POLICY_ID_FILE" ]; then \
-	  POLICY_ID=$$(cat $$POLICY_ID_FILE); \
-	  if [ -n "$$POLICY_ID" ]; then \
-	    echo "Restoring schema file..."; \
-	    ESCAPED_POLICY_ID=$$(printf '%s\n' "$$POLICY_ID" | sed 's/[\\/&|]/\\&/g'); \
-	    sed -i "" "s|$$ESCAPED_POLICY_ID|<replace_with_policy_id>|g" "$$SCHEMA_FILE"; \
-	  fi; \
-	fi; \
-	rm -f "$$SCHEMA_FILE.bak"; \
-	\
-	# Clean up ready file \
-	rm -f $$SHINZO_ROOTDIR/ready; \
-	echo "All services stopped and cleaned up."
-
-.PHONY: govet govulncheck bootstrap stop integration-test test-acp test-acp-v
+doctor:
+	@echo "artifact   = $(BUILD_DIR)/shinzohubd"
+	@echo "exists?    = $$(test -f $(BUILD_DIR)/shinzohubd && echo yes || echo no)"
+	@echo "which bin  = $$(command -v shinzohubd || echo 'not on PATH')"

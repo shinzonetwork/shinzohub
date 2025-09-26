@@ -3,8 +3,8 @@ package main
 import (
 	"log"
 
-	"shinzohub/pkg/registrar"
-	"shinzohub/pkg/sourcehub"
+	"github.com/shinzonetwork/shinzohub/pkg/registrar"
+	"github.com/shinzonetwork/shinzohub/pkg/sourcehub"
 
 	"github.com/joho/godotenv"
 )

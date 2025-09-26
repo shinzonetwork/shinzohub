@@ -1,20 +1,35 @@
 package app
 
-import sdk "github.com/cosmos/cosmos-sdk/types"
+import (
+	evmconfig "github.com/cosmos/evm/config"
+	evmtypes "github.com/cosmos/evm/x/vm/types"
+)
 
-func init() {
-	// Set prefixes
-	accountPubKeyPrefix := AccountAddressPrefix + "pub"
-	validatorAddressPrefix := AccountAddressPrefix + "valoper"
-	validatorPubKeyPrefix := AccountAddressPrefix + "valoperpub"
-	consNodeAddressPrefix := AccountAddressPrefix + "valcons"
-	consNodePubKeyPrefix := AccountAddressPrefix + "valconspub"
+// EVMOptionsFn defines a function type for setting app options specifically for
+// the app. The function should receive the chainID and return an error if
+// any.
+type EVMOptionsFn func(uint64) error
 
-	// Set and seal config
-	config := sdk.GetConfig()
-	config.SetCoinType(ChainCoinType)
-	config.SetBech32PrefixForAccount(AccountAddressPrefix, accountPubKeyPrefix)
-	config.SetBech32PrefixForValidator(validatorAddressPrefix, validatorPubKeyPrefix)
-	config.SetBech32PrefixForConsensusNode(consNodeAddressPrefix, consNodePubKeyPrefix)
-	config.Seal()
+// NoOpEVMOptions is a no-op function that can be used when the app does not
+// need any specific configuration.
+func NoOpEVMOptions(_ uint64) error {
+	return nil
+}
+
+// ChainsCoinInfo is a map of the chain id and its corresponding EvmCoinInfo
+// that allows initializing the app with different coin info based on the
+// chain id
+var ChainsCoinInfo = map[uint64]evmtypes.EvmCoinInfo{
+	ChainID18Decimals: {
+		Denom:         BaseDenom,
+		ExtendedDenom: BaseDenom,
+		DisplayDenom:  DisplayDenom,
+		Decimals:      evmtypes.EighteenDecimals,
+	},
+}
+
+// EVMAppOptions allows to setup the global configuration
+// for the chain.
+func EVMAppOptions(chainID uint64) error {
+	return evmconfig.EvmAppOptionsWithConfig(chainID, ChainsCoinInfo, cosmosEVMActivators)
 }

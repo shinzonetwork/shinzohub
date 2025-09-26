@@ -1,65 +1,166 @@
-# shinzohub
-**shinzohub** is a blockchain built using Cosmos SDK and Tendermint and created with [Ignite CLI](https://ignite.com/cli).
+# Shinzohub
 
-## Get started
+Shinzohub is a Cosmos SDK–based blockchain project with EVM compatibility and custom modules. This repo provides everything you need to build, install, and run the chain locally.
 
-```
-ignite chain serve
-```
+---
 
-`serve` command installs dependencies, builds, initializes, and starts your blockchain in development.
+## ⚡️ Requirements
 
-### Configure
+Before you start, ensure you have the following installed:
 
-Your blockchain in development can be configured with `config.yml`. To learn more, see the [Ignite CLI docs](https://docs.ignite.com).
+- **Go** ≥ 1.24
+- **Make**  
+- **Git**  
+- **Protobuf compiler (`protoc`)**  
+- [Buf](https://buf.build/docs/installation) (for linting/formatting Protobuf)  
+- Optional: [asdf](https://asdf-vm.com/) (if you manage your Go version via asdf)  
 
-### Local SourceHub Setup
+---
 
-When working locally with ShinzoHub, it is useful to also work with a local instance of SourceHub. This allows you to mess around in a sandbox environment during development.
+## 🔨 Building
 
-First, you'll need to clone [the SourceHub repo](https://github.com/sourcenetwork/sourcehub) onto your machine and perform the setup steps. 
+By default, binaries are built into `./build`.
 
-Most importantly, you'll want to make sure to build it with `make build` from the root directory of the SourceHub repo on your machine and then run the genesis setup script `./scripts/genesis-setup.sh`.
-
-From here, it is recommended to try and run sourcehub to confirm it has been setup correctly. `build/sourcehubd start` from the root directory of the SourceHub repo. You should see a bunch of logs getting continuously posted in your command line. End it with `Control + C`.
-
-### Bootstrapping a Local Development Environment
-
-First, open up a command line to the root directory for ShinzoHub. It is recommended to set the path (either relative or absolute) to your cloned instance of the SourceHub repo on your machine as an environment variable `SOURCEHUB_PATH`.
-
-Then, run `make bootstrap` - this will start up a local instance of SourceHub and ShinzoHub on your machine - allowing you to experiment in a sandbox environment during development.
-
-### Web Frontend
-
-Additionally, Ignite CLI offers a frontend scaffolding feature (based on Vue) to help you quickly build a web frontend for your blockchain:
-
-Use: `ignite scaffold vue`
-This command can be run within your scaffolded blockchain project.
-
-For more information see the [monorepo for Ignite front-end development](https://github.com/ignite/web).
-
-## Release
-To release a new version of your blockchain, create and push a new tag with `v` prefix. A new draft release with the configured targets will be created.
-
-```
-git tag v0.1
-git push origin v0.1
+### Build for your local system
+```bash
+make build
 ```
 
-After a draft release is created, make your final changes from the release page and publish it.
-
-### Install
-To install the latest version of your blockchain node's binary, execute the following command on your machine:
-
+Result:
 ```
-curl https://get.ignite.com/username/shinzohub@latest! | sudo bash
+./build/shinzohubd
 ```
-`username/shinzohub` should match the `username` and `repo_name` of the Github repository to which the source code was pushed. Learn more about [the install process](https://github.com/allinbits/starport-installer).
 
-## Learn more
+### Cross-compile for Linux
+```bash
+make build-linux-amd64
+make build-linux-arm64
+```
 
-- [Ignite CLI](https://ignite.com/cli)
-- [Tutorials](https://docs.ignite.com/guide)
-- [Ignite CLI docs](https://docs.ignite.com)
-- [Cosmos SDK docs](https://docs.cosmos.network)
-- [Developer Chat](https://discord.gg/ignite)
+---
+
+## 🚀 Installing
+
+### To your local bin (`~/.local/bin`)
+```bash
+make install
+```
+
+Afterwards, confirm:
+```bash
+shinzohubd version
+```
+
+### To GOPATH/bin
+```bash
+make install-gopath
+```
+
+---
+
+## 🧹 Cleaning
+
+Remove all build artifacts:
+```bash
+make clean
+```
+
+---
+
+## 🛠 Verifying Dependencies
+
+To ensure Go modules are tidy and not corrupted:
+```bash
+make verify-deps
+```
+
+---
+
+## 📦 Protobuf
+
+Protobuf files live under `./proto`.
+
+### Install Protobuf dependencies
+```bash
+make proto-deps
+```
+
+### Generate Protobuf code
+```bash
+make proto-gen
+```
+
+### Lint Protobuf definitions
+```bash
+make proto-lint
+```
+
+### Format Protobuf files
+```bash
+make proto-format
+```
+
+Or run all in one go:
+```bash
+make proto-all
+```
+
+---
+
+## 🌐 Development
+
+### Doctor check
+Quick project health check:
+```bash
+make doctor
+```
+
+Output will confirm:
+- If the build artifact exists
+- If `shinzohubd` is on your PATH  
+
+
+### Start a local testnet
+```bash
+make sh-testnet
+```
+
+This spins up a chain with:
+
+- `CHAIN_ID=9001`  
+- `BLOCK_TIME=1000ms`  
+- Fresh state each run (`CLEAN=true`)  
+
+---
+
+## 📝 Notes
+
+- You can override build settings via environment variables:  
+  - `BUILD_DIR` → change binary output directory  
+  - `LEDGER_ENABLED` → enable/disable Ledger support (default: `true`)  
+
+Example:
+```bash
+BUILD_DIR=/tmp/shinzohub LEDGER_ENABLED=false make build
+```
+
+---
+
+## ✅ Quickstart
+
+```bash
+# 1. Verify dependencies
+make verify-deps
+
+# 2. Build the binary
+make build
+
+# 3. Install it
+make install
+
+# 4. Check installation
+shinzohubd version
+
+# 5. Run a local testnet
+make sh-testnet
+```

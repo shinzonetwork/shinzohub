@@ -4,14 +4,14 @@ import (
 	"log"
 	"net/http"
 
-	"shinzohub/api"
-	"shinzohub/pkg/sourcehub"
-	"shinzohub/pkg/utils"
-	"shinzohub/pkg/validators"
+	"github.com/shinzonetwork/shinzohub/acpapi"
+	"github.com/shinzonetwork/shinzohub/pkg/sourcehub"
+	"github.com/shinzonetwork/shinzohub/pkg/utils"
+	"github.com/shinzonetwork/shinzohub/pkg/validators"
 )
 
 type RegistrarService struct {
-	registrar api.ShinzoRegistrar
+	registrar acpapi.ShinzoRegistrar
 	mux       *http.ServeMux
 	server    *http.Server
 }
@@ -28,7 +28,7 @@ type RegistrarResponse struct {
 }
 
 func NewRegistrarService(acpClient sourcehub.ShinzoAcpClient) *RegistrarService {
-	registrar := api.ShinzoRegistrar{
+	registrar := acpapi.ShinzoRegistrar{
 		Validator: &validators.RegistrarValidator{},
 		Acp:       acpClient,
 	}

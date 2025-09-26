@@ -5,9 +5,9 @@ import (
 	"crypto"
 	"encoding/json"
 	"fmt"
-	"shinzohub/pkg/sourcehub"
 	"testing"
 
+	"github.com/shinzonetwork/shinzohub/pkg/sourcehub"
 	"github.com/sourcenetwork/acp_core/pkg/did"
 )
 
