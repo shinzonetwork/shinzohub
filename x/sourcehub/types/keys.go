@@ -1,6 +1,7 @@
 package types
 
 import (
+	"cosmossdk.io/collections"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 )
 
@@ -25,4 +26,9 @@ const (
 	KeyTxType           = "tx_type"
 	PolicyId            = "policy_id"
 	ViewResourceName    = "view"
+)
+
+// Store prefixes
+var (
+	KeyPrefixParams = collections.NewPrefix(0)
 )

@@ -110,6 +110,10 @@ from_scratch () {
   ## abci
   update_test_genesis '.consensus["params"]["abci"]["vote_extensions_enable_height"]="1"'
 
+  # sourcehub
+  # admin account 1
+  update_test_genesis '.app_state["sourcehub"]["params"]["admin"]="shinzo140fehngcrxvhdt84x729p3f0qmkmea8nq3rk92"'
+
   # === CUSTOM MODULES ===
 
   BASE_GENESIS_ALLOCATIONS="100000000000000000000000000$DENOM,100000000test"

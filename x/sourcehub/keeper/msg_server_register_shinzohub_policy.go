@@ -7,6 +7,7 @@ import (
 
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	gogoproto "github.com/cosmos/gogoproto/proto"
 	icatypes "github.com/cosmos/ibc-go/v10/modules/apps/27-interchain-accounts/types"
 	"github.com/shinzonetwork/shinzohub/x/sourcehub/types"
@@ -16,6 +17,10 @@ import (
 
 func (m msgServer) RegisterShinzoPolicy(goCtx context.Context, msg *types.MsgRegisterShinzoPolicy) (*types.MsgRegisterShinzoPolicyResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
+
+	if !m.Keeper.IsAdmin(ctx, msg.Signer) {
+		return nil, sdkerrors.ErrUnauthorized.Wrap("admin required")
+	}
 
 	connectionID := m.Keeper.GetControllerConnectionID(ctx)
 	if connectionID == "" {

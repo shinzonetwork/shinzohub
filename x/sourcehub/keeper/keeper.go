@@ -4,7 +4,9 @@ import (
 	"fmt"
 	"time"
 
+	"cosmossdk.io/collections"
 	storetypes "cosmossdk.io/core/store"
+	"cosmossdk.io/log"
 	"github.com/cosmos/cosmos-sdk/codec"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -19,17 +21,31 @@ type Keeper struct {
 	cdc           codec.BinaryCodec
 	storeService  storetypes.KVStoreService
 	IcaCtrlKeeper types.ICAControllerKeeper
+
+	// cached authority string for quick equality check
+	authority string
+	Params    collections.Item[types.Params]
 }
 
 func NewKeeper(
 	cdc codec.BinaryCodec,
 	storeService storetypes.KVStoreService,
 	icaCtrlKeeper types.ICAControllerKeeper,
+	authority string,
 ) Keeper {
+	_, err := sdk.AccAddressFromBech32(authority)
+	if err != nil {
+		panic(err)
+	}
+
+	sb := collections.NewSchemaBuilder(storeService)
+
 	return Keeper{
 		cdc:           cdc,
 		storeService:  storeService,
 		IcaCtrlKeeper: icaCtrlKeeper,
+		authority:     authority,
+		Params:        collections.NewItem(sb, types.KeyPrefixParams, "params", codec.CollValue[types.Params](cdc)),
 	}
 }
 
@@ -42,6 +58,36 @@ type msgServer struct {
 // for the provided Keeper.
 func NewMsgServerImpl(k Keeper) types.MsgServer {
 	return &msgServer{Keeper: k}
+}
+
+func (k Keeper) GetAuthority() string {
+	return k.authority
+}
+
+func (k Keeper) IsAdmin(ctx sdk.Context, address string) bool {
+	for _, admin := range k.GetAdmins(ctx) {
+		if admin == address {
+			return true
+		}
+	}
+	return false
+}
+
+func (k Keeper) GetAdmins(ctx sdk.Context) []string {
+	p, err := k.GetParams(ctx)
+	if err != nil {
+		return []string{k.authority}
+	}
+
+	if p.Admin == "" || p.Admin == k.authority {
+		return []string{k.authority}
+	}
+
+	return []string{p.Admin, k.authority}
+}
+
+func (k Keeper) Logger(ctx sdk.Context) log.Logger {
+	return ctx.Logger().With("module", fmt.Sprintf("x/%s", types.ModuleName))
 }
 
 func (k Keeper) RegisterObject(ctx sdk.Context, id string) error {
