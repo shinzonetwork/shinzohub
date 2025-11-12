@@ -3,6 +3,7 @@ package cli
 import (
 	"fmt"
 	"strconv"
+	"strings"
 
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/flags"
@@ -24,6 +25,7 @@ func GetTxCmd() *cobra.Command {
 	cmd.AddCommand(CmdRegisterSourcehubICA())
 	cmd.AddCommand(CmdRequestStreamAccess())
 	cmd.AddCommand(CmdRegisterShinzoPolicy())
+	cmd.AddCommand(CmdRegisterObjects())
 
 	return cmd
 }
@@ -121,6 +123,55 @@ func CmdRegisterShinzoPolicy() *cobra.Command {
 		},
 	}
 
+	flags.AddTxFlagsToCmd(cmd)
+	return cmd
+}
+
+func CmdRegisterObjects() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "register-objects [resources...]",
+		Short: "Register one or more shinzo objects by resource name(s)",
+		Long:  "Examples:\n  shinzohubd tx sourcehub register-objects block logs event --from acc0 --yes",
+		Args:  cobra.MinimumNArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			clientCtx, err := client.GetClientTxContext(cmd)
+			if err != nil {
+				return err
+			}
+
+			// Normalize + dedupe
+			seen := map[string]struct{}{}
+			var resources []string
+			for _, a := range args {
+				r := strings.TrimSpace(strings.ToLower(a))
+				if r == "" {
+					continue
+				}
+				if _, ok := seen[r]; ok {
+					continue
+				}
+				seen[r] = struct{}{}
+				resources = append(resources, r)
+			}
+
+			if len(resources) == 0 {
+				return fmt.Errorf("at least one resource is required")
+			}
+
+			msg := &types.MsgRegisterShinzoObjects{
+				Signer:    clientCtx.GetFromAddress().String(),
+				Resources: resources,
+			}
+
+			if err := msg.ValidateBasic(); err != nil {
+				return err
+			}
+
+			return tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), msg)
+		},
+	}
+
+	// add standard tx flags: --from, --fees, --gas, --gas-adjustment, --yes, etc.
 	flags.AddTxFlagsToCmd(cmd)
 	return cmd
 }
