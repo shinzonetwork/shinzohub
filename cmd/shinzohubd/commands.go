@@ -115,6 +115,7 @@ func initRootCmd(
 		confixcmd.ConfigCommand(),
 		pruning.Cmd(newAppWrapper(), app.DefaultNodeHome),
 		snapshot.Cmd(newAppWrapper()),
+		NewProbeCmd(),
 	)
 
 	// add EVM' flavored TM commands to start server, etc.
