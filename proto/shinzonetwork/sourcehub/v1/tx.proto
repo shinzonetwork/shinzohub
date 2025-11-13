@@ -12,6 +12,7 @@ service Msg {
 
   rpc RegisterSourcehubICA(MsgRegisterSourcehubICA) returns (MsgRegisterSourcehubICAResponse);
   rpc RegisterShinzoPolicy(MsgRegisterShinzoPolicy) returns (MsgRegisterShinzoPolicyResponse);
+  rpc RegisterShinzoObjects(MsgRegisterShinzoObjects) returns (MsgRegisterShinzoObjectsResponse);
   rpc RequestStreamAccess(MsgRequestStreamAccess) returns (MsgRequestStreamAccessResponse);
 }
 
@@ -37,6 +38,15 @@ enum Resource {
   RESOURCE_PRIMITIVE = 0;
   RESOURCE_VIEW   = 1;
 }
+
+message MsgRegisterShinzoObjects {
+  option (cosmos.msg.v1.signer) = "signer";
+
+  string signer        = 1;
+  repeated string resources = 2;
+}
+
+message MsgRegisterShinzoObjectsResponse {}
 
 message MsgRequestStreamAccess {
   option (cosmos.msg.v1.signer) = "signer";

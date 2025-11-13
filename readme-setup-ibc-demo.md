@@ -234,7 +234,35 @@ This confirms that a new **policy** was created as a result of the precompile ca
 
 ---
 
-## 7. Test the Precompile (View Creation)
+## 7. Register the Shinzo Objects
+
+With Sourcehub running, open a new terminal and run:
+
+```bash
+./scripts/ica/register_shinzo_objects.sh
+```
+
+This executes:
+
+```bash
+build/shinzohubd tx sourcehub register-objects "block logs event transaction" \
+  --from acc0 \
+  --chain-id 9001 \
+  --keyring-backend test \
+  --home ~/.shinzohub \
+  --node tcp://127.0.0.1:26657 \
+  --gas auto --gas-adjustment 1.5 --fees 9000ushinzo \
+  --yes
+```
+
+If successful, it create new objects `block` `logs` `event` `transaction` for **ShinzoHub on SourceHub**.
+this also creates a `group` object that `indexers` and `host` can register to.
+
+This will be called per chain (in the future)
+
+---
+
+## 8. Test the Precompile (View Creation)
 
 Once the ICA channel is open, you can also test the connection by calling the **ViewRegistry precompile** on ShinzoHub.  
 
@@ -269,7 +297,7 @@ This transaction registers the view `"hello"` and triggers policy creation.
 
 ---
 
-## 8. Advanced Query Example
+## 9. Advanced Query Example
 
 You can also register full **JSON view definitions** as the payload. For example:
 
@@ -302,7 +330,7 @@ This transaction carries the full JSON view definition ABI-encoded as `bytes`.
 
 ---
 
-## 9. Request Stream Access
+## 10. Request Stream Access
 
 With Hermes running, open a new terminal and run:
 

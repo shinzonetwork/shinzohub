@@ -19,9 +19,10 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	Msg_RegisterSourcehubICA_FullMethodName = "/shinzonetwork.sourcehub.v1.Msg/RegisterSourcehubICA"
-	Msg_RegisterShinzoPolicy_FullMethodName = "/shinzonetwork.sourcehub.v1.Msg/RegisterShinzoPolicy"
-	Msg_RequestStreamAccess_FullMethodName  = "/shinzonetwork.sourcehub.v1.Msg/RequestStreamAccess"
+	Msg_RegisterSourcehubICA_FullMethodName  = "/shinzonetwork.sourcehub.v1.Msg/RegisterSourcehubICA"
+	Msg_RegisterShinzoPolicy_FullMethodName  = "/shinzonetwork.sourcehub.v1.Msg/RegisterShinzoPolicy"
+	Msg_RegisterShinzoObjects_FullMethodName = "/shinzonetwork.sourcehub.v1.Msg/RegisterShinzoObjects"
+	Msg_RequestStreamAccess_FullMethodName   = "/shinzonetwork.sourcehub.v1.Msg/RequestStreamAccess"
 )
 
 // MsgClient is the client API for Msg service.
@@ -32,6 +33,7 @@ const (
 type MsgClient interface {
 	RegisterSourcehubICA(ctx context.Context, in *MsgRegisterSourcehubICA, opts ...grpc.CallOption) (*MsgRegisterSourcehubICAResponse, error)
 	RegisterShinzoPolicy(ctx context.Context, in *MsgRegisterShinzoPolicy, opts ...grpc.CallOption) (*MsgRegisterShinzoPolicyResponse, error)
+	RegisterShinzoObjects(ctx context.Context, in *MsgRegisterShinzoObjects, opts ...grpc.CallOption) (*MsgRegisterShinzoObjectsResponse, error)
 	RequestStreamAccess(ctx context.Context, in *MsgRequestStreamAccess, opts ...grpc.CallOption) (*MsgRequestStreamAccessResponse, error)
 }
 
@@ -63,6 +65,16 @@ func (c *msgClient) RegisterShinzoPolicy(ctx context.Context, in *MsgRegisterShi
 	return out, nil
 }
 
+func (c *msgClient) RegisterShinzoObjects(ctx context.Context, in *MsgRegisterShinzoObjects, opts ...grpc.CallOption) (*MsgRegisterShinzoObjectsResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(MsgRegisterShinzoObjectsResponse)
+	err := c.cc.Invoke(ctx, Msg_RegisterShinzoObjects_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *msgClient) RequestStreamAccess(ctx context.Context, in *MsgRequestStreamAccess, opts ...grpc.CallOption) (*MsgRequestStreamAccessResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(MsgRequestStreamAccessResponse)
@@ -81,6 +93,7 @@ func (c *msgClient) RequestStreamAccess(ctx context.Context, in *MsgRequestStrea
 type MsgServer interface {
 	RegisterSourcehubICA(context.Context, *MsgRegisterSourcehubICA) (*MsgRegisterSourcehubICAResponse, error)
 	RegisterShinzoPolicy(context.Context, *MsgRegisterShinzoPolicy) (*MsgRegisterShinzoPolicyResponse, error)
+	RegisterShinzoObjects(context.Context, *MsgRegisterShinzoObjects) (*MsgRegisterShinzoObjectsResponse, error)
 	RequestStreamAccess(context.Context, *MsgRequestStreamAccess) (*MsgRequestStreamAccessResponse, error)
 	mustEmbedUnimplementedMsgServer()
 }
@@ -97,6 +110,9 @@ func (UnimplementedMsgServer) RegisterSourcehubICA(context.Context, *MsgRegister
 }
 func (UnimplementedMsgServer) RegisterShinzoPolicy(context.Context, *MsgRegisterShinzoPolicy) (*MsgRegisterShinzoPolicyResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method RegisterShinzoPolicy not implemented")
+}
+func (UnimplementedMsgServer) RegisterShinzoObjects(context.Context, *MsgRegisterShinzoObjects) (*MsgRegisterShinzoObjectsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method RegisterShinzoObjects not implemented")
 }
 func (UnimplementedMsgServer) RequestStreamAccess(context.Context, *MsgRequestStreamAccess) (*MsgRequestStreamAccessResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method RequestStreamAccess not implemented")
@@ -158,6 +174,24 @@ func _Msg_RegisterShinzoPolicy_Handler(srv interface{}, ctx context.Context, dec
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Msg_RegisterShinzoObjects_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(MsgRegisterShinzoObjects)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MsgServer).RegisterShinzoObjects(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Msg_RegisterShinzoObjects_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MsgServer).RegisterShinzoObjects(ctx, req.(*MsgRegisterShinzoObjects))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _Msg_RequestStreamAccess_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(MsgRequestStreamAccess)
 	if err := dec(in); err != nil {
@@ -190,6 +224,10 @@ var Msg_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "RegisterShinzoPolicy",
 			Handler:    _Msg_RegisterShinzoPolicy_Handler,
+		},
+		{
+			MethodName: "RegisterShinzoObjects",
+			Handler:    _Msg_RegisterShinzoObjects_Handler,
 		},
 		{
 			MethodName: "RequestStreamAccess",
