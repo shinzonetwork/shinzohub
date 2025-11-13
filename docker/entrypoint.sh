@@ -5,7 +5,7 @@ set -e
 DEFAULT_CHAIN_ID="shinzohub"
 DEFAULT_MONIKER="node"
 
-if [ ! -d /shinzohub/.initialized ]; then
+if [ ! -f /shinzohub/config/genesis.json ]; then
     echo "Initializing ShinzoHub"
 
     if [ -z "$CHAIN_ID" ]; then 
@@ -58,9 +58,8 @@ if [ ! -d /shinzohub/.initialized ]; then
         echo "Loaded Genesis from $GENESIS_PATH"
     fi
 
-    touch /shinzohub/.initialized
 else
-    echo "Skipping initialization: container previously initialized"
+    echo "Skipping initialization: /shinzohub/config/genesis.json found"
 fi
 
 if [ -n "$COMET_CONFIG_PATH" ]; then 
