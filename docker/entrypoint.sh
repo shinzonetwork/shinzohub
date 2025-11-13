@@ -18,7 +18,7 @@ if [ ! -d /shinzohub/.initialized ]; then
         MONIKER=$DEFAULT_MONIKER
     fi
 
-    shinzohubd init "$MONIKER" --chain-id $CHAIN_ID --default-denom="ushinzo" 2>/dev/null
+    shinzohubd init "$MONIKER" --chain-id $CHAIN_ID --default-denom="ushinzo"
 
     # recover account mnemonic
     if [ -n "$MNEMONIC_PATH" ]; then
