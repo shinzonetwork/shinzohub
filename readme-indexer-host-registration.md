@@ -128,7 +128,7 @@ Optionally decode the event:
 ```bash
 cast decode-logs --abi <(cat <<'ABI'
 [
-  "event Registered(string did,string idHash,address indexed sender,uint8 entity)"
+  "event Registered(string indexed key, address indexed owner, string did, string pid, uint8 entity)"
 ]
 ABI
 ) <TX_HASH> --rpc-url $RPC_URL

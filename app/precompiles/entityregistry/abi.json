@@ -59,6 +59,11 @@
           "name": "pid",
           "type": "bytes",
           "indexed": false
+        },
+        {
+          "name": "entity",
+          "type": "uint8",
+          "indexed": false
         }
       ]
     }

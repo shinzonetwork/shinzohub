@@ -70,16 +70,17 @@ func (p Precompile) EntityRegistryRegister(
 
 	key := crypto.Keccak256Hash(caller, did)
 
-	// topic0 = keccak256("EntityRegistered(bytes32,address,bytes,bytes)")
-	topic0 := crypto.Keccak256Hash([]byte("EntityRegistered(bytes32,address,bytes,bytes)"))
+	// topic0 = keccak256("EntityRegistered(bytes32,address,bytes,bytes,uint8)")
+	topic0 := crypto.Keccak256Hash([]byte("EntityRegistered(bytes32,address,bytes,bytes,uint8)"))
 
 	// Encode (did, pid) as event data
 	argsDef := abi.Arguments{
 		{Type: abi.Type{T: abi.BytesTy}},
 		{Type: abi.Type{T: abi.BytesTy}},
+		{Type: abi.Type{T: abi.UintTy}},
 	}
 
-	data, packErr := argsDef.Pack(did, pid)
+	data, packErr := argsDef.Pack(did, pid, entity)
 	if packErr != nil {
 		return nil, vm.ErrExecutionReverted
 	}
@@ -101,6 +102,7 @@ func (p Precompile) EntityRegistryRegister(
 			sdk.NewAttribute("owner", sdk.AccAddress(caller).String()),
 			sdk.NewAttribute("did", string(did)),
 			sdk.NewAttribute("pid", string(pid)),
+			sdk.NewAttribute("entity", string(entity)),
 		),
 	)
 

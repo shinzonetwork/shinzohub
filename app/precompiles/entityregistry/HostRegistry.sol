@@ -51,10 +51,12 @@ interface EntityRegistryI {
     /// @param owner   Address that registered the entity.
     /// @param did     The DID bytes.
     /// @param pid     The Peer ID bytes.
+    /// @param pid     The Peer ID bytes.
     event EntityRegistered(
         bytes32 indexed key,
         address indexed owner,
         bytes did,
-        bytes pid
+        bytes pid,
+        uint8 entity
     );
 }
