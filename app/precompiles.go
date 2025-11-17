@@ -33,6 +33,7 @@ import (
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/vm"
+	"github.com/shinzonetwork/shinzohub/app/precompiles/entityregistry"
 	"github.com/shinzonetwork/shinzohub/app/precompiles/viewregistry"
 )
 
@@ -154,6 +155,11 @@ func NewAvailableStaticPrecompiles(
 		panic(fmt.Errorf("failed to instantiate view registry precompile: %w", err))
 	}
 
+	entityRegistryPrecompile, err := entityregistry.NewPrecompile(viewRegsitryPrecompileBaseGas, sourcehubKeeper)
+	if err != nil {
+		panic(fmt.Errorf("failed to instantiate view registry precompile: %w", err))
+	}
+
 	// Stateless precompiles
 	precompiles[bech32Precompile.Address()] = bech32Precompile
 	precompiles[p256Precompile.Address()] = p256Precompile
@@ -167,6 +173,7 @@ func NewAvailableStaticPrecompiles(
 	precompiles[slashingPrecompile.Address()] = slashingPrecompile
 
 	precompiles[viewRegistryPrecompile.Address()] = viewRegistryPrecompile
+	precompiles[entityRegistryPrecompile.Address()] = entityRegistryPrecompile
 
 	return precompiles
 }

@@ -727,6 +727,7 @@ func NewChainApp(
 		appCodec,
 		runtime.NewKVStoreService(keys[sourcehubtypes.StoreKey]),
 		app.ICAControllerKeeper,
+		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
 	)
 
 	// NOTE: we are adding all available EVM extensions.

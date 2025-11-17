@@ -1,0 +1,75 @@
+{
+  "_format": "hh-sol-artifact-1",
+  "contractName": "EntityRegistry",
+  "sourceName": "solidity/precompiles/entityregistry/EntityRegistry.sol",
+  "abi": [
+    {
+      "type": "function",
+      "name": "register",
+      "stateMutability": "nonpayable",
+      "inputs": [
+        {
+          "name": "peerKeyPubkey",
+          "type": "bytes"
+        },
+        {
+          "name": "peerKeySignature",
+          "type": "bytes"
+        },
+        {
+          "name": "nodeIdentityKeyPubkey",
+          "type": "bytes"
+        },
+        {
+          "name": "nodeIdentityKeySignature",
+          "type": "bytes"
+        },
+        {
+          "name": "message",
+          "type": "bytes"
+        },
+        {
+          "name": "entity",
+          "type": "uint8"
+        }
+      ],
+      "outputs": []
+    },
+    {
+      "type": "event",
+      "name": "EntityRegistered",
+      "anonymous": false,
+      "inputs": [
+        {
+          "name": "key",
+          "type": "bytes32",
+          "indexed": true
+        },
+        {
+          "name": "owner",
+          "type": "address",
+          "indexed": true
+        },
+        {
+          "name": "did",
+          "type": "bytes",
+          "indexed": false
+        },
+        {
+          "name": "pid",
+          "type": "bytes",
+          "indexed": false
+        },
+        {
+          "name": "entity",
+          "type": "uint8",
+          "indexed": false
+        }
+      ]
+    }
+  ],
+  "bytecode": "0x",
+  "deployedBytecode": "0x",
+  "linkReferences": {},
+  "deployedLinkReferences": {}
+}

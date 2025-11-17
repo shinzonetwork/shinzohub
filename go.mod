@@ -1,8 +1,6 @@
 module github.com/shinzonetwork/shinzohub
 
-go 1.24.0
-
-toolchain go1.24.6
+go 1.24.6
 
 // overrides
 // replace (
@@ -34,6 +32,7 @@ replace (
 require (
 	cosmossdk.io/api v1.0.0-alpha.1
 	cosmossdk.io/client/v2 v2.0.0-beta.11
+	cosmossdk.io/collections v1.2.1
 	cosmossdk.io/core v1.1.0-alpha.2
 	cosmossdk.io/errors v1.0.2
 	cosmossdk.io/log v1.6.1
@@ -68,6 +67,15 @@ require (
 )
 
 require (
+	github.com/ipfs/go-cid v0.5.0 // indirect
+	github.com/libp2p/go-buffer-pool v0.1.0 // indirect
+	github.com/multiformats/go-multiaddr v0.16.0 // indirect
+	github.com/multiformats/go-multihash v0.2.3 // indirect
+	github.com/spaolacci/murmur3 v1.1.0 // indirect
+	lukechampine.com/blake3 v1.4.1 // indirect
+)
+
+require (
 	buf.build/gen/go/bufbuild/protovalidate/protocolbuffers/go v1.36.3-20241127180247-a33202765966.1 // indirect
 	cel.dev/expr v0.24.0 // indirect
 	cloud.google.com/go v0.116.0 // indirect
@@ -77,7 +85,6 @@ require (
 	cloud.google.com/go/iam v1.2.2 // indirect
 	cloud.google.com/go/monitoring v1.21.2 // indirect
 	cloud.google.com/go/storage v1.49.0 // indirect
-	cosmossdk.io/collections v1.2.1 // indirect
 	cosmossdk.io/depinject v1.2.1 // indirect
 	cosmossdk.io/schema v1.1.0 // indirect
 	filippo.io/edwards25519 v1.1.0 // indirect
@@ -91,7 +98,7 @@ require (
 	github.com/Microsoft/go-winio v0.6.2 // indirect
 	github.com/NathanBaulch/protoc-gen-cobra v1.2.1 // indirect
 	github.com/StackExchange/wmi v1.2.1 // indirect
-	github.com/TBD54566975/ssi-sdk v0.0.4-alpha // indirect
+	github.com/TBD54566975/ssi-sdk v0.0.4-alpha
 	github.com/VictoriaMetrics/fastcache v1.12.2 // indirect
 	github.com/antlr4-go/antlr/v4 v4.13.1 // indirect
 	github.com/awalterschulze/gographviz v2.0.3+incompatible // indirect
@@ -136,7 +143,7 @@ require (
 	github.com/danieljoos/wincred v1.2.1 // indirect
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
 	github.com/deckarep/golang-set/v2 v2.6.0 // indirect
-	github.com/decred/dcrd/dcrec/secp256k1/v4 v4.4.0 // indirect
+	github.com/decred/dcrd/dcrec/secp256k1/v4 v4.4.0
 	github.com/desertbit/timer v1.0.1 // indirect
 	github.com/dgraph-io/badger/v4 v4.2.0 // indirect
 	github.com/dgraph-io/ristretto v0.1.1 // indirect
@@ -233,6 +240,7 @@ require (
 	github.com/lestrrat-go/jwx/v2 v2.1.0 // indirect
 	github.com/lestrrat-go/option v1.0.1 // indirect
 	github.com/lib/pq v1.10.9 // indirect
+	github.com/libp2p/go-libp2p/core v0.43.0-rc2
 	github.com/linxGnu/grocksdb v1.9.2 // indirect
 	github.com/magiconair/properties v1.8.10 // indirect
 	github.com/manifoldco/promptui v0.9.0 // indirect
@@ -241,15 +249,15 @@ require (
 	github.com/mattn/go-runewidth v0.0.15 // indirect
 	github.com/mdp/qrterminal/v3 v3.2.1 // indirect
 	github.com/minio/highwayhash v1.0.3 // indirect
-	github.com/minio/sha256-simd v1.0.0 // indirect
+	github.com/minio/sha256-simd v1.0.1 // indirect
 	github.com/mitchellh/go-homedir v1.1.0 // indirect
 	github.com/mitchellh/mapstructure v1.5.0 // indirect
 	github.com/mr-tron/base58 v1.2.0 // indirect
 	github.com/mtibben/percent v0.2.1 // indirect
 	github.com/multiformats/go-base32 v0.1.0 // indirect
-	github.com/multiformats/go-base36 v0.1.0 // indirect
+	github.com/multiformats/go-base36 v0.2.0 // indirect
 	github.com/multiformats/go-multibase v0.2.0 // indirect
-	github.com/multiformats/go-multicodec v0.9.0 // indirect
+	github.com/multiformats/go-multicodec v0.9.1 // indirect
 	github.com/multiformats/go-varint v0.0.7 // indirect
 	github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822 // indirect
 	github.com/oasisprotocol/curve25519-voi v0.0.0-20230904125328-1f23a7beb09a // indirect
@@ -325,7 +333,7 @@ require (
 	go.yaml.in/yaml/v2 v2.4.2 // indirect
 	golang.org/x/arch v0.17.0 // indirect
 	golang.org/x/crypto v0.41.0 // indirect
-	golang.org/x/exp v0.0.0-20250305212735-054e65f0b394 // indirect
+	golang.org/x/exp v0.0.0-20250606033433-dcc06ee1d476 // indirect
 	golang.org/x/mod v0.26.0 // indirect
 	golang.org/x/net v0.43.0 // indirect
 	golang.org/x/oauth2 v0.30.0 // indirect
