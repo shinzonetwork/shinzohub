@@ -1,8 +1,7 @@
 # ShinzoHub Dockerfile
 
-Dockerfile designed to make getting started with ShinzoHub easily.
-
-Dockerfile can be used to join a pre-existing network or used for a standalone test envrionment.
+The ShinzoHub Dockerfile was designed to make getting started with Shinzo as easy as possible.
+It can be can be used to join a pre-existing network or used for a standalone test envrionment.
 
 To configure initialization set `MONIKER` for the node moniker and `CHAIN_ID` for the chain id.
 
