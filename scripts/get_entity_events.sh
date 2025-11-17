@@ -10,8 +10,8 @@ PRECOMPILE_ADDR="0x0000000000000000000000000000000000000211"
 # Optional: filter by owner (indexed address)
 OWNER="${OWNER:-}"
 
-# Event: EntityRegistered(bytes32,address,bytes,bytes)
-TOPIC0=$(cast keccak "EntityRegistered(bytes32,address,bytes,bytes)")
+# Event: EntityRegistered(bytes32,address,bytes,bytes,uint8)
+TOPIC0=$(cast keccak "EntityRegistered(bytes32,address,bytes,bytes,unit8)")
 
 FROM_BLOCK="0x1"   # important: CometBFT complains if 0
 TO_BLOCK="latest"

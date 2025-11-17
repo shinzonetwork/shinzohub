@@ -65,7 +65,7 @@ func (p Precompile) EntityRegistryRegister(
 		caller,
 	)
 	if err != nil {
-		return nil, vm.ErrExecutionReverted
+		return nil, err
 	}
 
 	key := crypto.Keccak256Hash(caller, did)
@@ -73,16 +73,11 @@ func (p Precompile) EntityRegistryRegister(
 	// topic0 = keccak256("EntityRegistered(bytes32,address,bytes,bytes,uint8)")
 	topic0 := crypto.Keccak256Hash([]byte("EntityRegistered(bytes32,address,bytes,bytes,uint8)"))
 
-	// Encode (did, pid) as event data
-	argsDef := abi.Arguments{
-		{Type: abi.Type{T: abi.BytesTy}},
-		{Type: abi.Type{T: abi.BytesTy}},
-		{Type: abi.Type{T: abi.UintTy}},
-	}
+	event := p.ABI.Events["EntityRegistered"]
 
-	data, packErr := argsDef.Pack(did, pid, entity)
+	data, packErr := event.Inputs.NonIndexed().Pack(did, pid, entity)
 	if packErr != nil {
-		return nil, vm.ErrExecutionReverted
+		return nil, fmt.Errorf("failed to pack EntityRegistered event: %w", packErr)
 	}
 
 	stateDB.AddLog(&gethtypes.Log{

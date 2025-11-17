@@ -64,7 +64,7 @@ func (p Precompile) Run(evm *vm.EVM, contract *vm.Contract, readOnly bool) (bz [
 
 	ctx, stateDB, method, initialGas, args, err := p.RunSetup(evm, contract, readOnly, p.IsTransaction)
 	if err != nil {
-		return nil, err
+		return cmn.ReturnRevertError(evm, err)
 	}
 
 	// This handles any out of gas errors that may occur during the execution of a precompile tx or query.
@@ -73,7 +73,7 @@ func (p Precompile) Run(evm *vm.EVM, contract *vm.Contract, readOnly bool) (bz [
 
 	bz, err = p.HandleMethod(ctx, contract, stateDB, method, args)
 	if err != nil {
-		return nil, err
+		return cmn.ReturnRevertError(evm, err)
 	}
 
 	cost := ctx.GasMeter().GasConsumed() - initialGas
