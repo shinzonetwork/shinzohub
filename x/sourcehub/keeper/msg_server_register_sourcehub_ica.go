@@ -17,7 +17,7 @@ func (m msgServer) RegisterSourcehubICA(goCtx context.Context, msg *types.MsgReg
 		return nil, sdkerrors.ErrUnauthorized.Wrap("admin required")
 	}
 
-	m.Keeper.SetControllerConnectionID(ctx, msg.HostConnectionId)
+	m.Keeper.SetControllerConnectionID(ctx, msg.ControllerConnectionId)
 	m.Keeper.SetHostConnectionID(ctx, msg.HostConnectionId)
 
 	if err := m.Keeper.IcaCtrlKeeper.RegisterInterchainAccount(
