@@ -167,7 +167,7 @@ const (
 	NodeDir      = ".shinzohub"
 	Bech32Prefix = "shinzo"
 
-	ChainID18Decimals = 9001
+	ChainID18Decimals = 9000
 )
 
 var (
