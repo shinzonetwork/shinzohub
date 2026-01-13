@@ -7,6 +7,7 @@ import (
 
 	"github.com/stretchr/testify/require"
 
+	"github.com/sourcenetwork/acp_core/pkg/auth"
 	"github.com/sourcenetwork/acp_core/pkg/runtime"
 	"github.com/sourcenetwork/acp_core/pkg/services"
 	"github.com/sourcenetwork/acp_core/pkg/types"
@@ -26,8 +27,10 @@ func Test_ShinzoYamlPolicyIsValid(t *testing.T) {
 	engine := services.NewACPEngine(manager)
 
 	ctx := context.Background()
+	ctx = auth.InjectPrincipal(ctx, types.RootPrincipal())
 	_, err = engine.CreatePolicy(ctx, &types.CreatePolicyRequest{
-		Policy: string(pol),
+		Policy:      string(pol),
+		MarshalType: types.PolicyMarshalingType_YAML,
 	})
 	require.NoError(t, err)
 }
