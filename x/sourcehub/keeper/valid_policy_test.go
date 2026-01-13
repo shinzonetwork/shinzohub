@@ -2,7 +2,6 @@ package keeper
 
 import (
 	"context"
-	"os"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -16,9 +15,6 @@ import (
 // Test ensure the YAML ACP Policy does not become stale,
 // by trying to create it with against the acp engine directly
 func Test_ShinzoYamlPolicyIsValid(t *testing.T) {
-	pol, err := os.ReadFile("policy.yaml")
-	require.NoError(t, err)
-
 	manager, err := runtime.NewRuntimeManager(
 		runtime.WithMemKV(),
 	)
@@ -29,7 +25,7 @@ func Test_ShinzoYamlPolicyIsValid(t *testing.T) {
 	ctx := context.Background()
 	ctx = auth.InjectPrincipal(ctx, types.RootPrincipal())
 	_, err = engine.CreatePolicy(ctx, &types.CreatePolicyRequest{
-		Policy:      string(pol),
+		Policy:      policy,
 		MarshalType: types.PolicyMarshalingType_YAML,
 	})
 	require.NoError(t, err)
