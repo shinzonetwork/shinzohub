@@ -1,6 +1,6 @@
 name: shinzo
-
 resources:
+
 - name: primitive
   relations:
   - name: admin
