@@ -82,7 +82,7 @@ from_scratch () {
   # === CORE MODULES ===
 
   # Block
-  update_test_genesis '.consensus_params["block"]["max_gas"]="100000000"'
+  update_test_genesis '.consensus_params["block"]["max_gas"]="10000000000"'
   update_test_genesis '.consensus["params"]["block"]["max_bytes"]="104857600"'
 
   # Gov
