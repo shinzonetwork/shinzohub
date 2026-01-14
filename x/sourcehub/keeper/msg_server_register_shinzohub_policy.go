@@ -35,7 +35,7 @@ func (m msgServer) RegisterShinzoPolicy(goCtx context.Context, msg *types.MsgReg
 			fmt.Errorf("ICA address not found for portID %s on connection %s", portID, connectionID)
 	}
 
-	mt := coretypes.PolicyMarshalingType_SHORT_YAML
+	mt := coretypes.PolicyMarshalingType_YAML
 
 	policyMsg := &acptypes.MsgCreatePolicy{
 		Creator:     addr,
