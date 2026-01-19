@@ -1,7 +1,7 @@
 HERMES_HOME="$HOME/.hermes"
 
 SOURCEHUB_CHAIN_ID="sourcehub"
-SHINZOHUB_CHAIN_ID="9001"
+SHINZOHUB_CHAIN_ID="shinzo"
 
 rm -rf $HERMES_HOME
 

@@ -92,7 +92,7 @@ This executes:
 ```bash
 build/shinzohubd tx sourcehub register-ica connection-0 connection-0 \
   --from acc0 \
-  --chain-id 9001 \
+  --chain-id "shinzo-devnet" \
   --keyring-backend test \
   --home ~/.shinzohub \
   --node tcp://127.0.0.1:26657 \
@@ -203,7 +203,7 @@ This executes:
 ```bash
 build/shinzohubd tx sourcehub register-policy \
   --from acc0 \
-  --chain-id 9001 \
+  --chain-id shinzo-devnet \
   --keyring-backend test \
   --home ~/.shinzohub \
   --node tcp://127.0.0.1:26657 \
@@ -247,7 +247,7 @@ This executes:
 ```bash
 build/shinzohubd tx sourcehub register-objects "block logs event transaction" \
   --from acc0 \
-  --chain-id 9001 \
+  --chain-id shinzo-devnet \
   --keyring-backend test \
   --home ~/.shinzohub \
   --node tcp://127.0.0.1:26657 \
@@ -341,7 +341,7 @@ With Hermes running, open a new terminal and run:
 This executes:
 
 ```bash
-build/shinzohubd tx sourcehub request-stream view FilteredAndDecodedLogs_0xc5... testuserdid  --from acc0   --chain-id 9001   --keyring-backend test   --home ~/.shinzohub   --node tcp://127.0.0.1:26657   --gas auto --gas-adjustment 1.5 --fees 9000ushinzo   --yes
+build/shinzohubd tx sourcehub request-stream view FilteredAndDecodedLogs_0xc5... testuserdid  --from acc0   --chain-id "shinzo-devnet"   --keyring-backend test   --home ~/.shinzohub   --node tcp://127.0.0.1:26657   --gas auto --gas-adjustment 1.5 --fees 9000ushinzo   --yes
 ```
 
 This sends a request to give the user did access to the an object.

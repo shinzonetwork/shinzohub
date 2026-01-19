@@ -167,7 +167,11 @@ const (
 	NodeDir      = ".shinzohub"
 	Bech32Prefix = "shinzo"
 
-	ChainID18Decimals = 9000
+	ChainID18Decimals        = 91273002 // TODO: find a way to make this dynamic # local 91273003; devnet 91273002; testnet 91273001; mainnet 91273000
+	BaseDenom                = "ushinzo"
+	DisplayDenom             = "SHNZ"
+	CoinType          uint32 = 60
+	BaseDenomUnit     int64  = 18
 )
 
 var (
@@ -191,13 +195,6 @@ func init() {
 var (
 	// DefaultNodeHome default home directories for appd
 	DefaultNodeHome = os.ExpandEnv("$HOME/") + NodeDir
-
-	CoinType uint32 = 60
-
-	BaseDenomUnit int64 = 18
-
-	BaseDenom    = "ushinzo"
-	DisplayDenom = "SHINZO"
 
 	// Bech32PrefixAccAddr defines the Bech32 prefix of an account's address
 	Bech32PrefixAccAddr = Bech32Prefix
