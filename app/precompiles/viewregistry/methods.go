@@ -10,6 +10,7 @@ import (
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/core/vm"
 	"github.com/ethereum/go-ethereum/crypto"
+	"github.com/shinzonetwork/shinzohub/viewbundle"
 )
 
 const (
@@ -17,62 +18,77 @@ const (
 	ViewRegistryGetMethod      = "get"
 )
 
-func (p Precompile) ViewRegistryRegister(ctx sdk.Context, contract *vm.Contract, stateDB vm.StateDB, method *abi.Method, args []interface{}) ([]byte, error) {
-	value, ok := args[0].([]byte)
+func (p Precompile) ViewRegistryRegister(
+	ctx sdk.Context,
+	contract *vm.Contract,
+	stateDB vm.StateDB,
+	method *abi.Method,
+	args []interface{},
+) ([]byte, error) {
+
+	encodedValue, ok := args[0].([]byte)
 	if !ok {
 		return nil, fmt.Errorf("invalid type for value")
 	}
 
-	re := regexp.MustCompile(`type\s+([A-Za-z0-9_]+)`) // TODO: more robost regex to get sdl type
-	matches := re.FindStringSubmatch(string(value))
-	if len(matches) < 2 {
-		return nil, vm.ErrExecutionReverted
-	}
-
-	ResourceName := matches[1]
-
-	key := crypto.Keccak256Hash(contract.Caller().Bytes(), value)
-
-	id := fmt.Sprintf("%s_%s", ResourceName, key)
-
-	// replace the old resource name with the new resource name
-	value = []byte(re.ReplaceAllString(string(value), "type "+id))
-
-	err := p.sourcehubKeeper.RegisterObject(ctx, id)
+	decodedValue, err := viewbundle.Decode(encodedValue)
 	if err != nil {
 		return nil, vm.ErrExecutionReverted
 	}
 
-	// Store in StateDB using the precompile's own address as the account
-	stateDB.SetState(contract.Address(), key, common.BytesToHash(value))
+	re := regexp.MustCompile(`\btype\s+([A-Za-z0-9_]+)\b`)
+	matches := re.FindStringSubmatch(decodedValue.Header.Sdl)
+	if len(matches) < 2 {
+		return nil, vm.ErrExecutionReverted
+	}
+	resourceName := matches[1]
 
-	// store the view creator also
-	creator := crypto.Keccak256Hash([]byte("creator"), key.Bytes())
-	stateDB.SetState(contract.Address(), creator, common.BytesToHash(contract.Caller().Bytes()))
+	key := crypto.Keccak256Hash(contract.Caller().Bytes(), encodedValue)
 
-	// -----------------------
-	// Emit EVM Log (Event)
-	// -----------------------
+	id := fmt.Sprintf("%s_%s", resourceName, key.Hex())
+
+	loc := re.FindStringSubmatchIndex(decodedValue.Header.Sdl)
+	if len(loc) < 4 {
+		return nil, vm.ErrExecutionReverted
+	}
+
+	decodedValue.Header.Sdl = decodedValue.Header.Sdl[:loc[2]] + id + decodedValue.Header.Sdl[loc[3]:]
+
+	newEncodedValue, err := viewbundle.Encode(decodedValue)
+	if err != nil {
+		return nil, vm.ErrExecutionReverted
+	}
+
+	err = p.sourcehubKeeper.RegisterObject(ctx, id)
+	if err != nil {
+		return nil, vm.ErrExecutionReverted
+	}
+
+	creator := crypto.Keccak256Hash([]byte("view.creator"), key.Bytes())
+	stateDB.SetState(
+		contract.Address(),
+		creator,
+		common.BytesToHash(common.LeftPadBytes(contract.Caller().Bytes(), 32)),
+	)
+
 	eventSignature := []byte("Registered(bytes32,address)")
-	topic0 := crypto.Keccak256Hash(eventSignature)          // keccak256("Registered(bytes32,address)")
-	topic1 := key                                           // indexed key
-	topic2 := common.BytesToHash(contract.Caller().Bytes()) // indexed sender
+	topic0 := crypto.Keccak256Hash(eventSignature)
+	topic1 := key
+	topic2 := common.BytesToHash(contract.Caller().Bytes())
 
 	evmLog := &types.Log{
 		Address: contract.Address(),
 		Topics:  []common.Hash{topic0, topic1, topic2},
-		Data:    value, // non-indexed payload (raw bytes stored)
+		Data:    newEncodedValue,
 	}
-
 	stateDB.AddLog(evmLog)
 
 	ctx.EventManager().EmitEvent(
 		sdk.NewEvent(
 			"Registered",
 			sdk.NewAttribute("key", key.Hex()),
-			// sdk.NewAttribute("creator", contract.CallerAddress.Hex()), // can be hex or cosmos
 			sdk.NewAttribute("creator", sdk.AccAddress(contract.Caller().Bytes()).String()),
-			sdk.NewAttribute("view", string(value)),
+			sdk.NewAttribute("view", string(newEncodedValue)),
 		),
 	)
 

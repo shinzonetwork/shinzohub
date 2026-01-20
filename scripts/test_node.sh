@@ -171,4 +171,4 @@ sed -i -e 's/timeout_commit = "5s"/timeout_commit = "'$BLOCK_TIME'"/g' $HOME_DIR
 # Fix chain-id
 sed -i -e 's/evm-chain-id = 262144/evm-chain-id = '$EVM_CHAIN_ID'/g' $HOME_DIR/config/app.toml
 
-$BINARY start --pruning=nothing  --minimum-gas-prices=0$DENOM --rpc.laddr="tcp://0.0.0.0:$RPC" --home $HOME_DIR --json-rpc.api=eth,txpool,personal,net,debug,web3 --chain-id="$COSMOS_CHAIN_ID"
+$BINARY start --pruning=nothing  --minimum-gas-prices=0$DENOM --rpc.laddr="tcp://0.0.0.0:$RPC" --home $HOME_DIR --json-rpc.api=eth,txpool,personal,net,debug,web3 --chain-id="$COSMOS_CHAIN_ID"  2>&1 | grep --line-buffered "TESTDEBUGLOGS"
