@@ -19,7 +19,7 @@ func initZstd() {
 	if zErr != nil {
 		return
 	}
-	zEnc, zErr = zstd.NewWriter(nil) // tune options later if needed
+	zEnc, zErr = zstd.NewWriter(nil)
 }
 
 func CompressLensBlob(raw []byte) ([]byte, error) {

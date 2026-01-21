@@ -16,7 +16,7 @@ func NewZstd() (*Zstd, error) {
 	if err != nil {
 		return nil, err
 	}
-	enc, err := zstd.NewWriter(nil) // you can tune options
+	enc, err := zstd.NewWriter(nil)
 	if err != nil {
 		return nil, err
 	}
@@ -24,7 +24,6 @@ func NewZstd() (*Zstd, error) {
 }
 
 // CompressLens replaces LensBlob with its compressed form and sets LensCodec.
-// Level tuning: in chain tooling, level ~3-7 is usually enough.
 func (z *Zstd) CompressLens(b *Bundle) {
 	if b.LensCodec == CodecZstd {
 		return

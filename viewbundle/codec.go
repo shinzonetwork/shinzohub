@@ -2,6 +2,7 @@ package viewbundle
 
 import (
 	"bytes"
+	"fmt"
 )
 
 func Encode(b Bundle) ([]byte, error) {
@@ -13,26 +14,37 @@ func Decode(bz []byte) (Bundle, error) {
 }
 
 func encodeWithLimits(b Bundle, lim Limits) ([]byte, error) {
-	// Validate sizes
-	if len(b.Header.Query) > lim.MaxQueryBytes || len(b.Header.Sdl) > lim.MaxSdlBytes {
-		return nil, ErrTooLarge
+	// validate sizes
+	if len(b.Header.Query) > lim.MaxQueryBytes {
+		return nil, tooLarge("header.query", len(b.Header.Query), lim.MaxQueryBytes)
 	}
+
+	if len(b.Header.Sdl) > lim.MaxSdlBytes {
+		return nil, tooLarge("header.sdl", len(b.Header.Sdl), lim.MaxSdlBytes)
+	}
+
 	if len(b.Header.Lenses) > lim.MaxLensRefs {
-		return nil, ErrTooLarge
+		return nil, tooLarge("header.lenses.count", len(b.Header.Lenses), lim.MaxLensRefs)
 	}
-	for _, lr := range b.Header.Lenses {
+
+	for i, lr := range b.Header.Lenses {
 		if len(lr.Args) > lim.MaxArgsBytes {
-			return nil, ErrTooLarge
+			return nil, tooLarge(
+				fmt.Sprintf("header.lenses[%d].args", i+1),
+				len(lr.Args),
+				lim.MaxArgsBytes,
+			)
 		}
 	}
+
 	if len(b.LensBlob) > lim.MaxLensBlobBytes {
-		return nil, ErrTooLarge
+		return nil, tooLarge("lensBlob", len(b.LensBlob), lim.MaxLensBlobBytes)
 	}
+
 	if b.LensCodec != CodecNone && b.LensCodec != CodecZstd {
 		return nil, ErrCodec
 	}
 
-	// capacity hint
 	capHint := 3 + 1 +
 		4 + len(b.Header.Query) +
 		4 + len(b.Header.Sdl) +
@@ -48,24 +60,20 @@ func encodeWithLimits(b Bundle, lim Limits) ([]byte, error) {
 	buf.WriteString(Magic)
 	buf.WriteByte(byte(Version))
 
-	// Query
 	if err := writeU32(&buf, uint32(len(b.Header.Query))); err != nil {
 		return nil, err
 	}
 	buf.WriteString(b.Header.Query)
 
-	// SDL
 	if err := writeU32(&buf, uint32(len(b.Header.Sdl))); err != nil {
 		return nil, err
 	}
 	buf.WriteString(b.Header.Sdl)
 
-	// Lens refs (ordered)
 	if err := writeU16(&buf, uint16(len(b.Header.Lenses))); err != nil {
 		return nil, err
 	}
 	for idx, lr := range b.Header.Lenses {
-		// enforce positional ids 1..N
 		if lr.ID != uint32(idx+1) {
 			return nil, ErrCorrupt
 		}
@@ -78,7 +86,6 @@ func encodeWithLimits(b Bundle, lim Limits) ([]byte, error) {
 		buf.Write(lr.Args)
 	}
 
-	// Lens blob
 	buf.WriteByte(b.LensCodec)
 	if err := writeU32(&buf, uint32(len(b.LensBlob))); err != nil {
 		return nil, err
@@ -101,38 +108,46 @@ func decodeWithLimits(bz []byte, lim Limits) (Bundle, error) {
 
 	i := 4
 
-	// Query
 	qLen, ni, ok := readU32(bz, i)
 	if !ok {
 		return Bundle{}, ErrCorrupt
 	}
 	i = ni
+
 	if int(qLen) > lim.MaxQueryBytes || i+int(qLen) > len(bz) {
-		return Bundle{}, ErrTooLarge
+		if int(qLen) > lim.MaxQueryBytes {
+			return Bundle{}, tooLarge("header.query", int(qLen), lim.MaxQueryBytes)
+		}
+		return Bundle{}, ErrCorrupt
 	}
+
 	query := string(bz[i : i+int(qLen)])
 	i += int(qLen)
 
-	// SDL
 	sLen, ni, ok := readU32(bz, i)
 	if !ok {
 		return Bundle{}, ErrCorrupt
 	}
 	i = ni
+
 	if int(sLen) > lim.MaxSdlBytes || i+int(sLen) > len(bz) {
-		return Bundle{}, ErrTooLarge
+		if int(sLen) > lim.MaxSdlBytes {
+			return Bundle{}, tooLarge("header.sdl", int(sLen), lim.MaxSdlBytes)
+		}
+		return Bundle{}, ErrCorrupt
 	}
+
 	sdl := string(bz[i : i+int(sLen)])
 	i += int(sLen)
 
-	// Lens ref count
 	lc, ni, ok := readU16(bz, i)
 	if !ok {
 		return Bundle{}, ErrCorrupt
 	}
 	i = ni
+
 	if int(lc) > lim.MaxLensRefs {
-		return Bundle{}, ErrTooLarge
+		return Bundle{}, tooLarge("header.lenses.count", int(lc), lim.MaxLensRefs)
 	}
 
 	lensRefs := make([]LensRef, 0, lc)
@@ -150,7 +165,10 @@ func decodeWithLimits(bz []byte, lim Limits) (Bundle, error) {
 		i = ni
 
 		if int(aLen) > lim.MaxArgsBytes || i+int(aLen) > len(bz) {
-			return Bundle{}, ErrTooLarge
+			if int(aLen) > lim.MaxArgsBytes {
+				return Bundle{}, tooLarge(fmt.Sprintf("header.lenses[%d].args", j+1), int(aLen), lim.MaxArgsBytes)
+			}
+			return Bundle{}, ErrCorrupt
 		}
 
 		args := make([]byte, int(aLen))
@@ -160,7 +178,6 @@ func decodeWithLimits(bz []byte, lim Limits) (Bundle, error) {
 		lensRefs = append(lensRefs, LensRef{ID: id, Args: args})
 	}
 
-	// codec
 	if i >= len(bz) {
 		return Bundle{}, ErrCorrupt
 	}
@@ -170,15 +187,19 @@ func decodeWithLimits(bz []byte, lim Limits) (Bundle, error) {
 		return Bundle{}, ErrCodec
 	}
 
-	// lens blob
 	lbLen, ni, ok := readU32(bz, i)
 	if !ok {
 		return Bundle{}, ErrCorrupt
 	}
 	i = ni
+
 	if int(lbLen) > lim.MaxLensBlobBytes || i+int(lbLen) > len(bz) {
-		return Bundle{}, ErrTooLarge
+		if int(lbLen) > lim.MaxLensBlobBytes {
+			return Bundle{}, tooLarge("lensBlob", int(lbLen), lim.MaxLensBlobBytes)
+		}
+		return Bundle{}, ErrCorrupt
 	}
+
 	lensBlob := make([]byte, int(lbLen))
 	copy(lensBlob, bz[i:i+int(lbLen)])
 
