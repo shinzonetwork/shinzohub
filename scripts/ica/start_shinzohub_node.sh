@@ -31,7 +31,7 @@ export ROSETTA=${ROSETTA:-"8080"}
 export BLOCK_TIME=${BLOCK_TIME:-"1s"}
 
 set_config() {
-  $BINARY config set client chain-id $COSMOS_CHAIN_ID
+  $BINARY config set client chain-id $CHAIN_ID
   $BINARY config set client keyring-backend $KEYRING
 }
 set_config
@@ -62,7 +62,7 @@ from_scratch () {
   # shinzo140fehngcrxvhdt84x729p3f0qmkmea8nq3rk92
   add_key $KEY2 "decorate bright ozone fork gallery riot bus exhaust worth way bone indoor calm squirrel merry zero scheme cotton until shop any excess stage laundry"
   
-  $BINARY init $MONIKER --chain-id $COSMOS_CHAIN_ID --default-denom $DENOM --home $HOME_DIR
+  $BINARY init $MONIKER --chain-id $CHAIN_ID --default-denom $DENOM --home $HOME_DIR
 
   update_test_genesis () {
     cat $HOME_DIR/config/genesis.json | jq "$1" > $HOME_DIR/config/tmp_genesis.json && mv $HOME_DIR/config/tmp_genesis.json $HOME_DIR/config/genesis.json
@@ -117,7 +117,7 @@ from_scratch () {
   $BINARY genesis add-genesis-account $KEY2 $BASE_GENESIS_ALLOCATIONS --keyring-backend $KEYRING --home $HOME_DIR --append
 
   # Sign genesis transaction
-  $BINARY genesis gentx $KEY 1000000000000000000000$DENOM --gas-prices 0${DENOM} --keyring-backend $KEYRING --chain-id $COSMOS_CHAIN_ID --home $HOME_DIR
+  $BINARY genesis gentx $KEY 1000000000000000000000$DENOM --gas-prices 0${DENOM} --keyring-backend $KEYRING --chain-id $CHAIN_ID --home $HOME_DIR
 
   $BINARY genesis collect-gentxs --home $HOME_DIR
 
@@ -159,7 +159,7 @@ sed -i -e 's/address = ":8080"/address = "0.0.0.0:'$ROSETTA'"/g' $HOME_DIR/confi
 sed -i -e 's/timeout_commit = "5s"/timeout_commit = "'$BLOCK_TIME'"/g' $HOME_DIR/config/config.toml
 
 # Fix chain-id
-sed -i -e 's/evm-chain-id = 262144/evm-chain-id = '$EVM_CHAIN_ID'/g' $HOME_DIR/config/app.toml
+sed -i -e 's/evm-chain-id = 262144/evm-chain-id = '$CHAIN_ID'/g' $HOME_DIR/config/app.toml
 
 echo "Starting Shinzohub..."
-$BINARY start --pruning=nothing  --minimum-gas-prices=0$DENOM --rpc.laddr="tcp://0.0.0.0:$RPC" --home $HOME_DIR --json-rpc.api=eth,txpool,personal,net,debug,web3 --chain-id="$COSMOS_CHAIN_ID"
+$BINARY start --pruning=nothing  --minimum-gas-prices=0$DENOM --rpc.laddr="tcp://0.0.0.0:$RPC" --home $HOME_DIR --json-rpc.api=eth,txpool,personal,net,debug,web3 --chain-id="$CHAIN_ID"
