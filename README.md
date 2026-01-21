@@ -127,7 +127,7 @@ make sh-testnet
 
 This spins up a chain with:
 
-- `CHAIN_ID=9001`  
+- `CHAIN_ID=91273002`  
 - `BLOCK_TIME=1000ms`  
 - Fresh state each run (`CLEAN=true`)  
 

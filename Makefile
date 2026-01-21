@@ -99,7 +99,7 @@ proto-format:
 ###############################################################################
 
 sh-testnet: verify-deps
-	CHAIN_ID="9001" BLOCK_TIME="1000ms" CLEAN=true sh scripts/test_node.sh
+	BLOCK_TIME="1000ms" CLEAN=true sh scripts/test_node.sh
 
 doctor:
 	@echo "artifact   = $(BUILD_DIR)/shinzohubd"
