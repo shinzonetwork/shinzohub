@@ -8,8 +8,6 @@ const (
 	CodecZstd = 1
 )
 
-// Runtime/DefraDB-ready format.
-// IMPORTANT: Lens.Path is the WASM blob encoded as base64 (not a filesystem path).
 type View struct {
 	Query     string
 	Sdl       string
@@ -22,10 +20,9 @@ type Transform struct {
 
 type Lens struct {
 	Path      string // base64(WASM bytes)
-	Arguments string // text args (json string, etc.)
+	Arguments string
 }
 
-// Bundle/wire format (what you upload via register(bytes))
 type Bundle struct {
 	Header    Header
 	LensCodec uint8
@@ -40,5 +37,5 @@ type Header struct {
 
 type LensRef struct {
 	ID   uint32 // 1..N by position
-	Args []byte // arguments bytes
+	Args []byte
 }

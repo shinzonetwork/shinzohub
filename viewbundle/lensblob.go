@@ -5,9 +5,7 @@ import (
 	"encoding/binary"
 )
 
-// Option 1: ordered wasm list.
-// LensRef order in Header.Lenses MUST match the wasm order in this blob.
-//
+// Ordered wasm list.
 // Layout:
 //
 //	COUNT u16
@@ -48,5 +46,10 @@ func DecodeLensBlobOrdered(bz []byte) ([][]byte, error) {
 		i += l
 		out = append(out, wasm)
 	}
+
+	if i != len(bz) {
+		return nil, ErrCorrupt
+	}
+
 	return out, nil
 }

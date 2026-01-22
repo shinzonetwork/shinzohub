@@ -1,6 +1,7 @@
 package viewregistry
 
 import (
+	"encoding/base64"
 	"fmt"
 	"regexp"
 
@@ -42,7 +43,7 @@ func (p Precompile) ViewRegistryRegister(
 	// Don’t log bytes, log size + hash.
 	log.Info("register received", "bytes", len(encodedValue), "hash", crypto.Keccak256Hash(encodedValue).Hex())
 
-	decodedValue, err := viewbundle.Decode(encodedValue)
+	decodedValue, err := viewbundle.DecodeHeader(encodedValue)
 	if err != nil {
 		log.Error("viewbundle decode failed", "err", err, "bytes", len(encodedValue))
 		return nil, vm.ErrExecutionReverted
@@ -67,7 +68,7 @@ func (p Precompile) ViewRegistryRegister(
 
 	decodedValue.Header.Sdl = decodedValue.Header.Sdl[:loc[2]] + id + decodedValue.Header.Sdl[loc[3]:]
 
-	newEncodedValue, err := viewbundle.Encode(decodedValue)
+	newEncodedValue, err := viewbundle.EncodeHeader(decodedValue)
 	if err != nil {
 		log.Error("viewbundle encode failed", "err", err)
 		return nil, vm.ErrExecutionReverted
@@ -101,11 +102,11 @@ func (p Precompile) ViewRegistryRegister(
 			"Registered",
 			sdk.NewAttribute("key", key.Hex()),
 			sdk.NewAttribute("creator", sdk.AccAddress(contract.Caller().Bytes()).String()),
-			sdk.NewAttribute("view", string(newEncodedValue)),
+			sdk.NewAttribute("view", base64.StdEncoding.EncodeToString(newEncodedValue)),
 		),
 	)
 
-	log.Info("register success", "id", id, "key", key.Hex(), "payload_bytes", len(newEncodedValue))
+	log.Info("register success", "id", id, "key", key.Hex(), "payload_bytes", len(base64.StdEncoding.EncodeToString(newEncodedValue)))
 
 	return nil, nil
 }
