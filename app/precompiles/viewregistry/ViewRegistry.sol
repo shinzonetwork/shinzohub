@@ -15,7 +15,7 @@ interface ViewRegistryI {
     /// @notice Registers a value in the ViewRegistry.
     /// @dev The key is derived as keccak256(msg.sender, value).
     /// @param value The blob to store.
-    function register(bytes memory value) external;
+    function register(bytes calldata value) external;
 
     /// @notice Retrieves a stored value using its key.
     /// @param key The key used to store the value (typically keccak256(sender, value)).

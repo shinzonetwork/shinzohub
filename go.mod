@@ -56,6 +56,7 @@ require (
 	github.com/ethereum/go-ethereum v1.15.11
 	github.com/grpc-ecosystem/grpc-gateway v1.16.0
 	github.com/joho/godotenv v1.5.1
+	github.com/shinzonetwork/viewbundle-go v0.1.1
 	github.com/sourcenetwork/acp_core v0.8.1
 	github.com/sourcenetwork/sourcehub v0.3.3-0.20251204195821-6e21a42984ba
 	github.com/spf13/cast v1.10.0
@@ -229,7 +230,7 @@ require (
 	github.com/jmespath/go-jmespath v0.4.0 // indirect
 	github.com/jmhodges/levigo v1.0.0 // indirect
 	github.com/kilic/bls12-381 v0.1.1-0.20210503002446-7b7597926c69 // indirect
-	github.com/klauspost/compress v1.18.1 // indirect
+	github.com/klauspost/compress v1.18.3 // indirect
 	github.com/klauspost/cpuid/v2 v2.3.0 // indirect
 	github.com/kr/pretty v0.3.1 // indirect
 	github.com/kr/text v0.2.0 // indirect
