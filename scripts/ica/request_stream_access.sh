@@ -2,7 +2,7 @@
 set -euo pipefail
 
 export KEY="acc0"
-export CHAIN_ID=${CHAIN_ID:-"shinzo"}
+export CHAIN_ID=${CHAIN_ID:-"91273002"}
 export KEYRING=${KEYRING:-"test"}
 export HOME_DIR=$(eval echo "${HOME_DIR:-"~/.shinzohub"}")
 export BINARY="./build/shinzohubd"

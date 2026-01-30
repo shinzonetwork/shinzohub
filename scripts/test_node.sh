@@ -2,16 +2,16 @@
 # Run this script to quickly install, setup, and run the current version of the network without docker.
 #
 # Examples:
-# EVM_CHAIN_ID="91273002" COSMOS_CHAIN_ID="shinzo-devnet" HOME_DIR="~/.shinzohub" BLOCK_TIME="1000ms" CLEAN=true sh scripts/test_node.sh
-# EVM_CHAIN_ID="91273002" COSMOS_CHAIN_ID="shinzo-devnet" HOME_DIR="~/.shinzohub" CLEAN=true RPC=36657 REST=2317 PROFF=6061 P2P=36656 GRPC=8090 GRPC_WEB=8091 ROSETTA=8081 BLOCK_TIME="500ms" sh scripts/test_node.sh
+# CHAIN_ID=91273002 HOME_DIR="~/.shinzohub" BLOCK_TIME="1000ms" CLEAN=true sh scripts/test_node.sh
+# CHAIN_ID=91273002 HOME_DIR="~/.shinzohub" CLEAN=true RPC=36657 REST=2317 PROFF=6061 P2P=36656 GRPC=8090 GRPC_WEB=8091 ROSETTA=8081 BLOCK_TIME="500ms" sh scripts/test_node.sh
 
 set -eu
 
 export KEY="acc0"
 export KEY2="acc1"
 
-export COSMOS_CHAIN_ID=${COSMOS_CHAIN_ID:-"shinzo-devnet"} # shinzo-local;  shinzo-devnet; shinzo-testnet; shinzo (mainnet)
-export EVM_CHAIN_ID=${EVM_CHAIN_ID:-91273002} # local 91273003; devnet 91273002; testnet 91273001; mainnet 91273000
+# local 91273003; devnet 91273002; testnet 91273001; mainnet 91273000
+export CHAIN_ID=${CHAIN_ID:-91273002}
 
 export MONIKER="localvalidator"
 export KEYALGO="eth_secp256k1"
@@ -44,7 +44,7 @@ command -v $BINARY > /dev/null 2>&1 || { echo >&2 "$BINARY command not found. En
 command -v jq > /dev/null 2>&1 || { echo >&2 "jq not installed. More info: https://stedolan.github.io/jq/download/"; exit 1; }
 
 set_config() {
-  $BINARY config set client chain-id $COSMOS_CHAIN_ID
+  $BINARY config set client chain-id $CHAIN_ID
   $BINARY config set client keyring-backend $KEYRING
 }
 set_config
@@ -75,7 +75,7 @@ from_scratch () {
   # shinzo1r6yue0vuyj9m7xw78npspt9drq2tmtvgvv9hkp
   add_key $KEY2 "wealth flavor believe regret funny network recall kiss grape useless pepper cram hint member few certain unveil rather brick bargain curious require crowd raise"
 
-  $BINARY init $MONIKER --chain-id $COSMOS_CHAIN_ID --default-denom $DENOM --home $HOME_DIR
+  $BINARY init $MONIKER --chain-id $CHAIN_ID --default-denom $DENOM --home $HOME_DIR
 
   update_test_genesis () {
     cat $HOME_DIR/config/genesis.json | jq "$1" > $HOME_DIR/config/tmp_genesis.json && mv $HOME_DIR/config/tmp_genesis.json $HOME_DIR/config/genesis.json
@@ -125,7 +125,7 @@ from_scratch () {
   $BINARY genesis add-genesis-account $KEY2 $BASE_GENESIS_ALLOCATIONS --keyring-backend $KEYRING --home $HOME_DIR --append
 
   # Sign genesis transaction
-  $BINARY genesis gentx $KEY 1000000000000000000000$DENOM --gas-prices 0${DENOM} --keyring-backend $KEYRING --chain-id $COSMOS_CHAIN_ID --home $HOME_DIR
+  $BINARY genesis gentx $KEY 1000000000000000000000$DENOM --gas-prices 0${DENOM} --keyring-backend $KEYRING --chain-id $CHAIN_ID --home $HOME_DIR
 
   $BINARY genesis collect-gentxs --home $HOME_DIR
 
@@ -169,6 +169,6 @@ sed -i -e 's/address = ":8080"/address = "0.0.0.0:'$ROSETTA'"/g' $HOME_DIR/confi
 sed -i -e 's/timeout_commit = "5s"/timeout_commit = "'$BLOCK_TIME'"/g' $HOME_DIR/config/config.toml
 
 # Fix chain-id
-sed -i -e 's/evm-chain-id = 262144/evm-chain-id = '$EVM_CHAIN_ID'/g' $HOME_DIR/config/app.toml
+sed -i -e 's/evm-chain-id = 262144/evm-chain-id = '$CHAIN_ID'/g' $HOME_DIR/config/app.toml
 
-$BINARY start --pruning=nothing  --minimum-gas-prices=0$DENOM --rpc.laddr="tcp://0.0.0.0:$RPC" --home $HOME_DIR --json-rpc.api=eth,txpool,personal,net,debug,web3 --chain-id="$COSMOS_CHAIN_ID"
+$BINARY start --pruning=nothing  --minimum-gas-prices=0$DENOM --rpc.laddr="tcp://0.0.0.0:$RPC" --home $HOME_DIR --json-rpc.api=eth,txpool,personal,net,debug,web3 --chain-id="$CHAIN_ID"
