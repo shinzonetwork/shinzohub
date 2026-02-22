@@ -47,3 +47,7 @@ const (
 	RoleIndexer uint8 = 0
 	RoleHost    uint8 = 1
 )
+
+const (
+	IndexerAttestationPrefix = "indexer_attestation:" // indexer_attestation:<delegate>:<sourceChain>:<sourceChainId>
+)

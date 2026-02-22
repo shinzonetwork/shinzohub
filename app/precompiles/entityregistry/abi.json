@@ -5,7 +5,7 @@
   "abi": [
     {
       "type": "function",
-      "name": "register",
+      "name": "registerIndexer",
       "stateMutability": "nonpayable",
       "inputs": [
         {
@@ -29,8 +29,40 @@
           "type": "bytes"
         },
         {
-          "name": "entity",
-          "type": "uint8"
+          "name": "sourceChain",
+          "type": "string"
+        },
+        {
+          "name": "sourceChainId",
+          "type": "uint64"
+        }
+      ],
+      "outputs": []
+    },
+    {
+      "type": "function",
+      "name": "registerHost",
+      "stateMutability": "nonpayable",
+      "inputs": [
+        {
+          "name": "peerKeyPubkey",
+          "type": "bytes"
+        },
+        {
+          "name": "peerKeySignature",
+          "type": "bytes"
+        },
+        {
+          "name": "nodeIdentityKeyPubkey",
+          "type": "bytes"
+        },
+        {
+          "name": "nodeIdentityKeySignature",
+          "type": "bytes"
+        },
+        {
+          "name": "message",
+          "type": "bytes"
         }
       ],
       "outputs": []

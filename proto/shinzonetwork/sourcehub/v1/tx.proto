@@ -14,6 +14,7 @@ service Msg {
   rpc RegisterShinzoPolicy(MsgRegisterShinzoPolicy) returns (MsgRegisterShinzoPolicyResponse);
   rpc RegisterShinzoObjects(MsgRegisterShinzoObjects) returns (MsgRegisterShinzoObjectsResponse);
   rpc RequestStreamAccess(MsgRequestStreamAccess) returns (MsgRequestStreamAccessResponse);
+  rpc AddIndexerAttestation(MsgIndexerAttestation) returns (MsgIndexerAttestationResponse);
 }
 
 message MsgRegisterSourcehubICA {
@@ -59,3 +60,26 @@ message MsgRequestStreamAccess {
 }
 
 message MsgRequestStreamAccessResponse {}
+
+message MsgIndexerAttestation {
+  option (cosmos.msg.v1.signer) = "signer";
+
+  string signer             = 1;
+  string consensus_pub_key  = 2;
+  string delegate_address   = 3;
+  string source_chain       = 4;
+  uint64 source_chain_id    = 5;
+  string attestation_id     = 6;
+  bytes  delegate_digest    = 7; // 32-byte pre-hashed payload signed by the delegate
+  bytes  delegate_signature = 8; // 65-byte secp256k1 ECDSA signature r‖s‖v
+}
+
+message MsgIndexerAttestationResponse {}
+
+message IndexerAttestation {
+  string consensus_pub_key  = 1;
+  string delegate_address   = 2;
+  string source_chain       = 3;
+  uint64 source_chain_id    = 4;
+  string attestation_id     = 5;
+}

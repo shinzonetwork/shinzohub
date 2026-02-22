@@ -18,28 +18,41 @@ EntityRegistryI constant ENTITY_REGISTRY_CONTRACT =
 ///        (chain, precompile, msg.sender, entity, message, etc.).
 ///      - Enforcing one-address-one-DID and any entity-specific rules.
 interface EntityRegistryI {
-    /// @notice Register an entity for msg.sender using two key proofs.
-    /// @dev
-    ///  - `peerKeyPubkey` / `peerKeySignature`:
-    ///        DefraDB peer-key.
-    ///  - `nodeIdentityKeyPubkey` / `nodeIdentityKeySignature`:
-    ///        DefraDB node-identity-key.
-    ///  - `message`:
-    ///        A 32-byte value used for domain separation and replay protection.
-    ///        The keeper defines and validates the exact payload that is signed.
+    /// @notice Register an indexer for msg.sender using two key proofs.
+    /// @dev The caller must have a prior on-chain attestation record keyed on
+    ///      (msg.sender, sourceChain, sourceChainId).  Both the chain name and
+    ///      the chain ID are required so that chains sharing a numeric ID remain
+    ///      distinct (e.g. private testnets).
     /// @param peerKeyPubkey            Peer key public key bytes.
     /// @param peerKeySignature         Signature by `peerKeyPubkey` over the keeper-defined payload.
     /// @param nodeIdentityKeyPubkey    Node identity key public key bytes.
     /// @param nodeIdentityKeySignature Signature by `nodeIdentityKeyPubkey` over the keeper-defined payload.
-    /// @param message                  message for replay protection / domain separation.
-    /// @param entity                   Entity tag (e.g. 0 = indexer, 1 = host).
-    function register(
+    /// @param message                  Payload for replay protection / domain separation.
+    /// @param sourceChain              Human-readable source chain name (e.g. "ethereum").
+    /// @param sourceChainId            Numeric chain ID of the source chain (must be non-zero).
+    function registerIndexer(
         bytes calldata peerKeyPubkey,
         bytes calldata peerKeySignature,
         bytes calldata nodeIdentityKeyPubkey,
         bytes calldata nodeIdentityKeySignature,
         bytes calldata message,
-        uint8 entity
+        string calldata sourceChain,
+        uint64 sourceChainId
+    ) external;
+
+    /// @notice Register a host for msg.sender using two key proofs.
+    /// @dev Hosts do not require a prior attestation record.
+    /// @param peerKeyPubkey            Peer key public key bytes.
+    /// @param peerKeySignature         Signature by `peerKeyPubkey` over the keeper-defined payload.
+    /// @param nodeIdentityKeyPubkey    Node identity key public key bytes.
+    /// @param nodeIdentityKeySignature Signature by `nodeIdentityKeyPubkey` over the keeper-defined payload.
+    /// @param message                  Payload for replay protection / domain separation.
+    function registerHost(
+        bytes calldata peerKeyPubkey,
+        bytes calldata peerKeySignature,
+        bytes calldata nodeIdentityKeyPubkey,
+        bytes calldata nodeIdentityKeySignature,
+        bytes calldata message
     ) external;
 
     /// @notice Emitted when a DID/PID is registered for an owner.
@@ -51,7 +64,7 @@ interface EntityRegistryI {
     /// @param owner   Address that registered the entity.
     /// @param did     The DID bytes.
     /// @param pid     The Peer ID bytes.
-    /// @param entity  Entity tag (e.g. 0 = indexer, 1 = host).
+    /// @param entity  Entity tag (0 = indexer, 1 = host).
     event EntityRegistered(
         bytes32 indexed key,
         address indexed owner,

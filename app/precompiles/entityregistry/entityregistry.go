@@ -19,6 +19,7 @@ const (
 	EntityRegistryPrecompileAddress = "0x0000000000000000000000000000000000000211"
 )
 
+
 // Embed abi json file to the executable binary. Needed when importing as dependency.
 //
 //go:embed abi.json
@@ -87,14 +88,14 @@ func (p Precompile) Run(evm *vm.EVM, contract *vm.Contract, readOnly bool) (bz [
 
 func (Precompile) IsTransaction(method *abi.Method) bool {
 	switch method.Name {
-	case EntityRegistryRegisterMethod:
+	case EntityRegistryRegisterIndexerMethod, EntityRegistryRegisterHostMethod:
 		return true
 	default:
 		return false
 	}
 }
 
-// HandleMethod handles the execution of each of the ERC-20 methods.
+// HandleMethod dispatches to the appropriate precompile handler.
 func (p *Precompile) HandleMethod(
 	ctx sdk.Context,
 	contract *vm.Contract,
@@ -103,8 +104,10 @@ func (p *Precompile) HandleMethod(
 	args []interface{},
 ) (bz []byte, err error) {
 	switch method.Name {
-	case EntityRegistryRegisterMethod:
-		bz, err = p.EntityRegistryRegister(ctx, contract, stateDB, method, args)
+	case EntityRegistryRegisterIndexerMethod:
+		bz, err = p.EntityRegistryRegisterIndexer(ctx, contract, stateDB, method, args)
+	case EntityRegistryRegisterHostMethod:
+		bz, err = p.EntityRegistryRegisterHost(ctx, contract, stateDB, method, args)
 	default:
 		return nil, fmt.Errorf(cmn.ErrUnknownMethod, method.Name)
 	}
