@@ -23,7 +23,8 @@ const (
 	Msg_RegisterShinzoPolicy_FullMethodName  = "/shinzonetwork.sourcehub.v1.Msg/RegisterShinzoPolicy"
 	Msg_RegisterShinzoObjects_FullMethodName = "/shinzonetwork.sourcehub.v1.Msg/RegisterShinzoObjects"
 	Msg_RequestStreamAccess_FullMethodName   = "/shinzonetwork.sourcehub.v1.Msg/RequestStreamAccess"
-	Msg_AddIndexerAttestation_FullMethodName = "/shinzonetwork.sourcehub.v1.Msg/AddIndexerAttestation"
+	Msg_AddIndexerAssertion_FullMethodName   = "/shinzonetwork.sourcehub.v1.Msg/AddIndexerAssertion"
+	Msg_AdminIndexerAssertion_FullMethodName = "/shinzonetwork.sourcehub.v1.Msg/AdminIndexerAssertion"
 )
 
 // MsgClient is the client API for Msg service.
@@ -36,7 +37,8 @@ type MsgClient interface {
 	RegisterShinzoPolicy(ctx context.Context, in *MsgRegisterShinzoPolicy, opts ...grpc.CallOption) (*MsgRegisterShinzoPolicyResponse, error)
 	RegisterShinzoObjects(ctx context.Context, in *MsgRegisterShinzoObjects, opts ...grpc.CallOption) (*MsgRegisterShinzoObjectsResponse, error)
 	RequestStreamAccess(ctx context.Context, in *MsgRequestStreamAccess, opts ...grpc.CallOption) (*MsgRequestStreamAccessResponse, error)
-	AddIndexerAttestation(ctx context.Context, in *MsgIndexerAttestation, opts ...grpc.CallOption) (*MsgIndexerAttestationResponse, error)
+	AddIndexerAssertion(ctx context.Context, in *MsgIndexerAssertion, opts ...grpc.CallOption) (*MsgIndexerAssertionResponse, error)
+	AdminIndexerAssertion(ctx context.Context, in *MsgAdminIndexerAssertion, opts ...grpc.CallOption) (*MsgAdminIndexerAssertionResponse, error)
 }
 
 type msgClient struct {
@@ -87,10 +89,20 @@ func (c *msgClient) RequestStreamAccess(ctx context.Context, in *MsgRequestStrea
 	return out, nil
 }
 
-func (c *msgClient) AddIndexerAttestation(ctx context.Context, in *MsgIndexerAttestation, opts ...grpc.CallOption) (*MsgIndexerAttestationResponse, error) {
+func (c *msgClient) AddIndexerAssertion(ctx context.Context, in *MsgIndexerAssertion, opts ...grpc.CallOption) (*MsgIndexerAssertionResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(MsgIndexerAttestationResponse)
-	err := c.cc.Invoke(ctx, Msg_AddIndexerAttestation_FullMethodName, in, out, cOpts...)
+	out := new(MsgIndexerAssertionResponse)
+	err := c.cc.Invoke(ctx, Msg_AddIndexerAssertion_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *msgClient) AdminIndexerAssertion(ctx context.Context, in *MsgAdminIndexerAssertion, opts ...grpc.CallOption) (*MsgAdminIndexerAssertionResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(MsgAdminIndexerAssertionResponse)
+	err := c.cc.Invoke(ctx, Msg_AdminIndexerAssertion_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -107,7 +119,8 @@ type MsgServer interface {
 	RegisterShinzoPolicy(context.Context, *MsgRegisterShinzoPolicy) (*MsgRegisterShinzoPolicyResponse, error)
 	RegisterShinzoObjects(context.Context, *MsgRegisterShinzoObjects) (*MsgRegisterShinzoObjectsResponse, error)
 	RequestStreamAccess(context.Context, *MsgRequestStreamAccess) (*MsgRequestStreamAccessResponse, error)
-	AddIndexerAttestation(context.Context, *MsgIndexerAttestation) (*MsgIndexerAttestationResponse, error)
+	AddIndexerAssertion(context.Context, *MsgIndexerAssertion) (*MsgIndexerAssertionResponse, error)
+	AdminIndexerAssertion(context.Context, *MsgAdminIndexerAssertion) (*MsgAdminIndexerAssertionResponse, error)
 	mustEmbedUnimplementedMsgServer()
 }
 
@@ -130,8 +143,11 @@ func (UnimplementedMsgServer) RegisterShinzoObjects(context.Context, *MsgRegiste
 func (UnimplementedMsgServer) RequestStreamAccess(context.Context, *MsgRequestStreamAccess) (*MsgRequestStreamAccessResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method RequestStreamAccess not implemented")
 }
-func (UnimplementedMsgServer) AddIndexerAttestation(context.Context, *MsgIndexerAttestation) (*MsgIndexerAttestationResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method AddIndexerAttestation not implemented")
+func (UnimplementedMsgServer) AddIndexerAssertion(context.Context, *MsgIndexerAssertion) (*MsgIndexerAssertionResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method AddIndexerAssertion not implemented")
+}
+func (UnimplementedMsgServer) AdminIndexerAssertion(context.Context, *MsgAdminIndexerAssertion) (*MsgAdminIndexerAssertionResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method AdminIndexerAssertion not implemented")
 }
 func (UnimplementedMsgServer) mustEmbedUnimplementedMsgServer() {}
 func (UnimplementedMsgServer) testEmbeddedByValue()             {}
@@ -226,20 +242,38 @@ func _Msg_RequestStreamAccess_Handler(srv interface{}, ctx context.Context, dec 
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Msg_AddIndexerAttestation_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(MsgIndexerAttestation)
+func _Msg_AddIndexerAssertion_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(MsgIndexerAssertion)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(MsgServer).AddIndexerAttestation(ctx, in)
+		return srv.(MsgServer).AddIndexerAssertion(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: Msg_AddIndexerAttestation_FullMethodName,
+		FullMethod: Msg_AddIndexerAssertion_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(MsgServer).AddIndexerAttestation(ctx, req.(*MsgIndexerAttestation))
+		return srv.(MsgServer).AddIndexerAssertion(ctx, req.(*MsgIndexerAssertion))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Msg_AdminIndexerAssertion_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(MsgAdminIndexerAssertion)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MsgServer).AdminIndexerAssertion(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Msg_AdminIndexerAssertion_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MsgServer).AdminIndexerAssertion(ctx, req.(*MsgAdminIndexerAssertion))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -268,8 +302,12 @@ var Msg_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _Msg_RequestStreamAccess_Handler,
 		},
 		{
-			MethodName: "AddIndexerAttestation",
-			Handler:    _Msg_AddIndexerAttestation_Handler,
+			MethodName: "AddIndexerAssertion",
+			Handler:    _Msg_AddIndexerAssertion_Handler,
+		},
+		{
+			MethodName: "AdminIndexerAssertion",
+			Handler:    _Msg_AdminIndexerAssertion_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

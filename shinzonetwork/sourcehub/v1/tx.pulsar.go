@@ -3594,35 +3594,39 @@ func (x *fastReflection_MsgRequestStreamAccessResponse) ProtoMethods() *protoifa
 }
 
 var (
-	md_MsgIndexerAttestation                   protoreflect.MessageDescriptor
-	fd_MsgIndexerAttestation_signer            protoreflect.FieldDescriptor
-	fd_MsgIndexerAttestation_consensus_pub_key protoreflect.FieldDescriptor
-	fd_MsgIndexerAttestation_delegate_address  protoreflect.FieldDescriptor
-	fd_MsgIndexerAttestation_source_chain      protoreflect.FieldDescriptor
-	fd_MsgIndexerAttestation_source_chain_id   protoreflect.FieldDescriptor
-	fd_MsgIndexerAttestation_attestation_id    protoreflect.FieldDescriptor
+	md_MsgIndexerAssertion                    protoreflect.MessageDescriptor
+	fd_MsgIndexerAssertion_signer             protoreflect.FieldDescriptor
+	fd_MsgIndexerAssertion_consensus_pub_key  protoreflect.FieldDescriptor
+	fd_MsgIndexerAssertion_delegate_address   protoreflect.FieldDescriptor
+	fd_MsgIndexerAssertion_source_chain       protoreflect.FieldDescriptor
+	fd_MsgIndexerAssertion_source_chain_id    protoreflect.FieldDescriptor
+	fd_MsgIndexerAssertion_assertion_id       protoreflect.FieldDescriptor
+	fd_MsgIndexerAssertion_delegate_digest    protoreflect.FieldDescriptor
+	fd_MsgIndexerAssertion_delegate_signature protoreflect.FieldDescriptor
 )
 
 func init() {
 	file_shinzonetwork_sourcehub_v1_tx_proto_init()
-	md_MsgIndexerAttestation = File_shinzonetwork_sourcehub_v1_tx_proto.Messages().ByName("MsgIndexerAttestation")
-	fd_MsgIndexerAttestation_signer = md_MsgIndexerAttestation.Fields().ByName("signer")
-	fd_MsgIndexerAttestation_consensus_pub_key = md_MsgIndexerAttestation.Fields().ByName("consensus_pub_key")
-	fd_MsgIndexerAttestation_delegate_address = md_MsgIndexerAttestation.Fields().ByName("delegate_address")
-	fd_MsgIndexerAttestation_source_chain = md_MsgIndexerAttestation.Fields().ByName("source_chain")
-	fd_MsgIndexerAttestation_source_chain_id = md_MsgIndexerAttestation.Fields().ByName("source_chain_id")
-	fd_MsgIndexerAttestation_attestation_id = md_MsgIndexerAttestation.Fields().ByName("attestation_id")
+	md_MsgIndexerAssertion = File_shinzonetwork_sourcehub_v1_tx_proto.Messages().ByName("MsgIndexerAssertion")
+	fd_MsgIndexerAssertion_signer = md_MsgIndexerAssertion.Fields().ByName("signer")
+	fd_MsgIndexerAssertion_consensus_pub_key = md_MsgIndexerAssertion.Fields().ByName("consensus_pub_key")
+	fd_MsgIndexerAssertion_delegate_address = md_MsgIndexerAssertion.Fields().ByName("delegate_address")
+	fd_MsgIndexerAssertion_source_chain = md_MsgIndexerAssertion.Fields().ByName("source_chain")
+	fd_MsgIndexerAssertion_source_chain_id = md_MsgIndexerAssertion.Fields().ByName("source_chain_id")
+	fd_MsgIndexerAssertion_assertion_id = md_MsgIndexerAssertion.Fields().ByName("assertion_id")
+	fd_MsgIndexerAssertion_delegate_digest = md_MsgIndexerAssertion.Fields().ByName("delegate_digest")
+	fd_MsgIndexerAssertion_delegate_signature = md_MsgIndexerAssertion.Fields().ByName("delegate_signature")
 }
 
-var _ protoreflect.Message = (*fastReflection_MsgIndexerAttestation)(nil)
+var _ protoreflect.Message = (*fastReflection_MsgIndexerAssertion)(nil)
 
-type fastReflection_MsgIndexerAttestation MsgIndexerAttestation
+type fastReflection_MsgIndexerAssertion MsgIndexerAssertion
 
-func (x *MsgIndexerAttestation) ProtoReflect() protoreflect.Message {
-	return (*fastReflection_MsgIndexerAttestation)(x)
+func (x *MsgIndexerAssertion) ProtoReflect() protoreflect.Message {
+	return (*fastReflection_MsgIndexerAssertion)(x)
 }
 
-func (x *MsgIndexerAttestation) slowProtoReflect() protoreflect.Message {
+func (x *MsgIndexerAssertion) slowProtoReflect() protoreflect.Message {
 	mi := &file_shinzonetwork_sourcehub_v1_tx_proto_msgTypes[8]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -3634,43 +3638,43 @@ func (x *MsgIndexerAttestation) slowProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-var _fastReflection_MsgIndexerAttestation_messageType fastReflection_MsgIndexerAttestation_messageType
-var _ protoreflect.MessageType = fastReflection_MsgIndexerAttestation_messageType{}
+var _fastReflection_MsgIndexerAssertion_messageType fastReflection_MsgIndexerAssertion_messageType
+var _ protoreflect.MessageType = fastReflection_MsgIndexerAssertion_messageType{}
 
-type fastReflection_MsgIndexerAttestation_messageType struct{}
+type fastReflection_MsgIndexerAssertion_messageType struct{}
 
-func (x fastReflection_MsgIndexerAttestation_messageType) Zero() protoreflect.Message {
-	return (*fastReflection_MsgIndexerAttestation)(nil)
+func (x fastReflection_MsgIndexerAssertion_messageType) Zero() protoreflect.Message {
+	return (*fastReflection_MsgIndexerAssertion)(nil)
 }
-func (x fastReflection_MsgIndexerAttestation_messageType) New() protoreflect.Message {
-	return new(fastReflection_MsgIndexerAttestation)
+func (x fastReflection_MsgIndexerAssertion_messageType) New() protoreflect.Message {
+	return new(fastReflection_MsgIndexerAssertion)
 }
-func (x fastReflection_MsgIndexerAttestation_messageType) Descriptor() protoreflect.MessageDescriptor {
-	return md_MsgIndexerAttestation
+func (x fastReflection_MsgIndexerAssertion_messageType) Descriptor() protoreflect.MessageDescriptor {
+	return md_MsgIndexerAssertion
 }
 
 // Descriptor returns message descriptor, which contains only the protobuf
 // type information for the message.
-func (x *fastReflection_MsgIndexerAttestation) Descriptor() protoreflect.MessageDescriptor {
-	return md_MsgIndexerAttestation
+func (x *fastReflection_MsgIndexerAssertion) Descriptor() protoreflect.MessageDescriptor {
+	return md_MsgIndexerAssertion
 }
 
 // Type returns the message type, which encapsulates both Go and protobuf
 // type information. If the Go type information is not needed,
 // it is recommended that the message descriptor be used instead.
-func (x *fastReflection_MsgIndexerAttestation) Type() protoreflect.MessageType {
-	return _fastReflection_MsgIndexerAttestation_messageType
+func (x *fastReflection_MsgIndexerAssertion) Type() protoreflect.MessageType {
+	return _fastReflection_MsgIndexerAssertion_messageType
 }
 
 // New returns a newly allocated and mutable empty message.
-func (x *fastReflection_MsgIndexerAttestation) New() protoreflect.Message {
-	return new(fastReflection_MsgIndexerAttestation)
+func (x *fastReflection_MsgIndexerAssertion) New() protoreflect.Message {
+	return new(fastReflection_MsgIndexerAssertion)
 }
 
 // Interface unwraps the message reflection interface and
 // returns the underlying ProtoMessage interface.
-func (x *fastReflection_MsgIndexerAttestation) Interface() protoreflect.ProtoMessage {
-	return (*MsgIndexerAttestation)(x)
+func (x *fastReflection_MsgIndexerAssertion) Interface() protoreflect.ProtoMessage {
+	return (*MsgIndexerAssertion)(x)
 }
 
 // Range iterates over every populated field in an undefined order,
@@ -3678,40 +3682,52 @@ func (x *fastReflection_MsgIndexerAttestation) Interface() protoreflect.ProtoMes
 // Range returns immediately if f returns false.
 // While iterating, mutating operations may only be performed
 // on the current field descriptor.
-func (x *fastReflection_MsgIndexerAttestation) Range(f func(protoreflect.FieldDescriptor, protoreflect.Value) bool) {
+func (x *fastReflection_MsgIndexerAssertion) Range(f func(protoreflect.FieldDescriptor, protoreflect.Value) bool) {
 	if x.Signer != "" {
 		value := protoreflect.ValueOfString(x.Signer)
-		if !f(fd_MsgIndexerAttestation_signer, value) {
+		if !f(fd_MsgIndexerAssertion_signer, value) {
 			return
 		}
 	}
 	if x.ConsensusPubKey != "" {
 		value := protoreflect.ValueOfString(x.ConsensusPubKey)
-		if !f(fd_MsgIndexerAttestation_consensus_pub_key, value) {
+		if !f(fd_MsgIndexerAssertion_consensus_pub_key, value) {
 			return
 		}
 	}
 	if x.DelegateAddress != "" {
 		value := protoreflect.ValueOfString(x.DelegateAddress)
-		if !f(fd_MsgIndexerAttestation_delegate_address, value) {
+		if !f(fd_MsgIndexerAssertion_delegate_address, value) {
 			return
 		}
 	}
 	if x.SourceChain != "" {
 		value := protoreflect.ValueOfString(x.SourceChain)
-		if !f(fd_MsgIndexerAttestation_source_chain, value) {
+		if !f(fd_MsgIndexerAssertion_source_chain, value) {
 			return
 		}
 	}
 	if x.SourceChainId != uint64(0) {
 		value := protoreflect.ValueOfUint64(x.SourceChainId)
-		if !f(fd_MsgIndexerAttestation_source_chain_id, value) {
+		if !f(fd_MsgIndexerAssertion_source_chain_id, value) {
 			return
 		}
 	}
-	if x.AttestationId != "" {
-		value := protoreflect.ValueOfString(x.AttestationId)
-		if !f(fd_MsgIndexerAttestation_attestation_id, value) {
+	if x.AssertionId != "" {
+		value := protoreflect.ValueOfString(x.AssertionId)
+		if !f(fd_MsgIndexerAssertion_assertion_id, value) {
+			return
+		}
+	}
+	if len(x.DelegateDigest) != 0 {
+		value := protoreflect.ValueOfBytes(x.DelegateDigest)
+		if !f(fd_MsgIndexerAssertion_delegate_digest, value) {
+			return
+		}
+	}
+	if len(x.DelegateSignature) != 0 {
+		value := protoreflect.ValueOfBytes(x.DelegateSignature)
+		if !f(fd_MsgIndexerAssertion_delegate_signature, value) {
 			return
 		}
 	}
@@ -3728,25 +3744,29 @@ func (x *fastReflection_MsgIndexerAttestation) Range(f func(protoreflect.FieldDe
 // In other cases (aside from the nullable cases above),
 // a proto3 scalar field is populated if it contains a non-zero value, and
 // a repeated field is populated if it is non-empty.
-func (x *fastReflection_MsgIndexerAttestation) Has(fd protoreflect.FieldDescriptor) bool {
+func (x *fastReflection_MsgIndexerAssertion) Has(fd protoreflect.FieldDescriptor) bool {
 	switch fd.FullName() {
-	case "shinzonetwork.sourcehub.v1.MsgIndexerAttestation.signer":
+	case "shinzonetwork.sourcehub.v1.MsgIndexerAssertion.signer":
 		return x.Signer != ""
-	case "shinzonetwork.sourcehub.v1.MsgIndexerAttestation.consensus_pub_key":
+	case "shinzonetwork.sourcehub.v1.MsgIndexerAssertion.consensus_pub_key":
 		return x.ConsensusPubKey != ""
-	case "shinzonetwork.sourcehub.v1.MsgIndexerAttestation.delegate_address":
+	case "shinzonetwork.sourcehub.v1.MsgIndexerAssertion.delegate_address":
 		return x.DelegateAddress != ""
-	case "shinzonetwork.sourcehub.v1.MsgIndexerAttestation.source_chain":
+	case "shinzonetwork.sourcehub.v1.MsgIndexerAssertion.source_chain":
 		return x.SourceChain != ""
-	case "shinzonetwork.sourcehub.v1.MsgIndexerAttestation.source_chain_id":
+	case "shinzonetwork.sourcehub.v1.MsgIndexerAssertion.source_chain_id":
 		return x.SourceChainId != uint64(0)
-	case "shinzonetwork.sourcehub.v1.MsgIndexerAttestation.attestation_id":
-		return x.AttestationId != ""
+	case "shinzonetwork.sourcehub.v1.MsgIndexerAssertion.assertion_id":
+		return x.AssertionId != ""
+	case "shinzonetwork.sourcehub.v1.MsgIndexerAssertion.delegate_digest":
+		return len(x.DelegateDigest) != 0
+	case "shinzonetwork.sourcehub.v1.MsgIndexerAssertion.delegate_signature":
+		return len(x.DelegateSignature) != 0
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: shinzonetwork.sourcehub.v1.MsgIndexerAttestation"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: shinzonetwork.sourcehub.v1.MsgIndexerAssertion"))
 		}
-		panic(fmt.Errorf("message shinzonetwork.sourcehub.v1.MsgIndexerAttestation does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message shinzonetwork.sourcehub.v1.MsgIndexerAssertion does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -3756,25 +3776,29 @@ func (x *fastReflection_MsgIndexerAttestation) Has(fd protoreflect.FieldDescript
 // associated with the given field number.
 //
 // Clear is a mutating operation and unsafe for concurrent use.
-func (x *fastReflection_MsgIndexerAttestation) Clear(fd protoreflect.FieldDescriptor) {
+func (x *fastReflection_MsgIndexerAssertion) Clear(fd protoreflect.FieldDescriptor) {
 	switch fd.FullName() {
-	case "shinzonetwork.sourcehub.v1.MsgIndexerAttestation.signer":
+	case "shinzonetwork.sourcehub.v1.MsgIndexerAssertion.signer":
 		x.Signer = ""
-	case "shinzonetwork.sourcehub.v1.MsgIndexerAttestation.consensus_pub_key":
+	case "shinzonetwork.sourcehub.v1.MsgIndexerAssertion.consensus_pub_key":
 		x.ConsensusPubKey = ""
-	case "shinzonetwork.sourcehub.v1.MsgIndexerAttestation.delegate_address":
+	case "shinzonetwork.sourcehub.v1.MsgIndexerAssertion.delegate_address":
 		x.DelegateAddress = ""
-	case "shinzonetwork.sourcehub.v1.MsgIndexerAttestation.source_chain":
+	case "shinzonetwork.sourcehub.v1.MsgIndexerAssertion.source_chain":
 		x.SourceChain = ""
-	case "shinzonetwork.sourcehub.v1.MsgIndexerAttestation.source_chain_id":
+	case "shinzonetwork.sourcehub.v1.MsgIndexerAssertion.source_chain_id":
 		x.SourceChainId = uint64(0)
-	case "shinzonetwork.sourcehub.v1.MsgIndexerAttestation.attestation_id":
-		x.AttestationId = ""
+	case "shinzonetwork.sourcehub.v1.MsgIndexerAssertion.assertion_id":
+		x.AssertionId = ""
+	case "shinzonetwork.sourcehub.v1.MsgIndexerAssertion.delegate_digest":
+		x.DelegateDigest = nil
+	case "shinzonetwork.sourcehub.v1.MsgIndexerAssertion.delegate_signature":
+		x.DelegateSignature = nil
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: shinzonetwork.sourcehub.v1.MsgIndexerAttestation"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: shinzonetwork.sourcehub.v1.MsgIndexerAssertion"))
 		}
-		panic(fmt.Errorf("message shinzonetwork.sourcehub.v1.MsgIndexerAttestation does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message shinzonetwork.sourcehub.v1.MsgIndexerAssertion does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -3784,31 +3808,37 @@ func (x *fastReflection_MsgIndexerAttestation) Clear(fd protoreflect.FieldDescri
 // the default value of a bytes scalar is guaranteed to be a copy.
 // For unpopulated composite types, it returns an empty, read-only view
 // of the value; to obtain a mutable reference, use Mutable.
-func (x *fastReflection_MsgIndexerAttestation) Get(descriptor protoreflect.FieldDescriptor) protoreflect.Value {
+func (x *fastReflection_MsgIndexerAssertion) Get(descriptor protoreflect.FieldDescriptor) protoreflect.Value {
 	switch descriptor.FullName() {
-	case "shinzonetwork.sourcehub.v1.MsgIndexerAttestation.signer":
+	case "shinzonetwork.sourcehub.v1.MsgIndexerAssertion.signer":
 		value := x.Signer
 		return protoreflect.ValueOfString(value)
-	case "shinzonetwork.sourcehub.v1.MsgIndexerAttestation.consensus_pub_key":
+	case "shinzonetwork.sourcehub.v1.MsgIndexerAssertion.consensus_pub_key":
 		value := x.ConsensusPubKey
 		return protoreflect.ValueOfString(value)
-	case "shinzonetwork.sourcehub.v1.MsgIndexerAttestation.delegate_address":
+	case "shinzonetwork.sourcehub.v1.MsgIndexerAssertion.delegate_address":
 		value := x.DelegateAddress
 		return protoreflect.ValueOfString(value)
-	case "shinzonetwork.sourcehub.v1.MsgIndexerAttestation.source_chain":
+	case "shinzonetwork.sourcehub.v1.MsgIndexerAssertion.source_chain":
 		value := x.SourceChain
 		return protoreflect.ValueOfString(value)
-	case "shinzonetwork.sourcehub.v1.MsgIndexerAttestation.source_chain_id":
+	case "shinzonetwork.sourcehub.v1.MsgIndexerAssertion.source_chain_id":
 		value := x.SourceChainId
 		return protoreflect.ValueOfUint64(value)
-	case "shinzonetwork.sourcehub.v1.MsgIndexerAttestation.attestation_id":
-		value := x.AttestationId
+	case "shinzonetwork.sourcehub.v1.MsgIndexerAssertion.assertion_id":
+		value := x.AssertionId
 		return protoreflect.ValueOfString(value)
+	case "shinzonetwork.sourcehub.v1.MsgIndexerAssertion.delegate_digest":
+		value := x.DelegateDigest
+		return protoreflect.ValueOfBytes(value)
+	case "shinzonetwork.sourcehub.v1.MsgIndexerAssertion.delegate_signature":
+		value := x.DelegateSignature
+		return protoreflect.ValueOfBytes(value)
 	default:
 		if descriptor.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: shinzonetwork.sourcehub.v1.MsgIndexerAttestation"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: shinzonetwork.sourcehub.v1.MsgIndexerAssertion"))
 		}
-		panic(fmt.Errorf("message shinzonetwork.sourcehub.v1.MsgIndexerAttestation does not contain field %s", descriptor.FullName()))
+		panic(fmt.Errorf("message shinzonetwork.sourcehub.v1.MsgIndexerAssertion does not contain field %s", descriptor.FullName()))
 	}
 }
 
@@ -3822,25 +3852,29 @@ func (x *fastReflection_MsgIndexerAttestation) Get(descriptor protoreflect.Field
 // empty, read-only value, then it panics.
 //
 // Set is a mutating operation and unsafe for concurrent use.
-func (x *fastReflection_MsgIndexerAttestation) Set(fd protoreflect.FieldDescriptor, value protoreflect.Value) {
+func (x *fastReflection_MsgIndexerAssertion) Set(fd protoreflect.FieldDescriptor, value protoreflect.Value) {
 	switch fd.FullName() {
-	case "shinzonetwork.sourcehub.v1.MsgIndexerAttestation.signer":
+	case "shinzonetwork.sourcehub.v1.MsgIndexerAssertion.signer":
 		x.Signer = value.Interface().(string)
-	case "shinzonetwork.sourcehub.v1.MsgIndexerAttestation.consensus_pub_key":
+	case "shinzonetwork.sourcehub.v1.MsgIndexerAssertion.consensus_pub_key":
 		x.ConsensusPubKey = value.Interface().(string)
-	case "shinzonetwork.sourcehub.v1.MsgIndexerAttestation.delegate_address":
+	case "shinzonetwork.sourcehub.v1.MsgIndexerAssertion.delegate_address":
 		x.DelegateAddress = value.Interface().(string)
-	case "shinzonetwork.sourcehub.v1.MsgIndexerAttestation.source_chain":
+	case "shinzonetwork.sourcehub.v1.MsgIndexerAssertion.source_chain":
 		x.SourceChain = value.Interface().(string)
-	case "shinzonetwork.sourcehub.v1.MsgIndexerAttestation.source_chain_id":
+	case "shinzonetwork.sourcehub.v1.MsgIndexerAssertion.source_chain_id":
 		x.SourceChainId = value.Uint()
-	case "shinzonetwork.sourcehub.v1.MsgIndexerAttestation.attestation_id":
-		x.AttestationId = value.Interface().(string)
+	case "shinzonetwork.sourcehub.v1.MsgIndexerAssertion.assertion_id":
+		x.AssertionId = value.Interface().(string)
+	case "shinzonetwork.sourcehub.v1.MsgIndexerAssertion.delegate_digest":
+		x.DelegateDigest = value.Bytes()
+	case "shinzonetwork.sourcehub.v1.MsgIndexerAssertion.delegate_signature":
+		x.DelegateSignature = value.Bytes()
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: shinzonetwork.sourcehub.v1.MsgIndexerAttestation"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: shinzonetwork.sourcehub.v1.MsgIndexerAssertion"))
 		}
-		panic(fmt.Errorf("message shinzonetwork.sourcehub.v1.MsgIndexerAttestation does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message shinzonetwork.sourcehub.v1.MsgIndexerAssertion does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -3854,60 +3888,68 @@ func (x *fastReflection_MsgIndexerAttestation) Set(fd protoreflect.FieldDescript
 // It panics if the field does not contain a composite type.
 //
 // Mutable is a mutating operation and unsafe for concurrent use.
-func (x *fastReflection_MsgIndexerAttestation) Mutable(fd protoreflect.FieldDescriptor) protoreflect.Value {
+func (x *fastReflection_MsgIndexerAssertion) Mutable(fd protoreflect.FieldDescriptor) protoreflect.Value {
 	switch fd.FullName() {
-	case "shinzonetwork.sourcehub.v1.MsgIndexerAttestation.signer":
-		panic(fmt.Errorf("field signer of message shinzonetwork.sourcehub.v1.MsgIndexerAttestation is not mutable"))
-	case "shinzonetwork.sourcehub.v1.MsgIndexerAttestation.consensus_pub_key":
-		panic(fmt.Errorf("field consensus_pub_key of message shinzonetwork.sourcehub.v1.MsgIndexerAttestation is not mutable"))
-	case "shinzonetwork.sourcehub.v1.MsgIndexerAttestation.delegate_address":
-		panic(fmt.Errorf("field delegate_address of message shinzonetwork.sourcehub.v1.MsgIndexerAttestation is not mutable"))
-	case "shinzonetwork.sourcehub.v1.MsgIndexerAttestation.source_chain":
-		panic(fmt.Errorf("field source_chain of message shinzonetwork.sourcehub.v1.MsgIndexerAttestation is not mutable"))
-	case "shinzonetwork.sourcehub.v1.MsgIndexerAttestation.source_chain_id":
-		panic(fmt.Errorf("field source_chain_id of message shinzonetwork.sourcehub.v1.MsgIndexerAttestation is not mutable"))
-	case "shinzonetwork.sourcehub.v1.MsgIndexerAttestation.attestation_id":
-		panic(fmt.Errorf("field attestation_id of message shinzonetwork.sourcehub.v1.MsgIndexerAttestation is not mutable"))
+	case "shinzonetwork.sourcehub.v1.MsgIndexerAssertion.signer":
+		panic(fmt.Errorf("field signer of message shinzonetwork.sourcehub.v1.MsgIndexerAssertion is not mutable"))
+	case "shinzonetwork.sourcehub.v1.MsgIndexerAssertion.consensus_pub_key":
+		panic(fmt.Errorf("field consensus_pub_key of message shinzonetwork.sourcehub.v1.MsgIndexerAssertion is not mutable"))
+	case "shinzonetwork.sourcehub.v1.MsgIndexerAssertion.delegate_address":
+		panic(fmt.Errorf("field delegate_address of message shinzonetwork.sourcehub.v1.MsgIndexerAssertion is not mutable"))
+	case "shinzonetwork.sourcehub.v1.MsgIndexerAssertion.source_chain":
+		panic(fmt.Errorf("field source_chain of message shinzonetwork.sourcehub.v1.MsgIndexerAssertion is not mutable"))
+	case "shinzonetwork.sourcehub.v1.MsgIndexerAssertion.source_chain_id":
+		panic(fmt.Errorf("field source_chain_id of message shinzonetwork.sourcehub.v1.MsgIndexerAssertion is not mutable"))
+	case "shinzonetwork.sourcehub.v1.MsgIndexerAssertion.assertion_id":
+		panic(fmt.Errorf("field assertion_id of message shinzonetwork.sourcehub.v1.MsgIndexerAssertion is not mutable"))
+	case "shinzonetwork.sourcehub.v1.MsgIndexerAssertion.delegate_digest":
+		panic(fmt.Errorf("field delegate_digest of message shinzonetwork.sourcehub.v1.MsgIndexerAssertion is not mutable"))
+	case "shinzonetwork.sourcehub.v1.MsgIndexerAssertion.delegate_signature":
+		panic(fmt.Errorf("field delegate_signature of message shinzonetwork.sourcehub.v1.MsgIndexerAssertion is not mutable"))
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: shinzonetwork.sourcehub.v1.MsgIndexerAttestation"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: shinzonetwork.sourcehub.v1.MsgIndexerAssertion"))
 		}
-		panic(fmt.Errorf("message shinzonetwork.sourcehub.v1.MsgIndexerAttestation does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message shinzonetwork.sourcehub.v1.MsgIndexerAssertion does not contain field %s", fd.FullName()))
 	}
 }
 
 // NewField returns a new value that is assignable to the field
 // for the given descriptor. For scalars, this returns the default value.
 // For lists, maps, and messages, this returns a new, empty, mutable value.
-func (x *fastReflection_MsgIndexerAttestation) NewField(fd protoreflect.FieldDescriptor) protoreflect.Value {
+func (x *fastReflection_MsgIndexerAssertion) NewField(fd protoreflect.FieldDescriptor) protoreflect.Value {
 	switch fd.FullName() {
-	case "shinzonetwork.sourcehub.v1.MsgIndexerAttestation.signer":
+	case "shinzonetwork.sourcehub.v1.MsgIndexerAssertion.signer":
 		return protoreflect.ValueOfString("")
-	case "shinzonetwork.sourcehub.v1.MsgIndexerAttestation.consensus_pub_key":
+	case "shinzonetwork.sourcehub.v1.MsgIndexerAssertion.consensus_pub_key":
 		return protoreflect.ValueOfString("")
-	case "shinzonetwork.sourcehub.v1.MsgIndexerAttestation.delegate_address":
+	case "shinzonetwork.sourcehub.v1.MsgIndexerAssertion.delegate_address":
 		return protoreflect.ValueOfString("")
-	case "shinzonetwork.sourcehub.v1.MsgIndexerAttestation.source_chain":
+	case "shinzonetwork.sourcehub.v1.MsgIndexerAssertion.source_chain":
 		return protoreflect.ValueOfString("")
-	case "shinzonetwork.sourcehub.v1.MsgIndexerAttestation.source_chain_id":
+	case "shinzonetwork.sourcehub.v1.MsgIndexerAssertion.source_chain_id":
 		return protoreflect.ValueOfUint64(uint64(0))
-	case "shinzonetwork.sourcehub.v1.MsgIndexerAttestation.attestation_id":
+	case "shinzonetwork.sourcehub.v1.MsgIndexerAssertion.assertion_id":
 		return protoreflect.ValueOfString("")
+	case "shinzonetwork.sourcehub.v1.MsgIndexerAssertion.delegate_digest":
+		return protoreflect.ValueOfBytes(nil)
+	case "shinzonetwork.sourcehub.v1.MsgIndexerAssertion.delegate_signature":
+		return protoreflect.ValueOfBytes(nil)
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: shinzonetwork.sourcehub.v1.MsgIndexerAttestation"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: shinzonetwork.sourcehub.v1.MsgIndexerAssertion"))
 		}
-		panic(fmt.Errorf("message shinzonetwork.sourcehub.v1.MsgIndexerAttestation does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message shinzonetwork.sourcehub.v1.MsgIndexerAssertion does not contain field %s", fd.FullName()))
 	}
 }
 
 // WhichOneof reports which field within the oneof is populated,
 // returning nil if none are populated.
 // It panics if the oneof descriptor does not belong to this message.
-func (x *fastReflection_MsgIndexerAttestation) WhichOneof(d protoreflect.OneofDescriptor) protoreflect.FieldDescriptor {
+func (x *fastReflection_MsgIndexerAssertion) WhichOneof(d protoreflect.OneofDescriptor) protoreflect.FieldDescriptor {
 	switch d.FullName() {
 	default:
-		panic(fmt.Errorf("%s is not a oneof field in shinzonetwork.sourcehub.v1.MsgIndexerAttestation", d.FullName()))
+		panic(fmt.Errorf("%s is not a oneof field in shinzonetwork.sourcehub.v1.MsgIndexerAssertion", d.FullName()))
 	}
 	panic("unreachable")
 }
@@ -3915,7 +3957,7 @@ func (x *fastReflection_MsgIndexerAttestation) WhichOneof(d protoreflect.OneofDe
 // GetUnknown retrieves the entire list of unknown fields.
 // The caller may only mutate the contents of the RawFields
 // if the mutated bytes are stored back into the message with SetUnknown.
-func (x *fastReflection_MsgIndexerAttestation) GetUnknown() protoreflect.RawFields {
+func (x *fastReflection_MsgIndexerAssertion) GetUnknown() protoreflect.RawFields {
 	return x.unknownFields
 }
 
@@ -3926,7 +3968,7 @@ func (x *fastReflection_MsgIndexerAttestation) GetUnknown() protoreflect.RawFiel
 // An empty RawFields may be passed to clear the fields.
 //
 // SetUnknown is a mutating operation and unsafe for concurrent use.
-func (x *fastReflection_MsgIndexerAttestation) SetUnknown(fields protoreflect.RawFields) {
+func (x *fastReflection_MsgIndexerAssertion) SetUnknown(fields protoreflect.RawFields) {
 	x.unknownFields = fields
 }
 
@@ -3938,7 +3980,7 @@ func (x *fastReflection_MsgIndexerAttestation) SetUnknown(fields protoreflect.Ra
 // message type, but the details are implementation dependent.
 // Validity is not part of the protobuf data model, and may not
 // be preserved in marshaling or other operations.
-func (x *fastReflection_MsgIndexerAttestation) IsValid() bool {
+func (x *fastReflection_MsgIndexerAssertion) IsValid() bool {
 	return x != nil
 }
 
@@ -3948,9 +3990,9 @@ func (x *fastReflection_MsgIndexerAttestation) IsValid() bool {
 // The returned methods type is identical to
 // "google.golang.org/protobuf/runtime/protoiface".Methods.
 // Consult the protoiface package documentation for details.
-func (x *fastReflection_MsgIndexerAttestation) ProtoMethods() *protoiface.Methods {
+func (x *fastReflection_MsgIndexerAssertion) ProtoMethods() *protoiface.Methods {
 	size := func(input protoiface.SizeInput) protoiface.SizeOutput {
-		x := input.Message.Interface().(*MsgIndexerAttestation)
+		x := input.Message.Interface().(*MsgIndexerAssertion)
 		if x == nil {
 			return protoiface.SizeOutput{
 				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
@@ -3981,7 +4023,15 @@ func (x *fastReflection_MsgIndexerAttestation) ProtoMethods() *protoiface.Method
 		if x.SourceChainId != 0 {
 			n += 1 + runtime.Sov(uint64(x.SourceChainId))
 		}
-		l = len(x.AttestationId)
+		l = len(x.AssertionId)
+		if l > 0 {
+			n += 1 + l + runtime.Sov(uint64(l))
+		}
+		l = len(x.DelegateDigest)
+		if l > 0 {
+			n += 1 + l + runtime.Sov(uint64(l))
+		}
+		l = len(x.DelegateSignature)
 		if l > 0 {
 			n += 1 + l + runtime.Sov(uint64(l))
 		}
@@ -3995,7 +4045,7 @@ func (x *fastReflection_MsgIndexerAttestation) ProtoMethods() *protoiface.Method
 	}
 
 	marshal := func(input protoiface.MarshalInput) (protoiface.MarshalOutput, error) {
-		x := input.Message.Interface().(*MsgIndexerAttestation)
+		x := input.Message.Interface().(*MsgIndexerAssertion)
 		if x == nil {
 			return protoiface.MarshalOutput{
 				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
@@ -4014,10 +4064,24 @@ func (x *fastReflection_MsgIndexerAttestation) ProtoMethods() *protoiface.Method
 			i -= len(x.unknownFields)
 			copy(dAtA[i:], x.unknownFields)
 		}
-		if len(x.AttestationId) > 0 {
-			i -= len(x.AttestationId)
-			copy(dAtA[i:], x.AttestationId)
-			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.AttestationId)))
+		if len(x.DelegateSignature) > 0 {
+			i -= len(x.DelegateSignature)
+			copy(dAtA[i:], x.DelegateSignature)
+			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.DelegateSignature)))
+			i--
+			dAtA[i] = 0x42
+		}
+		if len(x.DelegateDigest) > 0 {
+			i -= len(x.DelegateDigest)
+			copy(dAtA[i:], x.DelegateDigest)
+			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.DelegateDigest)))
+			i--
+			dAtA[i] = 0x3a
+		}
+		if len(x.AssertionId) > 0 {
+			i -= len(x.AssertionId)
+			copy(dAtA[i:], x.AssertionId)
+			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.AssertionId)))
 			i--
 			dAtA[i] = 0x32
 		}
@@ -4065,7 +4129,7 @@ func (x *fastReflection_MsgIndexerAttestation) ProtoMethods() *protoiface.Method
 		}, nil
 	}
 	unmarshal := func(input protoiface.UnmarshalInput) (protoiface.UnmarshalOutput, error) {
-		x := input.Message.Interface().(*MsgIndexerAttestation)
+		x := input.Message.Interface().(*MsgIndexerAssertion)
 		if x == nil {
 			return protoiface.UnmarshalOutput{
 				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
@@ -4097,10 +4161,10 @@ func (x *fastReflection_MsgIndexerAttestation) ProtoMethods() *protoiface.Method
 			fieldNum := int32(wire >> 3)
 			wireType := int(wire & 0x7)
 			if wireType == 4 {
-				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: MsgIndexerAttestation: wiretype end group for non-group")
+				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: MsgIndexerAssertion: wiretype end group for non-group")
 			}
 			if fieldNum <= 0 {
-				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: MsgIndexerAttestation: illegal tag %d (wire type %d)", fieldNum, wire)
+				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: MsgIndexerAssertion: illegal tag %d (wire type %d)", fieldNum, wire)
 			}
 			switch fieldNum {
 			case 1:
@@ -4252,7 +4316,7 @@ func (x *fastReflection_MsgIndexerAttestation) ProtoMethods() *protoiface.Method
 				}
 			case 6:
 				if wireType != 2 {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field AttestationId", wireType)
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field AssertionId", wireType)
 				}
 				var stringLen uint64
 				for shift := uint(0); ; shift += 7 {
@@ -4280,7 +4344,75 @@ func (x *fastReflection_MsgIndexerAttestation) ProtoMethods() *protoiface.Method
 				if postIndex > l {
 					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
 				}
-				x.AttestationId = string(dAtA[iNdEx:postIndex])
+				x.AssertionId = string(dAtA[iNdEx:postIndex])
+				iNdEx = postIndex
+			case 7:
+				if wireType != 2 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field DelegateDigest", wireType)
+				}
+				var byteLen int
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					byteLen |= int(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				if byteLen < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				postIndex := iNdEx + byteLen
+				if postIndex < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if postIndex > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				x.DelegateDigest = append(x.DelegateDigest[:0], dAtA[iNdEx:postIndex]...)
+				if x.DelegateDigest == nil {
+					x.DelegateDigest = []byte{}
+				}
+				iNdEx = postIndex
+			case 8:
+				if wireType != 2 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field DelegateSignature", wireType)
+				}
+				var byteLen int
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					byteLen |= int(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				if byteLen < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				postIndex := iNdEx + byteLen
+				if postIndex < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if postIndex > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				x.DelegateSignature = append(x.DelegateSignature[:0], dAtA[iNdEx:postIndex]...)
+				if x.DelegateSignature == nil {
+					x.DelegateSignature = []byte{}
+				}
 				iNdEx = postIndex
 			default:
 				iNdEx = preIndex
@@ -4318,23 +4450,23 @@ func (x *fastReflection_MsgIndexerAttestation) ProtoMethods() *protoiface.Method
 }
 
 var (
-	md_MsgIndexerAttestationResponse protoreflect.MessageDescriptor
+	md_MsgIndexerAssertionResponse protoreflect.MessageDescriptor
 )
 
 func init() {
 	file_shinzonetwork_sourcehub_v1_tx_proto_init()
-	md_MsgIndexerAttestationResponse = File_shinzonetwork_sourcehub_v1_tx_proto.Messages().ByName("MsgIndexerAttestationResponse")
+	md_MsgIndexerAssertionResponse = File_shinzonetwork_sourcehub_v1_tx_proto.Messages().ByName("MsgIndexerAssertionResponse")
 }
 
-var _ protoreflect.Message = (*fastReflection_MsgIndexerAttestationResponse)(nil)
+var _ protoreflect.Message = (*fastReflection_MsgIndexerAssertionResponse)(nil)
 
-type fastReflection_MsgIndexerAttestationResponse MsgIndexerAttestationResponse
+type fastReflection_MsgIndexerAssertionResponse MsgIndexerAssertionResponse
 
-func (x *MsgIndexerAttestationResponse) ProtoReflect() protoreflect.Message {
-	return (*fastReflection_MsgIndexerAttestationResponse)(x)
+func (x *MsgIndexerAssertionResponse) ProtoReflect() protoreflect.Message {
+	return (*fastReflection_MsgIndexerAssertionResponse)(x)
 }
 
-func (x *MsgIndexerAttestationResponse) slowProtoReflect() protoreflect.Message {
+func (x *MsgIndexerAssertionResponse) slowProtoReflect() protoreflect.Message {
 	mi := &file_shinzonetwork_sourcehub_v1_tx_proto_msgTypes[9]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -4346,43 +4478,43 @@ func (x *MsgIndexerAttestationResponse) slowProtoReflect() protoreflect.Message 
 	return mi.MessageOf(x)
 }
 
-var _fastReflection_MsgIndexerAttestationResponse_messageType fastReflection_MsgIndexerAttestationResponse_messageType
-var _ protoreflect.MessageType = fastReflection_MsgIndexerAttestationResponse_messageType{}
+var _fastReflection_MsgIndexerAssertionResponse_messageType fastReflection_MsgIndexerAssertionResponse_messageType
+var _ protoreflect.MessageType = fastReflection_MsgIndexerAssertionResponse_messageType{}
 
-type fastReflection_MsgIndexerAttestationResponse_messageType struct{}
+type fastReflection_MsgIndexerAssertionResponse_messageType struct{}
 
-func (x fastReflection_MsgIndexerAttestationResponse_messageType) Zero() protoreflect.Message {
-	return (*fastReflection_MsgIndexerAttestationResponse)(nil)
+func (x fastReflection_MsgIndexerAssertionResponse_messageType) Zero() protoreflect.Message {
+	return (*fastReflection_MsgIndexerAssertionResponse)(nil)
 }
-func (x fastReflection_MsgIndexerAttestationResponse_messageType) New() protoreflect.Message {
-	return new(fastReflection_MsgIndexerAttestationResponse)
+func (x fastReflection_MsgIndexerAssertionResponse_messageType) New() protoreflect.Message {
+	return new(fastReflection_MsgIndexerAssertionResponse)
 }
-func (x fastReflection_MsgIndexerAttestationResponse_messageType) Descriptor() protoreflect.MessageDescriptor {
-	return md_MsgIndexerAttestationResponse
+func (x fastReflection_MsgIndexerAssertionResponse_messageType) Descriptor() protoreflect.MessageDescriptor {
+	return md_MsgIndexerAssertionResponse
 }
 
 // Descriptor returns message descriptor, which contains only the protobuf
 // type information for the message.
-func (x *fastReflection_MsgIndexerAttestationResponse) Descriptor() protoreflect.MessageDescriptor {
-	return md_MsgIndexerAttestationResponse
+func (x *fastReflection_MsgIndexerAssertionResponse) Descriptor() protoreflect.MessageDescriptor {
+	return md_MsgIndexerAssertionResponse
 }
 
 // Type returns the message type, which encapsulates both Go and protobuf
 // type information. If the Go type information is not needed,
 // it is recommended that the message descriptor be used instead.
-func (x *fastReflection_MsgIndexerAttestationResponse) Type() protoreflect.MessageType {
-	return _fastReflection_MsgIndexerAttestationResponse_messageType
+func (x *fastReflection_MsgIndexerAssertionResponse) Type() protoreflect.MessageType {
+	return _fastReflection_MsgIndexerAssertionResponse_messageType
 }
 
 // New returns a newly allocated and mutable empty message.
-func (x *fastReflection_MsgIndexerAttestationResponse) New() protoreflect.Message {
-	return new(fastReflection_MsgIndexerAttestationResponse)
+func (x *fastReflection_MsgIndexerAssertionResponse) New() protoreflect.Message {
+	return new(fastReflection_MsgIndexerAssertionResponse)
 }
 
 // Interface unwraps the message reflection interface and
 // returns the underlying ProtoMessage interface.
-func (x *fastReflection_MsgIndexerAttestationResponse) Interface() protoreflect.ProtoMessage {
-	return (*MsgIndexerAttestationResponse)(x)
+func (x *fastReflection_MsgIndexerAssertionResponse) Interface() protoreflect.ProtoMessage {
+	return (*MsgIndexerAssertionResponse)(x)
 }
 
 // Range iterates over every populated field in an undefined order,
@@ -4390,7 +4522,7 @@ func (x *fastReflection_MsgIndexerAttestationResponse) Interface() protoreflect.
 // Range returns immediately if f returns false.
 // While iterating, mutating operations may only be performed
 // on the current field descriptor.
-func (x *fastReflection_MsgIndexerAttestationResponse) Range(f func(protoreflect.FieldDescriptor, protoreflect.Value) bool) {
+func (x *fastReflection_MsgIndexerAssertionResponse) Range(f func(protoreflect.FieldDescriptor, protoreflect.Value) bool) {
 }
 
 // Has reports whether a field is populated.
@@ -4404,13 +4536,13 @@ func (x *fastReflection_MsgIndexerAttestationResponse) Range(f func(protoreflect
 // In other cases (aside from the nullable cases above),
 // a proto3 scalar field is populated if it contains a non-zero value, and
 // a repeated field is populated if it is non-empty.
-func (x *fastReflection_MsgIndexerAttestationResponse) Has(fd protoreflect.FieldDescriptor) bool {
+func (x *fastReflection_MsgIndexerAssertionResponse) Has(fd protoreflect.FieldDescriptor) bool {
 	switch fd.FullName() {
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: shinzonetwork.sourcehub.v1.MsgIndexerAttestationResponse"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: shinzonetwork.sourcehub.v1.MsgIndexerAssertionResponse"))
 		}
-		panic(fmt.Errorf("message shinzonetwork.sourcehub.v1.MsgIndexerAttestationResponse does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message shinzonetwork.sourcehub.v1.MsgIndexerAssertionResponse does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -4420,13 +4552,13 @@ func (x *fastReflection_MsgIndexerAttestationResponse) Has(fd protoreflect.Field
 // associated with the given field number.
 //
 // Clear is a mutating operation and unsafe for concurrent use.
-func (x *fastReflection_MsgIndexerAttestationResponse) Clear(fd protoreflect.FieldDescriptor) {
+func (x *fastReflection_MsgIndexerAssertionResponse) Clear(fd protoreflect.FieldDescriptor) {
 	switch fd.FullName() {
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: shinzonetwork.sourcehub.v1.MsgIndexerAttestationResponse"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: shinzonetwork.sourcehub.v1.MsgIndexerAssertionResponse"))
 		}
-		panic(fmt.Errorf("message shinzonetwork.sourcehub.v1.MsgIndexerAttestationResponse does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message shinzonetwork.sourcehub.v1.MsgIndexerAssertionResponse does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -4436,13 +4568,13 @@ func (x *fastReflection_MsgIndexerAttestationResponse) Clear(fd protoreflect.Fie
 // the default value of a bytes scalar is guaranteed to be a copy.
 // For unpopulated composite types, it returns an empty, read-only view
 // of the value; to obtain a mutable reference, use Mutable.
-func (x *fastReflection_MsgIndexerAttestationResponse) Get(descriptor protoreflect.FieldDescriptor) protoreflect.Value {
+func (x *fastReflection_MsgIndexerAssertionResponse) Get(descriptor protoreflect.FieldDescriptor) protoreflect.Value {
 	switch descriptor.FullName() {
 	default:
 		if descriptor.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: shinzonetwork.sourcehub.v1.MsgIndexerAttestationResponse"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: shinzonetwork.sourcehub.v1.MsgIndexerAssertionResponse"))
 		}
-		panic(fmt.Errorf("message shinzonetwork.sourcehub.v1.MsgIndexerAttestationResponse does not contain field %s", descriptor.FullName()))
+		panic(fmt.Errorf("message shinzonetwork.sourcehub.v1.MsgIndexerAssertionResponse does not contain field %s", descriptor.FullName()))
 	}
 }
 
@@ -4456,13 +4588,13 @@ func (x *fastReflection_MsgIndexerAttestationResponse) Get(descriptor protorefle
 // empty, read-only value, then it panics.
 //
 // Set is a mutating operation and unsafe for concurrent use.
-func (x *fastReflection_MsgIndexerAttestationResponse) Set(fd protoreflect.FieldDescriptor, value protoreflect.Value) {
+func (x *fastReflection_MsgIndexerAssertionResponse) Set(fd protoreflect.FieldDescriptor, value protoreflect.Value) {
 	switch fd.FullName() {
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: shinzonetwork.sourcehub.v1.MsgIndexerAttestationResponse"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: shinzonetwork.sourcehub.v1.MsgIndexerAssertionResponse"))
 		}
-		panic(fmt.Errorf("message shinzonetwork.sourcehub.v1.MsgIndexerAttestationResponse does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message shinzonetwork.sourcehub.v1.MsgIndexerAssertionResponse does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -4476,36 +4608,36 @@ func (x *fastReflection_MsgIndexerAttestationResponse) Set(fd protoreflect.Field
 // It panics if the field does not contain a composite type.
 //
 // Mutable is a mutating operation and unsafe for concurrent use.
-func (x *fastReflection_MsgIndexerAttestationResponse) Mutable(fd protoreflect.FieldDescriptor) protoreflect.Value {
+func (x *fastReflection_MsgIndexerAssertionResponse) Mutable(fd protoreflect.FieldDescriptor) protoreflect.Value {
 	switch fd.FullName() {
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: shinzonetwork.sourcehub.v1.MsgIndexerAttestationResponse"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: shinzonetwork.sourcehub.v1.MsgIndexerAssertionResponse"))
 		}
-		panic(fmt.Errorf("message shinzonetwork.sourcehub.v1.MsgIndexerAttestationResponse does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message shinzonetwork.sourcehub.v1.MsgIndexerAssertionResponse does not contain field %s", fd.FullName()))
 	}
 }
 
 // NewField returns a new value that is assignable to the field
 // for the given descriptor. For scalars, this returns the default value.
 // For lists, maps, and messages, this returns a new, empty, mutable value.
-func (x *fastReflection_MsgIndexerAttestationResponse) NewField(fd protoreflect.FieldDescriptor) protoreflect.Value {
+func (x *fastReflection_MsgIndexerAssertionResponse) NewField(fd protoreflect.FieldDescriptor) protoreflect.Value {
 	switch fd.FullName() {
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: shinzonetwork.sourcehub.v1.MsgIndexerAttestationResponse"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: shinzonetwork.sourcehub.v1.MsgIndexerAssertionResponse"))
 		}
-		panic(fmt.Errorf("message shinzonetwork.sourcehub.v1.MsgIndexerAttestationResponse does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message shinzonetwork.sourcehub.v1.MsgIndexerAssertionResponse does not contain field %s", fd.FullName()))
 	}
 }
 
 // WhichOneof reports which field within the oneof is populated,
 // returning nil if none are populated.
 // It panics if the oneof descriptor does not belong to this message.
-func (x *fastReflection_MsgIndexerAttestationResponse) WhichOneof(d protoreflect.OneofDescriptor) protoreflect.FieldDescriptor {
+func (x *fastReflection_MsgIndexerAssertionResponse) WhichOneof(d protoreflect.OneofDescriptor) protoreflect.FieldDescriptor {
 	switch d.FullName() {
 	default:
-		panic(fmt.Errorf("%s is not a oneof field in shinzonetwork.sourcehub.v1.MsgIndexerAttestationResponse", d.FullName()))
+		panic(fmt.Errorf("%s is not a oneof field in shinzonetwork.sourcehub.v1.MsgIndexerAssertionResponse", d.FullName()))
 	}
 	panic("unreachable")
 }
@@ -4513,7 +4645,7 @@ func (x *fastReflection_MsgIndexerAttestationResponse) WhichOneof(d protoreflect
 // GetUnknown retrieves the entire list of unknown fields.
 // The caller may only mutate the contents of the RawFields
 // if the mutated bytes are stored back into the message with SetUnknown.
-func (x *fastReflection_MsgIndexerAttestationResponse) GetUnknown() protoreflect.RawFields {
+func (x *fastReflection_MsgIndexerAssertionResponse) GetUnknown() protoreflect.RawFields {
 	return x.unknownFields
 }
 
@@ -4524,7 +4656,7 @@ func (x *fastReflection_MsgIndexerAttestationResponse) GetUnknown() protoreflect
 // An empty RawFields may be passed to clear the fields.
 //
 // SetUnknown is a mutating operation and unsafe for concurrent use.
-func (x *fastReflection_MsgIndexerAttestationResponse) SetUnknown(fields protoreflect.RawFields) {
+func (x *fastReflection_MsgIndexerAssertionResponse) SetUnknown(fields protoreflect.RawFields) {
 	x.unknownFields = fields
 }
 
@@ -4536,7 +4668,7 @@ func (x *fastReflection_MsgIndexerAttestationResponse) SetUnknown(fields protore
 // message type, but the details are implementation dependent.
 // Validity is not part of the protobuf data model, and may not
 // be preserved in marshaling or other operations.
-func (x *fastReflection_MsgIndexerAttestationResponse) IsValid() bool {
+func (x *fastReflection_MsgIndexerAssertionResponse) IsValid() bool {
 	return x != nil
 }
 
@@ -4546,9 +4678,9 @@ func (x *fastReflection_MsgIndexerAttestationResponse) IsValid() bool {
 // The returned methods type is identical to
 // "google.golang.org/protobuf/runtime/protoiface".Methods.
 // Consult the protoiface package documentation for details.
-func (x *fastReflection_MsgIndexerAttestationResponse) ProtoMethods() *protoiface.Methods {
+func (x *fastReflection_MsgIndexerAssertionResponse) ProtoMethods() *protoiface.Methods {
 	size := func(input protoiface.SizeInput) protoiface.SizeOutput {
-		x := input.Message.Interface().(*MsgIndexerAttestationResponse)
+		x := input.Message.Interface().(*MsgIndexerAssertionResponse)
 		if x == nil {
 			return protoiface.SizeOutput{
 				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
@@ -4570,7 +4702,7 @@ func (x *fastReflection_MsgIndexerAttestationResponse) ProtoMethods() *protoifac
 	}
 
 	marshal := func(input protoiface.MarshalInput) (protoiface.MarshalOutput, error) {
-		x := input.Message.Interface().(*MsgIndexerAttestationResponse)
+		x := input.Message.Interface().(*MsgIndexerAssertionResponse)
 		if x == nil {
 			return protoiface.MarshalOutput{
 				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
@@ -4600,7 +4732,7 @@ func (x *fastReflection_MsgIndexerAttestationResponse) ProtoMethods() *protoifac
 		}, nil
 	}
 	unmarshal := func(input protoiface.UnmarshalInput) (protoiface.UnmarshalOutput, error) {
-		x := input.Message.Interface().(*MsgIndexerAttestationResponse)
+		x := input.Message.Interface().(*MsgIndexerAssertionResponse)
 		if x == nil {
 			return protoiface.UnmarshalOutput{
 				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
@@ -4632,10 +4764,10 @@ func (x *fastReflection_MsgIndexerAttestationResponse) ProtoMethods() *protoifac
 			fieldNum := int32(wire >> 3)
 			wireType := int(wire & 0x7)
 			if wireType == 4 {
-				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: MsgIndexerAttestationResponse: wiretype end group for non-group")
+				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: MsgIndexerAssertionResponse: wiretype end group for non-group")
 			}
 			if fieldNum <= 0 {
-				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: MsgIndexerAttestationResponse: illegal tag %d (wire type %d)", fieldNum, wire)
+				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: MsgIndexerAssertionResponse: illegal tag %d (wire type %d)", fieldNum, wire)
 			}
 			switch fieldNum {
 			default:
@@ -4674,33 +4806,35 @@ func (x *fastReflection_MsgIndexerAttestationResponse) ProtoMethods() *protoifac
 }
 
 var (
-	md_IndexerAttestation                   protoreflect.MessageDescriptor
-	fd_IndexerAttestation_consensus_pub_key protoreflect.FieldDescriptor
-	fd_IndexerAttestation_delegate_address  protoreflect.FieldDescriptor
-	fd_IndexerAttestation_source_chain      protoreflect.FieldDescriptor
-	fd_IndexerAttestation_source_chain_id   protoreflect.FieldDescriptor
-	fd_IndexerAttestation_attestation_id    protoreflect.FieldDescriptor
+	md_MsgAdminIndexerAssertion                   protoreflect.MessageDescriptor
+	fd_MsgAdminIndexerAssertion_signer            protoreflect.FieldDescriptor
+	fd_MsgAdminIndexerAssertion_consensus_pub_key protoreflect.FieldDescriptor
+	fd_MsgAdminIndexerAssertion_delegate_address  protoreflect.FieldDescriptor
+	fd_MsgAdminIndexerAssertion_source_chain      protoreflect.FieldDescriptor
+	fd_MsgAdminIndexerAssertion_source_chain_id   protoreflect.FieldDescriptor
+	fd_MsgAdminIndexerAssertion_assertion_id      protoreflect.FieldDescriptor
 )
 
 func init() {
 	file_shinzonetwork_sourcehub_v1_tx_proto_init()
-	md_IndexerAttestation = File_shinzonetwork_sourcehub_v1_tx_proto.Messages().ByName("IndexerAttestation")
-	fd_IndexerAttestation_consensus_pub_key = md_IndexerAttestation.Fields().ByName("consensus_pub_key")
-	fd_IndexerAttestation_delegate_address = md_IndexerAttestation.Fields().ByName("delegate_address")
-	fd_IndexerAttestation_source_chain = md_IndexerAttestation.Fields().ByName("source_chain")
-	fd_IndexerAttestation_source_chain_id = md_IndexerAttestation.Fields().ByName("source_chain_id")
-	fd_IndexerAttestation_attestation_id = md_IndexerAttestation.Fields().ByName("attestation_id")
+	md_MsgAdminIndexerAssertion = File_shinzonetwork_sourcehub_v1_tx_proto.Messages().ByName("MsgAdminIndexerAssertion")
+	fd_MsgAdminIndexerAssertion_signer = md_MsgAdminIndexerAssertion.Fields().ByName("signer")
+	fd_MsgAdminIndexerAssertion_consensus_pub_key = md_MsgAdminIndexerAssertion.Fields().ByName("consensus_pub_key")
+	fd_MsgAdminIndexerAssertion_delegate_address = md_MsgAdminIndexerAssertion.Fields().ByName("delegate_address")
+	fd_MsgAdminIndexerAssertion_source_chain = md_MsgAdminIndexerAssertion.Fields().ByName("source_chain")
+	fd_MsgAdminIndexerAssertion_source_chain_id = md_MsgAdminIndexerAssertion.Fields().ByName("source_chain_id")
+	fd_MsgAdminIndexerAssertion_assertion_id = md_MsgAdminIndexerAssertion.Fields().ByName("assertion_id")
 }
 
-var _ protoreflect.Message = (*fastReflection_IndexerAttestation)(nil)
+var _ protoreflect.Message = (*fastReflection_MsgAdminIndexerAssertion)(nil)
 
-type fastReflection_IndexerAttestation IndexerAttestation
+type fastReflection_MsgAdminIndexerAssertion MsgAdminIndexerAssertion
 
-func (x *IndexerAttestation) ProtoReflect() protoreflect.Message {
-	return (*fastReflection_IndexerAttestation)(x)
+func (x *MsgAdminIndexerAssertion) ProtoReflect() protoreflect.Message {
+	return (*fastReflection_MsgAdminIndexerAssertion)(x)
 }
 
-func (x *IndexerAttestation) slowProtoReflect() protoreflect.Message {
+func (x *MsgAdminIndexerAssertion) slowProtoReflect() protoreflect.Message {
 	mi := &file_shinzonetwork_sourcehub_v1_tx_proto_msgTypes[10]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -4712,43 +4846,43 @@ func (x *IndexerAttestation) slowProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-var _fastReflection_IndexerAttestation_messageType fastReflection_IndexerAttestation_messageType
-var _ protoreflect.MessageType = fastReflection_IndexerAttestation_messageType{}
+var _fastReflection_MsgAdminIndexerAssertion_messageType fastReflection_MsgAdminIndexerAssertion_messageType
+var _ protoreflect.MessageType = fastReflection_MsgAdminIndexerAssertion_messageType{}
 
-type fastReflection_IndexerAttestation_messageType struct{}
+type fastReflection_MsgAdminIndexerAssertion_messageType struct{}
 
-func (x fastReflection_IndexerAttestation_messageType) Zero() protoreflect.Message {
-	return (*fastReflection_IndexerAttestation)(nil)
+func (x fastReflection_MsgAdminIndexerAssertion_messageType) Zero() protoreflect.Message {
+	return (*fastReflection_MsgAdminIndexerAssertion)(nil)
 }
-func (x fastReflection_IndexerAttestation_messageType) New() protoreflect.Message {
-	return new(fastReflection_IndexerAttestation)
+func (x fastReflection_MsgAdminIndexerAssertion_messageType) New() protoreflect.Message {
+	return new(fastReflection_MsgAdminIndexerAssertion)
 }
-func (x fastReflection_IndexerAttestation_messageType) Descriptor() protoreflect.MessageDescriptor {
-	return md_IndexerAttestation
+func (x fastReflection_MsgAdminIndexerAssertion_messageType) Descriptor() protoreflect.MessageDescriptor {
+	return md_MsgAdminIndexerAssertion
 }
 
 // Descriptor returns message descriptor, which contains only the protobuf
 // type information for the message.
-func (x *fastReflection_IndexerAttestation) Descriptor() protoreflect.MessageDescriptor {
-	return md_IndexerAttestation
+func (x *fastReflection_MsgAdminIndexerAssertion) Descriptor() protoreflect.MessageDescriptor {
+	return md_MsgAdminIndexerAssertion
 }
 
 // Type returns the message type, which encapsulates both Go and protobuf
 // type information. If the Go type information is not needed,
 // it is recommended that the message descriptor be used instead.
-func (x *fastReflection_IndexerAttestation) Type() protoreflect.MessageType {
-	return _fastReflection_IndexerAttestation_messageType
+func (x *fastReflection_MsgAdminIndexerAssertion) Type() protoreflect.MessageType {
+	return _fastReflection_MsgAdminIndexerAssertion_messageType
 }
 
 // New returns a newly allocated and mutable empty message.
-func (x *fastReflection_IndexerAttestation) New() protoreflect.Message {
-	return new(fastReflection_IndexerAttestation)
+func (x *fastReflection_MsgAdminIndexerAssertion) New() protoreflect.Message {
+	return new(fastReflection_MsgAdminIndexerAssertion)
 }
 
 // Interface unwraps the message reflection interface and
 // returns the underlying ProtoMessage interface.
-func (x *fastReflection_IndexerAttestation) Interface() protoreflect.ProtoMessage {
-	return (*IndexerAttestation)(x)
+func (x *fastReflection_MsgAdminIndexerAssertion) Interface() protoreflect.ProtoMessage {
+	return (*MsgAdminIndexerAssertion)(x)
 }
 
 // Range iterates over every populated field in an undefined order,
@@ -4756,34 +4890,40 @@ func (x *fastReflection_IndexerAttestation) Interface() protoreflect.ProtoMessag
 // Range returns immediately if f returns false.
 // While iterating, mutating operations may only be performed
 // on the current field descriptor.
-func (x *fastReflection_IndexerAttestation) Range(f func(protoreflect.FieldDescriptor, protoreflect.Value) bool) {
+func (x *fastReflection_MsgAdminIndexerAssertion) Range(f func(protoreflect.FieldDescriptor, protoreflect.Value) bool) {
+	if x.Signer != "" {
+		value := protoreflect.ValueOfString(x.Signer)
+		if !f(fd_MsgAdminIndexerAssertion_signer, value) {
+			return
+		}
+	}
 	if x.ConsensusPubKey != "" {
 		value := protoreflect.ValueOfString(x.ConsensusPubKey)
-		if !f(fd_IndexerAttestation_consensus_pub_key, value) {
+		if !f(fd_MsgAdminIndexerAssertion_consensus_pub_key, value) {
 			return
 		}
 	}
 	if x.DelegateAddress != "" {
 		value := protoreflect.ValueOfString(x.DelegateAddress)
-		if !f(fd_IndexerAttestation_delegate_address, value) {
+		if !f(fd_MsgAdminIndexerAssertion_delegate_address, value) {
 			return
 		}
 	}
 	if x.SourceChain != "" {
 		value := protoreflect.ValueOfString(x.SourceChain)
-		if !f(fd_IndexerAttestation_source_chain, value) {
+		if !f(fd_MsgAdminIndexerAssertion_source_chain, value) {
 			return
 		}
 	}
 	if x.SourceChainId != uint64(0) {
 		value := protoreflect.ValueOfUint64(x.SourceChainId)
-		if !f(fd_IndexerAttestation_source_chain_id, value) {
+		if !f(fd_MsgAdminIndexerAssertion_source_chain_id, value) {
 			return
 		}
 	}
-	if x.AttestationId != "" {
-		value := protoreflect.ValueOfString(x.AttestationId)
-		if !f(fd_IndexerAttestation_attestation_id, value) {
+	if x.AssertionId != "" {
+		value := protoreflect.ValueOfString(x.AssertionId)
+		if !f(fd_MsgAdminIndexerAssertion_assertion_id, value) {
 			return
 		}
 	}
@@ -4800,23 +4940,25 @@ func (x *fastReflection_IndexerAttestation) Range(f func(protoreflect.FieldDescr
 // In other cases (aside from the nullable cases above),
 // a proto3 scalar field is populated if it contains a non-zero value, and
 // a repeated field is populated if it is non-empty.
-func (x *fastReflection_IndexerAttestation) Has(fd protoreflect.FieldDescriptor) bool {
+func (x *fastReflection_MsgAdminIndexerAssertion) Has(fd protoreflect.FieldDescriptor) bool {
 	switch fd.FullName() {
-	case "shinzonetwork.sourcehub.v1.IndexerAttestation.consensus_pub_key":
+	case "shinzonetwork.sourcehub.v1.MsgAdminIndexerAssertion.signer":
+		return x.Signer != ""
+	case "shinzonetwork.sourcehub.v1.MsgAdminIndexerAssertion.consensus_pub_key":
 		return x.ConsensusPubKey != ""
-	case "shinzonetwork.sourcehub.v1.IndexerAttestation.delegate_address":
+	case "shinzonetwork.sourcehub.v1.MsgAdminIndexerAssertion.delegate_address":
 		return x.DelegateAddress != ""
-	case "shinzonetwork.sourcehub.v1.IndexerAttestation.source_chain":
+	case "shinzonetwork.sourcehub.v1.MsgAdminIndexerAssertion.source_chain":
 		return x.SourceChain != ""
-	case "shinzonetwork.sourcehub.v1.IndexerAttestation.source_chain_id":
+	case "shinzonetwork.sourcehub.v1.MsgAdminIndexerAssertion.source_chain_id":
 		return x.SourceChainId != uint64(0)
-	case "shinzonetwork.sourcehub.v1.IndexerAttestation.attestation_id":
-		return x.AttestationId != ""
+	case "shinzonetwork.sourcehub.v1.MsgAdminIndexerAssertion.assertion_id":
+		return x.AssertionId != ""
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: shinzonetwork.sourcehub.v1.IndexerAttestation"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: shinzonetwork.sourcehub.v1.MsgAdminIndexerAssertion"))
 		}
-		panic(fmt.Errorf("message shinzonetwork.sourcehub.v1.IndexerAttestation does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message shinzonetwork.sourcehub.v1.MsgAdminIndexerAssertion does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -4826,23 +4968,25 @@ func (x *fastReflection_IndexerAttestation) Has(fd protoreflect.FieldDescriptor)
 // associated with the given field number.
 //
 // Clear is a mutating operation and unsafe for concurrent use.
-func (x *fastReflection_IndexerAttestation) Clear(fd protoreflect.FieldDescriptor) {
+func (x *fastReflection_MsgAdminIndexerAssertion) Clear(fd protoreflect.FieldDescriptor) {
 	switch fd.FullName() {
-	case "shinzonetwork.sourcehub.v1.IndexerAttestation.consensus_pub_key":
+	case "shinzonetwork.sourcehub.v1.MsgAdminIndexerAssertion.signer":
+		x.Signer = ""
+	case "shinzonetwork.sourcehub.v1.MsgAdminIndexerAssertion.consensus_pub_key":
 		x.ConsensusPubKey = ""
-	case "shinzonetwork.sourcehub.v1.IndexerAttestation.delegate_address":
+	case "shinzonetwork.sourcehub.v1.MsgAdminIndexerAssertion.delegate_address":
 		x.DelegateAddress = ""
-	case "shinzonetwork.sourcehub.v1.IndexerAttestation.source_chain":
+	case "shinzonetwork.sourcehub.v1.MsgAdminIndexerAssertion.source_chain":
 		x.SourceChain = ""
-	case "shinzonetwork.sourcehub.v1.IndexerAttestation.source_chain_id":
+	case "shinzonetwork.sourcehub.v1.MsgAdminIndexerAssertion.source_chain_id":
 		x.SourceChainId = uint64(0)
-	case "shinzonetwork.sourcehub.v1.IndexerAttestation.attestation_id":
-		x.AttestationId = ""
+	case "shinzonetwork.sourcehub.v1.MsgAdminIndexerAssertion.assertion_id":
+		x.AssertionId = ""
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: shinzonetwork.sourcehub.v1.IndexerAttestation"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: shinzonetwork.sourcehub.v1.MsgAdminIndexerAssertion"))
 		}
-		panic(fmt.Errorf("message shinzonetwork.sourcehub.v1.IndexerAttestation does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message shinzonetwork.sourcehub.v1.MsgAdminIndexerAssertion does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -4852,28 +4996,31 @@ func (x *fastReflection_IndexerAttestation) Clear(fd protoreflect.FieldDescripto
 // the default value of a bytes scalar is guaranteed to be a copy.
 // For unpopulated composite types, it returns an empty, read-only view
 // of the value; to obtain a mutable reference, use Mutable.
-func (x *fastReflection_IndexerAttestation) Get(descriptor protoreflect.FieldDescriptor) protoreflect.Value {
+func (x *fastReflection_MsgAdminIndexerAssertion) Get(descriptor protoreflect.FieldDescriptor) protoreflect.Value {
 	switch descriptor.FullName() {
-	case "shinzonetwork.sourcehub.v1.IndexerAttestation.consensus_pub_key":
+	case "shinzonetwork.sourcehub.v1.MsgAdminIndexerAssertion.signer":
+		value := x.Signer
+		return protoreflect.ValueOfString(value)
+	case "shinzonetwork.sourcehub.v1.MsgAdminIndexerAssertion.consensus_pub_key":
 		value := x.ConsensusPubKey
 		return protoreflect.ValueOfString(value)
-	case "shinzonetwork.sourcehub.v1.IndexerAttestation.delegate_address":
+	case "shinzonetwork.sourcehub.v1.MsgAdminIndexerAssertion.delegate_address":
 		value := x.DelegateAddress
 		return protoreflect.ValueOfString(value)
-	case "shinzonetwork.sourcehub.v1.IndexerAttestation.source_chain":
+	case "shinzonetwork.sourcehub.v1.MsgAdminIndexerAssertion.source_chain":
 		value := x.SourceChain
 		return protoreflect.ValueOfString(value)
-	case "shinzonetwork.sourcehub.v1.IndexerAttestation.source_chain_id":
+	case "shinzonetwork.sourcehub.v1.MsgAdminIndexerAssertion.source_chain_id":
 		value := x.SourceChainId
 		return protoreflect.ValueOfUint64(value)
-	case "shinzonetwork.sourcehub.v1.IndexerAttestation.attestation_id":
-		value := x.AttestationId
+	case "shinzonetwork.sourcehub.v1.MsgAdminIndexerAssertion.assertion_id":
+		value := x.AssertionId
 		return protoreflect.ValueOfString(value)
 	default:
 		if descriptor.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: shinzonetwork.sourcehub.v1.IndexerAttestation"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: shinzonetwork.sourcehub.v1.MsgAdminIndexerAssertion"))
 		}
-		panic(fmt.Errorf("message shinzonetwork.sourcehub.v1.IndexerAttestation does not contain field %s", descriptor.FullName()))
+		panic(fmt.Errorf("message shinzonetwork.sourcehub.v1.MsgAdminIndexerAssertion does not contain field %s", descriptor.FullName()))
 	}
 }
 
@@ -4887,23 +5034,25 @@ func (x *fastReflection_IndexerAttestation) Get(descriptor protoreflect.FieldDes
 // empty, read-only value, then it panics.
 //
 // Set is a mutating operation and unsafe for concurrent use.
-func (x *fastReflection_IndexerAttestation) Set(fd protoreflect.FieldDescriptor, value protoreflect.Value) {
+func (x *fastReflection_MsgAdminIndexerAssertion) Set(fd protoreflect.FieldDescriptor, value protoreflect.Value) {
 	switch fd.FullName() {
-	case "shinzonetwork.sourcehub.v1.IndexerAttestation.consensus_pub_key":
+	case "shinzonetwork.sourcehub.v1.MsgAdminIndexerAssertion.signer":
+		x.Signer = value.Interface().(string)
+	case "shinzonetwork.sourcehub.v1.MsgAdminIndexerAssertion.consensus_pub_key":
 		x.ConsensusPubKey = value.Interface().(string)
-	case "shinzonetwork.sourcehub.v1.IndexerAttestation.delegate_address":
+	case "shinzonetwork.sourcehub.v1.MsgAdminIndexerAssertion.delegate_address":
 		x.DelegateAddress = value.Interface().(string)
-	case "shinzonetwork.sourcehub.v1.IndexerAttestation.source_chain":
+	case "shinzonetwork.sourcehub.v1.MsgAdminIndexerAssertion.source_chain":
 		x.SourceChain = value.Interface().(string)
-	case "shinzonetwork.sourcehub.v1.IndexerAttestation.source_chain_id":
+	case "shinzonetwork.sourcehub.v1.MsgAdminIndexerAssertion.source_chain_id":
 		x.SourceChainId = value.Uint()
-	case "shinzonetwork.sourcehub.v1.IndexerAttestation.attestation_id":
-		x.AttestationId = value.Interface().(string)
+	case "shinzonetwork.sourcehub.v1.MsgAdminIndexerAssertion.assertion_id":
+		x.AssertionId = value.Interface().(string)
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: shinzonetwork.sourcehub.v1.IndexerAttestation"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: shinzonetwork.sourcehub.v1.MsgAdminIndexerAssertion"))
 		}
-		panic(fmt.Errorf("message shinzonetwork.sourcehub.v1.IndexerAttestation does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message shinzonetwork.sourcehub.v1.MsgAdminIndexerAssertion does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -4917,56 +5066,60 @@ func (x *fastReflection_IndexerAttestation) Set(fd protoreflect.FieldDescriptor,
 // It panics if the field does not contain a composite type.
 //
 // Mutable is a mutating operation and unsafe for concurrent use.
-func (x *fastReflection_IndexerAttestation) Mutable(fd protoreflect.FieldDescriptor) protoreflect.Value {
+func (x *fastReflection_MsgAdminIndexerAssertion) Mutable(fd protoreflect.FieldDescriptor) protoreflect.Value {
 	switch fd.FullName() {
-	case "shinzonetwork.sourcehub.v1.IndexerAttestation.consensus_pub_key":
-		panic(fmt.Errorf("field consensus_pub_key of message shinzonetwork.sourcehub.v1.IndexerAttestation is not mutable"))
-	case "shinzonetwork.sourcehub.v1.IndexerAttestation.delegate_address":
-		panic(fmt.Errorf("field delegate_address of message shinzonetwork.sourcehub.v1.IndexerAttestation is not mutable"))
-	case "shinzonetwork.sourcehub.v1.IndexerAttestation.source_chain":
-		panic(fmt.Errorf("field source_chain of message shinzonetwork.sourcehub.v1.IndexerAttestation is not mutable"))
-	case "shinzonetwork.sourcehub.v1.IndexerAttestation.source_chain_id":
-		panic(fmt.Errorf("field source_chain_id of message shinzonetwork.sourcehub.v1.IndexerAttestation is not mutable"))
-	case "shinzonetwork.sourcehub.v1.IndexerAttestation.attestation_id":
-		panic(fmt.Errorf("field attestation_id of message shinzonetwork.sourcehub.v1.IndexerAttestation is not mutable"))
+	case "shinzonetwork.sourcehub.v1.MsgAdminIndexerAssertion.signer":
+		panic(fmt.Errorf("field signer of message shinzonetwork.sourcehub.v1.MsgAdminIndexerAssertion is not mutable"))
+	case "shinzonetwork.sourcehub.v1.MsgAdminIndexerAssertion.consensus_pub_key":
+		panic(fmt.Errorf("field consensus_pub_key of message shinzonetwork.sourcehub.v1.MsgAdminIndexerAssertion is not mutable"))
+	case "shinzonetwork.sourcehub.v1.MsgAdminIndexerAssertion.delegate_address":
+		panic(fmt.Errorf("field delegate_address of message shinzonetwork.sourcehub.v1.MsgAdminIndexerAssertion is not mutable"))
+	case "shinzonetwork.sourcehub.v1.MsgAdminIndexerAssertion.source_chain":
+		panic(fmt.Errorf("field source_chain of message shinzonetwork.sourcehub.v1.MsgAdminIndexerAssertion is not mutable"))
+	case "shinzonetwork.sourcehub.v1.MsgAdminIndexerAssertion.source_chain_id":
+		panic(fmt.Errorf("field source_chain_id of message shinzonetwork.sourcehub.v1.MsgAdminIndexerAssertion is not mutable"))
+	case "shinzonetwork.sourcehub.v1.MsgAdminIndexerAssertion.assertion_id":
+		panic(fmt.Errorf("field assertion_id of message shinzonetwork.sourcehub.v1.MsgAdminIndexerAssertion is not mutable"))
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: shinzonetwork.sourcehub.v1.IndexerAttestation"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: shinzonetwork.sourcehub.v1.MsgAdminIndexerAssertion"))
 		}
-		panic(fmt.Errorf("message shinzonetwork.sourcehub.v1.IndexerAttestation does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message shinzonetwork.sourcehub.v1.MsgAdminIndexerAssertion does not contain field %s", fd.FullName()))
 	}
 }
 
 // NewField returns a new value that is assignable to the field
 // for the given descriptor. For scalars, this returns the default value.
 // For lists, maps, and messages, this returns a new, empty, mutable value.
-func (x *fastReflection_IndexerAttestation) NewField(fd protoreflect.FieldDescriptor) protoreflect.Value {
+func (x *fastReflection_MsgAdminIndexerAssertion) NewField(fd protoreflect.FieldDescriptor) protoreflect.Value {
 	switch fd.FullName() {
-	case "shinzonetwork.sourcehub.v1.IndexerAttestation.consensus_pub_key":
+	case "shinzonetwork.sourcehub.v1.MsgAdminIndexerAssertion.signer":
 		return protoreflect.ValueOfString("")
-	case "shinzonetwork.sourcehub.v1.IndexerAttestation.delegate_address":
+	case "shinzonetwork.sourcehub.v1.MsgAdminIndexerAssertion.consensus_pub_key":
 		return protoreflect.ValueOfString("")
-	case "shinzonetwork.sourcehub.v1.IndexerAttestation.source_chain":
+	case "shinzonetwork.sourcehub.v1.MsgAdminIndexerAssertion.delegate_address":
 		return protoreflect.ValueOfString("")
-	case "shinzonetwork.sourcehub.v1.IndexerAttestation.source_chain_id":
+	case "shinzonetwork.sourcehub.v1.MsgAdminIndexerAssertion.source_chain":
+		return protoreflect.ValueOfString("")
+	case "shinzonetwork.sourcehub.v1.MsgAdminIndexerAssertion.source_chain_id":
 		return protoreflect.ValueOfUint64(uint64(0))
-	case "shinzonetwork.sourcehub.v1.IndexerAttestation.attestation_id":
+	case "shinzonetwork.sourcehub.v1.MsgAdminIndexerAssertion.assertion_id":
 		return protoreflect.ValueOfString("")
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: shinzonetwork.sourcehub.v1.IndexerAttestation"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: shinzonetwork.sourcehub.v1.MsgAdminIndexerAssertion"))
 		}
-		panic(fmt.Errorf("message shinzonetwork.sourcehub.v1.IndexerAttestation does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message shinzonetwork.sourcehub.v1.MsgAdminIndexerAssertion does not contain field %s", fd.FullName()))
 	}
 }
 
 // WhichOneof reports which field within the oneof is populated,
 // returning nil if none are populated.
 // It panics if the oneof descriptor does not belong to this message.
-func (x *fastReflection_IndexerAttestation) WhichOneof(d protoreflect.OneofDescriptor) protoreflect.FieldDescriptor {
+func (x *fastReflection_MsgAdminIndexerAssertion) WhichOneof(d protoreflect.OneofDescriptor) protoreflect.FieldDescriptor {
 	switch d.FullName() {
 	default:
-		panic(fmt.Errorf("%s is not a oneof field in shinzonetwork.sourcehub.v1.IndexerAttestation", d.FullName()))
+		panic(fmt.Errorf("%s is not a oneof field in shinzonetwork.sourcehub.v1.MsgAdminIndexerAssertion", d.FullName()))
 	}
 	panic("unreachable")
 }
@@ -4974,7 +5127,7 @@ func (x *fastReflection_IndexerAttestation) WhichOneof(d protoreflect.OneofDescr
 // GetUnknown retrieves the entire list of unknown fields.
 // The caller may only mutate the contents of the RawFields
 // if the mutated bytes are stored back into the message with SetUnknown.
-func (x *fastReflection_IndexerAttestation) GetUnknown() protoreflect.RawFields {
+func (x *fastReflection_MsgAdminIndexerAssertion) GetUnknown() protoreflect.RawFields {
 	return x.unknownFields
 }
 
@@ -4985,7 +5138,7 @@ func (x *fastReflection_IndexerAttestation) GetUnknown() protoreflect.RawFields 
 // An empty RawFields may be passed to clear the fields.
 //
 // SetUnknown is a mutating operation and unsafe for concurrent use.
-func (x *fastReflection_IndexerAttestation) SetUnknown(fields protoreflect.RawFields) {
+func (x *fastReflection_MsgAdminIndexerAssertion) SetUnknown(fields protoreflect.RawFields) {
 	x.unknownFields = fields
 }
 
@@ -4997,7 +5150,7 @@ func (x *fastReflection_IndexerAttestation) SetUnknown(fields protoreflect.RawFi
 // message type, but the details are implementation dependent.
 // Validity is not part of the protobuf data model, and may not
 // be preserved in marshaling or other operations.
-func (x *fastReflection_IndexerAttestation) IsValid() bool {
+func (x *fastReflection_MsgAdminIndexerAssertion) IsValid() bool {
 	return x != nil
 }
 
@@ -5007,9 +5160,1068 @@ func (x *fastReflection_IndexerAttestation) IsValid() bool {
 // The returned methods type is identical to
 // "google.golang.org/protobuf/runtime/protoiface".Methods.
 // Consult the protoiface package documentation for details.
-func (x *fastReflection_IndexerAttestation) ProtoMethods() *protoiface.Methods {
+func (x *fastReflection_MsgAdminIndexerAssertion) ProtoMethods() *protoiface.Methods {
 	size := func(input protoiface.SizeInput) protoiface.SizeOutput {
-		x := input.Message.Interface().(*IndexerAttestation)
+		x := input.Message.Interface().(*MsgAdminIndexerAssertion)
+		if x == nil {
+			return protoiface.SizeOutput{
+				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+				Size:              0,
+			}
+		}
+		options := runtime.SizeInputToOptions(input)
+		_ = options
+		var n int
+		var l int
+		_ = l
+		l = len(x.Signer)
+		if l > 0 {
+			n += 1 + l + runtime.Sov(uint64(l))
+		}
+		l = len(x.ConsensusPubKey)
+		if l > 0 {
+			n += 1 + l + runtime.Sov(uint64(l))
+		}
+		l = len(x.DelegateAddress)
+		if l > 0 {
+			n += 1 + l + runtime.Sov(uint64(l))
+		}
+		l = len(x.SourceChain)
+		if l > 0 {
+			n += 1 + l + runtime.Sov(uint64(l))
+		}
+		if x.SourceChainId != 0 {
+			n += 1 + runtime.Sov(uint64(x.SourceChainId))
+		}
+		l = len(x.AssertionId)
+		if l > 0 {
+			n += 1 + l + runtime.Sov(uint64(l))
+		}
+		if x.unknownFields != nil {
+			n += len(x.unknownFields)
+		}
+		return protoiface.SizeOutput{
+			NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+			Size:              n,
+		}
+	}
+
+	marshal := func(input protoiface.MarshalInput) (protoiface.MarshalOutput, error) {
+		x := input.Message.Interface().(*MsgAdminIndexerAssertion)
+		if x == nil {
+			return protoiface.MarshalOutput{
+				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+				Buf:               input.Buf,
+			}, nil
+		}
+		options := runtime.MarshalInputToOptions(input)
+		_ = options
+		size := options.Size(x)
+		dAtA := make([]byte, size)
+		i := len(dAtA)
+		_ = i
+		var l int
+		_ = l
+		if x.unknownFields != nil {
+			i -= len(x.unknownFields)
+			copy(dAtA[i:], x.unknownFields)
+		}
+		if len(x.AssertionId) > 0 {
+			i -= len(x.AssertionId)
+			copy(dAtA[i:], x.AssertionId)
+			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.AssertionId)))
+			i--
+			dAtA[i] = 0x32
+		}
+		if x.SourceChainId != 0 {
+			i = runtime.EncodeVarint(dAtA, i, uint64(x.SourceChainId))
+			i--
+			dAtA[i] = 0x28
+		}
+		if len(x.SourceChain) > 0 {
+			i -= len(x.SourceChain)
+			copy(dAtA[i:], x.SourceChain)
+			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.SourceChain)))
+			i--
+			dAtA[i] = 0x22
+		}
+		if len(x.DelegateAddress) > 0 {
+			i -= len(x.DelegateAddress)
+			copy(dAtA[i:], x.DelegateAddress)
+			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.DelegateAddress)))
+			i--
+			dAtA[i] = 0x1a
+		}
+		if len(x.ConsensusPubKey) > 0 {
+			i -= len(x.ConsensusPubKey)
+			copy(dAtA[i:], x.ConsensusPubKey)
+			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.ConsensusPubKey)))
+			i--
+			dAtA[i] = 0x12
+		}
+		if len(x.Signer) > 0 {
+			i -= len(x.Signer)
+			copy(dAtA[i:], x.Signer)
+			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.Signer)))
+			i--
+			dAtA[i] = 0xa
+		}
+		if input.Buf != nil {
+			input.Buf = append(input.Buf, dAtA...)
+		} else {
+			input.Buf = dAtA
+		}
+		return protoiface.MarshalOutput{
+			NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+			Buf:               input.Buf,
+		}, nil
+	}
+	unmarshal := func(input protoiface.UnmarshalInput) (protoiface.UnmarshalOutput, error) {
+		x := input.Message.Interface().(*MsgAdminIndexerAssertion)
+		if x == nil {
+			return protoiface.UnmarshalOutput{
+				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+				Flags:             input.Flags,
+			}, nil
+		}
+		options := runtime.UnmarshalInputToOptions(input)
+		_ = options
+		dAtA := input.Buf
+		l := len(dAtA)
+		iNdEx := 0
+		for iNdEx < l {
+			preIndex := iNdEx
+			var wire uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				wire |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			fieldNum := int32(wire >> 3)
+			wireType := int(wire & 0x7)
+			if wireType == 4 {
+				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: MsgAdminIndexerAssertion: wiretype end group for non-group")
+			}
+			if fieldNum <= 0 {
+				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: MsgAdminIndexerAssertion: illegal tag %d (wire type %d)", fieldNum, wire)
+			}
+			switch fieldNum {
+			case 1:
+				if wireType != 2 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field Signer", wireType)
+				}
+				var stringLen uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					stringLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				intStringLen := int(stringLen)
+				if intStringLen < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				postIndex := iNdEx + intStringLen
+				if postIndex < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if postIndex > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				x.Signer = string(dAtA[iNdEx:postIndex])
+				iNdEx = postIndex
+			case 2:
+				if wireType != 2 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field ConsensusPubKey", wireType)
+				}
+				var stringLen uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					stringLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				intStringLen := int(stringLen)
+				if intStringLen < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				postIndex := iNdEx + intStringLen
+				if postIndex < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if postIndex > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				x.ConsensusPubKey = string(dAtA[iNdEx:postIndex])
+				iNdEx = postIndex
+			case 3:
+				if wireType != 2 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field DelegateAddress", wireType)
+				}
+				var stringLen uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					stringLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				intStringLen := int(stringLen)
+				if intStringLen < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				postIndex := iNdEx + intStringLen
+				if postIndex < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if postIndex > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				x.DelegateAddress = string(dAtA[iNdEx:postIndex])
+				iNdEx = postIndex
+			case 4:
+				if wireType != 2 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field SourceChain", wireType)
+				}
+				var stringLen uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					stringLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				intStringLen := int(stringLen)
+				if intStringLen < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				postIndex := iNdEx + intStringLen
+				if postIndex < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if postIndex > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				x.SourceChain = string(dAtA[iNdEx:postIndex])
+				iNdEx = postIndex
+			case 5:
+				if wireType != 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field SourceChainId", wireType)
+				}
+				x.SourceChainId = 0
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					x.SourceChainId |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+			case 6:
+				if wireType != 2 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field AssertionId", wireType)
+				}
+				var stringLen uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					stringLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				intStringLen := int(stringLen)
+				if intStringLen < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				postIndex := iNdEx + intStringLen
+				if postIndex < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if postIndex > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				x.AssertionId = string(dAtA[iNdEx:postIndex])
+				iNdEx = postIndex
+			default:
+				iNdEx = preIndex
+				skippy, err := runtime.Skip(dAtA[iNdEx:])
+				if err != nil {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, err
+				}
+				if (skippy < 0) || (iNdEx+skippy) < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if (iNdEx + skippy) > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				if !options.DiscardUnknown {
+					x.unknownFields = append(x.unknownFields, dAtA[iNdEx:iNdEx+skippy]...)
+				}
+				iNdEx += skippy
+			}
+		}
+
+		if iNdEx > l {
+			return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+		}
+		return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, nil
+	}
+	return &protoiface.Methods{
+		NoUnkeyedLiterals: struct{}{},
+		Flags:             protoiface.SupportMarshalDeterministic | protoiface.SupportUnmarshalDiscardUnknown,
+		Size:              size,
+		Marshal:           marshal,
+		Unmarshal:         unmarshal,
+		Merge:             nil,
+		CheckInitialized:  nil,
+	}
+}
+
+var (
+	md_MsgAdminIndexerAssertionResponse protoreflect.MessageDescriptor
+)
+
+func init() {
+	file_shinzonetwork_sourcehub_v1_tx_proto_init()
+	md_MsgAdminIndexerAssertionResponse = File_shinzonetwork_sourcehub_v1_tx_proto.Messages().ByName("MsgAdminIndexerAssertionResponse")
+}
+
+var _ protoreflect.Message = (*fastReflection_MsgAdminIndexerAssertionResponse)(nil)
+
+type fastReflection_MsgAdminIndexerAssertionResponse MsgAdminIndexerAssertionResponse
+
+func (x *MsgAdminIndexerAssertionResponse) ProtoReflect() protoreflect.Message {
+	return (*fastReflection_MsgAdminIndexerAssertionResponse)(x)
+}
+
+func (x *MsgAdminIndexerAssertionResponse) slowProtoReflect() protoreflect.Message {
+	mi := &file_shinzonetwork_sourcehub_v1_tx_proto_msgTypes[11]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+var _fastReflection_MsgAdminIndexerAssertionResponse_messageType fastReflection_MsgAdminIndexerAssertionResponse_messageType
+var _ protoreflect.MessageType = fastReflection_MsgAdminIndexerAssertionResponse_messageType{}
+
+type fastReflection_MsgAdminIndexerAssertionResponse_messageType struct{}
+
+func (x fastReflection_MsgAdminIndexerAssertionResponse_messageType) Zero() protoreflect.Message {
+	return (*fastReflection_MsgAdminIndexerAssertionResponse)(nil)
+}
+func (x fastReflection_MsgAdminIndexerAssertionResponse_messageType) New() protoreflect.Message {
+	return new(fastReflection_MsgAdminIndexerAssertionResponse)
+}
+func (x fastReflection_MsgAdminIndexerAssertionResponse_messageType) Descriptor() protoreflect.MessageDescriptor {
+	return md_MsgAdminIndexerAssertionResponse
+}
+
+// Descriptor returns message descriptor, which contains only the protobuf
+// type information for the message.
+func (x *fastReflection_MsgAdminIndexerAssertionResponse) Descriptor() protoreflect.MessageDescriptor {
+	return md_MsgAdminIndexerAssertionResponse
+}
+
+// Type returns the message type, which encapsulates both Go and protobuf
+// type information. If the Go type information is not needed,
+// it is recommended that the message descriptor be used instead.
+func (x *fastReflection_MsgAdminIndexerAssertionResponse) Type() protoreflect.MessageType {
+	return _fastReflection_MsgAdminIndexerAssertionResponse_messageType
+}
+
+// New returns a newly allocated and mutable empty message.
+func (x *fastReflection_MsgAdminIndexerAssertionResponse) New() protoreflect.Message {
+	return new(fastReflection_MsgAdminIndexerAssertionResponse)
+}
+
+// Interface unwraps the message reflection interface and
+// returns the underlying ProtoMessage interface.
+func (x *fastReflection_MsgAdminIndexerAssertionResponse) Interface() protoreflect.ProtoMessage {
+	return (*MsgAdminIndexerAssertionResponse)(x)
+}
+
+// Range iterates over every populated field in an undefined order,
+// calling f for each field descriptor and value encountered.
+// Range returns immediately if f returns false.
+// While iterating, mutating operations may only be performed
+// on the current field descriptor.
+func (x *fastReflection_MsgAdminIndexerAssertionResponse) Range(f func(protoreflect.FieldDescriptor, protoreflect.Value) bool) {
+}
+
+// Has reports whether a field is populated.
+//
+// Some fields have the property of nullability where it is possible to
+// distinguish between the default value of a field and whether the field
+// was explicitly populated with the default value. Singular message fields,
+// member fields of a oneof, and proto2 scalar fields are nullable. Such
+// fields are populated only if explicitly set.
+//
+// In other cases (aside from the nullable cases above),
+// a proto3 scalar field is populated if it contains a non-zero value, and
+// a repeated field is populated if it is non-empty.
+func (x *fastReflection_MsgAdminIndexerAssertionResponse) Has(fd protoreflect.FieldDescriptor) bool {
+	switch fd.FullName() {
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: shinzonetwork.sourcehub.v1.MsgAdminIndexerAssertionResponse"))
+		}
+		panic(fmt.Errorf("message shinzonetwork.sourcehub.v1.MsgAdminIndexerAssertionResponse does not contain field %s", fd.FullName()))
+	}
+}
+
+// Clear clears the field such that a subsequent Has call reports false.
+//
+// Clearing an extension field clears both the extension type and value
+// associated with the given field number.
+//
+// Clear is a mutating operation and unsafe for concurrent use.
+func (x *fastReflection_MsgAdminIndexerAssertionResponse) Clear(fd protoreflect.FieldDescriptor) {
+	switch fd.FullName() {
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: shinzonetwork.sourcehub.v1.MsgAdminIndexerAssertionResponse"))
+		}
+		panic(fmt.Errorf("message shinzonetwork.sourcehub.v1.MsgAdminIndexerAssertionResponse does not contain field %s", fd.FullName()))
+	}
+}
+
+// Get retrieves the value for a field.
+//
+// For unpopulated scalars, it returns the default value, where
+// the default value of a bytes scalar is guaranteed to be a copy.
+// For unpopulated composite types, it returns an empty, read-only view
+// of the value; to obtain a mutable reference, use Mutable.
+func (x *fastReflection_MsgAdminIndexerAssertionResponse) Get(descriptor protoreflect.FieldDescriptor) protoreflect.Value {
+	switch descriptor.FullName() {
+	default:
+		if descriptor.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: shinzonetwork.sourcehub.v1.MsgAdminIndexerAssertionResponse"))
+		}
+		panic(fmt.Errorf("message shinzonetwork.sourcehub.v1.MsgAdminIndexerAssertionResponse does not contain field %s", descriptor.FullName()))
+	}
+}
+
+// Set stores the value for a field.
+//
+// For a field belonging to a oneof, it implicitly clears any other field
+// that may be currently set within the same oneof.
+// For extension fields, it implicitly stores the provided ExtensionType.
+// When setting a composite type, it is unspecified whether the stored value
+// aliases the source's memory in any way. If the composite value is an
+// empty, read-only value, then it panics.
+//
+// Set is a mutating operation and unsafe for concurrent use.
+func (x *fastReflection_MsgAdminIndexerAssertionResponse) Set(fd protoreflect.FieldDescriptor, value protoreflect.Value) {
+	switch fd.FullName() {
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: shinzonetwork.sourcehub.v1.MsgAdminIndexerAssertionResponse"))
+		}
+		panic(fmt.Errorf("message shinzonetwork.sourcehub.v1.MsgAdminIndexerAssertionResponse does not contain field %s", fd.FullName()))
+	}
+}
+
+// Mutable returns a mutable reference to a composite type.
+//
+// If the field is unpopulated, it may allocate a composite value.
+// For a field belonging to a oneof, it implicitly clears any other field
+// that may be currently set within the same oneof.
+// For extension fields, it implicitly stores the provided ExtensionType
+// if not already stored.
+// It panics if the field does not contain a composite type.
+//
+// Mutable is a mutating operation and unsafe for concurrent use.
+func (x *fastReflection_MsgAdminIndexerAssertionResponse) Mutable(fd protoreflect.FieldDescriptor) protoreflect.Value {
+	switch fd.FullName() {
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: shinzonetwork.sourcehub.v1.MsgAdminIndexerAssertionResponse"))
+		}
+		panic(fmt.Errorf("message shinzonetwork.sourcehub.v1.MsgAdminIndexerAssertionResponse does not contain field %s", fd.FullName()))
+	}
+}
+
+// NewField returns a new value that is assignable to the field
+// for the given descriptor. For scalars, this returns the default value.
+// For lists, maps, and messages, this returns a new, empty, mutable value.
+func (x *fastReflection_MsgAdminIndexerAssertionResponse) NewField(fd protoreflect.FieldDescriptor) protoreflect.Value {
+	switch fd.FullName() {
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: shinzonetwork.sourcehub.v1.MsgAdminIndexerAssertionResponse"))
+		}
+		panic(fmt.Errorf("message shinzonetwork.sourcehub.v1.MsgAdminIndexerAssertionResponse does not contain field %s", fd.FullName()))
+	}
+}
+
+// WhichOneof reports which field within the oneof is populated,
+// returning nil if none are populated.
+// It panics if the oneof descriptor does not belong to this message.
+func (x *fastReflection_MsgAdminIndexerAssertionResponse) WhichOneof(d protoreflect.OneofDescriptor) protoreflect.FieldDescriptor {
+	switch d.FullName() {
+	default:
+		panic(fmt.Errorf("%s is not a oneof field in shinzonetwork.sourcehub.v1.MsgAdminIndexerAssertionResponse", d.FullName()))
+	}
+	panic("unreachable")
+}
+
+// GetUnknown retrieves the entire list of unknown fields.
+// The caller may only mutate the contents of the RawFields
+// if the mutated bytes are stored back into the message with SetUnknown.
+func (x *fastReflection_MsgAdminIndexerAssertionResponse) GetUnknown() protoreflect.RawFields {
+	return x.unknownFields
+}
+
+// SetUnknown stores an entire list of unknown fields.
+// The raw fields must be syntactically valid according to the wire format.
+// An implementation may panic if this is not the case.
+// Once stored, the caller must not mutate the content of the RawFields.
+// An empty RawFields may be passed to clear the fields.
+//
+// SetUnknown is a mutating operation and unsafe for concurrent use.
+func (x *fastReflection_MsgAdminIndexerAssertionResponse) SetUnknown(fields protoreflect.RawFields) {
+	x.unknownFields = fields
+}
+
+// IsValid reports whether the message is valid.
+//
+// An invalid message is an empty, read-only value.
+//
+// An invalid message often corresponds to a nil pointer of the concrete
+// message type, but the details are implementation dependent.
+// Validity is not part of the protobuf data model, and may not
+// be preserved in marshaling or other operations.
+func (x *fastReflection_MsgAdminIndexerAssertionResponse) IsValid() bool {
+	return x != nil
+}
+
+// ProtoMethods returns optional fastReflectionFeature-path implementations of various operations.
+// This method may return nil.
+//
+// The returned methods type is identical to
+// "google.golang.org/protobuf/runtime/protoiface".Methods.
+// Consult the protoiface package documentation for details.
+func (x *fastReflection_MsgAdminIndexerAssertionResponse) ProtoMethods() *protoiface.Methods {
+	size := func(input protoiface.SizeInput) protoiface.SizeOutput {
+		x := input.Message.Interface().(*MsgAdminIndexerAssertionResponse)
+		if x == nil {
+			return protoiface.SizeOutput{
+				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+				Size:              0,
+			}
+		}
+		options := runtime.SizeInputToOptions(input)
+		_ = options
+		var n int
+		var l int
+		_ = l
+		if x.unknownFields != nil {
+			n += len(x.unknownFields)
+		}
+		return protoiface.SizeOutput{
+			NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+			Size:              n,
+		}
+	}
+
+	marshal := func(input protoiface.MarshalInput) (protoiface.MarshalOutput, error) {
+		x := input.Message.Interface().(*MsgAdminIndexerAssertionResponse)
+		if x == nil {
+			return protoiface.MarshalOutput{
+				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+				Buf:               input.Buf,
+			}, nil
+		}
+		options := runtime.MarshalInputToOptions(input)
+		_ = options
+		size := options.Size(x)
+		dAtA := make([]byte, size)
+		i := len(dAtA)
+		_ = i
+		var l int
+		_ = l
+		if x.unknownFields != nil {
+			i -= len(x.unknownFields)
+			copy(dAtA[i:], x.unknownFields)
+		}
+		if input.Buf != nil {
+			input.Buf = append(input.Buf, dAtA...)
+		} else {
+			input.Buf = dAtA
+		}
+		return protoiface.MarshalOutput{
+			NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+			Buf:               input.Buf,
+		}, nil
+	}
+	unmarshal := func(input protoiface.UnmarshalInput) (protoiface.UnmarshalOutput, error) {
+		x := input.Message.Interface().(*MsgAdminIndexerAssertionResponse)
+		if x == nil {
+			return protoiface.UnmarshalOutput{
+				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+				Flags:             input.Flags,
+			}, nil
+		}
+		options := runtime.UnmarshalInputToOptions(input)
+		_ = options
+		dAtA := input.Buf
+		l := len(dAtA)
+		iNdEx := 0
+		for iNdEx < l {
+			preIndex := iNdEx
+			var wire uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				wire |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			fieldNum := int32(wire >> 3)
+			wireType := int(wire & 0x7)
+			if wireType == 4 {
+				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: MsgAdminIndexerAssertionResponse: wiretype end group for non-group")
+			}
+			if fieldNum <= 0 {
+				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: MsgAdminIndexerAssertionResponse: illegal tag %d (wire type %d)", fieldNum, wire)
+			}
+			switch fieldNum {
+			default:
+				iNdEx = preIndex
+				skippy, err := runtime.Skip(dAtA[iNdEx:])
+				if err != nil {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, err
+				}
+				if (skippy < 0) || (iNdEx+skippy) < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if (iNdEx + skippy) > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				if !options.DiscardUnknown {
+					x.unknownFields = append(x.unknownFields, dAtA[iNdEx:iNdEx+skippy]...)
+				}
+				iNdEx += skippy
+			}
+		}
+
+		if iNdEx > l {
+			return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+		}
+		return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, nil
+	}
+	return &protoiface.Methods{
+		NoUnkeyedLiterals: struct{}{},
+		Flags:             protoiface.SupportMarshalDeterministic | protoiface.SupportUnmarshalDiscardUnknown,
+		Size:              size,
+		Marshal:           marshal,
+		Unmarshal:         unmarshal,
+		Merge:             nil,
+		CheckInitialized:  nil,
+	}
+}
+
+var (
+	md_IndexerAssertion                   protoreflect.MessageDescriptor
+	fd_IndexerAssertion_consensus_pub_key protoreflect.FieldDescriptor
+	fd_IndexerAssertion_delegate_address  protoreflect.FieldDescriptor
+	fd_IndexerAssertion_source_chain      protoreflect.FieldDescriptor
+	fd_IndexerAssertion_source_chain_id   protoreflect.FieldDescriptor
+	fd_IndexerAssertion_assertion_id      protoreflect.FieldDescriptor
+)
+
+func init() {
+	file_shinzonetwork_sourcehub_v1_tx_proto_init()
+	md_IndexerAssertion = File_shinzonetwork_sourcehub_v1_tx_proto.Messages().ByName("IndexerAssertion")
+	fd_IndexerAssertion_consensus_pub_key = md_IndexerAssertion.Fields().ByName("consensus_pub_key")
+	fd_IndexerAssertion_delegate_address = md_IndexerAssertion.Fields().ByName("delegate_address")
+	fd_IndexerAssertion_source_chain = md_IndexerAssertion.Fields().ByName("source_chain")
+	fd_IndexerAssertion_source_chain_id = md_IndexerAssertion.Fields().ByName("source_chain_id")
+	fd_IndexerAssertion_assertion_id = md_IndexerAssertion.Fields().ByName("assertion_id")
+}
+
+var _ protoreflect.Message = (*fastReflection_IndexerAssertion)(nil)
+
+type fastReflection_IndexerAssertion IndexerAssertion
+
+func (x *IndexerAssertion) ProtoReflect() protoreflect.Message {
+	return (*fastReflection_IndexerAssertion)(x)
+}
+
+func (x *IndexerAssertion) slowProtoReflect() protoreflect.Message {
+	mi := &file_shinzonetwork_sourcehub_v1_tx_proto_msgTypes[12]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+var _fastReflection_IndexerAssertion_messageType fastReflection_IndexerAssertion_messageType
+var _ protoreflect.MessageType = fastReflection_IndexerAssertion_messageType{}
+
+type fastReflection_IndexerAssertion_messageType struct{}
+
+func (x fastReflection_IndexerAssertion_messageType) Zero() protoreflect.Message {
+	return (*fastReflection_IndexerAssertion)(nil)
+}
+func (x fastReflection_IndexerAssertion_messageType) New() protoreflect.Message {
+	return new(fastReflection_IndexerAssertion)
+}
+func (x fastReflection_IndexerAssertion_messageType) Descriptor() protoreflect.MessageDescriptor {
+	return md_IndexerAssertion
+}
+
+// Descriptor returns message descriptor, which contains only the protobuf
+// type information for the message.
+func (x *fastReflection_IndexerAssertion) Descriptor() protoreflect.MessageDescriptor {
+	return md_IndexerAssertion
+}
+
+// Type returns the message type, which encapsulates both Go and protobuf
+// type information. If the Go type information is not needed,
+// it is recommended that the message descriptor be used instead.
+func (x *fastReflection_IndexerAssertion) Type() protoreflect.MessageType {
+	return _fastReflection_IndexerAssertion_messageType
+}
+
+// New returns a newly allocated and mutable empty message.
+func (x *fastReflection_IndexerAssertion) New() protoreflect.Message {
+	return new(fastReflection_IndexerAssertion)
+}
+
+// Interface unwraps the message reflection interface and
+// returns the underlying ProtoMessage interface.
+func (x *fastReflection_IndexerAssertion) Interface() protoreflect.ProtoMessage {
+	return (*IndexerAssertion)(x)
+}
+
+// Range iterates over every populated field in an undefined order,
+// calling f for each field descriptor and value encountered.
+// Range returns immediately if f returns false.
+// While iterating, mutating operations may only be performed
+// on the current field descriptor.
+func (x *fastReflection_IndexerAssertion) Range(f func(protoreflect.FieldDescriptor, protoreflect.Value) bool) {
+	if x.ConsensusPubKey != "" {
+		value := protoreflect.ValueOfString(x.ConsensusPubKey)
+		if !f(fd_IndexerAssertion_consensus_pub_key, value) {
+			return
+		}
+	}
+	if x.DelegateAddress != "" {
+		value := protoreflect.ValueOfString(x.DelegateAddress)
+		if !f(fd_IndexerAssertion_delegate_address, value) {
+			return
+		}
+	}
+	if x.SourceChain != "" {
+		value := protoreflect.ValueOfString(x.SourceChain)
+		if !f(fd_IndexerAssertion_source_chain, value) {
+			return
+		}
+	}
+	if x.SourceChainId != uint64(0) {
+		value := protoreflect.ValueOfUint64(x.SourceChainId)
+		if !f(fd_IndexerAssertion_source_chain_id, value) {
+			return
+		}
+	}
+	if x.AssertionId != "" {
+		value := protoreflect.ValueOfString(x.AssertionId)
+		if !f(fd_IndexerAssertion_assertion_id, value) {
+			return
+		}
+	}
+}
+
+// Has reports whether a field is populated.
+//
+// Some fields have the property of nullability where it is possible to
+// distinguish between the default value of a field and whether the field
+// was explicitly populated with the default value. Singular message fields,
+// member fields of a oneof, and proto2 scalar fields are nullable. Such
+// fields are populated only if explicitly set.
+//
+// In other cases (aside from the nullable cases above),
+// a proto3 scalar field is populated if it contains a non-zero value, and
+// a repeated field is populated if it is non-empty.
+func (x *fastReflection_IndexerAssertion) Has(fd protoreflect.FieldDescriptor) bool {
+	switch fd.FullName() {
+	case "shinzonetwork.sourcehub.v1.IndexerAssertion.consensus_pub_key":
+		return x.ConsensusPubKey != ""
+	case "shinzonetwork.sourcehub.v1.IndexerAssertion.delegate_address":
+		return x.DelegateAddress != ""
+	case "shinzonetwork.sourcehub.v1.IndexerAssertion.source_chain":
+		return x.SourceChain != ""
+	case "shinzonetwork.sourcehub.v1.IndexerAssertion.source_chain_id":
+		return x.SourceChainId != uint64(0)
+	case "shinzonetwork.sourcehub.v1.IndexerAssertion.assertion_id":
+		return x.AssertionId != ""
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: shinzonetwork.sourcehub.v1.IndexerAssertion"))
+		}
+		panic(fmt.Errorf("message shinzonetwork.sourcehub.v1.IndexerAssertion does not contain field %s", fd.FullName()))
+	}
+}
+
+// Clear clears the field such that a subsequent Has call reports false.
+//
+// Clearing an extension field clears both the extension type and value
+// associated with the given field number.
+//
+// Clear is a mutating operation and unsafe for concurrent use.
+func (x *fastReflection_IndexerAssertion) Clear(fd protoreflect.FieldDescriptor) {
+	switch fd.FullName() {
+	case "shinzonetwork.sourcehub.v1.IndexerAssertion.consensus_pub_key":
+		x.ConsensusPubKey = ""
+	case "shinzonetwork.sourcehub.v1.IndexerAssertion.delegate_address":
+		x.DelegateAddress = ""
+	case "shinzonetwork.sourcehub.v1.IndexerAssertion.source_chain":
+		x.SourceChain = ""
+	case "shinzonetwork.sourcehub.v1.IndexerAssertion.source_chain_id":
+		x.SourceChainId = uint64(0)
+	case "shinzonetwork.sourcehub.v1.IndexerAssertion.assertion_id":
+		x.AssertionId = ""
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: shinzonetwork.sourcehub.v1.IndexerAssertion"))
+		}
+		panic(fmt.Errorf("message shinzonetwork.sourcehub.v1.IndexerAssertion does not contain field %s", fd.FullName()))
+	}
+}
+
+// Get retrieves the value for a field.
+//
+// For unpopulated scalars, it returns the default value, where
+// the default value of a bytes scalar is guaranteed to be a copy.
+// For unpopulated composite types, it returns an empty, read-only view
+// of the value; to obtain a mutable reference, use Mutable.
+func (x *fastReflection_IndexerAssertion) Get(descriptor protoreflect.FieldDescriptor) protoreflect.Value {
+	switch descriptor.FullName() {
+	case "shinzonetwork.sourcehub.v1.IndexerAssertion.consensus_pub_key":
+		value := x.ConsensusPubKey
+		return protoreflect.ValueOfString(value)
+	case "shinzonetwork.sourcehub.v1.IndexerAssertion.delegate_address":
+		value := x.DelegateAddress
+		return protoreflect.ValueOfString(value)
+	case "shinzonetwork.sourcehub.v1.IndexerAssertion.source_chain":
+		value := x.SourceChain
+		return protoreflect.ValueOfString(value)
+	case "shinzonetwork.sourcehub.v1.IndexerAssertion.source_chain_id":
+		value := x.SourceChainId
+		return protoreflect.ValueOfUint64(value)
+	case "shinzonetwork.sourcehub.v1.IndexerAssertion.assertion_id":
+		value := x.AssertionId
+		return protoreflect.ValueOfString(value)
+	default:
+		if descriptor.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: shinzonetwork.sourcehub.v1.IndexerAssertion"))
+		}
+		panic(fmt.Errorf("message shinzonetwork.sourcehub.v1.IndexerAssertion does not contain field %s", descriptor.FullName()))
+	}
+}
+
+// Set stores the value for a field.
+//
+// For a field belonging to a oneof, it implicitly clears any other field
+// that may be currently set within the same oneof.
+// For extension fields, it implicitly stores the provided ExtensionType.
+// When setting a composite type, it is unspecified whether the stored value
+// aliases the source's memory in any way. If the composite value is an
+// empty, read-only value, then it panics.
+//
+// Set is a mutating operation and unsafe for concurrent use.
+func (x *fastReflection_IndexerAssertion) Set(fd protoreflect.FieldDescriptor, value protoreflect.Value) {
+	switch fd.FullName() {
+	case "shinzonetwork.sourcehub.v1.IndexerAssertion.consensus_pub_key":
+		x.ConsensusPubKey = value.Interface().(string)
+	case "shinzonetwork.sourcehub.v1.IndexerAssertion.delegate_address":
+		x.DelegateAddress = value.Interface().(string)
+	case "shinzonetwork.sourcehub.v1.IndexerAssertion.source_chain":
+		x.SourceChain = value.Interface().(string)
+	case "shinzonetwork.sourcehub.v1.IndexerAssertion.source_chain_id":
+		x.SourceChainId = value.Uint()
+	case "shinzonetwork.sourcehub.v1.IndexerAssertion.assertion_id":
+		x.AssertionId = value.Interface().(string)
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: shinzonetwork.sourcehub.v1.IndexerAssertion"))
+		}
+		panic(fmt.Errorf("message shinzonetwork.sourcehub.v1.IndexerAssertion does not contain field %s", fd.FullName()))
+	}
+}
+
+// Mutable returns a mutable reference to a composite type.
+//
+// If the field is unpopulated, it may allocate a composite value.
+// For a field belonging to a oneof, it implicitly clears any other field
+// that may be currently set within the same oneof.
+// For extension fields, it implicitly stores the provided ExtensionType
+// if not already stored.
+// It panics if the field does not contain a composite type.
+//
+// Mutable is a mutating operation and unsafe for concurrent use.
+func (x *fastReflection_IndexerAssertion) Mutable(fd protoreflect.FieldDescriptor) protoreflect.Value {
+	switch fd.FullName() {
+	case "shinzonetwork.sourcehub.v1.IndexerAssertion.consensus_pub_key":
+		panic(fmt.Errorf("field consensus_pub_key of message shinzonetwork.sourcehub.v1.IndexerAssertion is not mutable"))
+	case "shinzonetwork.sourcehub.v1.IndexerAssertion.delegate_address":
+		panic(fmt.Errorf("field delegate_address of message shinzonetwork.sourcehub.v1.IndexerAssertion is not mutable"))
+	case "shinzonetwork.sourcehub.v1.IndexerAssertion.source_chain":
+		panic(fmt.Errorf("field source_chain of message shinzonetwork.sourcehub.v1.IndexerAssertion is not mutable"))
+	case "shinzonetwork.sourcehub.v1.IndexerAssertion.source_chain_id":
+		panic(fmt.Errorf("field source_chain_id of message shinzonetwork.sourcehub.v1.IndexerAssertion is not mutable"))
+	case "shinzonetwork.sourcehub.v1.IndexerAssertion.assertion_id":
+		panic(fmt.Errorf("field assertion_id of message shinzonetwork.sourcehub.v1.IndexerAssertion is not mutable"))
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: shinzonetwork.sourcehub.v1.IndexerAssertion"))
+		}
+		panic(fmt.Errorf("message shinzonetwork.sourcehub.v1.IndexerAssertion does not contain field %s", fd.FullName()))
+	}
+}
+
+// NewField returns a new value that is assignable to the field
+// for the given descriptor. For scalars, this returns the default value.
+// For lists, maps, and messages, this returns a new, empty, mutable value.
+func (x *fastReflection_IndexerAssertion) NewField(fd protoreflect.FieldDescriptor) protoreflect.Value {
+	switch fd.FullName() {
+	case "shinzonetwork.sourcehub.v1.IndexerAssertion.consensus_pub_key":
+		return protoreflect.ValueOfString("")
+	case "shinzonetwork.sourcehub.v1.IndexerAssertion.delegate_address":
+		return protoreflect.ValueOfString("")
+	case "shinzonetwork.sourcehub.v1.IndexerAssertion.source_chain":
+		return protoreflect.ValueOfString("")
+	case "shinzonetwork.sourcehub.v1.IndexerAssertion.source_chain_id":
+		return protoreflect.ValueOfUint64(uint64(0))
+	case "shinzonetwork.sourcehub.v1.IndexerAssertion.assertion_id":
+		return protoreflect.ValueOfString("")
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: shinzonetwork.sourcehub.v1.IndexerAssertion"))
+		}
+		panic(fmt.Errorf("message shinzonetwork.sourcehub.v1.IndexerAssertion does not contain field %s", fd.FullName()))
+	}
+}
+
+// WhichOneof reports which field within the oneof is populated,
+// returning nil if none are populated.
+// It panics if the oneof descriptor does not belong to this message.
+func (x *fastReflection_IndexerAssertion) WhichOneof(d protoreflect.OneofDescriptor) protoreflect.FieldDescriptor {
+	switch d.FullName() {
+	default:
+		panic(fmt.Errorf("%s is not a oneof field in shinzonetwork.sourcehub.v1.IndexerAssertion", d.FullName()))
+	}
+	panic("unreachable")
+}
+
+// GetUnknown retrieves the entire list of unknown fields.
+// The caller may only mutate the contents of the RawFields
+// if the mutated bytes are stored back into the message with SetUnknown.
+func (x *fastReflection_IndexerAssertion) GetUnknown() protoreflect.RawFields {
+	return x.unknownFields
+}
+
+// SetUnknown stores an entire list of unknown fields.
+// The raw fields must be syntactically valid according to the wire format.
+// An implementation may panic if this is not the case.
+// Once stored, the caller must not mutate the content of the RawFields.
+// An empty RawFields may be passed to clear the fields.
+//
+// SetUnknown is a mutating operation and unsafe for concurrent use.
+func (x *fastReflection_IndexerAssertion) SetUnknown(fields protoreflect.RawFields) {
+	x.unknownFields = fields
+}
+
+// IsValid reports whether the message is valid.
+//
+// An invalid message is an empty, read-only value.
+//
+// An invalid message often corresponds to a nil pointer of the concrete
+// message type, but the details are implementation dependent.
+// Validity is not part of the protobuf data model, and may not
+// be preserved in marshaling or other operations.
+func (x *fastReflection_IndexerAssertion) IsValid() bool {
+	return x != nil
+}
+
+// ProtoMethods returns optional fastReflectionFeature-path implementations of various operations.
+// This method may return nil.
+//
+// The returned methods type is identical to
+// "google.golang.org/protobuf/runtime/protoiface".Methods.
+// Consult the protoiface package documentation for details.
+func (x *fastReflection_IndexerAssertion) ProtoMethods() *protoiface.Methods {
+	size := func(input protoiface.SizeInput) protoiface.SizeOutput {
+		x := input.Message.Interface().(*IndexerAssertion)
 		if x == nil {
 			return protoiface.SizeOutput{
 				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
@@ -5036,7 +6248,7 @@ func (x *fastReflection_IndexerAttestation) ProtoMethods() *protoiface.Methods {
 		if x.SourceChainId != 0 {
 			n += 1 + runtime.Sov(uint64(x.SourceChainId))
 		}
-		l = len(x.AttestationId)
+		l = len(x.AssertionId)
 		if l > 0 {
 			n += 1 + l + runtime.Sov(uint64(l))
 		}
@@ -5050,7 +6262,7 @@ func (x *fastReflection_IndexerAttestation) ProtoMethods() *protoiface.Methods {
 	}
 
 	marshal := func(input protoiface.MarshalInput) (protoiface.MarshalOutput, error) {
-		x := input.Message.Interface().(*IndexerAttestation)
+		x := input.Message.Interface().(*IndexerAssertion)
 		if x == nil {
 			return protoiface.MarshalOutput{
 				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
@@ -5069,10 +6281,10 @@ func (x *fastReflection_IndexerAttestation) ProtoMethods() *protoiface.Methods {
 			i -= len(x.unknownFields)
 			copy(dAtA[i:], x.unknownFields)
 		}
-		if len(x.AttestationId) > 0 {
-			i -= len(x.AttestationId)
-			copy(dAtA[i:], x.AttestationId)
-			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.AttestationId)))
+		if len(x.AssertionId) > 0 {
+			i -= len(x.AssertionId)
+			copy(dAtA[i:], x.AssertionId)
+			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.AssertionId)))
 			i--
 			dAtA[i] = 0x2a
 		}
@@ -5113,7 +6325,7 @@ func (x *fastReflection_IndexerAttestation) ProtoMethods() *protoiface.Methods {
 		}, nil
 	}
 	unmarshal := func(input protoiface.UnmarshalInput) (protoiface.UnmarshalOutput, error) {
-		x := input.Message.Interface().(*IndexerAttestation)
+		x := input.Message.Interface().(*IndexerAssertion)
 		if x == nil {
 			return protoiface.UnmarshalOutput{
 				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
@@ -5145,10 +6357,10 @@ func (x *fastReflection_IndexerAttestation) ProtoMethods() *protoiface.Methods {
 			fieldNum := int32(wire >> 3)
 			wireType := int(wire & 0x7)
 			if wireType == 4 {
-				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: IndexerAttestation: wiretype end group for non-group")
+				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: IndexerAssertion: wiretype end group for non-group")
 			}
 			if fieldNum <= 0 {
-				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: IndexerAttestation: illegal tag %d (wire type %d)", fieldNum, wire)
+				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: IndexerAssertion: illegal tag %d (wire type %d)", fieldNum, wire)
 			}
 			switch fieldNum {
 			case 1:
@@ -5268,7 +6480,7 @@ func (x *fastReflection_IndexerAttestation) ProtoMethods() *protoiface.Methods {
 				}
 			case 5:
 				if wireType != 2 {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field AttestationId", wireType)
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field AssertionId", wireType)
 				}
 				var stringLen uint64
 				for shift := uint(0); ; shift += 7 {
@@ -5296,7 +6508,7 @@ func (x *fastReflection_IndexerAttestation) ProtoMethods() *protoiface.Methods {
 				if postIndex > l {
 					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
 				}
-				x.AttestationId = string(dAtA[iNdEx:postIndex])
+				x.AssertionId = string(dAtA[iNdEx:postIndex])
 				iNdEx = postIndex
 			default:
 				iNdEx = preIndex
@@ -5692,7 +6904,124 @@ func (*MsgRequestStreamAccessResponse) Descriptor() ([]byte, []int) {
 	return file_shinzonetwork_sourcehub_v1_tx_proto_rawDescGZIP(), []int{7}
 }
 
-type MsgIndexerAttestation struct {
+type MsgIndexerAssertion struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Signer            string `protobuf:"bytes,1,opt,name=signer,proto3" json:"signer,omitempty"`
+	ConsensusPubKey   string `protobuf:"bytes,2,opt,name=consensus_pub_key,json=consensusPubKey,proto3" json:"consensus_pub_key,omitempty"`
+	DelegateAddress   string `protobuf:"bytes,3,opt,name=delegate_address,json=delegateAddress,proto3" json:"delegate_address,omitempty"`
+	SourceChain       string `protobuf:"bytes,4,opt,name=source_chain,json=sourceChain,proto3" json:"source_chain,omitempty"`
+	SourceChainId     uint64 `protobuf:"varint,5,opt,name=source_chain_id,json=sourceChainId,proto3" json:"source_chain_id,omitempty"`
+	AssertionId       string `protobuf:"bytes,6,opt,name=assertion_id,json=assertionId,proto3" json:"assertion_id,omitempty"`
+	DelegateDigest    []byte `protobuf:"bytes,7,opt,name=delegate_digest,json=delegateDigest,proto3" json:"delegate_digest,omitempty"`          // 32-byte pre-hashed payload signed by the delegate
+	DelegateSignature []byte `protobuf:"bytes,8,opt,name=delegate_signature,json=delegateSignature,proto3" json:"delegate_signature,omitempty"` // 65-byte secp256k1 ECDSA signature r‖s‖v
+}
+
+func (x *MsgIndexerAssertion) Reset() {
+	*x = MsgIndexerAssertion{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_shinzonetwork_sourcehub_v1_tx_proto_msgTypes[8]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *MsgIndexerAssertion) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*MsgIndexerAssertion) ProtoMessage() {}
+
+// Deprecated: Use MsgIndexerAssertion.ProtoReflect.Descriptor instead.
+func (*MsgIndexerAssertion) Descriptor() ([]byte, []int) {
+	return file_shinzonetwork_sourcehub_v1_tx_proto_rawDescGZIP(), []int{8}
+}
+
+func (x *MsgIndexerAssertion) GetSigner() string {
+	if x != nil {
+		return x.Signer
+	}
+	return ""
+}
+
+func (x *MsgIndexerAssertion) GetConsensusPubKey() string {
+	if x != nil {
+		return x.ConsensusPubKey
+	}
+	return ""
+}
+
+func (x *MsgIndexerAssertion) GetDelegateAddress() string {
+	if x != nil {
+		return x.DelegateAddress
+	}
+	return ""
+}
+
+func (x *MsgIndexerAssertion) GetSourceChain() string {
+	if x != nil {
+		return x.SourceChain
+	}
+	return ""
+}
+
+func (x *MsgIndexerAssertion) GetSourceChainId() uint64 {
+	if x != nil {
+		return x.SourceChainId
+	}
+	return 0
+}
+
+func (x *MsgIndexerAssertion) GetAssertionId() string {
+	if x != nil {
+		return x.AssertionId
+	}
+	return ""
+}
+
+func (x *MsgIndexerAssertion) GetDelegateDigest() []byte {
+	if x != nil {
+		return x.DelegateDigest
+	}
+	return nil
+}
+
+func (x *MsgIndexerAssertion) GetDelegateSignature() []byte {
+	if x != nil {
+		return x.DelegateSignature
+	}
+	return nil
+}
+
+type MsgIndexerAssertionResponse struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+}
+
+func (x *MsgIndexerAssertionResponse) Reset() {
+	*x = MsgIndexerAssertionResponse{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_shinzonetwork_sourcehub_v1_tx_proto_msgTypes[9]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *MsgIndexerAssertionResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*MsgIndexerAssertionResponse) ProtoMessage() {}
+
+// Deprecated: Use MsgIndexerAssertionResponse.ProtoReflect.Descriptor instead.
+func (*MsgIndexerAssertionResponse) Descriptor() ([]byte, []int) {
+	return file_shinzonetwork_sourcehub_v1_tx_proto_rawDescGZIP(), []int{9}
+}
+
+type MsgAdminIndexerAssertion struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
@@ -5702,98 +7031,98 @@ type MsgIndexerAttestation struct {
 	DelegateAddress string `protobuf:"bytes,3,opt,name=delegate_address,json=delegateAddress,proto3" json:"delegate_address,omitempty"`
 	SourceChain     string `protobuf:"bytes,4,opt,name=source_chain,json=sourceChain,proto3" json:"source_chain,omitempty"`
 	SourceChainId   uint64 `protobuf:"varint,5,opt,name=source_chain_id,json=sourceChainId,proto3" json:"source_chain_id,omitempty"`
-	AttestationId   string `protobuf:"bytes,6,opt,name=attestation_id,json=attestationId,proto3" json:"attestation_id,omitempty"`
+	AssertionId     string `protobuf:"bytes,6,opt,name=assertion_id,json=assertionId,proto3" json:"assertion_id,omitempty"`
 }
 
-func (x *MsgIndexerAttestation) Reset() {
-	*x = MsgIndexerAttestation{}
+func (x *MsgAdminIndexerAssertion) Reset() {
+	*x = MsgAdminIndexerAssertion{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_shinzonetwork_sourcehub_v1_tx_proto_msgTypes[8]
+		mi := &file_shinzonetwork_sourcehub_v1_tx_proto_msgTypes[10]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
 }
 
-func (x *MsgIndexerAttestation) String() string {
+func (x *MsgAdminIndexerAssertion) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*MsgIndexerAttestation) ProtoMessage() {}
+func (*MsgAdminIndexerAssertion) ProtoMessage() {}
 
-// Deprecated: Use MsgIndexerAttestation.ProtoReflect.Descriptor instead.
-func (*MsgIndexerAttestation) Descriptor() ([]byte, []int) {
-	return file_shinzonetwork_sourcehub_v1_tx_proto_rawDescGZIP(), []int{8}
+// Deprecated: Use MsgAdminIndexerAssertion.ProtoReflect.Descriptor instead.
+func (*MsgAdminIndexerAssertion) Descriptor() ([]byte, []int) {
+	return file_shinzonetwork_sourcehub_v1_tx_proto_rawDescGZIP(), []int{10}
 }
 
-func (x *MsgIndexerAttestation) GetSigner() string {
+func (x *MsgAdminIndexerAssertion) GetSigner() string {
 	if x != nil {
 		return x.Signer
 	}
 	return ""
 }
 
-func (x *MsgIndexerAttestation) GetConsensusPubKey() string {
+func (x *MsgAdminIndexerAssertion) GetConsensusPubKey() string {
 	if x != nil {
 		return x.ConsensusPubKey
 	}
 	return ""
 }
 
-func (x *MsgIndexerAttestation) GetDelegateAddress() string {
+func (x *MsgAdminIndexerAssertion) GetDelegateAddress() string {
 	if x != nil {
 		return x.DelegateAddress
 	}
 	return ""
 }
 
-func (x *MsgIndexerAttestation) GetSourceChain() string {
+func (x *MsgAdminIndexerAssertion) GetSourceChain() string {
 	if x != nil {
 		return x.SourceChain
 	}
 	return ""
 }
 
-func (x *MsgIndexerAttestation) GetSourceChainId() uint64 {
+func (x *MsgAdminIndexerAssertion) GetSourceChainId() uint64 {
 	if x != nil {
 		return x.SourceChainId
 	}
 	return 0
 }
 
-func (x *MsgIndexerAttestation) GetAttestationId() string {
+func (x *MsgAdminIndexerAssertion) GetAssertionId() string {
 	if x != nil {
-		return x.AttestationId
+		return x.AssertionId
 	}
 	return ""
 }
 
-type MsgIndexerAttestationResponse struct {
+type MsgAdminIndexerAssertionResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 }
 
-func (x *MsgIndexerAttestationResponse) Reset() {
-	*x = MsgIndexerAttestationResponse{}
+func (x *MsgAdminIndexerAssertionResponse) Reset() {
+	*x = MsgAdminIndexerAssertionResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_shinzonetwork_sourcehub_v1_tx_proto_msgTypes[9]
+		mi := &file_shinzonetwork_sourcehub_v1_tx_proto_msgTypes[11]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
 }
 
-func (x *MsgIndexerAttestationResponse) String() string {
+func (x *MsgAdminIndexerAssertionResponse) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*MsgIndexerAttestationResponse) ProtoMessage() {}
+func (*MsgAdminIndexerAssertionResponse) ProtoMessage() {}
 
-// Deprecated: Use MsgIndexerAttestationResponse.ProtoReflect.Descriptor instead.
-func (*MsgIndexerAttestationResponse) Descriptor() ([]byte, []int) {
-	return file_shinzonetwork_sourcehub_v1_tx_proto_rawDescGZIP(), []int{9}
+// Deprecated: Use MsgAdminIndexerAssertionResponse.ProtoReflect.Descriptor instead.
+func (*MsgAdminIndexerAssertionResponse) Descriptor() ([]byte, []int) {
+	return file_shinzonetwork_sourcehub_v1_tx_proto_rawDescGZIP(), []int{11}
 }
 
-type IndexerAttestation struct {
+type IndexerAssertion struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
@@ -5802,60 +7131,60 @@ type IndexerAttestation struct {
 	DelegateAddress string `protobuf:"bytes,2,opt,name=delegate_address,json=delegateAddress,proto3" json:"delegate_address,omitempty"`
 	SourceChain     string `protobuf:"bytes,3,opt,name=source_chain,json=sourceChain,proto3" json:"source_chain,omitempty"`
 	SourceChainId   uint64 `protobuf:"varint,4,opt,name=source_chain_id,json=sourceChainId,proto3" json:"source_chain_id,omitempty"`
-	AttestationId   string `protobuf:"bytes,5,opt,name=attestation_id,json=attestationId,proto3" json:"attestation_id,omitempty"`
+	AssertionId     string `protobuf:"bytes,5,opt,name=assertion_id,json=assertionId,proto3" json:"assertion_id,omitempty"`
 }
 
-func (x *IndexerAttestation) Reset() {
-	*x = IndexerAttestation{}
+func (x *IndexerAssertion) Reset() {
+	*x = IndexerAssertion{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_shinzonetwork_sourcehub_v1_tx_proto_msgTypes[10]
+		mi := &file_shinzonetwork_sourcehub_v1_tx_proto_msgTypes[12]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
 }
 
-func (x *IndexerAttestation) String() string {
+func (x *IndexerAssertion) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*IndexerAttestation) ProtoMessage() {}
+func (*IndexerAssertion) ProtoMessage() {}
 
-// Deprecated: Use IndexerAttestation.ProtoReflect.Descriptor instead.
-func (*IndexerAttestation) Descriptor() ([]byte, []int) {
-	return file_shinzonetwork_sourcehub_v1_tx_proto_rawDescGZIP(), []int{10}
+// Deprecated: Use IndexerAssertion.ProtoReflect.Descriptor instead.
+func (*IndexerAssertion) Descriptor() ([]byte, []int) {
+	return file_shinzonetwork_sourcehub_v1_tx_proto_rawDescGZIP(), []int{12}
 }
 
-func (x *IndexerAttestation) GetConsensusPubKey() string {
+func (x *IndexerAssertion) GetConsensusPubKey() string {
 	if x != nil {
 		return x.ConsensusPubKey
 	}
 	return ""
 }
 
-func (x *IndexerAttestation) GetDelegateAddress() string {
+func (x *IndexerAssertion) GetDelegateAddress() string {
 	if x != nil {
 		return x.DelegateAddress
 	}
 	return ""
 }
 
-func (x *IndexerAttestation) GetSourceChain() string {
+func (x *IndexerAssertion) GetSourceChain() string {
 	if x != nil {
 		return x.SourceChain
 	}
 	return ""
 }
 
-func (x *IndexerAttestation) GetSourceChainId() uint64 {
+func (x *IndexerAssertion) GetSourceChainId() uint64 {
 	if x != nil {
 		return x.SourceChainId
 	}
 	return 0
 }
 
-func (x *IndexerAttestation) GetAttestationId() string {
+func (x *IndexerAssertion) GetAssertionId() string {
 	if x != nil {
-		return x.AttestationId
+		return x.AssertionId
 	}
 	return ""
 }
@@ -5911,103 +7240,135 @@ var file_shinzonetwork_sourcehub_v1_tx_proto_rawDesc = []byte{
 	0x3a, 0x0b, 0x82, 0xe7, 0xb0, 0x2a, 0x06, 0x73, 0x69, 0x67, 0x6e, 0x65, 0x72, 0x22, 0x20, 0x0a,
 	0x1e, 0x4d, 0x73, 0x67, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x53, 0x74, 0x72, 0x65, 0x61,
 	0x6d, 0x41, 0x63, 0x63, 0x65, 0x73, 0x73, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x22,
-	0x85, 0x02, 0x0a, 0x15, 0x4d, 0x73, 0x67, 0x49, 0x6e, 0x64, 0x65, 0x78, 0x65, 0x72, 0x41, 0x74,
-	0x74, 0x65, 0x73, 0x74, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x12, 0x16, 0x0a, 0x06, 0x73, 0x69, 0x67,
-	0x6e, 0x65, 0x72, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x06, 0x73, 0x69, 0x67, 0x6e, 0x65,
-	0x72, 0x12, 0x2a, 0x0a, 0x11, 0x63, 0x6f, 0x6e, 0x73, 0x65, 0x6e, 0x73, 0x75, 0x73, 0x5f, 0x70,
-	0x75, 0x62, 0x5f, 0x6b, 0x65, 0x79, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x0f, 0x63, 0x6f,
-	0x6e, 0x73, 0x65, 0x6e, 0x73, 0x75, 0x73, 0x50, 0x75, 0x62, 0x4b, 0x65, 0x79, 0x12, 0x29, 0x0a,
-	0x10, 0x64, 0x65, 0x6c, 0x65, 0x67, 0x61, 0x74, 0x65, 0x5f, 0x61, 0x64, 0x64, 0x72, 0x65, 0x73,
-	0x73, 0x18, 0x03, 0x20, 0x01, 0x28, 0x09, 0x52, 0x0f, 0x64, 0x65, 0x6c, 0x65, 0x67, 0x61, 0x74,
-	0x65, 0x41, 0x64, 0x64, 0x72, 0x65, 0x73, 0x73, 0x12, 0x21, 0x0a, 0x0c, 0x73, 0x6f, 0x75, 0x72,
-	0x63, 0x65, 0x5f, 0x63, 0x68, 0x61, 0x69, 0x6e, 0x18, 0x04, 0x20, 0x01, 0x28, 0x09, 0x52, 0x0b,
-	0x73, 0x6f, 0x75, 0x72, 0x63, 0x65, 0x43, 0x68, 0x61, 0x69, 0x6e, 0x12, 0x26, 0x0a, 0x0f, 0x73,
-	0x6f, 0x75, 0x72, 0x63, 0x65, 0x5f, 0x63, 0x68, 0x61, 0x69, 0x6e, 0x5f, 0x69, 0x64, 0x18, 0x05,
-	0x20, 0x01, 0x28, 0x04, 0x52, 0x0d, 0x73, 0x6f, 0x75, 0x72, 0x63, 0x65, 0x43, 0x68, 0x61, 0x69,
-	0x6e, 0x49, 0x64, 0x12, 0x25, 0x0a, 0x0e, 0x61, 0x74, 0x74, 0x65, 0x73, 0x74, 0x61, 0x74, 0x69,
-	0x6f, 0x6e, 0x5f, 0x69, 0x64, 0x18, 0x06, 0x20, 0x01, 0x28, 0x09, 0x52, 0x0d, 0x61, 0x74, 0x74,
-	0x65, 0x73, 0x74, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x49, 0x64, 0x3a, 0x0b, 0x82, 0xe7, 0xb0, 0x2a,
-	0x06, 0x73, 0x69, 0x67, 0x6e, 0x65, 0x72, 0x22, 0x1f, 0x0a, 0x1d, 0x4d, 0x73, 0x67, 0x49, 0x6e,
-	0x64, 0x65, 0x78, 0x65, 0x72, 0x41, 0x74, 0x74, 0x65, 0x73, 0x74, 0x61, 0x74, 0x69, 0x6f, 0x6e,
-	0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x22, 0xdd, 0x01, 0x0a, 0x12, 0x49, 0x6e, 0x64,
-	0x65, 0x78, 0x65, 0x72, 0x41, 0x74, 0x74, 0x65, 0x73, 0x74, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x12,
+	0xd7, 0x02, 0x0a, 0x13, 0x4d, 0x73, 0x67, 0x49, 0x6e, 0x64, 0x65, 0x78, 0x65, 0x72, 0x41, 0x73,
+	0x73, 0x65, 0x72, 0x74, 0x69, 0x6f, 0x6e, 0x12, 0x16, 0x0a, 0x06, 0x73, 0x69, 0x67, 0x6e, 0x65,
+	0x72, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x06, 0x73, 0x69, 0x67, 0x6e, 0x65, 0x72, 0x12,
 	0x2a, 0x0a, 0x11, 0x63, 0x6f, 0x6e, 0x73, 0x65, 0x6e, 0x73, 0x75, 0x73, 0x5f, 0x70, 0x75, 0x62,
-	0x5f, 0x6b, 0x65, 0x79, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x0f, 0x63, 0x6f, 0x6e, 0x73,
+	0x5f, 0x6b, 0x65, 0x79, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x0f, 0x63, 0x6f, 0x6e, 0x73,
 	0x65, 0x6e, 0x73, 0x75, 0x73, 0x50, 0x75, 0x62, 0x4b, 0x65, 0x79, 0x12, 0x29, 0x0a, 0x10, 0x64,
 	0x65, 0x6c, 0x65, 0x67, 0x61, 0x74, 0x65, 0x5f, 0x61, 0x64, 0x64, 0x72, 0x65, 0x73, 0x73, 0x18,
-	0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x0f, 0x64, 0x65, 0x6c, 0x65, 0x67, 0x61, 0x74, 0x65, 0x41,
+	0x03, 0x20, 0x01, 0x28, 0x09, 0x52, 0x0f, 0x64, 0x65, 0x6c, 0x65, 0x67, 0x61, 0x74, 0x65, 0x41,
 	0x64, 0x64, 0x72, 0x65, 0x73, 0x73, 0x12, 0x21, 0x0a, 0x0c, 0x73, 0x6f, 0x75, 0x72, 0x63, 0x65,
-	0x5f, 0x63, 0x68, 0x61, 0x69, 0x6e, 0x18, 0x03, 0x20, 0x01, 0x28, 0x09, 0x52, 0x0b, 0x73, 0x6f,
+	0x5f, 0x63, 0x68, 0x61, 0x69, 0x6e, 0x18, 0x04, 0x20, 0x01, 0x28, 0x09, 0x52, 0x0b, 0x73, 0x6f,
 	0x75, 0x72, 0x63, 0x65, 0x43, 0x68, 0x61, 0x69, 0x6e, 0x12, 0x26, 0x0a, 0x0f, 0x73, 0x6f, 0x75,
-	0x72, 0x63, 0x65, 0x5f, 0x63, 0x68, 0x61, 0x69, 0x6e, 0x5f, 0x69, 0x64, 0x18, 0x04, 0x20, 0x01,
+	0x72, 0x63, 0x65, 0x5f, 0x63, 0x68, 0x61, 0x69, 0x6e, 0x5f, 0x69, 0x64, 0x18, 0x05, 0x20, 0x01,
 	0x28, 0x04, 0x52, 0x0d, 0x73, 0x6f, 0x75, 0x72, 0x63, 0x65, 0x43, 0x68, 0x61, 0x69, 0x6e, 0x49,
-	0x64, 0x12, 0x25, 0x0a, 0x0e, 0x61, 0x74, 0x74, 0x65, 0x73, 0x74, 0x61, 0x74, 0x69, 0x6f, 0x6e,
-	0x5f, 0x69, 0x64, 0x18, 0x05, 0x20, 0x01, 0x28, 0x09, 0x52, 0x0d, 0x61, 0x74, 0x74, 0x65, 0x73,
-	0x74, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x49, 0x64, 0x2a, 0x35, 0x0a, 0x08, 0x52, 0x65, 0x73, 0x6f,
-	0x75, 0x72, 0x63, 0x65, 0x12, 0x16, 0x0a, 0x12, 0x52, 0x45, 0x53, 0x4f, 0x55, 0x52, 0x43, 0x45,
-	0x5f, 0x50, 0x52, 0x49, 0x4d, 0x49, 0x54, 0x49, 0x56, 0x45, 0x10, 0x00, 0x12, 0x11, 0x0a, 0x0d,
-	0x52, 0x45, 0x53, 0x4f, 0x55, 0x52, 0x43, 0x45, 0x5f, 0x56, 0x49, 0x45, 0x57, 0x10, 0x01, 0x32,
-	0xc0, 0x05, 0x0a, 0x03, 0x4d, 0x73, 0x67, 0x12, 0x88, 0x01, 0x0a, 0x14, 0x52, 0x65, 0x67, 0x69,
-	0x73, 0x74, 0x65, 0x72, 0x53, 0x6f, 0x75, 0x72, 0x63, 0x65, 0x68, 0x75, 0x62, 0x49, 0x43, 0x41,
-	0x12, 0x33, 0x2e, 0x73, 0x68, 0x69, 0x6e, 0x7a, 0x6f, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b,
-	0x2e, 0x73, 0x6f, 0x75, 0x72, 0x63, 0x65, 0x68, 0x75, 0x62, 0x2e, 0x76, 0x31, 0x2e, 0x4d, 0x73,
-	0x67, 0x52, 0x65, 0x67, 0x69, 0x73, 0x74, 0x65, 0x72, 0x53, 0x6f, 0x75, 0x72, 0x63, 0x65, 0x68,
-	0x75, 0x62, 0x49, 0x43, 0x41, 0x1a, 0x3b, 0x2e, 0x73, 0x68, 0x69, 0x6e, 0x7a, 0x6f, 0x6e, 0x65,
+	0x64, 0x12, 0x21, 0x0a, 0x0c, 0x61, 0x73, 0x73, 0x65, 0x72, 0x74, 0x69, 0x6f, 0x6e, 0x5f, 0x69,
+	0x64, 0x18, 0x06, 0x20, 0x01, 0x28, 0x09, 0x52, 0x0b, 0x61, 0x73, 0x73, 0x65, 0x72, 0x74, 0x69,
+	0x6f, 0x6e, 0x49, 0x64, 0x12, 0x27, 0x0a, 0x0f, 0x64, 0x65, 0x6c, 0x65, 0x67, 0x61, 0x74, 0x65,
+	0x5f, 0x64, 0x69, 0x67, 0x65, 0x73, 0x74, 0x18, 0x07, 0x20, 0x01, 0x28, 0x0c, 0x52, 0x0e, 0x64,
+	0x65, 0x6c, 0x65, 0x67, 0x61, 0x74, 0x65, 0x44, 0x69, 0x67, 0x65, 0x73, 0x74, 0x12, 0x2d, 0x0a,
+	0x12, 0x64, 0x65, 0x6c, 0x65, 0x67, 0x61, 0x74, 0x65, 0x5f, 0x73, 0x69, 0x67, 0x6e, 0x61, 0x74,
+	0x75, 0x72, 0x65, 0x18, 0x08, 0x20, 0x01, 0x28, 0x0c, 0x52, 0x11, 0x64, 0x65, 0x6c, 0x65, 0x67,
+	0x61, 0x74, 0x65, 0x53, 0x69, 0x67, 0x6e, 0x61, 0x74, 0x75, 0x72, 0x65, 0x3a, 0x0b, 0x82, 0xe7,
+	0xb0, 0x2a, 0x06, 0x73, 0x69, 0x67, 0x6e, 0x65, 0x72, 0x22, 0x1d, 0x0a, 0x1b, 0x4d, 0x73, 0x67,
+	0x49, 0x6e, 0x64, 0x65, 0x78, 0x65, 0x72, 0x41, 0x73, 0x73, 0x65, 0x72, 0x74, 0x69, 0x6f, 0x6e,
+	0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x22, 0x84, 0x02, 0x0a, 0x18, 0x4d, 0x73, 0x67,
+	0x41, 0x64, 0x6d, 0x69, 0x6e, 0x49, 0x6e, 0x64, 0x65, 0x78, 0x65, 0x72, 0x41, 0x73, 0x73, 0x65,
+	0x72, 0x74, 0x69, 0x6f, 0x6e, 0x12, 0x16, 0x0a, 0x06, 0x73, 0x69, 0x67, 0x6e, 0x65, 0x72, 0x18,
+	0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x06, 0x73, 0x69, 0x67, 0x6e, 0x65, 0x72, 0x12, 0x2a, 0x0a,
+	0x11, 0x63, 0x6f, 0x6e, 0x73, 0x65, 0x6e, 0x73, 0x75, 0x73, 0x5f, 0x70, 0x75, 0x62, 0x5f, 0x6b,
+	0x65, 0x79, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x0f, 0x63, 0x6f, 0x6e, 0x73, 0x65, 0x6e,
+	0x73, 0x75, 0x73, 0x50, 0x75, 0x62, 0x4b, 0x65, 0x79, 0x12, 0x29, 0x0a, 0x10, 0x64, 0x65, 0x6c,
+	0x65, 0x67, 0x61, 0x74, 0x65, 0x5f, 0x61, 0x64, 0x64, 0x72, 0x65, 0x73, 0x73, 0x18, 0x03, 0x20,
+	0x01, 0x28, 0x09, 0x52, 0x0f, 0x64, 0x65, 0x6c, 0x65, 0x67, 0x61, 0x74, 0x65, 0x41, 0x64, 0x64,
+	0x72, 0x65, 0x73, 0x73, 0x12, 0x21, 0x0a, 0x0c, 0x73, 0x6f, 0x75, 0x72, 0x63, 0x65, 0x5f, 0x63,
+	0x68, 0x61, 0x69, 0x6e, 0x18, 0x04, 0x20, 0x01, 0x28, 0x09, 0x52, 0x0b, 0x73, 0x6f, 0x75, 0x72,
+	0x63, 0x65, 0x43, 0x68, 0x61, 0x69, 0x6e, 0x12, 0x26, 0x0a, 0x0f, 0x73, 0x6f, 0x75, 0x72, 0x63,
+	0x65, 0x5f, 0x63, 0x68, 0x61, 0x69, 0x6e, 0x5f, 0x69, 0x64, 0x18, 0x05, 0x20, 0x01, 0x28, 0x04,
+	0x52, 0x0d, 0x73, 0x6f, 0x75, 0x72, 0x63, 0x65, 0x43, 0x68, 0x61, 0x69, 0x6e, 0x49, 0x64, 0x12,
+	0x21, 0x0a, 0x0c, 0x61, 0x73, 0x73, 0x65, 0x72, 0x74, 0x69, 0x6f, 0x6e, 0x5f, 0x69, 0x64, 0x18,
+	0x06, 0x20, 0x01, 0x28, 0x09, 0x52, 0x0b, 0x61, 0x73, 0x73, 0x65, 0x72, 0x74, 0x69, 0x6f, 0x6e,
+	0x49, 0x64, 0x3a, 0x0b, 0x82, 0xe7, 0xb0, 0x2a, 0x06, 0x73, 0x69, 0x67, 0x6e, 0x65, 0x72, 0x22,
+	0x22, 0x0a, 0x20, 0x4d, 0x73, 0x67, 0x41, 0x64, 0x6d, 0x69, 0x6e, 0x49, 0x6e, 0x64, 0x65, 0x78,
+	0x65, 0x72, 0x41, 0x73, 0x73, 0x65, 0x72, 0x74, 0x69, 0x6f, 0x6e, 0x52, 0x65, 0x73, 0x70, 0x6f,
+	0x6e, 0x73, 0x65, 0x22, 0xd7, 0x01, 0x0a, 0x10, 0x49, 0x6e, 0x64, 0x65, 0x78, 0x65, 0x72, 0x41,
+	0x73, 0x73, 0x65, 0x72, 0x74, 0x69, 0x6f, 0x6e, 0x12, 0x2a, 0x0a, 0x11, 0x63, 0x6f, 0x6e, 0x73,
+	0x65, 0x6e, 0x73, 0x75, 0x73, 0x5f, 0x70, 0x75, 0x62, 0x5f, 0x6b, 0x65, 0x79, 0x18, 0x01, 0x20,
+	0x01, 0x28, 0x09, 0x52, 0x0f, 0x63, 0x6f, 0x6e, 0x73, 0x65, 0x6e, 0x73, 0x75, 0x73, 0x50, 0x75,
+	0x62, 0x4b, 0x65, 0x79, 0x12, 0x29, 0x0a, 0x10, 0x64, 0x65, 0x6c, 0x65, 0x67, 0x61, 0x74, 0x65,
+	0x5f, 0x61, 0x64, 0x64, 0x72, 0x65, 0x73, 0x73, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x0f,
+	0x64, 0x65, 0x6c, 0x65, 0x67, 0x61, 0x74, 0x65, 0x41, 0x64, 0x64, 0x72, 0x65, 0x73, 0x73, 0x12,
+	0x21, 0x0a, 0x0c, 0x73, 0x6f, 0x75, 0x72, 0x63, 0x65, 0x5f, 0x63, 0x68, 0x61, 0x69, 0x6e, 0x18,
+	0x03, 0x20, 0x01, 0x28, 0x09, 0x52, 0x0b, 0x73, 0x6f, 0x75, 0x72, 0x63, 0x65, 0x43, 0x68, 0x61,
+	0x69, 0x6e, 0x12, 0x26, 0x0a, 0x0f, 0x73, 0x6f, 0x75, 0x72, 0x63, 0x65, 0x5f, 0x63, 0x68, 0x61,
+	0x69, 0x6e, 0x5f, 0x69, 0x64, 0x18, 0x04, 0x20, 0x01, 0x28, 0x04, 0x52, 0x0d, 0x73, 0x6f, 0x75,
+	0x72, 0x63, 0x65, 0x43, 0x68, 0x61, 0x69, 0x6e, 0x49, 0x64, 0x12, 0x21, 0x0a, 0x0c, 0x61, 0x73,
+	0x73, 0x65, 0x72, 0x74, 0x69, 0x6f, 0x6e, 0x5f, 0x69, 0x64, 0x18, 0x05, 0x20, 0x01, 0x28, 0x09,
+	0x52, 0x0b, 0x61, 0x73, 0x73, 0x65, 0x72, 0x74, 0x69, 0x6f, 0x6e, 0x49, 0x64, 0x2a, 0x35, 0x0a,
+	0x08, 0x52, 0x65, 0x73, 0x6f, 0x75, 0x72, 0x63, 0x65, 0x12, 0x16, 0x0a, 0x12, 0x52, 0x45, 0x53,
+	0x4f, 0x55, 0x52, 0x43, 0x45, 0x5f, 0x50, 0x52, 0x49, 0x4d, 0x49, 0x54, 0x49, 0x56, 0x45, 0x10,
+	0x00, 0x12, 0x11, 0x0a, 0x0d, 0x52, 0x45, 0x53, 0x4f, 0x55, 0x52, 0x43, 0x45, 0x5f, 0x56, 0x49,
+	0x45, 0x57, 0x10, 0x01, 0x32, 0xc7, 0x06, 0x0a, 0x03, 0x4d, 0x73, 0x67, 0x12, 0x88, 0x01, 0x0a,
+	0x14, 0x52, 0x65, 0x67, 0x69, 0x73, 0x74, 0x65, 0x72, 0x53, 0x6f, 0x75, 0x72, 0x63, 0x65, 0x68,
+	0x75, 0x62, 0x49, 0x43, 0x41, 0x12, 0x33, 0x2e, 0x73, 0x68, 0x69, 0x6e, 0x7a, 0x6f, 0x6e, 0x65,
 	0x74, 0x77, 0x6f, 0x72, 0x6b, 0x2e, 0x73, 0x6f, 0x75, 0x72, 0x63, 0x65, 0x68, 0x75, 0x62, 0x2e,
 	0x76, 0x31, 0x2e, 0x4d, 0x73, 0x67, 0x52, 0x65, 0x67, 0x69, 0x73, 0x74, 0x65, 0x72, 0x53, 0x6f,
-	0x75, 0x72, 0x63, 0x65, 0x68, 0x75, 0x62, 0x49, 0x43, 0x41, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e,
-	0x73, 0x65, 0x12, 0x88, 0x01, 0x0a, 0x14, 0x52, 0x65, 0x67, 0x69, 0x73, 0x74, 0x65, 0x72, 0x53,
-	0x68, 0x69, 0x6e, 0x7a, 0x6f, 0x50, 0x6f, 0x6c, 0x69, 0x63, 0x79, 0x12, 0x33, 0x2e, 0x73, 0x68,
-	0x69, 0x6e, 0x7a, 0x6f, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x2e, 0x73, 0x6f, 0x75, 0x72,
-	0x63, 0x65, 0x68, 0x75, 0x62, 0x2e, 0x76, 0x31, 0x2e, 0x4d, 0x73, 0x67, 0x52, 0x65, 0x67, 0x69,
+	0x75, 0x72, 0x63, 0x65, 0x68, 0x75, 0x62, 0x49, 0x43, 0x41, 0x1a, 0x3b, 0x2e, 0x73, 0x68, 0x69,
+	0x6e, 0x7a, 0x6f, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x2e, 0x73, 0x6f, 0x75, 0x72, 0x63,
+	0x65, 0x68, 0x75, 0x62, 0x2e, 0x76, 0x31, 0x2e, 0x4d, 0x73, 0x67, 0x52, 0x65, 0x67, 0x69, 0x73,
+	0x74, 0x65, 0x72, 0x53, 0x6f, 0x75, 0x72, 0x63, 0x65, 0x68, 0x75, 0x62, 0x49, 0x43, 0x41, 0x52,
+	0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x88, 0x01, 0x0a, 0x14, 0x52, 0x65, 0x67, 0x69,
 	0x73, 0x74, 0x65, 0x72, 0x53, 0x68, 0x69, 0x6e, 0x7a, 0x6f, 0x50, 0x6f, 0x6c, 0x69, 0x63, 0x79,
-	0x1a, 0x3b, 0x2e, 0x73, 0x68, 0x69, 0x6e, 0x7a, 0x6f, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b,
+	0x12, 0x33, 0x2e, 0x73, 0x68, 0x69, 0x6e, 0x7a, 0x6f, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b,
 	0x2e, 0x73, 0x6f, 0x75, 0x72, 0x63, 0x65, 0x68, 0x75, 0x62, 0x2e, 0x76, 0x31, 0x2e, 0x4d, 0x73,
 	0x67, 0x52, 0x65, 0x67, 0x69, 0x73, 0x74, 0x65, 0x72, 0x53, 0x68, 0x69, 0x6e, 0x7a, 0x6f, 0x50,
-	0x6f, 0x6c, 0x69, 0x63, 0x79, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x8b, 0x01,
-	0x0a, 0x15, 0x52, 0x65, 0x67, 0x69, 0x73, 0x74, 0x65, 0x72, 0x53, 0x68, 0x69, 0x6e, 0x7a, 0x6f,
-	0x4f, 0x62, 0x6a, 0x65, 0x63, 0x74, 0x73, 0x12, 0x34, 0x2e, 0x73, 0x68, 0x69, 0x6e, 0x7a, 0x6f,
-	0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x2e, 0x73, 0x6f, 0x75, 0x72, 0x63, 0x65, 0x68, 0x75,
-	0x62, 0x2e, 0x76, 0x31, 0x2e, 0x4d, 0x73, 0x67, 0x52, 0x65, 0x67, 0x69, 0x73, 0x74, 0x65, 0x72,
-	0x53, 0x68, 0x69, 0x6e, 0x7a, 0x6f, 0x4f, 0x62, 0x6a, 0x65, 0x63, 0x74, 0x73, 0x1a, 0x3c, 0x2e,
-	0x73, 0x68, 0x69, 0x6e, 0x7a, 0x6f, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x2e, 0x73, 0x6f,
-	0x75, 0x72, 0x63, 0x65, 0x68, 0x75, 0x62, 0x2e, 0x76, 0x31, 0x2e, 0x4d, 0x73, 0x67, 0x52, 0x65,
-	0x67, 0x69, 0x73, 0x74, 0x65, 0x72, 0x53, 0x68, 0x69, 0x6e, 0x7a, 0x6f, 0x4f, 0x62, 0x6a, 0x65,
-	0x63, 0x74, 0x73, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x85, 0x01, 0x0a, 0x13,
-	0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x53, 0x74, 0x72, 0x65, 0x61, 0x6d, 0x41, 0x63, 0x63,
-	0x65, 0x73, 0x73, 0x12, 0x32, 0x2e, 0x73, 0x68, 0x69, 0x6e, 0x7a, 0x6f, 0x6e, 0x65, 0x74, 0x77,
-	0x6f, 0x72, 0x6b, 0x2e, 0x73, 0x6f, 0x75, 0x72, 0x63, 0x65, 0x68, 0x75, 0x62, 0x2e, 0x76, 0x31,
-	0x2e, 0x4d, 0x73, 0x67, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x53, 0x74, 0x72, 0x65, 0x61,
-	0x6d, 0x41, 0x63, 0x63, 0x65, 0x73, 0x73, 0x1a, 0x3a, 0x2e, 0x73, 0x68, 0x69, 0x6e, 0x7a, 0x6f,
-	0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x2e, 0x73, 0x6f, 0x75, 0x72, 0x63, 0x65, 0x68, 0x75,
-	0x62, 0x2e, 0x76, 0x31, 0x2e, 0x4d, 0x73, 0x67, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x53,
-	0x74, 0x72, 0x65, 0x61, 0x6d, 0x41, 0x63, 0x63, 0x65, 0x73, 0x73, 0x52, 0x65, 0x73, 0x70, 0x6f,
-	0x6e, 0x73, 0x65, 0x12, 0x85, 0x01, 0x0a, 0x15, 0x41, 0x64, 0x64, 0x49, 0x6e, 0x64, 0x65, 0x78,
-	0x65, 0x72, 0x41, 0x74, 0x74, 0x65, 0x73, 0x74, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x12, 0x31, 0x2e,
-	0x73, 0x68, 0x69, 0x6e, 0x7a, 0x6f, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x2e, 0x73, 0x6f,
-	0x75, 0x72, 0x63, 0x65, 0x68, 0x75, 0x62, 0x2e, 0x76, 0x31, 0x2e, 0x4d, 0x73, 0x67, 0x49, 0x6e,
-	0x64, 0x65, 0x78, 0x65, 0x72, 0x41, 0x74, 0x74, 0x65, 0x73, 0x74, 0x61, 0x74, 0x69, 0x6f, 0x6e,
-	0x1a, 0x39, 0x2e, 0x73, 0x68, 0x69, 0x6e, 0x7a, 0x6f, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b,
-	0x2e, 0x73, 0x6f, 0x75, 0x72, 0x63, 0x65, 0x68, 0x75, 0x62, 0x2e, 0x76, 0x31, 0x2e, 0x4d, 0x73,
-	0x67, 0x49, 0x6e, 0x64, 0x65, 0x78, 0x65, 0x72, 0x41, 0x74, 0x74, 0x65, 0x73, 0x74, 0x61, 0x74,
-	0x69, 0x6f, 0x6e, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x1a, 0x05, 0x80, 0xe7, 0xb0,
-	0x2a, 0x01, 0x42, 0x82, 0x02, 0x0a, 0x1e, 0x63, 0x6f, 0x6d, 0x2e, 0x73, 0x68, 0x69, 0x6e, 0x7a,
+	0x6f, 0x6c, 0x69, 0x63, 0x79, 0x1a, 0x3b, 0x2e, 0x73, 0x68, 0x69, 0x6e, 0x7a, 0x6f, 0x6e, 0x65,
+	0x74, 0x77, 0x6f, 0x72, 0x6b, 0x2e, 0x73, 0x6f, 0x75, 0x72, 0x63, 0x65, 0x68, 0x75, 0x62, 0x2e,
+	0x76, 0x31, 0x2e, 0x4d, 0x73, 0x67, 0x52, 0x65, 0x67, 0x69, 0x73, 0x74, 0x65, 0x72, 0x53, 0x68,
+	0x69, 0x6e, 0x7a, 0x6f, 0x50, 0x6f, 0x6c, 0x69, 0x63, 0x79, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e,
+	0x73, 0x65, 0x12, 0x8b, 0x01, 0x0a, 0x15, 0x52, 0x65, 0x67, 0x69, 0x73, 0x74, 0x65, 0x72, 0x53,
+	0x68, 0x69, 0x6e, 0x7a, 0x6f, 0x4f, 0x62, 0x6a, 0x65, 0x63, 0x74, 0x73, 0x12, 0x34, 0x2e, 0x73,
+	0x68, 0x69, 0x6e, 0x7a, 0x6f, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x2e, 0x73, 0x6f, 0x75,
+	0x72, 0x63, 0x65, 0x68, 0x75, 0x62, 0x2e, 0x76, 0x31, 0x2e, 0x4d, 0x73, 0x67, 0x52, 0x65, 0x67,
+	0x69, 0x73, 0x74, 0x65, 0x72, 0x53, 0x68, 0x69, 0x6e, 0x7a, 0x6f, 0x4f, 0x62, 0x6a, 0x65, 0x63,
+	0x74, 0x73, 0x1a, 0x3c, 0x2e, 0x73, 0x68, 0x69, 0x6e, 0x7a, 0x6f, 0x6e, 0x65, 0x74, 0x77, 0x6f,
+	0x72, 0x6b, 0x2e, 0x73, 0x6f, 0x75, 0x72, 0x63, 0x65, 0x68, 0x75, 0x62, 0x2e, 0x76, 0x31, 0x2e,
+	0x4d, 0x73, 0x67, 0x52, 0x65, 0x67, 0x69, 0x73, 0x74, 0x65, 0x72, 0x53, 0x68, 0x69, 0x6e, 0x7a,
+	0x6f, 0x4f, 0x62, 0x6a, 0x65, 0x63, 0x74, 0x73, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65,
+	0x12, 0x85, 0x01, 0x0a, 0x13, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x53, 0x74, 0x72, 0x65,
+	0x61, 0x6d, 0x41, 0x63, 0x63, 0x65, 0x73, 0x73, 0x12, 0x32, 0x2e, 0x73, 0x68, 0x69, 0x6e, 0x7a,
 	0x6f, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x2e, 0x73, 0x6f, 0x75, 0x72, 0x63, 0x65, 0x68,
-	0x75, 0x62, 0x2e, 0x76, 0x31, 0x42, 0x07, 0x54, 0x78, 0x50, 0x72, 0x6f, 0x74, 0x6f, 0x50, 0x01,
-	0x5a, 0x4d, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x73, 0x68, 0x69,
-	0x6e, 0x7a, 0x6f, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x2f, 0x73, 0x68, 0x69, 0x6e, 0x7a,
-	0x6f, 0x68, 0x75, 0x62, 0x2f, 0x61, 0x70, 0x69, 0x2f, 0x73, 0x68, 0x69, 0x6e, 0x7a, 0x6f, 0x6e,
-	0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x2f, 0x73, 0x6f, 0x75, 0x72, 0x63, 0x65, 0x68, 0x75, 0x62,
-	0x2f, 0x76, 0x31, 0x3b, 0x73, 0x6f, 0x75, 0x72, 0x63, 0x65, 0x68, 0x75, 0x62, 0x76, 0x31, 0xa2,
-	0x02, 0x03, 0x53, 0x53, 0x58, 0xaa, 0x02, 0x1a, 0x53, 0x68, 0x69, 0x6e, 0x7a, 0x6f, 0x6e, 0x65,
-	0x74, 0x77, 0x6f, 0x72, 0x6b, 0x2e, 0x53, 0x6f, 0x75, 0x72, 0x63, 0x65, 0x68, 0x75, 0x62, 0x2e,
-	0x56, 0x31, 0xca, 0x02, 0x1a, 0x53, 0x68, 0x69, 0x6e, 0x7a, 0x6f, 0x6e, 0x65, 0x74, 0x77, 0x6f,
-	0x72, 0x6b, 0x5c, 0x53, 0x6f, 0x75, 0x72, 0x63, 0x65, 0x68, 0x75, 0x62, 0x5c, 0x56, 0x31, 0xe2,
-	0x02, 0x26, 0x53, 0x68, 0x69, 0x6e, 0x7a, 0x6f, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x5c,
-	0x53, 0x6f, 0x75, 0x72, 0x63, 0x65, 0x68, 0x75, 0x62, 0x5c, 0x56, 0x31, 0x5c, 0x47, 0x50, 0x42,
-	0x4d, 0x65, 0x74, 0x61, 0x64, 0x61, 0x74, 0x61, 0xea, 0x02, 0x1c, 0x53, 0x68, 0x69, 0x6e, 0x7a,
-	0x6f, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x3a, 0x3a, 0x53, 0x6f, 0x75, 0x72, 0x63, 0x65,
-	0x68, 0x75, 0x62, 0x3a, 0x3a, 0x56, 0x31, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
+	0x75, 0x62, 0x2e, 0x76, 0x31, 0x2e, 0x4d, 0x73, 0x67, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74,
+	0x53, 0x74, 0x72, 0x65, 0x61, 0x6d, 0x41, 0x63, 0x63, 0x65, 0x73, 0x73, 0x1a, 0x3a, 0x2e, 0x73,
+	0x68, 0x69, 0x6e, 0x7a, 0x6f, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x2e, 0x73, 0x6f, 0x75,
+	0x72, 0x63, 0x65, 0x68, 0x75, 0x62, 0x2e, 0x76, 0x31, 0x2e, 0x4d, 0x73, 0x67, 0x52, 0x65, 0x71,
+	0x75, 0x65, 0x73, 0x74, 0x53, 0x74, 0x72, 0x65, 0x61, 0x6d, 0x41, 0x63, 0x63, 0x65, 0x73, 0x73,
+	0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x7f, 0x0a, 0x13, 0x41, 0x64, 0x64, 0x49,
+	0x6e, 0x64, 0x65, 0x78, 0x65, 0x72, 0x41, 0x73, 0x73, 0x65, 0x72, 0x74, 0x69, 0x6f, 0x6e, 0x12,
+	0x2f, 0x2e, 0x73, 0x68, 0x69, 0x6e, 0x7a, 0x6f, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x2e,
+	0x73, 0x6f, 0x75, 0x72, 0x63, 0x65, 0x68, 0x75, 0x62, 0x2e, 0x76, 0x31, 0x2e, 0x4d, 0x73, 0x67,
+	0x49, 0x6e, 0x64, 0x65, 0x78, 0x65, 0x72, 0x41, 0x73, 0x73, 0x65, 0x72, 0x74, 0x69, 0x6f, 0x6e,
+	0x1a, 0x37, 0x2e, 0x73, 0x68, 0x69, 0x6e, 0x7a, 0x6f, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b,
+	0x2e, 0x73, 0x6f, 0x75, 0x72, 0x63, 0x65, 0x68, 0x75, 0x62, 0x2e, 0x76, 0x31, 0x2e, 0x4d, 0x73,
+	0x67, 0x49, 0x6e, 0x64, 0x65, 0x78, 0x65, 0x72, 0x41, 0x73, 0x73, 0x65, 0x72, 0x74, 0x69, 0x6f,
+	0x6e, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x8b, 0x01, 0x0a, 0x15, 0x41, 0x64,
+	0x6d, 0x69, 0x6e, 0x49, 0x6e, 0x64, 0x65, 0x78, 0x65, 0x72, 0x41, 0x73, 0x73, 0x65, 0x72, 0x74,
+	0x69, 0x6f, 0x6e, 0x12, 0x34, 0x2e, 0x73, 0x68, 0x69, 0x6e, 0x7a, 0x6f, 0x6e, 0x65, 0x74, 0x77,
+	0x6f, 0x72, 0x6b, 0x2e, 0x73, 0x6f, 0x75, 0x72, 0x63, 0x65, 0x68, 0x75, 0x62, 0x2e, 0x76, 0x31,
+	0x2e, 0x4d, 0x73, 0x67, 0x41, 0x64, 0x6d, 0x69, 0x6e, 0x49, 0x6e, 0x64, 0x65, 0x78, 0x65, 0x72,
+	0x41, 0x73, 0x73, 0x65, 0x72, 0x74, 0x69, 0x6f, 0x6e, 0x1a, 0x3c, 0x2e, 0x73, 0x68, 0x69, 0x6e,
+	0x7a, 0x6f, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x2e, 0x73, 0x6f, 0x75, 0x72, 0x63, 0x65,
+	0x68, 0x75, 0x62, 0x2e, 0x76, 0x31, 0x2e, 0x4d, 0x73, 0x67, 0x41, 0x64, 0x6d, 0x69, 0x6e, 0x49,
+	0x6e, 0x64, 0x65, 0x78, 0x65, 0x72, 0x41, 0x73, 0x73, 0x65, 0x72, 0x74, 0x69, 0x6f, 0x6e, 0x52,
+	0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x1a, 0x05, 0x80, 0xe7, 0xb0, 0x2a, 0x01, 0x42, 0x82,
+	0x02, 0x0a, 0x1e, 0x63, 0x6f, 0x6d, 0x2e, 0x73, 0x68, 0x69, 0x6e, 0x7a, 0x6f, 0x6e, 0x65, 0x74,
+	0x77, 0x6f, 0x72, 0x6b, 0x2e, 0x73, 0x6f, 0x75, 0x72, 0x63, 0x65, 0x68, 0x75, 0x62, 0x2e, 0x76,
+	0x31, 0x42, 0x07, 0x54, 0x78, 0x50, 0x72, 0x6f, 0x74, 0x6f, 0x50, 0x01, 0x5a, 0x4d, 0x67, 0x69,
+	0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x73, 0x68, 0x69, 0x6e, 0x7a, 0x6f, 0x6e,
+	0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x2f, 0x73, 0x68, 0x69, 0x6e, 0x7a, 0x6f, 0x68, 0x75, 0x62,
+	0x2f, 0x61, 0x70, 0x69, 0x2f, 0x73, 0x68, 0x69, 0x6e, 0x7a, 0x6f, 0x6e, 0x65, 0x74, 0x77, 0x6f,
+	0x72, 0x6b, 0x2f, 0x73, 0x6f, 0x75, 0x72, 0x63, 0x65, 0x68, 0x75, 0x62, 0x2f, 0x76, 0x31, 0x3b,
+	0x73, 0x6f, 0x75, 0x72, 0x63, 0x65, 0x68, 0x75, 0x62, 0x76, 0x31, 0xa2, 0x02, 0x03, 0x53, 0x53,
+	0x58, 0xaa, 0x02, 0x1a, 0x53, 0x68, 0x69, 0x6e, 0x7a, 0x6f, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72,
+	0x6b, 0x2e, 0x53, 0x6f, 0x75, 0x72, 0x63, 0x65, 0x68, 0x75, 0x62, 0x2e, 0x56, 0x31, 0xca, 0x02,
+	0x1a, 0x53, 0x68, 0x69, 0x6e, 0x7a, 0x6f, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x5c, 0x53,
+	0x6f, 0x75, 0x72, 0x63, 0x65, 0x68, 0x75, 0x62, 0x5c, 0x56, 0x31, 0xe2, 0x02, 0x26, 0x53, 0x68,
+	0x69, 0x6e, 0x7a, 0x6f, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x5c, 0x53, 0x6f, 0x75, 0x72,
+	0x63, 0x65, 0x68, 0x75, 0x62, 0x5c, 0x56, 0x31, 0x5c, 0x47, 0x50, 0x42, 0x4d, 0x65, 0x74, 0x61,
+	0x64, 0x61, 0x74, 0x61, 0xea, 0x02, 0x1c, 0x53, 0x68, 0x69, 0x6e, 0x7a, 0x6f, 0x6e, 0x65, 0x74,
+	0x77, 0x6f, 0x72, 0x6b, 0x3a, 0x3a, 0x53, 0x6f, 0x75, 0x72, 0x63, 0x65, 0x68, 0x75, 0x62, 0x3a,
+	0x3a, 0x56, 0x31, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
 }
 
 var (
@@ -6023,7 +7384,7 @@ func file_shinzonetwork_sourcehub_v1_tx_proto_rawDescGZIP() []byte {
 }
 
 var file_shinzonetwork_sourcehub_v1_tx_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
-var file_shinzonetwork_sourcehub_v1_tx_proto_msgTypes = make([]protoimpl.MessageInfo, 11)
+var file_shinzonetwork_sourcehub_v1_tx_proto_msgTypes = make([]protoimpl.MessageInfo, 13)
 var file_shinzonetwork_sourcehub_v1_tx_proto_goTypes = []interface{}{
 	(Resource)(0),                            // 0: shinzonetwork.sourcehub.v1.Resource
 	(*MsgRegisterSourcehubICA)(nil),          // 1: shinzonetwork.sourcehub.v1.MsgRegisterSourcehubICA
@@ -6034,9 +7395,11 @@ var file_shinzonetwork_sourcehub_v1_tx_proto_goTypes = []interface{}{
 	(*MsgRegisterShinzoObjectsResponse)(nil), // 6: shinzonetwork.sourcehub.v1.MsgRegisterShinzoObjectsResponse
 	(*MsgRequestStreamAccess)(nil),           // 7: shinzonetwork.sourcehub.v1.MsgRequestStreamAccess
 	(*MsgRequestStreamAccessResponse)(nil),   // 8: shinzonetwork.sourcehub.v1.MsgRequestStreamAccessResponse
-	(*MsgIndexerAttestation)(nil),            // 9: shinzonetwork.sourcehub.v1.MsgIndexerAttestation
-	(*MsgIndexerAttestationResponse)(nil),    // 10: shinzonetwork.sourcehub.v1.MsgIndexerAttestationResponse
-	(*IndexerAttestation)(nil),               // 11: shinzonetwork.sourcehub.v1.IndexerAttestation
+	(*MsgIndexerAssertion)(nil),              // 9: shinzonetwork.sourcehub.v1.MsgIndexerAssertion
+	(*MsgIndexerAssertionResponse)(nil),      // 10: shinzonetwork.sourcehub.v1.MsgIndexerAssertionResponse
+	(*MsgAdminIndexerAssertion)(nil),         // 11: shinzonetwork.sourcehub.v1.MsgAdminIndexerAssertion
+	(*MsgAdminIndexerAssertionResponse)(nil), // 12: shinzonetwork.sourcehub.v1.MsgAdminIndexerAssertionResponse
+	(*IndexerAssertion)(nil),                 // 13: shinzonetwork.sourcehub.v1.IndexerAssertion
 }
 var file_shinzonetwork_sourcehub_v1_tx_proto_depIdxs = []int32{
 	0,  // 0: shinzonetwork.sourcehub.v1.MsgRequestStreamAccess.resource:type_name -> shinzonetwork.sourcehub.v1.Resource
@@ -6044,14 +7407,16 @@ var file_shinzonetwork_sourcehub_v1_tx_proto_depIdxs = []int32{
 	3,  // 2: shinzonetwork.sourcehub.v1.Msg.RegisterShinzoPolicy:input_type -> shinzonetwork.sourcehub.v1.MsgRegisterShinzoPolicy
 	5,  // 3: shinzonetwork.sourcehub.v1.Msg.RegisterShinzoObjects:input_type -> shinzonetwork.sourcehub.v1.MsgRegisterShinzoObjects
 	7,  // 4: shinzonetwork.sourcehub.v1.Msg.RequestStreamAccess:input_type -> shinzonetwork.sourcehub.v1.MsgRequestStreamAccess
-	9,  // 5: shinzonetwork.sourcehub.v1.Msg.AddIndexerAttestation:input_type -> shinzonetwork.sourcehub.v1.MsgIndexerAttestation
-	2,  // 6: shinzonetwork.sourcehub.v1.Msg.RegisterSourcehubICA:output_type -> shinzonetwork.sourcehub.v1.MsgRegisterSourcehubICAResponse
-	4,  // 7: shinzonetwork.sourcehub.v1.Msg.RegisterShinzoPolicy:output_type -> shinzonetwork.sourcehub.v1.MsgRegisterShinzoPolicyResponse
-	6,  // 8: shinzonetwork.sourcehub.v1.Msg.RegisterShinzoObjects:output_type -> shinzonetwork.sourcehub.v1.MsgRegisterShinzoObjectsResponse
-	8,  // 9: shinzonetwork.sourcehub.v1.Msg.RequestStreamAccess:output_type -> shinzonetwork.sourcehub.v1.MsgRequestStreamAccessResponse
-	10, // 10: shinzonetwork.sourcehub.v1.Msg.AddIndexerAttestation:output_type -> shinzonetwork.sourcehub.v1.MsgIndexerAttestationResponse
-	6,  // [6:11] is the sub-list for method output_type
-	1,  // [1:6] is the sub-list for method input_type
+	9,  // 5: shinzonetwork.sourcehub.v1.Msg.AddIndexerAssertion:input_type -> shinzonetwork.sourcehub.v1.MsgIndexerAssertion
+	11, // 6: shinzonetwork.sourcehub.v1.Msg.AdminIndexerAssertion:input_type -> shinzonetwork.sourcehub.v1.MsgAdminIndexerAssertion
+	2,  // 7: shinzonetwork.sourcehub.v1.Msg.RegisterSourcehubICA:output_type -> shinzonetwork.sourcehub.v1.MsgRegisterSourcehubICAResponse
+	4,  // 8: shinzonetwork.sourcehub.v1.Msg.RegisterShinzoPolicy:output_type -> shinzonetwork.sourcehub.v1.MsgRegisterShinzoPolicyResponse
+	6,  // 9: shinzonetwork.sourcehub.v1.Msg.RegisterShinzoObjects:output_type -> shinzonetwork.sourcehub.v1.MsgRegisterShinzoObjectsResponse
+	8,  // 10: shinzonetwork.sourcehub.v1.Msg.RequestStreamAccess:output_type -> shinzonetwork.sourcehub.v1.MsgRequestStreamAccessResponse
+	10, // 11: shinzonetwork.sourcehub.v1.Msg.AddIndexerAssertion:output_type -> shinzonetwork.sourcehub.v1.MsgIndexerAssertionResponse
+	12, // 12: shinzonetwork.sourcehub.v1.Msg.AdminIndexerAssertion:output_type -> shinzonetwork.sourcehub.v1.MsgAdminIndexerAssertionResponse
+	7,  // [7:13] is the sub-list for method output_type
+	1,  // [1:7] is the sub-list for method input_type
 	1,  // [1:1] is the sub-list for extension type_name
 	1,  // [1:1] is the sub-list for extension extendee
 	0,  // [0:1] is the sub-list for field type_name
@@ -6160,7 +7525,7 @@ func file_shinzonetwork_sourcehub_v1_tx_proto_init() {
 			}
 		}
 		file_shinzonetwork_sourcehub_v1_tx_proto_msgTypes[8].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*MsgIndexerAttestation); i {
+			switch v := v.(*MsgIndexerAssertion); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -6172,7 +7537,7 @@ func file_shinzonetwork_sourcehub_v1_tx_proto_init() {
 			}
 		}
 		file_shinzonetwork_sourcehub_v1_tx_proto_msgTypes[9].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*MsgIndexerAttestationResponse); i {
+			switch v := v.(*MsgIndexerAssertionResponse); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -6184,7 +7549,31 @@ func file_shinzonetwork_sourcehub_v1_tx_proto_init() {
 			}
 		}
 		file_shinzonetwork_sourcehub_v1_tx_proto_msgTypes[10].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*IndexerAttestation); i {
+			switch v := v.(*MsgAdminIndexerAssertion); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_shinzonetwork_sourcehub_v1_tx_proto_msgTypes[11].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*MsgAdminIndexerAssertionResponse); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_shinzonetwork_sourcehub_v1_tx_proto_msgTypes[12].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*IndexerAssertion); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -6202,7 +7591,7 @@ func file_shinzonetwork_sourcehub_v1_tx_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_shinzonetwork_sourcehub_v1_tx_proto_rawDesc,
 			NumEnums:      1,
-			NumMessages:   11,
+			NumMessages:   13,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

@@ -47,7 +47,7 @@ func verifyPeerKeySignature(pubkey, message, signature []byte) error {
 // verifyDelegateSignature checks that sig (65-byte secp256k1 r‖s‖v) over digest
 // (32 bytes) recovers to the address bytes encoded in delegateAddrBech32.
 // This proves the entity controlling delegate_address on the source chain
-// consented to the attestation.
+// consented to the assertion.
 func verifyDelegateSignature(delegateAddrBech32 string, digest, sig []byte) error {
 	delegateBytes, err := sdk.AccAddressFromBech32(delegateAddrBech32)
 	if err != nil {

@@ -49,5 +49,5 @@ const (
 )
 
 const (
-	IndexerAttestationPrefix = "indexer_attestation:" // indexer_attestation:<delegate>:<sourceChain>:<sourceChainId>
+	IndexerAssertionPrefix = "indexer_assertion:" // indexer_assertion:<delegate>:<sourceChain>:<sourceChainId>
 )

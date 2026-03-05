@@ -9,14 +9,14 @@ import (
 	shinzohubtypes "github.com/shinzonetwork/shinzohub/x/sourcehub/types"
 )
 
-// IndexerAttestationParams captures the minimal fields for indexer attestation.
-type IndexerAttestationParams struct {
+// IndexerAssertionParams captures the minimal fields for indexer assertion.
+type IndexerAssertionParams struct {
 	Signer          TxSigner
 	ConsensusPubKey string
 	DelegateAddress string
 	SourceChain     string
 	SourceChainID   uint64
-	AttestationID   string
+	AssertionID     string
 
 	// DelegateDigest is the 32-byte hash that the delegate signed on the source chain.
 	DelegateDigest []byte
@@ -27,20 +27,20 @@ type IndexerAttestationParams struct {
 	MinGasPrice string
 }
 
-// AddIndexerAttestation builds, signs, and broadcasts a MsgIndexerAttestation.
-func AddIndexerAttestation(
+// AddIndexerAssertion builds, signs, and broadcasts a MsgIndexerAssertion.
+func AddIndexerAssertion(
 	ctx context.Context,
 	cli *Client,
 	b *TxBuilder,
-	p IndexerAttestationParams,
+	p IndexerAssertionParams,
 ) (*sdk.TxResponse, error) {
-	msg := &shinzohubtypes.MsgIndexerAttestation{
+	msg := &shinzohubtypes.MsgIndexerAssertion{
 		Signer:            p.Signer.GetAccAddress(),
 		ConsensusPubKey:   p.ConsensusPubKey,
 		DelegateAddress:   p.DelegateAddress,
 		SourceChain:       p.SourceChain,
 		SourceChainId:     p.SourceChainID,
-		AttestationId:     p.AttestationID,
+		AssertionId:       p.AssertionID,
 		DelegateDigest:    p.DelegateDigest,
 		DelegateSignature: p.DelegateSignature,
 	}

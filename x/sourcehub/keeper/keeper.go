@@ -261,16 +261,16 @@ func (k Keeper) RegisterObject(ctx sdk.Context, id string) error {
 	return err
 }
 
-// indexerKey builds the KV store key for an indexer attestation.
-// Format: "indexer_attestation:<delegate>:<sourceChain>:<sourceChainId>"
+// indexerKey builds the KV store key for an indexer assertion.
+// Format: "indexer_assertion:<delegate>:<sourceChain>:<sourceChainId>"
 // Both the chain name and the chain ID are included so that chains sharing a
 // numeric ID (e.g. private testnets) remain distinct.
 func indexerKey(delegate, sourceChain string, sourceChainId uint64) []byte {
 	suffix := fmt.Sprintf("%s:%s:%d", delegate, sourceChain, sourceChainId)
-	return append([]byte(types.IndexerAttestationPrefix), []byte(suffix)...)
+	return append([]byte(types.IndexerAssertionPrefix), []byte(suffix)...)
 }
 
-func (k Keeper) SetIndexerAttestation(ctx sdk.Context, reg types.IndexerAttestation) error {
+func (k Keeper) SetIndexerAssertion(ctx sdk.Context, reg types.IndexerAssertion) error {
 	store := runtime.KVStoreAdapter(k.storeService.OpenKVStore(ctx))
 	bz, err := k.cdc.Marshal(&reg)
 	if err != nil {
@@ -280,15 +280,15 @@ func (k Keeper) SetIndexerAttestation(ctx sdk.Context, reg types.IndexerAttestat
 	return nil
 }
 
-func (k Keeper) GetIndexerAttestation(ctx sdk.Context, delegate, sourceChain string, sourceChainId uint64) (types.IndexerAttestation, bool, error) {
+func (k Keeper) GetIndexerAssertion(ctx sdk.Context, delegate, sourceChain string, sourceChainId uint64) (types.IndexerAssertion, bool, error) {
 	store := runtime.KVStoreAdapter(k.storeService.OpenKVStore(ctx))
 	bz := store.Get(indexerKey(delegate, sourceChain, sourceChainId))
 	if len(bz) == 0 {
-		return types.IndexerAttestation{}, false, nil
+		return types.IndexerAssertion{}, false, nil
 	}
-	var reg types.IndexerAttestation
+	var reg types.IndexerAssertion
 	if err := k.cdc.Unmarshal(bz, &reg); err != nil {
-		return types.IndexerAttestation{}, false, err
+		return types.IndexerAssertion{}, false, err
 	}
 	return reg, true, nil
 }

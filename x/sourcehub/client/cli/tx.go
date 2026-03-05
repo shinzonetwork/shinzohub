@@ -26,6 +26,7 @@ func GetTxCmd() *cobra.Command {
 	cmd.AddCommand(CmdRequestStreamAccess())
 	cmd.AddCommand(CmdRegisterShinzoPolicy())
 	cmd.AddCommand(CmdRegisterObjects())
+	cmd.AddCommand(CmdAdminIndexerAssertion())
 
 	return cmd
 }
@@ -172,6 +173,43 @@ func CmdRegisterObjects() *cobra.Command {
 	}
 
 	// add standard tx flags: --from, --fees, --gas, --gas-adjustment, --yes, etc.
+	flags.AddTxFlagsToCmd(cmd)
+	return cmd
+}
+
+func CmdAdminIndexerAssertion() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "admin-indexer-assertion [consensus-pub-key] [delegate-address] [source-chain] [source-chain-id] [assertion-id]",
+		Short: "Admin shortcut: assert an indexer without EVM assertion pipeline (devnet only)",
+		Args:  cobra.ExactArgs(5),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			sourceChainId, err := strconv.ParseUint(args[3], 10, 64)
+			if err != nil {
+				return fmt.Errorf("invalid source-chain-id: %w", err)
+			}
+
+			clientCtx, err := client.GetClientTxContext(cmd)
+			if err != nil {
+				return err
+			}
+
+			msg := &types.MsgAdminIndexerAssertion{
+				Signer:          clientCtx.GetFromAddress().String(),
+				ConsensusPubKey: args[0],
+				DelegateAddress: args[1],
+				SourceChain:     args[2],
+				SourceChainId:   sourceChainId,
+				AssertionId:     args[4],
+			}
+
+			if err := msg.ValidateBasic(); err != nil {
+				return err
+			}
+
+			return tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), msg)
+		},
+	}
+
 	flags.AddTxFlagsToCmd(cmd)
 	return cmd
 }

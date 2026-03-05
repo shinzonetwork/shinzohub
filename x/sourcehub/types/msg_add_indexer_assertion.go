@@ -6,14 +6,14 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
-// Ensure MsgIndexerAttestation implements sdk.Msg.
-var _ sdk.Msg = &MsgIndexerAttestation{}
+// Ensure MsgIndexerAssertion implements sdk.Msg.
+var _ sdk.Msg = &MsgIndexerAssertion{}
 
-func (m *MsgIndexerAttestation) Route() string { return RouterKey }
+func (m *MsgIndexerAssertion) Route() string { return RouterKey }
 
-func (m *MsgIndexerAttestation) Type() string { return "IndexerAttestation" }
+func (m *MsgIndexerAssertion) Type() string { return "IndexerAssertion" }
 
-func (m *MsgIndexerAttestation) GetSigners() []sdk.AccAddress {
+func (m *MsgIndexerAssertion) GetSigners() []sdk.AccAddress {
 	addr, err := sdk.AccAddressFromBech32(m.Signer)
 	if err != nil {
 		// should never happen because ValidateBasic catches it
@@ -22,7 +22,7 @@ func (m *MsgIndexerAttestation) GetSigners() []sdk.AccAddress {
 	return []sdk.AccAddress{addr}
 }
 
-func (m *MsgIndexerAttestation) ValidateBasic() error {
+func (m *MsgIndexerAssertion) ValidateBasic() error {
 	if _, err := sdk.AccAddressFromBech32(m.Signer); err != nil {
 		return fmt.Errorf("invalid signer address: %w", err)
 	}
@@ -42,8 +42,8 @@ func (m *MsgIndexerAttestation) ValidateBasic() error {
 		return fmt.Errorf("source chain id must be non-zero")
 	}
 
-	if m.AttestationId == "" {
-		return fmt.Errorf("attestation id cannot be empty")
+	if m.AssertionId == "" {
+		return fmt.Errorf("assertion id cannot be empty")
 	}
 
 	if len(m.DelegateDigest) != 32 {

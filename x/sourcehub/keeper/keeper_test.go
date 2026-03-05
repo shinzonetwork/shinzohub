@@ -115,7 +115,7 @@ func newTestFixture(t *testing.T) *testFixture {
 }
 
 // testDelegateAddr returns a deterministic, valid bech32 address for use as
-// DelegateAddress in attestation messages.
+// DelegateAddress in assertion messages.
 func testDelegateAddr(seed byte) string {
 	addr := make([]byte, 20)
 	addr[0] = seed
@@ -127,114 +127,114 @@ func testICAAddr() string {
 	return authtypes.NewModuleAddress("ica-account").String()
 }
 
-// ─── Indexer Attestation – KV Layer ──────────────────────────────────────────
+// ─── Indexer Assertion – KV Layer ──────────────────────────────────────────
 
-func Test_IndexerAttestation_SetGet(t *testing.T) {
+func Test_IndexerAssertion_SetGet(t *testing.T) {
 	delegate := testDelegateAddr(0xDE)
 
-	t.Run("stores and retrieves attestation by delegate+chain key", func(t *testing.T) {
+	t.Run("stores and retrieves assertion by delegate+chain key", func(t *testing.T) {
 		f := newTestFixture(t)
-		att := types.IndexerAttestation{
+		att := types.IndexerAssertion{
 			ConsensusPubKey: "consensus-pub-key-001",
 			DelegateAddress: delegate,
 			SourceChain:     "ethereum",
 			SourceChainId:   1,
-			AttestationId:   "att-001",
+			AssertionId:     "att-001",
 		}
 
-		require.NoError(t, f.k.SetIndexerAttestation(f.ctx, att))
+		require.NoError(t, f.k.SetIndexerAssertion(f.ctx, att))
 
-		got, found, err := f.k.GetIndexerAttestation(f.ctx, delegate, "ethereum", 1)
+		got, found, err := f.k.GetIndexerAssertion(f.ctx, delegate, "ethereum", 1)
 		require.NoError(t, err)
 		require.True(t, found)
 		require.Equal(t, att.ConsensusPubKey, got.ConsensusPubKey)
 		require.Equal(t, att.DelegateAddress, got.DelegateAddress)
 		require.Equal(t, att.SourceChain, got.SourceChain)
 		require.EqualValues(t, att.SourceChainId, got.SourceChainId)
-		require.Equal(t, att.AttestationId, got.AttestationId)
+		require.Equal(t, att.AssertionId, got.AssertionId)
 	})
 
 	t.Run("returns not-found for an unknown delegate+chain combination", func(t *testing.T) {
 		f := newTestFixture(t)
-		_, found, err := f.k.GetIndexerAttestation(f.ctx, testDelegateAddr(0xFF), "ethereum", 1)
+		_, found, err := f.k.GetIndexerAssertion(f.ctx, testDelegateAddr(0xFF), "ethereum", 1)
 		require.NoError(t, err)
 		require.False(t, found)
 	})
 
-	t.Run("re-attesting the same delegate+chain overwrites the record (key rotation)", func(t *testing.T) {
+	t.Run("re-asserting the same delegate+chain overwrites the record (key rotation)", func(t *testing.T) {
 		f := newTestFixture(t)
-		first := types.IndexerAttestation{
+		first := types.IndexerAssertion{
 			ConsensusPubKey: "pub-key-v1",
 			DelegateAddress: delegate,
 			SourceChain:     "ethereum",
 			SourceChainId:   1,
-			AttestationId:   "att-v1",
+			AssertionId:     "att-v1",
 		}
-		require.NoError(t, f.k.SetIndexerAttestation(f.ctx, first))
+		require.NoError(t, f.k.SetIndexerAssertion(f.ctx, first))
 
 		// Same chain – this is a key rotation / update.
-		updated := types.IndexerAttestation{
+		updated := types.IndexerAssertion{
 			ConsensusPubKey: "pub-key-v2",
 			DelegateAddress: delegate,
 			SourceChain:     "ethereum",
 			SourceChainId:   1,
-			AttestationId:   "att-v2",
+			AssertionId:     "att-v2",
 		}
-		require.NoError(t, f.k.SetIndexerAttestation(f.ctx, updated))
+		require.NoError(t, f.k.SetIndexerAssertion(f.ctx, updated))
 
-		got, found, err := f.k.GetIndexerAttestation(f.ctx, delegate, "ethereum", 1)
+		got, found, err := f.k.GetIndexerAssertion(f.ctx, delegate, "ethereum", 1)
 		require.NoError(t, err)
 		require.True(t, found)
 		require.Equal(t, "pub-key-v2", got.ConsensusPubKey)
-		require.Equal(t, "att-v2", got.AttestationId)
+		require.Equal(t, "att-v2", got.AssertionId)
 	})
 
-	t.Run("same delegate attested for multiple chains coexist independently", func(t *testing.T) {
+	t.Run("same delegate asserted for multiple chains coexist independently", func(t *testing.T) {
 		f := newTestFixture(t)
 
-		ethAtt := types.IndexerAttestation{
+		ethAtt := types.IndexerAssertion{
 			ConsensusPubKey: "key-eth",
 			DelegateAddress: delegate,
 			SourceChain:     "ethereum",
 			SourceChainId:   1,
-			AttestationId:   "att-eth",
+			AssertionId:     "att-eth",
 		}
-		polyAtt := types.IndexerAttestation{
+		polyAtt := types.IndexerAssertion{
 			ConsensusPubKey: "key-poly",
 			DelegateAddress: delegate,
 			SourceChain:     "polygon",
 			SourceChainId:   137,
-			AttestationId:   "att-poly",
+			AssertionId:     "att-poly",
 		}
-		baseAtt := types.IndexerAttestation{
+		baseAtt := types.IndexerAssertion{
 			ConsensusPubKey: "key-base",
 			DelegateAddress: delegate,
 			SourceChain:     "base",
 			SourceChainId:   8453,
-			AttestationId:   "att-base",
+			AssertionId:     "att-base",
 		}
 
-		require.NoError(t, f.k.SetIndexerAttestation(f.ctx, ethAtt))
-		require.NoError(t, f.k.SetIndexerAttestation(f.ctx, polyAtt))
-		require.NoError(t, f.k.SetIndexerAttestation(f.ctx, baseAtt))
+		require.NoError(t, f.k.SetIndexerAssertion(f.ctx, ethAtt))
+		require.NoError(t, f.k.SetIndexerAssertion(f.ctx, polyAtt))
+		require.NoError(t, f.k.SetIndexerAssertion(f.ctx, baseAtt))
 
-		gotEth, found, err := f.k.GetIndexerAttestation(f.ctx, delegate, "ethereum", 1)
+		gotEth, found, err := f.k.GetIndexerAssertion(f.ctx, delegate, "ethereum", 1)
 		require.NoError(t, err)
 		require.True(t, found)
 		require.Equal(t, "key-eth", gotEth.ConsensusPubKey)
 
-		gotPoly, found, err := f.k.GetIndexerAttestation(f.ctx, delegate, "polygon", 137)
+		gotPoly, found, err := f.k.GetIndexerAssertion(f.ctx, delegate, "polygon", 137)
 		require.NoError(t, err)
 		require.True(t, found)
 		require.Equal(t, "key-poly", gotPoly.ConsensusPubKey)
 
-		gotBase, found, err := f.k.GetIndexerAttestation(f.ctx, delegate, "base", 8453)
+		gotBase, found, err := f.k.GetIndexerAssertion(f.ctx, delegate, "base", 8453)
 		require.NoError(t, err)
 		require.True(t, found)
 		require.Equal(t, "key-base", gotBase.ConsensusPubKey)
 
 		// A wrong chain lookup returns not-found.
-		_, found, err = f.k.GetIndexerAttestation(f.ctx, delegate, "optimism", 10)
+		_, found, err = f.k.GetIndexerAssertion(f.ctx, delegate, "optimism", 10)
 		require.NoError(t, err)
 		require.False(t, found)
 	})
@@ -242,30 +242,30 @@ func Test_IndexerAttestation_SetGet(t *testing.T) {
 	t.Run("chains sharing a numeric ID are kept distinct by chain name", func(t *testing.T) {
 		f := newTestFixture(t)
 		// Two different testnets that both use chainId 1337.
-		alphaAtt := types.IndexerAttestation{
+		alphaAtt := types.IndexerAssertion{
 			ConsensusPubKey: "key-alpha",
 			DelegateAddress: delegate,
 			SourceChain:     "alpha-testnet",
 			SourceChainId:   1337,
-			AttestationId:   "att-alpha",
+			AssertionId:     "att-alpha",
 		}
-		betaAtt := types.IndexerAttestation{
+		betaAtt := types.IndexerAssertion{
 			ConsensusPubKey: "key-beta",
 			DelegateAddress: delegate,
 			SourceChain:     "beta-testnet",
 			SourceChainId:   1337,
-			AttestationId:   "att-beta",
+			AssertionId:     "att-beta",
 		}
 
-		require.NoError(t, f.k.SetIndexerAttestation(f.ctx, alphaAtt))
-		require.NoError(t, f.k.SetIndexerAttestation(f.ctx, betaAtt))
+		require.NoError(t, f.k.SetIndexerAssertion(f.ctx, alphaAtt))
+		require.NoError(t, f.k.SetIndexerAssertion(f.ctx, betaAtt))
 
-		gotAlpha, found, err := f.k.GetIndexerAttestation(f.ctx, delegate, "alpha-testnet", 1337)
+		gotAlpha, found, err := f.k.GetIndexerAssertion(f.ctx, delegate, "alpha-testnet", 1337)
 		require.NoError(t, err)
 		require.True(t, found)
 		require.Equal(t, "key-alpha", gotAlpha.ConsensusPubKey)
 
-		gotBeta, found, err := f.k.GetIndexerAttestation(f.ctx, delegate, "beta-testnet", 1337)
+		gotBeta, found, err := f.k.GetIndexerAssertion(f.ctx, delegate, "beta-testnet", 1337)
 		require.NoError(t, err)
 		require.True(t, found)
 		require.Equal(t, "key-beta", gotBeta.ConsensusPubKey)
@@ -276,27 +276,27 @@ func Test_IndexerAttestation_SetGet(t *testing.T) {
 		addrA := testDelegateAddr(0x01)
 		addrB := testDelegateAddr(0x02)
 
-		require.NoError(t, f.k.SetIndexerAttestation(f.ctx, types.IndexerAttestation{
+		require.NoError(t, f.k.SetIndexerAssertion(f.ctx, types.IndexerAssertion{
 			ConsensusPubKey: "key-A",
 			DelegateAddress: addrA,
 			SourceChain:     "ethereum",
 			SourceChainId:   1,
-			AttestationId:   "att-A",
+			AssertionId:     "att-A",
 		}))
-		require.NoError(t, f.k.SetIndexerAttestation(f.ctx, types.IndexerAttestation{
+		require.NoError(t, f.k.SetIndexerAssertion(f.ctx, types.IndexerAssertion{
 			ConsensusPubKey: "key-B",
 			DelegateAddress: addrB,
 			SourceChain:     "ethereum",
 			SourceChainId:   1,
-			AttestationId:   "att-B",
+			AssertionId:     "att-B",
 		}))
 
-		gotA, foundA, err := f.k.GetIndexerAttestation(f.ctx, addrA, "ethereum", 1)
+		gotA, foundA, err := f.k.GetIndexerAssertion(f.ctx, addrA, "ethereum", 1)
 		require.NoError(t, err)
 		require.True(t, foundA)
 		require.Equal(t, "key-A", gotA.ConsensusPubKey)
 
-		gotB, foundB, err := f.k.GetIndexerAttestation(f.ctx, addrB, "ethereum", 1)
+		gotB, foundB, err := f.k.GetIndexerAssertion(f.ctx, addrB, "ethereum", 1)
 		require.NoError(t, err)
 		require.True(t, foundB)
 		require.Equal(t, "key-B", gotB.ConsensusPubKey)
@@ -332,9 +332,9 @@ func Test_Keeper_IsAdmin(t *testing.T) {
 	})
 }
 
-// ─── MsgServer – AddIndexerAttestation ───────────────────────────────────────
+// ─── MsgServer – AddIndexerAssertion ───────────────────────────────────────
 
-func Test_MsgServer_AddIndexerAttestation(t *testing.T) {
+func Test_MsgServer_AddIndexerAssertion(t *testing.T) {
 	// Generate a real secp256k1 key pair for the delegate.  The keeper's
 	// verifyDelegateSignature performs ecrecover, so DelegateAddress must be
 	// the bech32 encoding of the Ethereum address derived from this key.
@@ -343,49 +343,49 @@ func Test_MsgServer_AddIndexerAttestation(t *testing.T) {
 	delegateEthAddr := ethcrypto.PubkeyToAddress(delegateKey.PublicKey)
 	delegate := sdk.AccAddress(delegateEthAddr.Bytes()).String()
 
-	digest := sha256.Sum256([]byte("test-attestation-payload"))
+	digest := sha256.Sum256([]byte("test-assertion-payload"))
 	sig, err := ethcrypto.Sign(digest[:], delegateKey)
 	require.NoError(t, err)
 
-	// buildMsg constructs a well-formed attestation message with a valid
+	// buildMsg constructs a well-formed assertion message with a valid
 	// delegate ownership proof.
-	buildMsg := func(signer, sourceChain string, sourceChainId uint64, consensusPubKey, attestationId string) *types.MsgIndexerAttestation {
-		return &types.MsgIndexerAttestation{
+	buildMsg := func(signer, sourceChain string, sourceChainId uint64, consensusPubKey, assertionId string) *types.MsgIndexerAssertion {
+		return &types.MsgIndexerAssertion{
 			Signer:            signer,
 			ConsensusPubKey:   consensusPubKey,
 			DelegateAddress:   delegate,
 			SourceChain:       sourceChain,
 			SourceChainId:     sourceChainId,
-			AttestationId:     attestationId,
+			AssertionId:       assertionId,
 			DelegateDigest:    digest[:],
 			DelegateSignature: sig,
 		}
 	}
 
-	t.Run("admin successfully attests an indexer", func(t *testing.T) {
+	t.Run("admin successfully asserts an indexer", func(t *testing.T) {
 		f := newTestFixture(t)
 		msg := buildMsg(f.authority, "ethereum", 1, "consensus-pub-key-abc", "att-0001")
 
-		resp, err := f.msgSrv.AddIndexerAttestation(f.ctx, msg)
+		resp, err := f.msgSrv.AddIndexerAssertion(f.ctx, msg)
 		require.NoError(t, err)
 		require.NotNil(t, resp)
 
 		// State must be persisted under the composite (delegate, chain) key.
-		got, found, err := f.k.GetIndexerAttestation(f.ctx, delegate, "ethereum", 1)
+		got, found, err := f.k.GetIndexerAssertion(f.ctx, delegate, "ethereum", 1)
 		require.NoError(t, err)
 		require.True(t, found)
 		require.Equal(t, msg.ConsensusPubKey, got.ConsensusPubKey)
 		require.Equal(t, msg.SourceChain, got.SourceChain)
 		require.EqualValues(t, msg.SourceChainId, got.SourceChainId)
-		require.Equal(t, msg.AttestationId, got.AttestationId)
+		require.Equal(t, msg.AssertionId, got.AssertionId)
 
-		// An IndexerAttested event must have been emitted with the correct
+		// An IndexerAsserted event must have been emitted with the correct
 		// attributes.
 		events := f.ctx.EventManager().Events()
 		require.NotEmpty(t, events)
 		var eventFound bool
 		for _, ev := range events {
-			if ev.Type != "IndexerAttested" {
+			if ev.Type != "IndexerAsserted" {
 				continue
 			}
 			eventFound = true
@@ -398,9 +398,9 @@ func Test_MsgServer_AddIndexerAttestation(t *testing.T) {
 			require.Equal(t, delegate, attrs["delegate_address"])
 			require.Equal(t, "ethereum", attrs["source_chain"])
 			require.Equal(t, "1", attrs["source_chain_id"])
-			require.Equal(t, "att-0001", attrs["attestation_id"])
+			require.Equal(t, "att-0001", attrs["assertion_id"])
 		}
-		require.True(t, eventFound, "IndexerAttested event was not emitted")
+		require.True(t, eventFound, "IndexerAsserted event was not emitted")
 	})
 
 	t.Run("non-admin signer is rejected with ErrUnauthorized", func(t *testing.T) {
@@ -410,7 +410,7 @@ func Test_MsgServer_AddIndexerAttestation(t *testing.T) {
 		// Admin check fires before signature check; sig contents don't matter here.
 		msg := buildMsg(nonAdmin.String(), "ethereum", 1, "key", "att-x")
 
-		_, err := f.msgSrv.AddIndexerAttestation(f.ctx, msg)
+		_, err := f.msgSrv.AddIndexerAssertion(f.ctx, msg)
 		require.ErrorIs(t, err, sdkerrors.ErrUnauthorized)
 	})
 
@@ -423,55 +423,55 @@ func Test_MsgServer_AddIndexerAttestation(t *testing.T) {
 		wrongSig, err := ethcrypto.Sign(digest[:], wrongKey)
 		require.NoError(t, err)
 
-		msg := &types.MsgIndexerAttestation{
+		msg := &types.MsgIndexerAssertion{
 			Signer:            f.authority,
 			ConsensusPubKey:   "key",
 			DelegateAddress:   delegate,
 			SourceChain:       "ethereum",
 			SourceChainId:     1,
-			AttestationId:     "att-wrong",
+			AssertionId:       "att-wrong",
 			DelegateDigest:    digest[:],
 			DelegateSignature: wrongSig,
 		}
-		_, err = f.msgSrv.AddIndexerAttestation(f.ctx, msg)
+		_, err = f.msgSrv.AddIndexerAssertion(f.ctx, msg)
 		require.ErrorIs(t, err, sdkerrors.ErrUnauthorized)
 	})
 
-	t.Run("re-attesting the same delegate+chain updates the record", func(t *testing.T) {
+	t.Run("re-asserting the same delegate+chain updates the record", func(t *testing.T) {
 		f := newTestFixture(t)
 
-		_, err := f.msgSrv.AddIndexerAttestation(f.ctx, buildMsg(f.authority, "ethereum", 1, "consensus-pub-key-abc", "att-0001"))
+		_, err := f.msgSrv.AddIndexerAssertion(f.ctx, buildMsg(f.authority, "ethereum", 1, "consensus-pub-key-abc", "att-0001"))
 		require.NoError(t, err)
 
 		// Same chain – acts as a key rotation.
-		_, err = f.msgSrv.AddIndexerAttestation(f.ctx, buildMsg(f.authority, "ethereum", 1, "new-consensus-key", "att-0002"))
+		_, err = f.msgSrv.AddIndexerAssertion(f.ctx, buildMsg(f.authority, "ethereum", 1, "new-consensus-key", "att-0002"))
 		require.NoError(t, err)
 
-		got, found, err := f.k.GetIndexerAttestation(f.ctx, delegate, "ethereum", 1)
+		got, found, err := f.k.GetIndexerAssertion(f.ctx, delegate, "ethereum", 1)
 		require.NoError(t, err)
 		require.True(t, found)
 		require.Equal(t, "new-consensus-key", got.ConsensusPubKey)
-		require.Equal(t, "att-0002", got.AttestationId)
+		require.Equal(t, "att-0002", got.AssertionId)
 	})
 
-	t.Run("attesting the same delegate for a second chain creates an independent record", func(t *testing.T) {
+	t.Run("asserting the same delegate for a second chain creates an independent record", func(t *testing.T) {
 		f := newTestFixture(t)
 
-		// First attestation: ethereum.
-		_, err := f.msgSrv.AddIndexerAttestation(f.ctx, buildMsg(f.authority, "ethereum", 1, "consensus-pub-key-abc", "att-0001"))
+		// First assertion: ethereum.
+		_, err := f.msgSrv.AddIndexerAssertion(f.ctx, buildMsg(f.authority, "ethereum", 1, "consensus-pub-key-abc", "att-0001"))
 		require.NoError(t, err)
 
-		// Second attestation: polygon – must NOT overwrite the ethereum entry.
-		_, err = f.msgSrv.AddIndexerAttestation(f.ctx, buildMsg(f.authority, "polygon", 137, "poly-consensus-key", "att-poly"))
+		// Second assertion: polygon – must NOT overwrite the ethereum entry.
+		_, err = f.msgSrv.AddIndexerAssertion(f.ctx, buildMsg(f.authority, "polygon", 137, "poly-consensus-key", "att-poly"))
 		require.NoError(t, err)
 
 		// Both records must be independently retrievable.
-		gotEth, found, err := f.k.GetIndexerAttestation(f.ctx, delegate, "ethereum", 1)
+		gotEth, found, err := f.k.GetIndexerAssertion(f.ctx, delegate, "ethereum", 1)
 		require.NoError(t, err)
 		require.True(t, found)
 		require.Equal(t, "consensus-pub-key-abc", gotEth.ConsensusPubKey)
 
-		gotPoly, found, err := f.k.GetIndexerAttestation(f.ctx, delegate, "polygon", 137)
+		gotPoly, found, err := f.k.GetIndexerAssertion(f.ctx, delegate, "polygon", 137)
 		require.NoError(t, err)
 		require.True(t, found)
 		require.Equal(t, "poly-consensus-key", gotPoly.ConsensusPubKey)

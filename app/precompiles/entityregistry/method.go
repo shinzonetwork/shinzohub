@@ -19,8 +19,8 @@ const (
 )
 
 // EntityRegistryRegisterIndexer handles precompile calls to registerIndexer(…).
-// The caller must have a prior attestation record keyed on (delegate, sourceChain,
-// sourceChainId).  The chain info is sourced from the attestation and emitted in
+// The caller must have a prior assertion record keyed on (delegate, sourceChain,
+// sourceChainId).  The chain info is sourced from the assertion and emitted in
 // the EntityRegistered cosmos event.
 func (p Precompile) EntityRegistryRegisterIndexer(
 	ctx sdk.Context,
@@ -67,12 +67,12 @@ func (p Precompile) EntityRegistryRegisterIndexer(
 	caller := contract.Caller().Bytes()
 	delegate := sdk.AccAddress(caller).String()
 
-	att, found, err := p.sourcehubKeeper.GetIndexerAttestation(ctx, delegate, sourceChain, sourceChainId)
+	att, found, err := p.sourcehubKeeper.GetIndexerAssertion(ctx, delegate, sourceChain, sourceChainId)
 	if err != nil {
-		return nil, fmt.Errorf("indexer attestation lookup failed: %w", err)
+		return nil, fmt.Errorf("indexer assertion lookup failed: %w", err)
 	}
 	if !found {
-		return nil, fmt.Errorf("indexer not attested for delegate %s on chain %s/%d", delegate, sourceChain, sourceChainId)
+		return nil, fmt.Errorf("indexer not asserted for delegate %s on chain %s/%d", delegate, sourceChain, sourceChainId)
 	}
 
 	did, pid, err := p.sourcehubKeeper.RegisterEntity(
@@ -93,7 +93,7 @@ func (p Precompile) EntityRegistryRegisterIndexer(
 }
 
 // EntityRegistryRegisterHost handles precompile calls to registerHost(…).
-// Hosts do not require a prior attestation; they register directly with their
+// Hosts do not require a prior assertion; they register directly with their
 // cryptographic key proofs.
 func (p Precompile) EntityRegistryRegisterHost(
 	ctx sdk.Context,

@@ -14,13 +14,14 @@ service Msg {
   rpc RegisterShinzoPolicy(MsgRegisterShinzoPolicy) returns (MsgRegisterShinzoPolicyResponse);
   rpc RegisterShinzoObjects(MsgRegisterShinzoObjects) returns (MsgRegisterShinzoObjectsResponse);
   rpc RequestStreamAccess(MsgRequestStreamAccess) returns (MsgRequestStreamAccessResponse);
-  rpc AddIndexerAttestation(MsgIndexerAttestation) returns (MsgIndexerAttestationResponse);
+  rpc AddIndexerAssertion(MsgIndexerAssertion) returns (MsgIndexerAssertionResponse);
+  rpc AdminIndexerAssertion(MsgAdminIndexerAssertion) returns (MsgAdminIndexerAssertionResponse);
 }
 
 message MsgRegisterSourcehubICA {
   option (cosmos.msg.v1.signer) = "signer";
 
-  string signer        = 1;
+  string signer = 1;
   string controller_connection_id = 2;
   string host_connection_id = 3;
 }
@@ -30,20 +31,20 @@ message MsgRegisterSourcehubICAResponse {}
 message MsgRegisterShinzoPolicy {
   option (cosmos.msg.v1.signer) = "signer";
 
-  string signer      = 1;
+  string signer = 1;
 }
 
 message MsgRegisterShinzoPolicyResponse {}
 
 enum Resource {
   RESOURCE_PRIMITIVE = 0;
-  RESOURCE_VIEW   = 1;
+  RESOURCE_VIEW = 1;
 }
 
 message MsgRegisterShinzoObjects {
   option (cosmos.msg.v1.signer) = "signer";
 
-  string signer        = 1;
+  string signer = 1;
   repeated string resources = 2;
 }
 
@@ -52,34 +53,47 @@ message MsgRegisterShinzoObjectsResponse {}
 message MsgRequestStreamAccess {
   option (cosmos.msg.v1.signer) = "signer";
 
-  string signer    = 1;
+  string signer = 1;
   Resource resource = 2;
   string stream_id = 3;
-  string did       = 4;
+  string did = 4;
   uint64 expiration = 5;
 }
 
 message MsgRequestStreamAccessResponse {}
 
-message MsgIndexerAttestation {
+message MsgIndexerAssertion {
   option (cosmos.msg.v1.signer) = "signer";
 
-  string signer             = 1;
-  string consensus_pub_key  = 2;
-  string delegate_address   = 3;
-  string source_chain       = 4;
-  uint64 source_chain_id    = 5;
-  string attestation_id     = 6;
-  bytes  delegate_digest    = 7; // 32-byte pre-hashed payload signed by the delegate
-  bytes  delegate_signature = 8; // 65-byte secp256k1 ECDSA signature r‖s‖v
+  string signer = 1;
+  string consensus_pub_key = 2;
+  string delegate_address = 3;
+  string source_chain = 4;
+  uint64 source_chain_id = 5;
+  string assertion_id = 6;
+  bytes delegate_digest = 7; // 32-byte pre-hashed payload signed by the delegate
+  bytes delegate_signature = 8; // 65-byte secp256k1 ECDSA signature r‖s‖v
 }
 
-message MsgIndexerAttestationResponse {}
+message MsgIndexerAssertionResponse {}
 
-message IndexerAttestation {
-  string consensus_pub_key  = 1;
-  string delegate_address   = 2;
-  string source_chain       = 3;
-  uint64 source_chain_id    = 4;
-  string attestation_id     = 5;
+message MsgAdminIndexerAssertion {
+  option (cosmos.msg.v1.signer) = "signer";
+
+  string signer = 1;
+  string consensus_pub_key = 2;
+  string delegate_address = 3;
+  string source_chain = 4;
+  uint64 source_chain_id = 5;
+  string assertion_id = 6;
+}
+
+message MsgAdminIndexerAssertionResponse {}
+
+message IndexerAssertion {
+  string consensus_pub_key = 1;
+  string delegate_address = 2;
+  string source_chain = 3;
+  uint64 source_chain_id = 4;
+  string assertion_id = 5;
 }
