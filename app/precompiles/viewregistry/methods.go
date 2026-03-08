@@ -8,117 +8,182 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/core/types"
+	gethtypes "github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/core/vm"
 	"github.com/ethereum/go-ethereum/crypto"
+	"github.com/holiman/uint256"
 	"github.com/shinzonetwork/viewbundle-go"
 )
 
 const (
-	ViewRegistryRegisterMethod = "register"
-	ViewRegistryGetMethod      = "get"
+	MethodRegister            = "register"
+	MethodRegisterWithPricing = "registerWithPricing"
+	MethodGetView             = "getView"
 )
 
-func (p Precompile) ViewRegistryRegister(
+var zero = uint256.NewInt(0)
+
+// sdlTypeRe matches `type <Name>` in the SDL to extract the resource name.
+var sdlTypeRe = regexp.MustCompile(`\btype\s+([A-Za-z0-9_]+)\b`)
+
+func (p Precompile) Register(
 	ctx sdk.Context,
+	evm *vm.EVM,
 	contract *vm.Contract,
 	stateDB vm.StateDB,
 	method *abi.Method,
 	args []interface{},
 ) ([]byte, error) {
-
-	log := ctx.Logger().With(
-		"module", "precompile.viewregistry",
-		"method", "register",
-		"caller", contract.Caller().Hex(),
-		"contract", contract.Address().Hex(),
-	)
-
-	encodedValue, ok := args[0].([]byte)
+	data, ok := args[0].([]byte)
 	if !ok {
-		log.Error("invalid arg type for value", "got", fmt.Sprintf("%T", args[0]))
-		return nil, fmt.Errorf("invalid type for value")
+		return nil, fmt.Errorf("invalid data")
 	}
 
-	// Don’t log bytes, log size + hash.
-	log.Info("register received", "bytes", len(encodedValue), "hash", crypto.Keccak256Hash(encodedValue).Hex())
+	caller := contract.Caller()
+	deployer := contract.Address()
 
-	decodedValue, err := viewbundle.DecodeHeader(encodedValue)
+	viewAddr, viewId, viewName, leftoverGas, err := p.prepareView(evm, deployer, caller, data, common.Address{}, contract.Gas)
 	if err != nil {
-		log.Error("viewbundle decode failed", "err", err, "bytes", len(encodedValue))
-		return nil, vm.ErrExecutionReverted
+		return nil, err
+	}
+	contract.Gas = leftoverGas
+
+	creatorAddr := sdk.AccAddress(caller.Bytes()).String()
+	if err := p.viewKeeper.RegisterView(ctx, viewId, viewName, creatorAddr, viewAddr.Hex(), data); err != nil {
+		return nil, fmt.Errorf("failed to register view in keeper: %w", err)
 	}
 
-	re := regexp.MustCompile(`\btype\s+([A-Za-z0-9_]+)\b`)
-	matches := re.FindStringSubmatch(decodedValue.Header.Sdl)
+	emitViewCreated(ctx, stateDB, contract.Address(), viewAddr, caller, viewName, data)
+
+	return method.Outputs.Pack(viewAddr)
+}
+
+func (p Precompile) RegisterWithPricing(
+	ctx sdk.Context,
+	evm *vm.EVM,
+	contract *vm.Contract,
+	stateDB vm.StateDB,
+	method *abi.Method,
+	args []interface{},
+) ([]byte, error) {
+	data, ok := args[0].([]byte)
+	if !ok {
+		return nil, fmt.Errorf("invalid data")
+	}
+
+	pricingAddr, ok := args[1].(common.Address)
+	if !ok {
+		return nil, fmt.Errorf("invalid pricing address")
+	}
+
+	caller := contract.Caller()
+	deployer := contract.Address()
+
+	viewAddr, viewId, viewName, leftoverGas, err := p.prepareView(evm, deployer, caller, data, pricingAddr, contract.Gas)
+	if err != nil {
+		return nil, err
+	}
+	contract.Gas = leftoverGas
+
+	creatorAddr := sdk.AccAddress(caller.Bytes()).String()
+	if err := p.viewKeeper.RegisterView(ctx, viewId, viewName, creatorAddr, viewAddr.Hex(), data); err != nil {
+		return nil, fmt.Errorf("failed to register view in keeper: %w", err)
+	}
+
+	emitViewCreated(ctx, stateDB, contract.Address(), viewAddr, caller, viewName, data)
+
+	return method.Outputs.Pack(viewAddr)
+}
+
+func (p Precompile) prepareView(
+	evm *vm.EVM,
+	deployer, caller common.Address,
+	data []byte,
+	pricingAddr common.Address,
+	gas uint64,
+) (viewAddr common.Address, viewId string, resourceName string, leftoverGas uint64, err error) {
+	// Decode viewbundle header to extract resource name from SDL.
+	decoded, err := viewbundle.DecodeHeader(data)
+	if err != nil {
+		return common.Address{}, "", "", gas, fmt.Errorf("failed to decode viewbundle: %w", err)
+	}
+
+	matches := sdlTypeRe.FindStringSubmatch(decoded.Header.Sdl)
 	if len(matches) < 2 {
-		log.Error("sdl parse failed: missing type name", "sdl_len", len(decodedValue.Header.Sdl))
-		return nil, vm.ErrExecutionReverted
+		return common.Address{}, "", "", gas, fmt.Errorf("SDL missing type name")
 	}
-	resourceName := matches[1]
+	resourceName = matches[1]
 
-	key := crypto.Keccak256Hash(contract.Caller().Bytes(), encodedValue)
-	id := fmt.Sprintf("%s_%s", resourceName, key.Hex())
-
-	loc := re.FindStringSubmatchIndex(decodedValue.Header.Sdl)
-	if len(loc) < 4 {
-		log.Error("sdl parse failed: could not locate type name", "loc", fmt.Sprintf("%v", loc))
-		return nil, vm.ErrExecutionReverted
-	}
-
-	decodedValue.Header.Sdl = decodedValue.Header.Sdl[:loc[2]] + id + decodedValue.Header.Sdl[loc[3]:]
-
-	newEncodedValue, err := viewbundle.EncodeHeader(decodedValue)
+	// Deploy View.sol with constructor(resourceName, caller, pricingAddr).
+	constructorArgs, err := ViewConstructorArgs.Pack(resourceName, caller, pricingAddr)
 	if err != nil {
-		log.Error("viewbundle encode failed", "err", err)
-		return nil, vm.ErrExecutionReverted
+		return common.Address{}, "", "", gas, fmt.Errorf("failed to pack View constructor args: %w", err)
 	}
 
-	// Keeper call
-	if err := p.sourcehubKeeper.RegisterObject(ctx, id); err != nil {
-		log.Error("RegisterObject failed", "err", err, "id", id)
-		return nil, vm.ErrExecutionReverted
-	}
-
-	// Store creator mapping
-	creator := crypto.Keccak256Hash([]byte("view.creator"), key.Bytes())
-	stateDB.SetState(
-		contract.Address(),
-		creator,
-		common.BytesToHash(common.LeftPadBytes(contract.Caller().Bytes(), 32)),
+	viewInitCode := append(ViewBytecode, constructorArgs...)
+	_, viewAddr, leftoverGas, err = evm.Create(
+		deployer,
+		viewInitCode,
+		gas,
+		zero,
 	)
+	if err != nil {
+		return common.Address{}, "", "", leftoverGas, fmt.Errorf("failed to deploy View contract: %w", err)
+	}
 
-	eventSignature := []byte("Registered(bytes32,address)")
-	topic0 := crypto.Keccak256Hash(eventSignature)
+	// Build viewId = resourceName_contractAddress using the actual deployed address.
+	viewId = fmt.Sprintf("%s_%s", resourceName, viewAddr.Hex())
 
-	stateDB.AddLog(&types.Log{
-		Address: contract.Address(),
-		Topics:  []common.Hash{topic0, key, common.BytesToHash(contract.Caller().Bytes())},
-		Data:    newEncodedValue,
+	return viewAddr, viewId, resourceName, leftoverGas, nil
+}
+
+func (p Precompile) GetView(
+	ctx sdk.Context,
+	method *abi.Method,
+	args []interface{},
+) ([]byte, error) {
+	viewAddress, ok := args[0].(common.Address)
+	if !ok {
+		return nil, fmt.Errorf("invalid viewAddress")
+	}
+
+	view, found, err := p.viewKeeper.GetViewByAddress(ctx, viewAddress.Hex())
+	if err != nil {
+		return nil, err
+	}
+	if !found {
+		return method.Outputs.Pack("")
+	}
+	return method.Outputs.Pack(view.Creator)
+}
+
+func emitViewCreated(
+	ctx sdk.Context,
+	stateDB vm.StateDB,
+	precompileAddr common.Address,
+	viewAddr, creator common.Address,
+	name string,
+	data []byte,
+) {
+	topic0 := crypto.Keccak256Hash([]byte("ViewCreated(address,address,string)"))
+	nameData, _ := ViewConstructorArgs[:1].Pack(name)
+	stateDB.AddLog(&gethtypes.Log{
+		Address: precompileAddr,
+		Topics: []common.Hash{
+			topic0,
+			common.BytesToHash(viewAddr.Bytes()),
+			common.BytesToHash(creator.Bytes()),
+		},
+		Data: nameData,
 	})
 
 	ctx.EventManager().EmitEvent(
 		sdk.NewEvent(
-			"Registered",
-			sdk.NewAttribute("key", key.Hex()),
-			sdk.NewAttribute("creator", sdk.AccAddress(contract.Caller().Bytes()).String()),
-			sdk.NewAttribute("view", base64.StdEncoding.EncodeToString(newEncodedValue)),
+			"ViewRegistered",
+			sdk.NewAttribute("view_address", viewAddr.Hex()),
+			sdk.NewAttribute("view_name", name),
+			sdk.NewAttribute("creator", sdk.AccAddress(creator.Bytes()).String()),
+			sdk.NewAttribute("data", base64.StdEncoding.EncodeToString(data)),
 		),
 	)
-
-	log.Info("register success", "id", id, "key", key.Hex(), "payload_bytes", len(base64.StdEncoding.EncodeToString(newEncodedValue)))
-
-	return nil, nil
-}
-
-func (p Precompile) ViewRegistryGet(ctx sdk.Context, contract *vm.Contract, stateDB vm.StateDB, method *abi.Method, args []interface{}) ([]byte, error) {
-	key, ok := args[0].([32]byte) // bytes32 in Solidity maps to [32]byte
-	if !ok {
-		return nil, fmt.Errorf("invalid type for key")
-	}
-
-	// Fetch from storage under your precompile's address
-	valueHash := stateDB.GetState(contract.Address(), common.BytesToHash(key[:]))
-
-	return valueHash.Bytes(), nil
 }

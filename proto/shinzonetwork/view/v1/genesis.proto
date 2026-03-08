@@ -1,0 +1,12 @@
+syntax = "proto3";
+
+package shinzonetwork.view.v1;
+
+import "gogoproto/gogo.proto";
+import "shinzonetwork/view/v1/view.proto";
+
+option go_package = "github.com/shinzonetwork/shinzohub/x/view/types";
+
+message GenesisState {
+  repeated View views = 1 [(gogoproto.nullable) = false];
+}

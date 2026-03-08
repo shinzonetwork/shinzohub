@@ -1,30 +1,43 @@
 // SPDX-License-Identifier: LGPL-3.0-only
 pragma solidity >=0.8.17;
 
-/// @dev The ViewRegistry contract's address.
+/// @dev The ViewRegistry precompile address.
 address constant VIEW_REGISTRY_PRECOMPILE_ADDRESS = 0x0000000000000000000000000000000000000210;
 
-/// @dev The ViewRegistry contract's instance.
+/// @dev Pre-instantiated ViewRegistry precompile contract.
 ViewRegistryI constant VIEW_REGISTRY_CONTRACT = ViewRegistryI(VIEW_REGISTRY_PRECOMPILE_ADDRESS);
 
 /// @author Shinzo Team
-/// @title ViewRegistry Precompiled Contract
-/// @notice The interface through which solidity contracts can register and retrieve views.
+/// @title ViewRegistry Precompile
+/// @notice Precompile that registers views and deploys a View contract per registration.
+///         Each view is its own contract with injectable pricing logic.
 /// @custom:address 0x0000000000000000000000000000000000000210
 interface ViewRegistryI {
-    /// @notice Registers a value in the ViewRegistry.
-    /// @dev The key is derived as keccak256(msg.sender, value).
-    /// @param value The blob to store.
-    function register(bytes calldata value) external;
 
-    /// @notice Retrieves a stored value using its key.
-    /// @param key The key used to store the value (typically keccak256(sender, value)).
-    /// @return result The stored blob.
-    function get(bytes32 key) external view returns (bytes memory result);
+    /// @param data The raw view bundle data.
+    /// @return viewAddress The address of the deployed View contract.
+    function register(bytes calldata data)
+        external
+        returns (address viewAddress);
 
-    /// @notice Emitted when a value is registered.
-    /// @param key The derived key of the stored value.
-    /// @param sender The address that called register().
-    /// @param value The raw bytes stored.
-    event Registered(bytes32 indexed key, address indexed sender, bytes value);
+    /// @param data    The raw view bundle data.
+    /// @param pricing The address of a custom IViewPricing contract.
+    /// @return viewAddress The address of the deployed View contract.
+    function registerWithPricing(
+        bytes calldata data,
+        address pricing
+    ) external returns (address viewAddress);
+
+    /// @param viewAddress The view contract address to look up.
+    /// @return creator The bech32 creator address (as string).
+    function getView(address viewAddress) external view returns (string memory creator);
+
+    /// @param viewAddress The address of the deployed View contract.
+    /// @param creator     The address that registered the view.
+    /// @param name        The SDL resource name of the view.
+    event ViewCreated(
+        address indexed viewAddress,
+        address indexed creator,
+        string name
+    );
 }

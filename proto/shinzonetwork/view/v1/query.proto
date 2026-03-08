@@ -1,0 +1,50 @@
+syntax = "proto3";
+
+package shinzonetwork.view.v1;
+
+import "gogoproto/gogo.proto";
+import "google/api/annotations.proto";
+import "cosmos/base/query/v1beta1/pagination.proto";
+import "shinzonetwork/view/v1/view.proto";
+
+option go_package = "github.com/shinzonetwork/shinzohub/x/view/types";
+
+service Query {
+  rpc Views(QueryViewsRequest) returns (QueryViewsResponse) {
+    option (google.api.http).get = "/shinzonetwork/view/v1/views";
+  }
+
+  rpc View(QueryViewRequest) returns (QueryViewResponse) {
+    option (google.api.http).get = "/shinzonetwork/view/v1/views/{contract_address}";
+  }
+
+  rpc ViewCount(QueryViewCountRequest) returns (QueryViewCountResponse) {
+    option (google.api.http).get = "/shinzonetwork/view/v1/view_count";
+  }
+}
+
+message QueryViewsRequest {
+  cosmos.base.query.v1beta1.PageRequest pagination = 1;
+  bool   include_data = 2;
+  uint64 since_block  = 3;
+}
+
+message QueryViewsResponse {
+  repeated View views = 1 [(gogoproto.nullable) = false];
+  cosmos.base.query.v1beta1.PageResponse pagination = 2;
+}
+
+message QueryViewRequest {
+  string contract_address = 1;
+  bool   include_data     = 2;
+}
+
+message QueryViewResponse {
+  View view = 1 [(gogoproto.nullable) = false];
+}
+
+message QueryViewCountRequest {}
+
+message QueryViewCountResponse {
+  uint64 count = 1;
+}

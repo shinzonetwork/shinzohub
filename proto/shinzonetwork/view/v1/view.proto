@@ -1,0 +1,17 @@
+syntax = "proto3";
+
+package shinzonetwork.view.v1;
+
+import "gogoproto/gogo.proto";
+
+option go_package = "github.com/shinzonetwork/shinzohub/x/view/types";
+
+// View represents a registered view.
+message View {
+  string name              = 1;
+  string creator           = 2;
+  reserved 3;                     // was: old name field
+  string contract_address  = 4;
+  bytes  data              = 5;
+  uint64 height = 6;
+}
