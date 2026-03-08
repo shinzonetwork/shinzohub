@@ -1,0 +1,25 @@
+syntax = "proto3";
+
+package shinzonetwork.indexer.v1;
+
+import "gogoproto/gogo.proto";
+
+option go_package = "github.com/shinzonetwork/shinzohub/x/indexer/types";
+
+// Indexer represents a registered indexer entity.
+message Indexer {
+  string address         = 1;
+  string did             = 2;
+  string pid             = 3;
+  string source_chain    = 4;
+  uint64 source_chain_id = 5;
+}
+
+// IndexerAssertion stores the assertion record for an indexer.
+message IndexerAssertion {
+  string consensus_pub_key  = 1;
+  string delegate_address   = 2;
+  string source_chain       = 3;
+  uint64 source_chain_id    = 4;
+  string assertion_id       = 5;
+}

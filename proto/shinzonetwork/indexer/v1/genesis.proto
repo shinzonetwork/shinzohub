@@ -1,0 +1,13 @@
+syntax = "proto3";
+
+package shinzonetwork.indexer.v1;
+
+import "gogoproto/gogo.proto";
+import "shinzonetwork/indexer/v1/indexer.proto";
+
+option go_package = "github.com/shinzonetwork/shinzohub/x/indexer/types";
+
+message GenesisState {
+  repeated Indexer indexers                   = 1 [(gogoproto.nullable) = false];
+  repeated IndexerAssertion assertions        = 2 [(gogoproto.nullable) = false];
+}

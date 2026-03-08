@@ -1,0 +1,47 @@
+syntax = "proto3";
+
+package shinzonetwork.indexer.v1;
+
+import "gogoproto/gogo.proto";
+import "google/api/annotations.proto";
+import "cosmos/base/query/v1beta1/pagination.proto";
+import "shinzonetwork/indexer/v1/indexer.proto";
+
+option go_package = "github.com/shinzonetwork/shinzohub/x/indexer/types";
+
+service Query {
+  rpc Indexers(QueryIndexersRequest) returns (QueryIndexersResponse) {
+    option (google.api.http).get = "/shinzonetwork/indexer/v1/indexers";
+  }
+
+  rpc Indexer(QueryIndexerRequest) returns (QueryIndexerResponse) {
+    option (google.api.http).get = "/shinzonetwork/indexer/v1/indexers/{address}";
+  }
+
+  rpc IndexerCount(QueryIndexerCountRequest) returns (QueryIndexerCountResponse) {
+    option (google.api.http).get = "/shinzonetwork/indexer/v1/indexer_count";
+  }
+}
+
+message QueryIndexersRequest {
+  cosmos.base.query.v1beta1.PageRequest pagination = 1;
+}
+
+message QueryIndexersResponse {
+  repeated Indexer indexers = 1 [(gogoproto.nullable) = false];
+  cosmos.base.query.v1beta1.PageResponse pagination = 2;
+}
+
+message QueryIndexerRequest {
+  string address = 1;
+}
+
+message QueryIndexerResponse {
+  Indexer indexer = 1 [(gogoproto.nullable) = false];
+}
+
+message QueryIndexerCountRequest {}
+
+message QueryIndexerCountResponse {
+  uint64 count = 1;
+}
