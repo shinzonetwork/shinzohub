@@ -1,4 +1,4 @@
-package entityregistry
+package hostregistry
 
 import (
 	"embed"
@@ -12,16 +12,13 @@ import (
 	"github.com/ethereum/go-ethereum/core/tracing"
 	"github.com/ethereum/go-ethereum/core/vm"
 
-	sourcehubkeeper "github.com/shinzonetwork/shinzohub/x/sourcehub/keeper"
+	hostkeeper "github.com/shinzonetwork/shinzohub/x/host/keeper"
 )
 
 const (
-	EntityRegistryPrecompileAddress = "0x0000000000000000000000000000000000000211"
+	PrecompileAddress = "0x0000000000000000000000000000000000000211"
 )
 
-
-// Embed abi json file to the executable binary. Needed when importing as dependency.
-//
 //go:embed abi.json
 var f embed.FS
 
@@ -29,11 +26,11 @@ var _ vm.PrecompiledContract = &Precompile{}
 
 type Precompile struct {
 	cmn.Precompile
-	baseGas         uint64
-	sourcehubKeeper sourcehubkeeper.Keeper
+	baseGas    uint64
+	hostKeeper hostkeeper.Keeper
 }
 
-func NewPrecompile(baseGas uint64, sourcehubKeeper sourcehubkeeper.Keeper) (*Precompile, error) {
+func NewPrecompile(baseGas uint64, hostKeeper hostkeeper.Keeper) (*Precompile, error) {
 	newABI, err := cmn.LoadABI(f, "abi.json")
 	if err != nil {
 		return nil, err
@@ -45,13 +42,13 @@ func NewPrecompile(baseGas uint64, sourcehubKeeper sourcehubkeeper.Keeper) (*Pre
 			KvGasConfig:          storetypes.GasConfig{},
 			TransientKVGasConfig: storetypes.GasConfig{},
 		},
-		baseGas:         baseGas,
-		sourcehubKeeper: sourcehubKeeper,
+		baseGas:    baseGas,
+		hostKeeper: hostKeeper,
 	}, nil
 }
 
 func (p Precompile) Address() common.Address {
-	return common.HexToAddress(EntityRegistryPrecompileAddress)
+	return common.HexToAddress(PrecompileAddress)
 }
 
 func (p Precompile) RequiredGas(_ []byte) uint64 {
@@ -65,20 +62,17 @@ func (p Precompile) Run(evm *vm.EVM, contract *vm.Contract, readOnly bool) (bz [
 
 	ctx, stateDB, method, initialGas, args, err := p.RunSetup(evm, contract, readOnly, p.IsTransaction)
 	if err != nil {
-		return cmn.ReturnRevertError(evm, err)
+		return nil, err
 	}
 
-	// This handles any out of gas errors that may occur during the execution of a precompile tx or query.
-	// It avoids panics and returns the out of gas error so the EVM can continue gracefully.
 	defer cmn.HandleGasError(ctx, contract, initialGas, &err)()
 
 	bz, err = p.HandleMethod(ctx, contract, stateDB, method, args)
 	if err != nil {
-		return cmn.ReturnRevertError(evm, err)
+		return nil, err
 	}
 
 	cost := ctx.GasMeter().GasConsumed() - initialGas
-
 	if !contract.UseGas(uint64(cost), nil, tracing.GasChangeUnspecified) {
 		return nil, vm.ErrOutOfGas
 	}
@@ -88,14 +82,13 @@ func (p Precompile) Run(evm *vm.EVM, contract *vm.Contract, readOnly bool) (bz [
 
 func (Precompile) IsTransaction(method *abi.Method) bool {
 	switch method.Name {
-	case EntityRegistryRegisterIndexerMethod, EntityRegistryRegisterHostMethod:
+	case MethodRegister:
 		return true
 	default:
 		return false
 	}
 }
 
-// HandleMethod dispatches to the appropriate precompile handler.
 func (p *Precompile) HandleMethod(
 	ctx sdk.Context,
 	contract *vm.Contract,
@@ -104,10 +97,14 @@ func (p *Precompile) HandleMethod(
 	args []interface{},
 ) (bz []byte, err error) {
 	switch method.Name {
-	case EntityRegistryRegisterIndexerMethod:
-		bz, err = p.EntityRegistryRegisterIndexer(ctx, contract, stateDB, method, args)
-	case EntityRegistryRegisterHostMethod:
-		bz, err = p.EntityRegistryRegisterHost(ctx, contract, stateDB, method, args)
+	case MethodRegister:
+		bz, err = p.Register(ctx, contract, stateDB, method, args)
+	case MethodIsRegistered:
+		bz, err = p.IsRegistered(ctx, method, args)
+	case MethodGetDid:
+		bz, err = p.GetDid(ctx, method, args)
+	case MethodGetPid:
+		bz, err = p.GetPid(ctx, method, args)
 	default:
 		return nil, fmt.Errorf(cmn.ErrUnknownMethod, method.Name)
 	}

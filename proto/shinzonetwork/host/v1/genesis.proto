@@ -1,0 +1,12 @@
+syntax = "proto3";
+
+package shinzonetwork.host.v1;
+
+import "gogoproto/gogo.proto";
+import "shinzonetwork/host/v1/host.proto";
+
+option go_package = "github.com/shinzonetwork/shinzohub/x/host/types";
+
+message GenesisState {
+  repeated Host hosts = 1 [(gogoproto.nullable) = false];
+}

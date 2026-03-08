@@ -1,0 +1,55 @@
+{
+  "_format": "hh-sol-artifact-1",
+  "contractName": "HostRegistry",
+  "sourceName": "app/precompiles/hostregistry/HostRegistry.sol",
+  "abi": [
+    {
+      "type": "function",
+      "name": "register",
+      "stateMutability": "nonpayable",
+      "inputs": [
+        { "name": "peerKeyPubkey", "type": "bytes" },
+        { "name": "peerKeySignature", "type": "bytes" },
+        { "name": "nodeIdentityKeyPubkey", "type": "bytes" },
+        { "name": "nodeIdentityKeySignature", "type": "bytes" },
+        { "name": "message", "type": "bytes" }
+      ],
+      "outputs": []
+    },
+    {
+      "type": "function",
+      "name": "isRegistered",
+      "stateMutability": "view",
+      "inputs": [{ "name": "addr", "type": "address" }],
+      "outputs": [{ "name": "result", "type": "bool" }]
+    },
+    {
+      "type": "function",
+      "name": "getDid",
+      "stateMutability": "view",
+      "inputs": [{ "name": "addr", "type": "address" }],
+      "outputs": [{ "name": "did", "type": "bytes" }]
+    },
+    {
+      "type": "function",
+      "name": "getPid",
+      "stateMutability": "view",
+      "inputs": [{ "name": "addr", "type": "address" }],
+      "outputs": [{ "name": "pid", "type": "bytes" }]
+    },
+    {
+      "type": "event",
+      "name": "Registered",
+      "anonymous": false,
+      "inputs": [
+        { "name": "owner", "type": "address", "indexed": true },
+        { "name": "did", "type": "bytes", "indexed": false },
+        { "name": "pid", "type": "bytes", "indexed": false }
+      ]
+    }
+  ],
+  "bytecode": "0x",
+  "deployedBytecode": "0x",
+  "linkReferences": {},
+  "deployedLinkReferences": {}
+}

@@ -1,0 +1,47 @@
+syntax = "proto3";
+
+package shinzonetwork.host.v1;
+
+import "gogoproto/gogo.proto";
+import "google/api/annotations.proto";
+import "cosmos/base/query/v1beta1/pagination.proto";
+import "shinzonetwork/host/v1/host.proto";
+
+option go_package = "github.com/shinzonetwork/shinzohub/x/host/types";
+
+service Query {
+  rpc Hosts(QueryHostsRequest) returns (QueryHostsResponse) {
+    option (google.api.http).get = "/shinzonetwork/host/v1/hosts";
+  }
+
+  rpc Host(QueryHostRequest) returns (QueryHostResponse) {
+    option (google.api.http).get = "/shinzonetwork/host/v1/hosts/{address}";
+  }
+
+  rpc HostCount(QueryHostCountRequest) returns (QueryHostCountResponse) {
+    option (google.api.http).get = "/shinzonetwork/host/v1/host_count";
+  }
+}
+
+message QueryHostsRequest {
+  cosmos.base.query.v1beta1.PageRequest pagination = 1;
+}
+
+message QueryHostsResponse {
+  repeated Host hosts = 1 [(gogoproto.nullable) = false];
+  cosmos.base.query.v1beta1.PageResponse pagination = 2;
+}
+
+message QueryHostRequest {
+  string address = 1;
+}
+
+message QueryHostResponse {
+  Host host = 1 [(gogoproto.nullable) = false];
+}
+
+message QueryHostCountRequest {}
+
+message QueryHostCountResponse {
+  uint64 count = 1;
+}
