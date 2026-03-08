@@ -1,0 +1,12 @@
+syntax = "proto3";
+
+package shinzonetwork.admin.v1;
+
+import "gogoproto/gogo.proto";
+import "shinzonetwork/admin/v1/params.proto";
+
+option go_package = "github.com/shinzonetwork/shinzohub/x/admin/types";
+
+message GenesisState {
+  Params params = 1 [(gogoproto.nullable) = false];
+}
