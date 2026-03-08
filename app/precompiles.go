@@ -29,16 +29,19 @@ import (
 	evmkeeper "github.com/cosmos/evm/x/vm/keeper"
 	evmtypes "github.com/cosmos/evm/x/vm/types"
 	channelkeeper "github.com/cosmos/ibc-go/v10/modules/core/04-channel/keeper"
-	sourcehubkeeper "github.com/shinzonetwork/shinzohub/x/sourcehub/keeper"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/vm"
-	"github.com/shinzonetwork/shinzohub/app/precompiles/entityregistry"
+	"github.com/shinzonetwork/shinzohub/app/precompiles/hostregistry"
+	"github.com/shinzonetwork/shinzohub/app/precompiles/indexerregistry"
 	"github.com/shinzonetwork/shinzohub/app/precompiles/viewregistry"
+	hostkeeper "github.com/shinzonetwork/shinzohub/x/host/keeper"
+	indexerkeeper "github.com/shinzonetwork/shinzohub/x/indexer/keeper"
+	viewkeeper "github.com/shinzonetwork/shinzohub/x/view/keeper"
 )
 
 const bech32PrecompileBaseGas = 6_000
-const viewRegsitryPrecompileBaseGas = 0
+const precompileBaseGas = 0
 
 // Optionals contains optional codecs for precompiles
 type Optionals struct {
@@ -67,8 +70,9 @@ func WithConsensusAddrCodec(c address.Codec) Option {
 
 func GetAvailableStaticPrecompiles() []string {
 	customAvailableStaticPrecompiles := []string{
-		viewregistry.ViewregistryPrecompileAddress,
-		// register custom address here
+		viewregistry.PrecompileAddress,
+		hostregistry.PrecompileAddress,
+		indexerregistry.PrecompileAddress,
 	}
 
 	return append(evmtypes.AvailableStaticPrecompiles, customAvailableStaticPrecompiles...)
@@ -88,7 +92,9 @@ func NewAvailableStaticPrecompiles(
 	evmKeeper *evmkeeper.Keeper,
 	govKeeper govkeeper.Keeper,
 	slashingKeeper slashingkeeper.Keeper,
-	sourcehubKeeper sourcehubkeeper.Keeper,
+	hostKeeper hostkeeper.Keeper,
+	indexerKeeper indexerkeeper.Keeper,
+	viewKeeper viewkeeper.Keeper,
 	codec codec.Codec,
 	opts ...Option,
 ) map[common.Address]vm.PrecompiledContract {
@@ -150,14 +156,19 @@ func NewAvailableStaticPrecompiles(
 	}
 
 	// register custom precompiles
-	viewRegistryPrecompile, err := viewregistry.NewPrecompile(viewRegsitryPrecompileBaseGas, sourcehubKeeper)
+	viewRegistryPrecompile, err := viewregistry.NewPrecompile(precompileBaseGas, viewKeeper)
 	if err != nil {
 		panic(fmt.Errorf("failed to instantiate view registry precompile: %w", err))
 	}
 
-	entityRegistryPrecompile, err := entityregistry.NewPrecompile(viewRegsitryPrecompileBaseGas, sourcehubKeeper)
+	hostRegistryPrecompile, err := hostregistry.NewPrecompile(precompileBaseGas, hostKeeper)
 	if err != nil {
-		panic(fmt.Errorf("failed to instantiate view registry precompile: %w", err))
+		panic(fmt.Errorf("failed to instantiate host registry precompile: %w", err))
+	}
+
+	indexerRegistryPrecompile, err := indexerregistry.NewPrecompile(precompileBaseGas, indexerKeeper)
+	if err != nil {
+		panic(fmt.Errorf("failed to instantiate indexer registry precompile: %w", err))
 	}
 
 	// Stateless precompiles
@@ -173,7 +184,8 @@ func NewAvailableStaticPrecompiles(
 	precompiles[slashingPrecompile.Address()] = slashingPrecompile
 
 	precompiles[viewRegistryPrecompile.Address()] = viewRegistryPrecompile
-	precompiles[entityRegistryPrecompile.Address()] = entityRegistryPrecompile
+	precompiles[hostRegistryPrecompile.Address()] = hostRegistryPrecompile
+	precompiles[indexerRegistryPrecompile.Address()] = indexerRegistryPrecompile
 
 	return precompiles
 }

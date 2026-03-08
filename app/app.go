@@ -157,9 +157,21 @@ import (
 	chainante "github.com/shinzonetwork/shinzohub/app/ante"
 
 	ibctm "github.com/cosmos/ibc-go/v10/modules/light-clients/07-tendermint"
+	adminmod "github.com/shinzonetwork/shinzohub/x/admin"
+	adminkeeper "github.com/shinzonetwork/shinzohub/x/admin/keeper"
+	admintypes "github.com/shinzonetwork/shinzohub/x/admin/types"
+	hostmod "github.com/shinzonetwork/shinzohub/x/host"
+	hostkeeper "github.com/shinzonetwork/shinzohub/x/host/keeper"
+	hosttypes "github.com/shinzonetwork/shinzohub/x/host/types"
+	indexermod "github.com/shinzonetwork/shinzohub/x/indexer"
+	indexerkeeper "github.com/shinzonetwork/shinzohub/x/indexer/keeper"
+	indexertypes "github.com/shinzonetwork/shinzohub/x/indexer/types"
 	sourcehub "github.com/shinzonetwork/shinzohub/x/sourcehub"
 	sourcehubkeeper "github.com/shinzonetwork/shinzohub/x/sourcehub/keeper"
 	sourcehubtypes "github.com/shinzonetwork/shinzohub/x/sourcehub/types"
+	viewmod "github.com/shinzonetwork/shinzohub/x/view"
+	viewkeeper "github.com/shinzonetwork/shinzohub/x/view/keeper"
+	viewtypes "github.com/shinzonetwork/shinzohub/x/view/types"
 )
 
 const (
@@ -226,7 +238,11 @@ var maccPerms = map[string][]string{
 	feemarkettypes.ModuleName:   nil,
 	erc20types.ModuleName:       {authtypes.Minter, authtypes.Burner},
 
-	sourcehubtypes.ModuleName: nil,
+	admintypes.ModuleName:     nil,
+		sourcehubtypes.ModuleName: nil,
+		hosttypes.ModuleName:      nil,
+		indexertypes.ModuleName:   nil,
+		viewtypes.ModuleName:      nil,
 }
 
 var (
@@ -283,7 +299,11 @@ type ChainApp struct {
 	ScopedTransferKeeper      capabilitykeeper.ScopedKeeper
 	ScopedIBCFeeKeeper        capabilitykeeper.ScopedKeeper
 
+	AdminKeeper     adminkeeper.Keeper
 	SourcehubKeeper sourcehubkeeper.Keeper
+	HostKeeper      hostkeeper.Keeper
+	IndexerKeeper   indexerkeeper.Keeper
+	ViewKeeper      viewkeeper.Keeper
 	// the module manager
 	ModuleManager      *module.Manager
 	BasicModuleManager module.BasicManager
@@ -394,7 +414,11 @@ func NewChainApp(
 		feemarkettypes.StoreKey,
 		erc20types.StoreKey,
 
+		admintypes.StoreKey,
 		sourcehubtypes.StoreKey,
+		hosttypes.StoreKey,
+		indexertypes.StoreKey,
+		viewtypes.StoreKey,
 	)
 
 	tkeys := storetypes.NewTransientStoreKeys(
@@ -720,11 +744,41 @@ func NewChainApp(
 		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
 	)
 
+	authority := authtypes.NewModuleAddress(govtypes.ModuleName).String()
+
+	app.AdminKeeper = adminkeeper.NewKeeper(
+		appCodec,
+		runtime.NewKVStoreService(keys[admintypes.StoreKey]),
+		authority,
+	)
+
 	app.SourcehubKeeper = sourcehubkeeper.NewKeeper(
 		appCodec,
 		runtime.NewKVStoreService(keys[sourcehubtypes.StoreKey]),
 		app.ICAControllerKeeper,
-		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
+		app.AdminKeeper,
+	)
+
+	app.HostKeeper = hostkeeper.NewKeeper(
+		appCodec,
+		runtime.NewKVStoreService(keys[hosttypes.StoreKey]),
+		&app.SourcehubKeeper,
+		authority,
+	)
+
+	app.IndexerKeeper = indexerkeeper.NewKeeper(
+		appCodec,
+		runtime.NewKVStoreService(keys[indexertypes.StoreKey]),
+		app.AdminKeeper,
+		&app.SourcehubKeeper,
+	)
+
+	app.ViewKeeper = viewkeeper.NewKeeper(
+		appCodec,
+		runtime.NewKVStoreService(keys[viewtypes.StoreKey]),
+		app.HostKeeper,
+		&app.SourcehubKeeper,
+		authority,
 	)
 
 	// NOTE: we are adding all available EVM extensions.
@@ -740,7 +794,9 @@ func NewChainApp(
 		app.EVMKeeper,
 		app.GovKeeper,
 		app.SlashingKeeper,
-		app.SourcehubKeeper,
+		app.HostKeeper,
+		app.IndexerKeeper,
+		app.ViewKeeper,
 		appCodec,
 	)
 	app.EVMKeeper.WithStaticPrecompiles(
@@ -832,12 +888,32 @@ func NewChainApp(
 		feemarket.NewAppModule(app.FeeMarketKeeper),
 		erc20.NewAppModule(app.Erc20Keeper, app.AccountKeeper),
 
+		adminmod.NewAppModule(
+			appCodec,
+			app.AdminKeeper,
+			runtime.NewKVStoreService(keys[admintypes.StoreKey]),
+		),
 		sourcehub.NewAppModule(
 			appCodec,
 			app.SourcehubKeeper,
 			app.ICAControllerKeeper,
 			runtime.NewKVStoreService(keys[sourcehubtypes.StoreKey]),
 			app.interfaceRegistry,
+		),
+		hostmod.NewAppModule(
+			appCodec,
+			app.HostKeeper,
+			runtime.NewKVStoreService(keys[hosttypes.StoreKey]),
+		),
+		indexermod.NewAppModule(
+			appCodec,
+			app.IndexerKeeper,
+			runtime.NewKVStoreService(keys[indexertypes.StoreKey]),
+		),
+		viewmod.NewAppModule(
+			appCodec,
+			app.ViewKeeper,
+			runtime.NewKVStoreService(keys[viewtypes.StoreKey]),
 		),
 	)
 
@@ -881,7 +957,11 @@ func NewChainApp(
 		ibcexported.ModuleName,
 		icatypes.ModuleName,
 
+		admintypes.ModuleName,
 		sourcehubtypes.ModuleName,
+		hosttypes.ModuleName,
+		indexertypes.ModuleName,
+		viewtypes.ModuleName,
 	)
 
 	app.ModuleManager.SetOrderEndBlockers(
@@ -898,7 +978,11 @@ func NewChainApp(
 		ibcexported.ModuleName,
 		icatypes.ModuleName,
 
+		admintypes.ModuleName,
 		sourcehubtypes.ModuleName,
+		hosttypes.ModuleName,
+		indexertypes.ModuleName,
+		viewtypes.ModuleName,
 	)
 
 	// NOTE: The genutils module must occur after staking so that pools are
@@ -942,7 +1026,11 @@ func NewChainApp(
 		ibcexported.ModuleName,
 		icatypes.ModuleName,
 
+		admintypes.ModuleName,
 		sourcehubtypes.ModuleName,
+		hosttypes.ModuleName,
+		indexertypes.ModuleName,
+		viewtypes.ModuleName,
 	}
 	app.ModuleManager.SetOrderInitGenesis(genesisModuleOrder...)
 	app.ModuleManager.SetOrderExportGenesis(genesisModuleOrder...)
