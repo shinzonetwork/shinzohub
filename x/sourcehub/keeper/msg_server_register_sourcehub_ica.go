@@ -9,11 +9,10 @@ import (
 	"github.com/shinzonetwork/shinzohub/x/sourcehub/types"
 )
 
-// RegisterSourcehubICA handles MsgRegisterSourcehubICA
 func (m msgServer) RegisterSourcehubICA(goCtx context.Context, msg *types.MsgRegisterSourcehubICA) (*types.MsgRegisterSourcehubICAResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
-	if !m.Keeper.IsAdmin(ctx, msg.Signer) {
+	if !m.Keeper.adminKeeper.IsAdmin(ctx, msg.Signer) {
 		return nil, sdkerrors.ErrUnauthorized.Wrap("admin required")
 	}
 

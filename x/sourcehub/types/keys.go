@@ -1,7 +1,6 @@
 package types
 
 import (
-	"cosmossdk.io/collections"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 )
 
@@ -33,21 +32,5 @@ const (
 	GroupObjectName  = "group"
 	GroupHostName    = "host"
 	GroupIndexerName = "indexer"
-
-	AddrRolePrefix = "addr_role:" // addr_role:<address>:<role>
-	DIDRolePrefix  = "did_role:"  // did_role:<did>:<role>
 )
 
-// Store prefixes
-var (
-	KeyPrefixParams = collections.NewPrefix(0)
-)
-
-const (
-	RoleIndexer uint8 = 0
-	RoleHost    uint8 = 1
-)
-
-const (
-	IndexerAttestationPrefix = "indexer_attestation:" // indexer_attestation:<delegate>:<sourceChain>:<sourceChainId>
-)

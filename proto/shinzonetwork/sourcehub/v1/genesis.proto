@@ -3,7 +3,6 @@ syntax = "proto3";
 package shinzonetwork.sourcehub.v1;
 
 import "gogoproto/gogo.proto";
-import "shinzonetwork/sourcehub/v1/params.proto";
 
 option go_package = "github.com/shinzonetwork/shinzohub/x/sourcehub/types";
 
@@ -26,6 +25,4 @@ message GenesisState {
 
   // Policy ID for shinzohub on sourcehub
   string policy_id = 6;
-
-  Params params = 7 [(gogoproto.nullable) = false];
 }

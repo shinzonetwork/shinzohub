@@ -18,7 +18,7 @@ import (
 func (m msgServer) RegisterShinzoPolicy(goCtx context.Context, msg *types.MsgRegisterShinzoPolicy) (*types.MsgRegisterShinzoPolicyResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
-	if !m.Keeper.IsAdmin(ctx, msg.Signer) {
+	if !m.Keeper.adminKeeper.IsAdmin(ctx, msg.Signer) {
 		return nil, sdkerrors.ErrUnauthorized.Wrap("admin required")
 	}
 

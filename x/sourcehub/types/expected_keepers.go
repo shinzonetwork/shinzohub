@@ -6,6 +6,10 @@ import (
 	channeltypes "github.com/cosmos/ibc-go/v10/modules/core/04-channel/types"
 )
 
+type AdminKeeper interface {
+	IsAdmin(ctx sdk.Context, address string) bool
+}
+
 type ICAControllerKeeper interface {
 	RegisterInterchainAccount(
 		ctx sdk.Context,

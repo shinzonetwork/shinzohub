@@ -7,3 +7,8 @@ build/
 web/
 
 **/.DS_Store
+
+# Foundry
+app/precompiles/out/
+app/precompiles/cache/
+app/precompiles/lib/

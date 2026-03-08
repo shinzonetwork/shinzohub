@@ -18,7 +18,7 @@ import (
 func (m msgServer) RequestStreamAccess(goCtx context.Context, msg *types.MsgRequestStreamAccess) (*types.MsgRequestStreamAccessResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
-	if !m.Keeper.IsAdmin(ctx, msg.Signer) {
+	if !m.Keeper.adminKeeper.IsAdmin(ctx, msg.Signer) {
 		return nil, sdkerrors.ErrUnauthorized.Wrap("admin required")
 	}
 
