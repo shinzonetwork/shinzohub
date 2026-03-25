@@ -19,11 +19,17 @@ interface IView {
     /// Returns every host that has reported pricing for this view.
     function hosts() external view returns (address[] memory result);
 
+    /// A host removes itself from this view.
+    /// @dev Only hosts that have previously reported.
+    function unhost() external;
+
     event HostReported(
         address indexed host,
         uint256 complexity,
         uint256 rate
     );
+
+    event Unhosted(address indexed host);
 
     /// Stake SHNZ on this view. Send SHNZ with the call.
     function stake() external payable;

@@ -80,6 +80,24 @@ contract View is IView {
         emit HostReported(msg.sender, _complexity, _rate);
     }
 
+    function unhost() external override {
+        require(_hostReports[msg.sender].exists, "not a host of this view");
+
+        // Remove from _hosts array by swapping with last element.
+        uint256 len = _hosts.length;
+        for (uint256 i = 0; i < len; i++) {
+            if (_hosts[i] == msg.sender) {
+                _hosts[i] = _hosts[len - 1];
+                _hosts.pop();
+                break;
+            }
+        }
+
+        delete _hostReports[msg.sender];
+
+        emit Unhosted(msg.sender);
+    }
+
     function hosts() external view override returns (address[] memory result) {
         return _hosts;
     }

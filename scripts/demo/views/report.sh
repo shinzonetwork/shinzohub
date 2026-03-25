@@ -104,5 +104,32 @@ echo "Hosts:          $HOSTS"
 echo "Avg rate:       $AVG_RATE"
 echo "Avg complexity: $AVG_COMPLEXITY"
 
+# ── 5. Unhost from the view ──
+echo ""
+echo "==> Unhosting..."
+TX_RESULT=$(cast send "$VIEW_ADDR" \
+  "unhost()" \
+  --private-key "$PRIVATE_KEY" \
+  --rpc-url "$RPC_URL" \
+  --gas-limit 200000 \
+  --json)
+
+TX_HASH=$(echo "$TX_RESULT" | jq -r '.transactionHash')
+STATUS=$(cast receipt "$TX_HASH" --rpc-url "$RPC_URL" --json | jq -r '.status')
+if [ "$STATUS" = "0x0" ]; then
+  echo "Unhost reverted!"
+  echo "  cast receipt $TX_HASH --rpc-url $RPC_URL"
+  exit 1
+fi
+
+echo "Unhosted successfully!"
+echo ""
+HOSTS=$(cast call "$VIEW_ADDR" "hosts()(address[])" --rpc-url "$RPC_URL")
+AVG_RATE=$(cast call "$VIEW_ADDR" "rate()(uint256)" --rpc-url "$RPC_URL")
+AVG_COMPLEXITY=$(cast call "$VIEW_ADDR" "complexity()(uint256)" --rpc-url "$RPC_URL")
+echo "Hosts:          $HOSTS"
+echo "Avg rate:       $AVG_RATE"
+echo "Avg complexity: $AVG_COMPLEXITY"
+
 echo ""
 echo "=== Done ==="
