@@ -8,11 +8,7 @@
       "name": "register",
       "stateMutability": "nonpayable",
       "inputs": [
-        { "name": "peerKeyPubkey", "type": "bytes" },
-        { "name": "peerKeySignature", "type": "bytes" },
-        { "name": "nodeIdentityKeyPubkey", "type": "bytes" },
-        { "name": "nodeIdentityKeySignature", "type": "bytes" },
-        { "name": "message", "type": "bytes" },
+        { "name": "connectionString", "type": "string" },
         { "name": "sourceChain", "type": "string" },
         { "name": "sourceChainId", "type": "uint64" }
       ],
@@ -34,10 +30,10 @@
     },
     {
       "type": "function",
-      "name": "getPid",
+      "name": "getConnectionString",
       "stateMutability": "view",
       "inputs": [{ "name": "addr", "type": "address" }],
-      "outputs": [{ "name": "pid", "type": "bytes" }]
+      "outputs": [{ "name": "connectionString", "type": "string" }]
     },
     {
       "type": "function",
@@ -53,7 +49,7 @@
       "inputs": [
         { "name": "owner", "type": "address", "indexed": true },
         { "name": "did", "type": "bytes", "indexed": false },
-        { "name": "pid", "type": "bytes", "indexed": false },
+        { "name": "connectionString", "type": "string", "indexed": false },
         { "name": "sourceChain", "type": "string", "indexed": false },
         { "name": "sourceChainId", "type": "uint64", "indexed": false }
       ]

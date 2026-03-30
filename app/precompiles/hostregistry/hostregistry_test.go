@@ -1,9 +1,6 @@
 package hostregistry_test
 
 import (
-	"crypto/ed25519"
-	"crypto/rand"
-	"crypto/sha256"
 	"fmt"
 	"testing"
 
@@ -12,8 +9,6 @@ import (
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	"github.com/cosmos/cosmos-sdk/runtime"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/decred/dcrd/dcrec/secp256k1/v4"
-	"github.com/decred/dcrd/dcrec/secp256k1/v4/ecdsa"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/holiman/uint256"
 	"github.com/stretchr/testify/require"
@@ -80,22 +75,6 @@ func (s *PrecompileTestSuite) SetupTest() {
 	s.precompile = p
 }
 
-func generatePeerKey(t *testing.T, message []byte) (pubkey, signature []byte) {
-	pub, priv, err := ed25519.GenerateKey(rand.Reader)
-	require.NoError(t, err)
-	sig := ed25519.Sign(priv, message)
-	return []byte(pub), sig
-}
-
-func generateNodeIdentityKey(t *testing.T, message []byte) (pubkey, signature []byte) {
-	privKey, err := secp256k1.GeneratePrivateKey()
-	require.NoError(t, err)
-	pubkey = privKey.PubKey().SerializeUncompressed()
-	h := sha256.Sum256(message)
-	signature = ecdsa.Sign(privKey, h[:]).Serialize()
-	return pubkey, signature
-}
-
 func makeContract(caller common.Address) *vm.Contract {
 	return vm.NewContract(
 		caller,
@@ -134,20 +113,17 @@ func (s *PrecompileTestSuite) TestIsTransaction() {
 	s.Require().True(ok)
 	s.Require().False(s.precompile.IsTransaction(&getDidMethod))
 
-	getPidMethod, ok := s.precompile.ABI.Methods["getPid"]
+	getCSMethod, ok := s.precompile.ABI.Methods["getConnectionString"]
 	s.Require().True(ok)
-	s.Require().False(s.precompile.IsTransaction(&getPidMethod))
+	s.Require().False(s.precompile.IsTransaction(&getCSMethod))
 }
 
 func (s *PrecompileTestSuite) TestRegister_Success() {
-	message := []byte("test-nonce")
-	peerPub, peerSig := generatePeerKey(s.T(), message)
-	nodePub, nodeSig := generateNodeIdentityKey(s.T(), message)
 	caller := common.HexToAddress("0x1234567890abcdef1234567890abcdef12345678")
 	contract := makeContract(caller)
 
 	method := s.precompile.ABI.Methods["register"]
-	args := []interface{}{peerPub, peerSig, nodePub, nodeSig, message}
+	args := []interface{}{"192.168.1.1:8080"}
 
 	bz, err := s.precompile.Register(s.ctx, contract, s.stateDB, &method, args)
 	s.Require().NoError(err)
@@ -155,7 +131,6 @@ func (s *PrecompileTestSuite) TestRegister_Success() {
 
 	s.Require().True(s.hostKeeper.IsRegisteredHost(s.ctx, caller.Bytes()))
 	s.Require().Len(s.stateDB.logs, 1)
-	s.Require().Equal(common.HexToAddress(hostregistry.PrecompileAddress), s.stateDB.logs[0].Address)
 
 	events := s.ctx.EventManager().Events()
 	found := false
@@ -167,57 +142,14 @@ func (s *PrecompileTestSuite) TestRegister_Success() {
 	s.Require().True(found)
 }
 
-func (s *PrecompileTestSuite) TestRegister_InvalidPeerKey() {
-	message := []byte("test-nonce")
-	_, peerSig := generatePeerKey(s.T(), []byte("wrong"))
-	nodePub, nodeSig := generateNodeIdentityKey(s.T(), message)
-	caller := common.HexToAddress("0x1234567890abcdef1234567890abcdef12345678")
-	contract := makeContract(caller)
-
-	peerPub := make([]byte, 32)
-	rand.Read(peerPub)
-
-	method := s.precompile.ABI.Methods["register"]
-	args := []interface{}{peerPub, peerSig, nodePub, nodeSig, message}
-
-	_, err := s.precompile.Register(s.ctx, contract, s.stateDB, &method, args)
-	s.Require().Error(err)
-}
-
 func (s *PrecompileTestSuite) TestRegister_EmptyArgs() {
 	caller := common.HexToAddress("0x1234567890abcdef1234567890abcdef12345678")
 	contract := makeContract(caller)
 	method := s.precompile.ABI.Methods["register"]
 
-	_, err := s.precompile.Register(s.ctx, contract, s.stateDB, &method, []interface{}{
-		[]byte{}, []byte("sig"), []byte("node"), []byte("nodesig"), []byte("msg"),
-	})
+	_, err := s.precompile.Register(s.ctx, contract, s.stateDB, &method, []interface{}{""})
 	s.Require().Error(err)
-	s.Require().Contains(err.Error(), "invalid peerKeyPubkey")
-
-	_, err = s.precompile.Register(s.ctx, contract, s.stateDB, &method, []interface{}{
-		[]byte("peer"), []byte{}, []byte("node"), []byte("nodesig"), []byte("msg"),
-	})
-	s.Require().Error(err)
-	s.Require().Contains(err.Error(), "invalid peerKeySignature")
-
-	_, err = s.precompile.Register(s.ctx, contract, s.stateDB, &method, []interface{}{
-		[]byte("peer"), []byte("sig"), []byte{}, []byte("nodesig"), []byte("msg"),
-	})
-	s.Require().Error(err)
-	s.Require().Contains(err.Error(), "invalid nodeIdentityKeyPubkey")
-
-	_, err = s.precompile.Register(s.ctx, contract, s.stateDB, &method, []interface{}{
-		[]byte("peer"), []byte("sig"), []byte("node"), []byte{}, []byte("msg"),
-	})
-	s.Require().Error(err)
-	s.Require().Contains(err.Error(), "invalid nodeIdentityKeySignature")
-
-	_, err = s.precompile.Register(s.ctx, contract, s.stateDB, &method, []interface{}{
-		[]byte("peer"), []byte("sig"), []byte("node"), []byte("nodesig"), []byte{},
-	})
-	s.Require().Error(err)
-	s.Require().Contains(err.Error(), "invalid message")
+	s.Require().Contains(err.Error(), "invalid connectionString")
 }
 
 func (s *PrecompileTestSuite) TestIsRegistered_False() {
@@ -233,12 +165,9 @@ func (s *PrecompileTestSuite) TestIsRegistered_False() {
 }
 
 func (s *PrecompileTestSuite) TestIsRegistered_True() {
-	message := []byte("test-nonce")
-	peerPub, peerSig := generatePeerKey(s.T(), message)
-	nodePub, nodeSig := generateNodeIdentityKey(s.T(), message)
 	caller := common.HexToAddress("0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa")
 
-	_, _, err := s.hostKeeper.RegisterHost(s.ctx, peerPub, peerSig, nodePub, nodeSig, message, caller.Bytes())
+	_, err := s.hostKeeper.RegisterHost(s.ctx, "192.168.1.1:8080", caller.Bytes())
 	s.Require().NoError(err)
 
 	method := s.precompile.ABI.Methods["isRegistered"]
@@ -250,64 +179,31 @@ func (s *PrecompileTestSuite) TestIsRegistered_True() {
 	s.Require().Equal(true, out[0].(bool))
 }
 
-func (s *PrecompileTestSuite) TestGetDid_NotRegistered() {
-	method := s.precompile.ABI.Methods["getDid"]
+func (s *PrecompileTestSuite) TestGetConnectionString_NotRegistered() {
+	method := s.precompile.ABI.Methods["getConnectionString"]
 	addr := common.HexToAddress("0xdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef")
 
-	bz, err := s.precompile.GetDid(s.ctx, &method, []interface{}{addr})
+	bz, err := s.precompile.GetConnectionString(s.ctx, &method, []interface{}{addr})
 	s.Require().NoError(err)
 
 	out, err := method.Outputs.Unpack(bz)
 	s.Require().NoError(err)
-	s.Require().Empty(out[0].([]byte))
+	s.Require().Empty(out[0].(string))
 }
 
-func (s *PrecompileTestSuite) TestGetDid_Registered() {
-	message := []byte("test-nonce")
-	peerPub, peerSig := generatePeerKey(s.T(), message)
-	nodePub, nodeSig := generateNodeIdentityKey(s.T(), message)
-	caller := common.HexToAddress("0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb")
-
-	did, _, err := s.hostKeeper.RegisterHost(s.ctx, peerPub, peerSig, nodePub, nodeSig, message, caller.Bytes())
-	s.Require().NoError(err)
-
-	method := s.precompile.ABI.Methods["getDid"]
-	bz, err := s.precompile.GetDid(s.ctx, &method, []interface{}{caller})
-	s.Require().NoError(err)
-
-	out, err := method.Outputs.Unpack(bz)
-	s.Require().NoError(err)
-	s.Require().Equal(did, out[0].([]byte))
-}
-
-func (s *PrecompileTestSuite) TestGetPid_NotRegistered() {
-	method := s.precompile.ABI.Methods["getPid"]
-	addr := common.HexToAddress("0xdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef")
-
-	bz, err := s.precompile.GetPid(s.ctx, &method, []interface{}{addr})
-	s.Require().NoError(err)
-
-	out, err := method.Outputs.Unpack(bz)
-	s.Require().NoError(err)
-	s.Require().Empty(out[0].([]byte))
-}
-
-func (s *PrecompileTestSuite) TestGetPid_Registered() {
-	message := []byte("test-nonce")
-	peerPub, peerSig := generatePeerKey(s.T(), message)
-	nodePub, nodeSig := generateNodeIdentityKey(s.T(), message)
+func (s *PrecompileTestSuite) TestGetConnectionString_Registered() {
 	caller := common.HexToAddress("0xcccccccccccccccccccccccccccccccccccccccc")
 
-	_, pid, err := s.hostKeeper.RegisterHost(s.ctx, peerPub, peerSig, nodePub, nodeSig, message, caller.Bytes())
+	_, err := s.hostKeeper.RegisterHost(s.ctx, "192.168.1.1:8080", caller.Bytes())
 	s.Require().NoError(err)
 
-	method := s.precompile.ABI.Methods["getPid"]
-	bz, err := s.precompile.GetPid(s.ctx, &method, []interface{}{caller})
+	method := s.precompile.ABI.Methods["getConnectionString"]
+	bz, err := s.precompile.GetConnectionString(s.ctx, &method, []interface{}{caller})
 	s.Require().NoError(err)
 
 	out, err := method.Outputs.Unpack(bz)
 	s.Require().NoError(err)
-	s.Require().Equal(pid, out[0].([]byte))
+	s.Require().Equal("192.168.1.1:8080", out[0].(string))
 }
 
 func (s *PrecompileTestSuite) TestHandleMethod_Dispatch() {
@@ -315,9 +211,7 @@ func (s *PrecompileTestSuite) TestHandleMethod_Dispatch() {
 	contract := makeContract(caller)
 
 	isRegMethod := s.precompile.ABI.Methods["isRegistered"]
-	args := []interface{}{caller}
-
-	bz, err := s.precompile.HandleMethod(s.ctx, contract, s.stateDB, &isRegMethod, args)
+	bz, err := s.precompile.HandleMethod(s.ctx, contract, s.stateDB, &isRegMethod, []interface{}{caller})
 	s.Require().NoError(err)
 
 	out, err := isRegMethod.Outputs.Unpack(bz)
@@ -340,36 +234,13 @@ func (s *PrecompileTestSuite) TestHandleMethod_UnknownMethod() {
 func (s *PrecompileTestSuite) TestRegister_ICAFailure() {
 	s.mockSourcehub.err = fmt.Errorf("ICA not ready")
 
-	message := []byte("test-nonce")
-	peerPub, peerSig := generatePeerKey(s.T(), message)
-	nodePub, nodeSig := generateNodeIdentityKey(s.T(), message)
 	caller := common.HexToAddress("0xdddddddddddddddddddddddddddddddddddddd")
 	contract := makeContract(caller)
 
 	method := s.precompile.ABI.Methods["register"]
-	args := []interface{}{peerPub, peerSig, nodePub, nodeSig, message}
+	args := []interface{}{"192.168.1.1:8080"}
 
 	_, err := s.precompile.Register(s.ctx, contract, s.stateDB, &method, args)
 	s.Require().Error(err)
 	s.Require().Contains(err.Error(), "ICA not ready")
-}
-
-func (s *PrecompileTestSuite) TestRegister_EventLogStructure() {
-	message := []byte("test-nonce")
-	peerPub, peerSig := generatePeerKey(s.T(), message)
-	nodePub, nodeSig := generateNodeIdentityKey(s.T(), message)
-	caller := common.HexToAddress("0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee")
-	contract := makeContract(caller)
-
-	method := s.precompile.ABI.Methods["register"]
-	args := []interface{}{peerPub, peerSig, nodePub, nodeSig, message}
-
-	_, err := s.precompile.Register(s.ctx, contract, s.stateDB, &method, args)
-	s.Require().NoError(err)
-
-	s.Require().Len(s.stateDB.logs, 1)
-	log := s.stateDB.logs[0]
-	s.Require().Len(log.Topics, 2)
-	s.Require().Equal(common.BytesToHash(caller.Bytes()), log.Topics[1])
-	s.Require().NotEmpty(log.Data)
 }

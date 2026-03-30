@@ -8,11 +8,11 @@ option go_package = "github.com/shinzonetwork/shinzohub/x/indexer/types";
 
 // Indexer represents a registered indexer entity.
 message Indexer {
-  string address         = 1;
-  string did             = 2;
-  string pid             = 3;
-  string source_chain    = 4;
-  uint64 source_chain_id = 5;
+  string address           = 1;
+  string did               = 2;
+  string connection_string = 3;
+  string source_chain      = 4;
+  uint64 source_chain_id   = 5;
 }
 
 // IndexerAssertion stores the assertion record for an indexer.

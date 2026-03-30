@@ -25,9 +25,9 @@ const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
 // Host represents a registered host entity.
 type Host struct {
-	Address string `protobuf:"bytes,1,opt,name=address,proto3" json:"address,omitempty"`
-	Did     string `protobuf:"bytes,2,opt,name=did,proto3" json:"did,omitempty"`
-	Pid     string `protobuf:"bytes,3,opt,name=pid,proto3" json:"pid,omitempty"`
+	Address          string `protobuf:"bytes,1,opt,name=address,proto3" json:"address,omitempty"`
+	Did              string `protobuf:"bytes,2,opt,name=did,proto3" json:"did,omitempty"`
+	ConnectionString string `protobuf:"bytes,3,opt,name=connection_string,json=connectionString,proto3" json:"connection_string,omitempty"`
 }
 
 func (m *Host) Reset()         { *m = Host{} }
@@ -77,9 +77,9 @@ func (m *Host) GetDid() string {
 	return ""
 }
 
-func (m *Host) GetPid() string {
+func (m *Host) GetConnectionString() string {
 	if m != nil {
-		return m.Pid
+		return m.ConnectionString
 	}
 	return ""
 }
@@ -91,7 +91,7 @@ func init() {
 func init() { proto.RegisterFile("shinzonetwork/host/v1/host.proto", fileDescriptor_72199a814cd947f3) }
 
 var fileDescriptor_72199a814cd947f3 = []byte{
-	// 191 bytes of a gzipped FileDescriptorProto
+	// placeholder - will be updated by protoc-gen-gogo
 	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xe2, 0x52, 0x28, 0xce, 0xc8, 0xcc,
 	0xab, 0xca, 0xcf, 0x4b, 0x2d, 0x29, 0xcf, 0x2f, 0xca, 0xd6, 0xcf, 0xc8, 0x2f, 0x2e, 0xd1, 0x2f,
 	0x33, 0x04, 0xd3, 0x7a, 0x05, 0x45, 0xf9, 0x25, 0xf9, 0x42, 0xa2, 0x28, 0x2a, 0xf4, 0xc0, 0x32,
@@ -126,10 +126,10 @@ func (m *Host) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	_ = i
 	var l int
 	_ = l
-	if len(m.Pid) > 0 {
-		i -= len(m.Pid)
-		copy(dAtA[i:], m.Pid)
-		i = encodeVarintHost(dAtA, i, uint64(len(m.Pid)))
+	if len(m.ConnectionString) > 0 {
+		i -= len(m.ConnectionString)
+		copy(dAtA[i:], m.ConnectionString)
+		i = encodeVarintHost(dAtA, i, uint64(len(m.ConnectionString)))
 		i--
 		dAtA[i] = 0x1a
 	}
@@ -175,7 +175,7 @@ func (m *Host) Size() (n int) {
 	if l > 0 {
 		n += 1 + l + sovHost(uint64(l))
 	}
-	l = len(m.Pid)
+	l = len(m.ConnectionString)
 	if l > 0 {
 		n += 1 + l + sovHost(uint64(l))
 	}
@@ -283,7 +283,7 @@ func (m *Host) Unmarshal(dAtA []byte) error {
 			iNdEx = postIndex
 		case 3:
 			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Pid", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field ConnectionString", wireType)
 			}
 			var stringLen uint64
 			for shift := uint(0); ; shift += 7 {
@@ -311,7 +311,7 @@ func (m *Host) Unmarshal(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.Pid = string(dAtA[iNdEx:postIndex])
+			m.ConnectionString = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
 		default:
 			iNdEx = preIndex

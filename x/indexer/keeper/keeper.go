@@ -12,7 +12,6 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/query"
 
-	commoncrypto "github.com/shinzonetwork/shinzohub/x/common/crypto"
 	"github.com/shinzonetwork/shinzohub/x/indexer/types"
 )
 
@@ -43,35 +42,14 @@ func (k Keeper) Logger(ctx sdk.Context) log.Logger {
 
 func (k Keeper) RegisterIndexer(
 	ctx sdk.Context,
-	peerKeyPubkey []byte,
-	peerKeySignature []byte,
-	nodeIdentityKeyPubkey []byte,
-	nodeIdentityKeySignature []byte,
-	message []byte,
+	connectionString string,
 	callerAddr []byte,
 	sourceChain string,
 	sourceChainId uint64,
-) ([]byte, []byte, error) {
-	if err := commoncrypto.VerifyPeerKeySignature(peerKeyPubkey, message, peerKeySignature); err != nil {
-		return nil, nil, err
-	}
-
-	if err := commoncrypto.VerifyNodeIdentityKeySignature(nodeIdentityKeyPubkey, message, nodeIdentityKeySignature); err != nil {
-		return nil, nil, err
-	}
-
-	pid, err := commoncrypto.DerivePID(peerKeyPubkey)
-	if err != nil {
-		return nil, nil, err
-	}
-
-	did, err := commoncrypto.DeriveDID(nodeIdentityKeyPubkey)
-	if err != nil {
-		return nil, nil, err
-	}
-
+) ([]byte, error) {
+	// Use caller address as DID.
+	did := sdk.AccAddress(callerAddr).String()
 	didBytes := []byte(did)
-	pidBytes := []byte(pid)
 
 	store := runtime.KVStoreAdapter(k.storeService.OpenKVStore(ctx))
 
@@ -79,7 +57,7 @@ func (k Keeper) RegisterIndexer(
 	existingDID := store.Get(addrKey)
 	if len(existingDID) > 0 {
 		if !bytesEqual(existingDID, didBytes) {
-			return nil, nil, fmt.Errorf("address already registered as indexer with a different DID")
+			return nil, fmt.Errorf("address already registered as indexer with a different DID")
 		}
 	}
 
@@ -87,12 +65,12 @@ func (k Keeper) RegisterIndexer(
 	existingAddr := store.Get(didKey)
 	if len(existingAddr) > 0 {
 		if !bytesEqual(existingAddr, callerAddr) {
-			return nil, nil, fmt.Errorf("DID already registered as indexer with a different address")
+			return nil, fmt.Errorf("DID already registered as indexer with a different address")
 		}
 	}
 
 	if err := k.sourcehubKeeper.SendICASetRelationship(ctx, did, "indexer"); err != nil {
-		return nil, nil, err
+		return nil, err
 	}
 
 	store.Set(addrKey, didBytes)
@@ -100,16 +78,16 @@ func (k Keeper) RegisterIndexer(
 
 	bech32Addr := sdk.AccAddress(callerAddr).String()
 	if err := k.SetIndexer(ctx, types.Indexer{
-		Address:       bech32Addr,
-		Did:           did,
-		Pid:           pid,
-		SourceChain:   sourceChain,
-		SourceChainId: sourceChainId,
+		Address:          bech32Addr,
+		Did:              did,
+		ConnectionString: connectionString,
+		SourceChain:      sourceChain,
+		SourceChainId:    sourceChainId,
 	}); err != nil {
-		return nil, nil, fmt.Errorf("failed to index indexer: %w", err)
+		return nil, fmt.Errorf("failed to index indexer: %w", err)
 	}
 
-	return didBytes, pidBytes, nil
+	return didBytes, nil
 }
 
 func assertionKey(delegate, sourceChain string, sourceChainId uint64) []byte {

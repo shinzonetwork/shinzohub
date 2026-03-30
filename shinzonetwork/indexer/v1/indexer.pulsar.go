@@ -17,7 +17,7 @@ var (
 	md_Indexer                 protoreflect.MessageDescriptor
 	fd_Indexer_address         protoreflect.FieldDescriptor
 	fd_Indexer_did             protoreflect.FieldDescriptor
-	fd_Indexer_pid             protoreflect.FieldDescriptor
+	fd_Indexer_connection_string             protoreflect.FieldDescriptor
 	fd_Indexer_source_chain    protoreflect.FieldDescriptor
 	fd_Indexer_source_chain_id protoreflect.FieldDescriptor
 )
@@ -27,7 +27,7 @@ func init() {
 	md_Indexer = File_shinzonetwork_indexer_v1_indexer_proto.Messages().ByName("Indexer")
 	fd_Indexer_address = md_Indexer.Fields().ByName("address")
 	fd_Indexer_did = md_Indexer.Fields().ByName("did")
-	fd_Indexer_pid = md_Indexer.Fields().ByName("pid")
+	fd_Indexer_connection_string = md_Indexer.Fields().ByName("pid")
 	fd_Indexer_source_chain = md_Indexer.Fields().ByName("source_chain")
 	fd_Indexer_source_chain_id = md_Indexer.Fields().ByName("source_chain_id")
 }
@@ -109,9 +109,9 @@ func (x *fastReflection_Indexer) Range(f func(protoreflect.FieldDescriptor, prot
 			return
 		}
 	}
-	if x.Pid != "" {
-		value := protoreflect.ValueOfString(x.Pid)
-		if !f(fd_Indexer_pid, value) {
+	if x.ConnectionString != "" {
+		value := protoreflect.ValueOfString(x.ConnectionString)
+		if !f(fd_Indexer_connection_string, value) {
 			return
 		}
 	}
@@ -146,8 +146,8 @@ func (x *fastReflection_Indexer) Has(fd protoreflect.FieldDescriptor) bool {
 		return x.Address != ""
 	case "shinzonetwork.indexer.v1.Indexer.did":
 		return x.Did != ""
-	case "shinzonetwork.indexer.v1.Indexer.pid":
-		return x.Pid != ""
+	case "shinzonetwork.indexer.v1.Indexer.connection_string":
+		return x.ConnectionString != ""
 	case "shinzonetwork.indexer.v1.Indexer.source_chain":
 		return x.SourceChain != ""
 	case "shinzonetwork.indexer.v1.Indexer.source_chain_id":
@@ -172,8 +172,8 @@ func (x *fastReflection_Indexer) Clear(fd protoreflect.FieldDescriptor) {
 		x.Address = ""
 	case "shinzonetwork.indexer.v1.Indexer.did":
 		x.Did = ""
-	case "shinzonetwork.indexer.v1.Indexer.pid":
-		x.Pid = ""
+	case "shinzonetwork.indexer.v1.Indexer.connection_string":
+		x.ConnectionString = ""
 	case "shinzonetwork.indexer.v1.Indexer.source_chain":
 		x.SourceChain = ""
 	case "shinzonetwork.indexer.v1.Indexer.source_chain_id":
@@ -200,8 +200,8 @@ func (x *fastReflection_Indexer) Get(descriptor protoreflect.FieldDescriptor) pr
 	case "shinzonetwork.indexer.v1.Indexer.did":
 		value := x.Did
 		return protoreflect.ValueOfString(value)
-	case "shinzonetwork.indexer.v1.Indexer.pid":
-		value := x.Pid
+	case "shinzonetwork.indexer.v1.Indexer.connection_string":
+		value := x.ConnectionString
 		return protoreflect.ValueOfString(value)
 	case "shinzonetwork.indexer.v1.Indexer.source_chain":
 		value := x.SourceChain
@@ -233,8 +233,8 @@ func (x *fastReflection_Indexer) Set(fd protoreflect.FieldDescriptor, value prot
 		x.Address = value.Interface().(string)
 	case "shinzonetwork.indexer.v1.Indexer.did":
 		x.Did = value.Interface().(string)
-	case "shinzonetwork.indexer.v1.Indexer.pid":
-		x.Pid = value.Interface().(string)
+	case "shinzonetwork.indexer.v1.Indexer.connection_string":
+		x.ConnectionString = value.Interface().(string)
 	case "shinzonetwork.indexer.v1.Indexer.source_chain":
 		x.SourceChain = value.Interface().(string)
 	case "shinzonetwork.indexer.v1.Indexer.source_chain_id":
@@ -263,8 +263,8 @@ func (x *fastReflection_Indexer) Mutable(fd protoreflect.FieldDescriptor) protor
 		panic(fmt.Errorf("field address of message shinzonetwork.indexer.v1.Indexer is not mutable"))
 	case "shinzonetwork.indexer.v1.Indexer.did":
 		panic(fmt.Errorf("field did of message shinzonetwork.indexer.v1.Indexer is not mutable"))
-	case "shinzonetwork.indexer.v1.Indexer.pid":
-		panic(fmt.Errorf("field pid of message shinzonetwork.indexer.v1.Indexer is not mutable"))
+	case "shinzonetwork.indexer.v1.Indexer.connection_string":
+		panic(fmt.Errorf("field connection_string of message shinzonetwork.indexer.v1.Indexer is not mutable"))
 	case "shinzonetwork.indexer.v1.Indexer.source_chain":
 		panic(fmt.Errorf("field source_chain of message shinzonetwork.indexer.v1.Indexer is not mutable"))
 	case "shinzonetwork.indexer.v1.Indexer.source_chain_id":
@@ -286,7 +286,7 @@ func (x *fastReflection_Indexer) NewField(fd protoreflect.FieldDescriptor) proto
 		return protoreflect.ValueOfString("")
 	case "shinzonetwork.indexer.v1.Indexer.did":
 		return protoreflect.ValueOfString("")
-	case "shinzonetwork.indexer.v1.Indexer.pid":
+	case "shinzonetwork.indexer.v1.Indexer.connection_string":
 		return protoreflect.ValueOfString("")
 	case "shinzonetwork.indexer.v1.Indexer.source_chain":
 		return protoreflect.ValueOfString("")
@@ -369,7 +369,7 @@ func (x *fastReflection_Indexer) ProtoMethods() *protoiface.Methods {
 		if l > 0 {
 			n += 1 + l + runtime.Sov(uint64(l))
 		}
-		l = len(x.Pid)
+		l = len(x.ConnectionString)
 		if l > 0 {
 			n += 1 + l + runtime.Sov(uint64(l))
 		}
@@ -421,10 +421,10 @@ func (x *fastReflection_Indexer) ProtoMethods() *protoiface.Methods {
 			i--
 			dAtA[i] = 0x22
 		}
-		if len(x.Pid) > 0 {
-			i -= len(x.Pid)
-			copy(dAtA[i:], x.Pid)
-			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.Pid)))
+		if len(x.ConnectionString) > 0 {
+			i -= len(x.ConnectionString)
+			copy(dAtA[i:], x.ConnectionString)
+			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.ConnectionString)))
 			i--
 			dAtA[i] = 0x1a
 		}
@@ -557,7 +557,7 @@ func (x *fastReflection_Indexer) ProtoMethods() *protoiface.Methods {
 				iNdEx = postIndex
 			case 3:
 				if wireType != 2 {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field Pid", wireType)
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field ConnectionString", wireType)
 				}
 				var stringLen uint64
 				for shift := uint(0); ; shift += 7 {
@@ -585,7 +585,7 @@ func (x *fastReflection_Indexer) ProtoMethods() *protoiface.Methods {
 				if postIndex > l {
 					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
 				}
-				x.Pid = string(dAtA[iNdEx:postIndex])
+				x.ConnectionString = string(dAtA[iNdEx:postIndex])
 				iNdEx = postIndex
 			case 4:
 				if wireType != 2 {
@@ -1354,7 +1354,7 @@ type Indexer struct {
 
 	Address       string `protobuf:"bytes,1,opt,name=address,proto3" json:"address,omitempty"`
 	Did           string `protobuf:"bytes,2,opt,name=did,proto3" json:"did,omitempty"`
-	Pid           string `protobuf:"bytes,3,opt,name=pid,proto3" json:"pid,omitempty"`
+	ConnectionString string `protobuf:"bytes,3,opt,name=connection_string,json=connectionString,proto3" json:"connection_string,omitempty"`
 	SourceChain   string `protobuf:"bytes,4,opt,name=source_chain,json=sourceChain,proto3" json:"source_chain,omitempty"`
 	SourceChainId uint64 `protobuf:"varint,5,opt,name=source_chain_id,json=sourceChainId,proto3" json:"source_chain_id,omitempty"`
 }
@@ -1393,9 +1393,9 @@ func (x *Indexer) GetDid() string {
 	return ""
 }
 
-func (x *Indexer) GetPid() string {
+func (x *Indexer) GetConnectionString() string {
 	if x != nil {
-		return x.Pid
+		return x.ConnectionString
 	}
 	return ""
 }

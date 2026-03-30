@@ -12,7 +12,6 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/query"
 
-	commoncrypto "github.com/shinzonetwork/shinzohub/x/common/crypto"
 	"github.com/shinzonetwork/shinzohub/x/host/types"
 )
 
@@ -43,42 +42,21 @@ func (k Keeper) Logger(ctx sdk.Context) log.Logger {
 
 func (k Keeper) RegisterHost(
 	ctx sdk.Context,
-	peerKeyPubkey []byte,
-	peerKeySignature []byte,
-	nodeIdentityKeyPubkey []byte,
-	nodeIdentityKeySignature []byte,
-	message []byte,
+	connectionString string,
 	callerAddr []byte,
-) ([]byte, []byte, error) {
-	if err := commoncrypto.VerifyPeerKeySignature(peerKeyPubkey, message, peerKeySignature); err != nil {
-		return nil, nil, err
-	}
-
-	if err := commoncrypto.VerifyNodeIdentityKeySignature(nodeIdentityKeyPubkey, message, nodeIdentityKeySignature); err != nil {
-		return nil, nil, err
-	}
-
-	pid, err := commoncrypto.DerivePID(peerKeyPubkey)
-	if err != nil {
-		return nil, nil, err
-	}
-
-	did, err := commoncrypto.DeriveDID(nodeIdentityKeyPubkey)
-	if err != nil {
-		return nil, nil, err
-	}
-
-	didBytes := []byte(did)
-	pidBytes := []byte(pid)
-
+) ([]byte, error) {
 	store := runtime.KVStoreAdapter(k.storeService.OpenKVStore(ctx))
+
+	// Use caller address as DID.
+	did := sdk.AccAddress(callerAddr).String()
+	didBytes := []byte(did)
 
 	// Check for existing registration.
 	addrKey := append([]byte(types.AddrDIDPrefix), callerAddr...)
 	existingDID := store.Get(addrKey)
 	if len(existingDID) > 0 {
 		if !bytesEqual(existingDID, didBytes) {
-			return nil, nil, fmt.Errorf("address already registered as host with a different DID")
+			return nil, fmt.Errorf("address already registered as host with a different DID")
 		}
 	}
 
@@ -86,13 +64,13 @@ func (k Keeper) RegisterHost(
 	existingAddr := store.Get(didKey)
 	if len(existingAddr) > 0 {
 		if !bytesEqual(existingAddr, callerAddr) {
-			return nil, nil, fmt.Errorf("DID already registered as host with a different address")
+			return nil, fmt.Errorf("DID already registered as host with a different address")
 		}
 	}
 
 	// Send ICA transaction for ACP relationship.
 	if err := k.sourcehubKeeper.SendICASetRelationship(ctx, did, "host"); err != nil {
-		return nil, nil, err
+		return nil, err
 	}
 
 	// Store addr→DID and DID→addr mappings.
@@ -102,14 +80,14 @@ func (k Keeper) RegisterHost(
 	// Store the indexed host record.
 	bech32Addr := sdk.AccAddress(callerAddr).String()
 	if err := k.SetHost(ctx, types.Host{
-		Address: bech32Addr,
-		Did:     did,
-		Pid:     pid,
+		Address:          bech32Addr,
+		Did:              did,
+		ConnectionString: connectionString,
 	}); err != nil {
-		return nil, nil, fmt.Errorf("failed to index host: %w", err)
+		return nil, fmt.Errorf("failed to index host: %w", err)
 	}
 
-	return didBytes, pidBytes, nil
+	return didBytes, nil
 }
 
 func (k Keeper) IsRegisteredHost(ctx sdk.Context, address []byte) bool {

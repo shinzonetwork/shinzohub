@@ -1,9 +1,6 @@
 package keeper_test
 
 import (
-	"crypto/ed25519"
-	"crypto/rand"
-	"crypto/sha256"
 	"fmt"
 	"testing"
 
@@ -12,8 +9,6 @@ import (
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	"github.com/cosmos/cosmos-sdk/runtime"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/decred/dcrd/dcrec/secp256k1/v4"
-	"github.com/decred/dcrd/dcrec/secp256k1/v4/ecdsa"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
 
@@ -74,41 +69,16 @@ func (s *KeeperTestSuite) SetupTest() {
 	s.ctx = sdk.NewContext(stateStore, cmtproto.Header{}, false, cosmoslog.NewNopLogger())
 }
 
-func generatePeerKey(t *testing.T, message []byte) (pubkey, signature []byte) {
-	pub, priv, err := ed25519.GenerateKey(rand.Reader)
-	require.NoError(t, err)
-	sig := ed25519.Sign(priv, message)
-	return []byte(pub), sig
-}
-
-func generateNodeIdentityKey(t *testing.T, message []byte) (pubkey, signature []byte) {
-	privKey, err := secp256k1.GeneratePrivateKey()
-	require.NoError(t, err)
-
-	pubKey := privKey.PubKey()
-	pubkey = pubKey.SerializeUncompressed()
-
-	h := sha256.Sum256(message)
-	derSig := ecdsa.Sign(privKey, h[:])
-	signature = derSig.Serialize()
-
-	return pubkey, signature
-}
-
 func TestKeeperTestSuite(t *testing.T) {
 	suite.Run(t, new(KeeperTestSuite))
 }
 
 func (s *KeeperTestSuite) TestRegisterHost_Success() {
-	message := []byte("test-registration-nonce")
-	peerPub, peerSig := generatePeerKey(s.T(), message)
-	nodePub, nodeSig := generateNodeIdentityKey(s.T(), message)
 	callerAddr := []byte{0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f, 0x10, 0x11, 0x12, 0x13, 0x14}
 
-	did, pid, err := s.keeper.RegisterHost(s.ctx, peerPub, peerSig, nodePub, nodeSig, message, callerAddr)
+	did, err := s.keeper.RegisterHost(s.ctx, "192.168.1.1:8080", callerAddr)
 	s.Require().NoError(err)
 	s.Require().NotEmpty(did)
-	s.Require().NotEmpty(pid)
 
 	s.Require().True(s.mockSourcehub.called)
 	s.Require().Equal("host", s.mockSourcehub.lastGroup)
@@ -125,92 +95,27 @@ func (s *KeeperTestSuite) TestRegisterHost_Success() {
 	s.Require().True(found)
 	s.Require().Equal(bech32Addr, host.Address)
 	s.Require().Equal(string(did), host.Did)
-	s.Require().Equal(string(pid), host.Pid)
+	s.Require().Equal("192.168.1.1:8080", host.ConnectionString)
 
 	s.Require().Equal(uint64(1), s.keeper.GetHostCount(s.ctx))
 }
 
-func (s *KeeperTestSuite) TestRegisterHost_InvalidPeerSignature() {
-	message := []byte("test-nonce")
-	peerPub, _ := generatePeerKey(s.T(), message)
-	nodePub, nodeSig := generateNodeIdentityKey(s.T(), message)
-	callerAddr := []byte{0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f, 0x10, 0x11, 0x12, 0x13, 0x14}
-
-	_, wrongSig := generatePeerKey(s.T(), []byte("wrong-message"))
-
-	_, _, err := s.keeper.RegisterHost(s.ctx, peerPub, wrongSig, nodePub, nodeSig, message, callerAddr)
-	s.Require().Error(err)
-	s.Require().False(s.keeper.IsRegisteredHost(s.ctx, callerAddr))
-}
-
-func (s *KeeperTestSuite) TestRegisterHost_InvalidNodeSignature() {
-	message := []byte("test-nonce")
-	peerPub, peerSig := generatePeerKey(s.T(), message)
-	nodePub, _ := generateNodeIdentityKey(s.T(), message)
-	callerAddr := []byte{0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f, 0x10, 0x11, 0x12, 0x13, 0x14}
-
-	_, wrongSig := generateNodeIdentityKey(s.T(), []byte("wrong-message"))
-
-	_, _, err := s.keeper.RegisterHost(s.ctx, peerPub, peerSig, nodePub, wrongSig, message, callerAddr)
-	s.Require().Error(err)
-}
-
 func (s *KeeperTestSuite) TestRegisterHost_DuplicateSameKeys_Idempotent() {
-	message := []byte("test-nonce")
-	peerPub, peerSig := generatePeerKey(s.T(), message)
-	nodePub, nodeSig := generateNodeIdentityKey(s.T(), message)
 	callerAddr := []byte{0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f, 0x10, 0x11, 0x12, 0x13, 0x14}
 
-	_, _, err := s.keeper.RegisterHost(s.ctx, peerPub, peerSig, nodePub, nodeSig, message, callerAddr)
+	_, err := s.keeper.RegisterHost(s.ctx, "192.168.1.1:8080", callerAddr)
 	s.Require().NoError(err)
 
-	_, _, err = s.keeper.RegisterHost(s.ctx, peerPub, peerSig, nodePub, nodeSig, message, callerAddr)
+	_, err = s.keeper.RegisterHost(s.ctx, "192.168.1.2:9090", callerAddr)
 	s.Require().NoError(err)
-}
-
-func (s *KeeperTestSuite) TestRegisterHost_SameAddrDifferentDID_Fails() {
-	message := []byte("test-nonce")
-	peerPub1, peerSig1 := generatePeerKey(s.T(), message)
-	nodePub1, nodeSig1 := generateNodeIdentityKey(s.T(), message)
-	callerAddr := []byte{0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f, 0x10, 0x11, 0x12, 0x13, 0x14}
-
-	_, _, err := s.keeper.RegisterHost(s.ctx, peerPub1, peerSig1, nodePub1, nodeSig1, message, callerAddr)
-	s.Require().NoError(err)
-
-	peerPub2, peerSig2 := generatePeerKey(s.T(), message)
-	nodePub2, nodeSig2 := generateNodeIdentityKey(s.T(), message)
-
-	_, _, err = s.keeper.RegisterHost(s.ctx, peerPub2, peerSig2, nodePub2, nodeSig2, message, callerAddr)
-	s.Require().Error(err)
-	s.Require().Contains(err.Error(), "address already registered")
-}
-
-func (s *KeeperTestSuite) TestRegisterHost_SameDIDDifferentAddr_Fails() {
-	message := []byte("test-nonce")
-	peerPub, peerSig := generatePeerKey(s.T(), message)
-	nodePub, nodeSig := generateNodeIdentityKey(s.T(), message)
-	callerAddr1 := []byte{0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f, 0x10, 0x11, 0x12, 0x13, 0x14}
-	callerAddr2 := []byte{0x14, 0x13, 0x12, 0x11, 0x10, 0x0f, 0x0e, 0x0d, 0x0c, 0x0b, 0x0a, 0x09, 0x08, 0x07, 0x06, 0x05, 0x04, 0x03, 0x02, 0x01}
-
-	_, _, err := s.keeper.RegisterHost(s.ctx, peerPub, peerSig, nodePub, nodeSig, message, callerAddr1)
-	s.Require().NoError(err)
-
-	peerPub2, peerSig2 := generatePeerKey(s.T(), message)
-
-	_, _, err = s.keeper.RegisterHost(s.ctx, peerPub2, peerSig2, nodePub, nodeSig, message, callerAddr2)
-	s.Require().Error(err)
-	s.Require().Contains(err.Error(), "DID already registered")
 }
 
 func (s *KeeperTestSuite) TestRegisterHost_ICAFailure_Propagates() {
 	s.mockSourcehub.err = fmt.Errorf("ICA channel not open")
 
-	message := []byte("test-nonce")
-	peerPub, peerSig := generatePeerKey(s.T(), message)
-	nodePub, nodeSig := generateNodeIdentityKey(s.T(), message)
 	callerAddr := []byte{0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f, 0x10, 0x11, 0x12, 0x13, 0x14}
 
-	_, _, err := s.keeper.RegisterHost(s.ctx, peerPub, peerSig, nodePub, nodeSig, message, callerAddr)
+	_, err := s.keeper.RegisterHost(s.ctx, "192.168.1.1:8080", callerAddr)
 	s.Require().Error(err)
 	s.Require().Contains(err.Error(), "ICA channel not open")
 }
@@ -228,9 +133,9 @@ func (s *KeeperTestSuite) TestGetDIDForAddress_NotFound() {
 
 func (s *KeeperTestSuite) TestSetHost_GetHost() {
 	host := types.Host{
-		Address: "shinzo1qypqxpq9qcrsszg2pvxq6rs0zqg3yyc5z5tpw",
-		Did:     "did:key:z6Mk...",
-		Pid:     "12D3Koo...",
+		Address:          "shinzo1qypqxpq9qcrsszg2pvxq6rs0zqg3yyc5z5tpw",
+		Did:              "did:key:z6Mk...",
+		ConnectionString: "10.0.0.1:8080",
 	}
 
 	err := s.keeper.SetHost(s.ctx, host)
@@ -241,7 +146,7 @@ func (s *KeeperTestSuite) TestSetHost_GetHost() {
 	s.Require().True(found)
 	s.Require().Equal(host.Address, got.Address)
 	s.Require().Equal(host.Did, got.Did)
-	s.Require().Equal(host.Pid, got.Pid)
+	s.Require().Equal(host.ConnectionString, got.ConnectionString)
 }
 
 func (s *KeeperTestSuite) TestGetHost_NotFound() {
@@ -257,9 +162,9 @@ func (s *KeeperTestSuite) TestGetHostCount_Empty() {
 func (s *KeeperTestSuite) TestGetHostCount_AfterMultipleHosts() {
 	for i := 0; i < 3; i++ {
 		err := s.keeper.SetHost(s.ctx, types.Host{
-			Address: fmt.Sprintf("shinzo1host%d", i),
-			Did:     fmt.Sprintf("did:key:z%d", i),
-			Pid:     fmt.Sprintf("12D3Koo%d", i),
+			Address:          fmt.Sprintf("shinzo1host%d", i),
+			Did:              fmt.Sprintf("did:key:z%d", i),
+			ConnectionString: fmt.Sprintf("10.0.0.%d:8080", i),
 		})
 		s.Require().NoError(err)
 	}
@@ -268,16 +173,16 @@ func (s *KeeperTestSuite) TestGetHostCount_AfterMultipleHosts() {
 
 func (s *KeeperTestSuite) TestSetHost_UpdateDoesNotIncrementCount() {
 	host := types.Host{
-		Address: "shinzo1qypqxpq9qcrsszg2pvxq6rs0zqg3yyc5z5tpw",
-		Did:     "did:key:z6Mk...",
-		Pid:     "12D3Koo...",
+		Address:          "shinzo1qypqxpq9qcrsszg2pvxq6rs0zqg3yyc5z5tpw",
+		Did:              "did:key:z6Mk...",
+		ConnectionString: "10.0.0.1:8080",
 	}
 
 	err := s.keeper.SetHost(s.ctx, host)
 	s.Require().NoError(err)
 	s.Require().Equal(uint64(1), s.keeper.GetHostCount(s.ctx))
 
-	host.Pid = "12D3KooUpdated..."
+	host.ConnectionString = "10.0.0.2:9090"
 	err = s.keeper.SetHost(s.ctx, host)
 	s.Require().NoError(err)
 	s.Require().Equal(uint64(1), s.keeper.GetHostCount(s.ctx))
@@ -292,9 +197,9 @@ func (s *KeeperTestSuite) TestGetAllHosts_Empty() {
 func (s *KeeperTestSuite) TestGetAllHosts_ReturnsAll() {
 	for i := 0; i < 5; i++ {
 		err := s.keeper.SetHost(s.ctx, types.Host{
-			Address: fmt.Sprintf("shinzo1host%d", i),
-			Did:     fmt.Sprintf("did:key:z%d", i),
-			Pid:     fmt.Sprintf("12D3Koo%d", i),
+			Address:          fmt.Sprintf("shinzo1host%d", i),
+			Did:              fmt.Sprintf("did:key:z%d", i),
+			ConnectionString: fmt.Sprintf("10.0.0.%d:8080", i),
 		})
 		s.Require().NoError(err)
 	}
@@ -307,8 +212,8 @@ func (s *KeeperTestSuite) TestGetAllHosts_ReturnsAll() {
 func (s *KeeperTestSuite) TestGenesis_InitExportRoundtrip() {
 	genesis := types.GenesisState{
 		Hosts: []types.Host{
-			{Address: "shinzo1host0", Did: "did:key:z0", Pid: "12D3Koo0"},
-			{Address: "shinzo1host1", Did: "did:key:z1", Pid: "12D3Koo1"},
+			{Address: "shinzo1host0", Did: "did:key:z0", ConnectionString: "10.0.0.1:8080"},
+			{Address: "shinzo1host1", Did: "did:key:z1", ConnectionString: "10.0.0.2:8080"},
 		},
 	}
 
@@ -328,9 +233,9 @@ func (s *KeeperTestSuite) TestGenesis_InitExportRoundtrip() {
 func (s *KeeperTestSuite) TestGenesis_InitSetsCount() {
 	genesis := types.GenesisState{
 		Hosts: []types.Host{
-			{Address: "shinzo1host0", Did: "did:key:z0", Pid: "12D3Koo0"},
-			{Address: "shinzo1host1", Did: "did:key:z1", Pid: "12D3Koo1"},
-			{Address: "shinzo1host2", Did: "did:key:z2", Pid: "12D3Koo2"},
+			{Address: "shinzo1host0", Did: "did:key:z0", ConnectionString: "10.0.0.1:8080"},
+			{Address: "shinzo1host1", Did: "did:key:z1", ConnectionString: "10.0.0.2:8080"},
+			{Address: "shinzo1host2", Did: "did:key:z2", ConnectionString: "10.0.0.3:8080"},
 		},
 	}
 
@@ -345,7 +250,7 @@ func (s *KeeperTestSuite) TestQueryServer_HostCount() {
 	s.Require().NoError(err)
 	s.Require().Equal(uint64(0), resp.Count)
 
-	_ = s.keeper.SetHost(s.ctx, types.Host{Address: "shinzo1host0", Did: "did:0", Pid: "pid:0"})
+	_ = s.keeper.SetHost(s.ctx, types.Host{Address: "shinzo1host0", Did: "did:0", ConnectionString: "10.0.0.1:8080"})
 
 	resp, err = qs.HostCount(s.ctx, &types.QueryHostCountRequest{})
 	s.Require().NoError(err)
@@ -355,7 +260,7 @@ func (s *KeeperTestSuite) TestQueryServer_HostCount() {
 func (s *KeeperTestSuite) TestQueryServer_Host_Found() {
 	qs := keeper.NewQueryServerImpl(s.keeper)
 
-	_ = s.keeper.SetHost(s.ctx, types.Host{Address: "shinzo1host0", Did: "did:0", Pid: "pid:0"})
+	_ = s.keeper.SetHost(s.ctx, types.Host{Address: "shinzo1host0", Did: "did:0", ConnectionString: "10.0.0.1:8080"})
 
 	resp, err := qs.Host(s.ctx, &types.QueryHostRequest{Address: "shinzo1host0"})
 	s.Require().NoError(err)
@@ -374,9 +279,9 @@ func (s *KeeperTestSuite) TestQueryServer_Hosts_Paginated() {
 
 	for i := 0; i < 5; i++ {
 		_ = s.keeper.SetHost(s.ctx, types.Host{
-			Address: fmt.Sprintf("shinzo1host%d", i),
-			Did:     fmt.Sprintf("did:%d", i),
-			Pid:     fmt.Sprintf("pid:%d", i),
+			Address:          fmt.Sprintf("shinzo1host%d", i),
+			Did:              fmt.Sprintf("did:%d", i),
+			ConnectionString: fmt.Sprintf("10.0.0.%d:8080", i),
 		})
 	}
 

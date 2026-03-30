@@ -25,11 +25,11 @@ const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
 // Indexer represents a registered indexer entity.
 type Indexer struct {
-	Address       string `protobuf:"bytes,1,opt,name=address,proto3" json:"address,omitempty"`
-	Did           string `protobuf:"bytes,2,opt,name=did,proto3" json:"did,omitempty"`
-	Pid           string `protobuf:"bytes,3,opt,name=pid,proto3" json:"pid,omitempty"`
-	SourceChain   string `protobuf:"bytes,4,opt,name=source_chain,json=sourceChain,proto3" json:"source_chain,omitempty"`
-	SourceChainId uint64 `protobuf:"varint,5,opt,name=source_chain_id,json=sourceChainId,proto3" json:"source_chain_id,omitempty"`
+	Address          string `protobuf:"bytes,1,opt,name=address,proto3" json:"address,omitempty"`
+	Did              string `protobuf:"bytes,2,opt,name=did,proto3" json:"did,omitempty"`
+	ConnectionString string `protobuf:"bytes,3,opt,name=connection_string,json=connectionString,proto3" json:"connection_string,omitempty"`
+	SourceChain      string `protobuf:"bytes,4,opt,name=source_chain,json=sourceChain,proto3" json:"source_chain,omitempty"`
+	SourceChainId    uint64 `protobuf:"varint,5,opt,name=source_chain_id,json=sourceChainId,proto3" json:"source_chain_id,omitempty"`
 }
 
 func (m *Indexer) Reset()         { *m = Indexer{} }
@@ -79,9 +79,9 @@ func (m *Indexer) GetDid() string {
 	return ""
 }
 
-func (m *Indexer) GetPid() string {
+func (m *Indexer) GetConnectionString() string {
 	if m != nil {
-		return m.Pid
+		return m.ConnectionString
 	}
 	return ""
 }
@@ -243,10 +243,10 @@ func (m *Indexer) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 		i--
 		dAtA[i] = 0x22
 	}
-	if len(m.Pid) > 0 {
-		i -= len(m.Pid)
-		copy(dAtA[i:], m.Pid)
-		i = encodeVarintIndexer(dAtA, i, uint64(len(m.Pid)))
+	if len(m.ConnectionString) > 0 {
+		i -= len(m.ConnectionString)
+		copy(dAtA[i:], m.ConnectionString)
+		i = encodeVarintIndexer(dAtA, i, uint64(len(m.ConnectionString)))
 		i--
 		dAtA[i] = 0x1a
 	}
@@ -348,7 +348,7 @@ func (m *Indexer) Size() (n int) {
 	if l > 0 {
 		n += 1 + l + sovIndexer(uint64(l))
 	}
-	l = len(m.Pid)
+	l = len(m.ConnectionString)
 	if l > 0 {
 		n += 1 + l + sovIndexer(uint64(l))
 	}
@@ -491,7 +491,7 @@ func (m *Indexer) Unmarshal(dAtA []byte) error {
 			iNdEx = postIndex
 		case 3:
 			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Pid", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field ConnectionString", wireType)
 			}
 			var stringLen uint64
 			for shift := uint(0); ; shift += 7 {
@@ -519,7 +519,7 @@ func (m *Indexer) Unmarshal(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.Pid = string(dAtA[iNdEx:postIndex])
+			m.ConnectionString = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
 		case 4:
 			if wireType != 2 {

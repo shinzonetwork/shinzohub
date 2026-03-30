@@ -103,8 +103,8 @@ func (p *Precompile) HandleMethod(
 		bz, err = p.IsRegistered(ctx, method, args)
 	case MethodGetDid:
 		bz, err = p.GetDid(ctx, method, args)
-	case MethodGetPid:
-		bz, err = p.GetPid(ctx, method, args)
+	case MethodGetConnectionString:
+		bz, err = p.GetConnectionString(ctx, method, args)
 	default:
 		return nil, fmt.Errorf(cmn.ErrUnknownMethod, method.Name)
 	}

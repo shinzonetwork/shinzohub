@@ -8,7 +8,7 @@ option go_package = "github.com/shinzonetwork/shinzohub/x/host/types";
 
 // Host represents a registered host entity.
 message Host {
-  string address = 1;
-  string did     = 2;
-  string pid     = 3;
+  string address           = 1;
+  string did               = 2;
+  string connection_string = 3;
 }

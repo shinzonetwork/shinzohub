@@ -12,10 +12,10 @@ import (
 )
 
 const (
-	MethodRegister     = "register"
-	MethodIsRegistered = "isRegistered"
-	MethodGetDid       = "getDid"
-	MethodGetPid       = "getPid"
+	MethodRegister            = "register"
+	MethodIsRegistered        = "isRegistered"
+	MethodGetDid              = "getDid"
+	MethodGetConnectionString = "getConnectionString"
 )
 
 func (p *Precompile) Register(
@@ -25,40 +25,16 @@ func (p *Precompile) Register(
 	_ *abi.Method,
 	args []interface{},
 ) ([]byte, error) {
-	peerKeyPubkey, ok := args[0].([]byte)
-	if !ok || len(peerKeyPubkey) == 0 {
-		return nil, fmt.Errorf("invalid peerKeyPubkey")
-	}
-
-	peerKeySignature, ok := args[1].([]byte)
-	if !ok || len(peerKeySignature) == 0 {
-		return nil, fmt.Errorf("invalid peerKeySignature")
-	}
-
-	nodeIdentityKeyPubkey, ok := args[2].([]byte)
-	if !ok || len(nodeIdentityKeyPubkey) == 0 {
-		return nil, fmt.Errorf("invalid nodeIdentityKeyPubkey")
-	}
-
-	nodeIdentityKeySignature, ok := args[3].([]byte)
-	if !ok || len(nodeIdentityKeySignature) == 0 {
-		return nil, fmt.Errorf("invalid nodeIdentityKeySignature")
-	}
-
-	message, ok := args[4].([]byte)
-	if !ok || len(message) == 0 {
-		return nil, fmt.Errorf("invalid message")
+	connectionString, ok := args[0].(string)
+	if !ok || connectionString == "" {
+		return nil, fmt.Errorf("invalid connectionString")
 	}
 
 	caller := contract.Caller().Bytes()
 
-	did, pid, err := p.hostKeeper.RegisterHost(
+	did, err := p.hostKeeper.RegisterHost(
 		ctx,
-		peerKeyPubkey,
-		peerKeySignature,
-		nodeIdentityKeyPubkey,
-		nodeIdentityKeySignature,
-		message,
+		connectionString,
 		caller,
 	)
 	if err != nil {
@@ -66,9 +42,9 @@ func (p *Precompile) Register(
 	}
 
 	precompAddr := contract.Address()
-	topic0 := crypto.Keccak256Hash([]byte("Registered(address,bytes,bytes)"))
+	topic0 := crypto.Keccak256Hash([]byte("Registered(address,bytes,string)"))
 	event := p.ABI.Events["Registered"]
-	data, err := event.Inputs.NonIndexed().Pack(did, pid)
+	data, err := event.Inputs.NonIndexed().Pack(did, connectionString)
 	if err != nil {
 		return nil, fmt.Errorf("failed to pack Registered event: %w", err)
 	}
@@ -86,7 +62,7 @@ func (p *Precompile) Register(
 			"HostRegistered",
 			sdk.NewAttribute("owner", sdk.AccAddress(caller).String()),
 			sdk.NewAttribute("did", string(did)),
-			sdk.NewAttribute("pid", string(pid)),
+			sdk.NewAttribute("connection_string", connectionString),
 		),
 	)
 
@@ -128,7 +104,7 @@ func (p *Precompile) GetDid(
 	return method.Outputs.Pack([]byte(host.Did))
 }
 
-func (p *Precompile) GetPid(
+func (p *Precompile) GetConnectionString(
 	ctx sdk.Context,
 	method *abi.Method,
 	args []interface{},
@@ -144,7 +120,7 @@ func (p *Precompile) GetPid(
 		return nil, err
 	}
 	if !found {
-		return method.Outputs.Pack([]byte{})
+		return method.Outputs.Pack("")
 	}
-	return method.Outputs.Pack([]byte(host.Pid))
+	return method.Outputs.Pack(host.ConnectionString)
 }

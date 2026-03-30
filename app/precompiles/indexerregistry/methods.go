@@ -12,11 +12,11 @@ import (
 )
 
 const (
-	MethodRegister       = "register"
-	MethodIsRegistered   = "isRegistered"
-	MethodGetDid         = "getDid"
-	MethodGetPid         = "getPid"
-	MethodGetSourceChain = "getSourceChain"
+	MethodRegister            = "register"
+	MethodIsRegistered        = "isRegistered"
+	MethodGetDid              = "getDid"
+	MethodGetConnectionString = "getConnectionString"
+	MethodGetSourceChain      = "getSourceChain"
 )
 
 func (p *Precompile) Register(
@@ -26,37 +26,17 @@ func (p *Precompile) Register(
 	_ *abi.Method,
 	args []interface{},
 ) ([]byte, error) {
-	peerKeyPubkey, ok := args[0].([]byte)
-	if !ok || len(peerKeyPubkey) == 0 {
-		return nil, fmt.Errorf("invalid peerKeyPubkey")
+	connectionString, ok := args[0].(string)
+	if !ok || connectionString == "" {
+		return nil, fmt.Errorf("invalid connectionString")
 	}
 
-	peerKeySignature, ok := args[1].([]byte)
-	if !ok || len(peerKeySignature) == 0 {
-		return nil, fmt.Errorf("invalid peerKeySignature")
-	}
-
-	nodeIdentityKeyPubkey, ok := args[2].([]byte)
-	if !ok || len(nodeIdentityKeyPubkey) == 0 {
-		return nil, fmt.Errorf("invalid nodeIdentityKeyPubkey")
-	}
-
-	nodeIdentityKeySignature, ok := args[3].([]byte)
-	if !ok || len(nodeIdentityKeySignature) == 0 {
-		return nil, fmt.Errorf("invalid nodeIdentityKeySignature")
-	}
-
-	message, ok := args[4].([]byte)
-	if !ok || len(message) == 0 {
-		return nil, fmt.Errorf("invalid message")
-	}
-
-	sourceChain, ok := args[5].(string)
+	sourceChain, ok := args[1].(string)
 	if !ok || sourceChain == "" {
 		return nil, fmt.Errorf("invalid sourceChain")
 	}
 
-	sourceChainId, ok := args[6].(uint64)
+	sourceChainId, ok := args[2].(uint64)
 	if !ok || sourceChainId == 0 {
 		return nil, fmt.Errorf("invalid sourceChainId: must be non-zero")
 	}
@@ -72,13 +52,9 @@ func (p *Precompile) Register(
 		return nil, fmt.Errorf("indexer not asserted for delegate %s on chain %s/%d", delegate, sourceChain, sourceChainId)
 	}
 
-	did, pid, err := p.indexerKeeper.RegisterIndexer(
+	did, err := p.indexerKeeper.RegisterIndexer(
 		ctx,
-		peerKeyPubkey,
-		peerKeySignature,
-		nodeIdentityKeyPubkey,
-		nodeIdentityKeySignature,
-		message,
+		connectionString,
 		caller,
 		assertion.SourceChain,
 		assertion.SourceChainId,
@@ -88,9 +64,9 @@ func (p *Precompile) Register(
 	}
 
 	precompAddr := contract.Address()
-	topic0 := crypto.Keccak256Hash([]byte("Registered(address,bytes,bytes,string,uint64)"))
+	topic0 := crypto.Keccak256Hash([]byte("Registered(address,bytes,string,string,uint64)"))
 	event := p.ABI.Events["Registered"]
-	data, err := event.Inputs.NonIndexed().Pack(did, pid, assertion.SourceChain, assertion.SourceChainId)
+	data, err := event.Inputs.NonIndexed().Pack(did, connectionString, assertion.SourceChain, assertion.SourceChainId)
 	if err != nil {
 		return nil, fmt.Errorf("failed to pack Registered event: %w", err)
 	}
@@ -108,7 +84,7 @@ func (p *Precompile) Register(
 			"IndexerRegistered",
 			sdk.NewAttribute("owner", delegate),
 			sdk.NewAttribute("did", string(did)),
-			sdk.NewAttribute("pid", string(pid)),
+			sdk.NewAttribute("connection_string", connectionString),
 			sdk.NewAttribute("source_chain", assertion.SourceChain),
 			sdk.NewAttribute("source_chain_id", fmt.Sprintf("%d", assertion.SourceChainId)),
 		),
@@ -156,7 +132,7 @@ func (p *Precompile) GetDid(
 	return method.Outputs.Pack([]byte(indexer.Did))
 }
 
-func (p *Precompile) GetPid(
+func (p *Precompile) GetConnectionString(
 	ctx sdk.Context,
 	method *abi.Method,
 	args []interface{},
@@ -172,9 +148,9 @@ func (p *Precompile) GetPid(
 		return nil, err
 	}
 	if !found {
-		return method.Outputs.Pack([]byte{})
+		return method.Outputs.Pack("")
 	}
-	return method.Outputs.Pack([]byte(indexer.Pid))
+	return method.Outputs.Pack(indexer.ConnectionString)
 }
 
 func (p *Precompile) GetSourceChain(

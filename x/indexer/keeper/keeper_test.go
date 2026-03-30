@@ -1,9 +1,6 @@
 package keeper_test
 
 import (
-	"crypto/ed25519"
-	"crypto/rand"
-	"crypto/sha256"
 	"fmt"
 	"testing"
 
@@ -12,8 +9,6 @@ import (
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	"github.com/cosmos/cosmos-sdk/runtime"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/decred/dcrd/dcrec/secp256k1/v4"
-	"github.com/decred/dcrd/dcrec/secp256k1/v4/ecdsa"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
 
@@ -69,33 +64,16 @@ func (s *KeeperTestSuite) SetupTest() {
 	s.ctx = sdk.NewContext(stateStore, cmtproto.Header{}, false, cosmoslog.NewNopLogger())
 }
 
-func generatePeerKey(t *testing.T, message []byte) (pubkey, signature []byte) {
-	pub, priv, err := ed25519.GenerateKey(rand.Reader)
-	require.NoError(t, err)
-	return []byte(pub), ed25519.Sign(priv, message)
-}
-
-func generateNodeIdentityKey(t *testing.T, message []byte) (pubkey, signature []byte) {
-	privKey, err := secp256k1.GeneratePrivateKey()
-	require.NoError(t, err)
-	h := sha256.Sum256(message)
-	return privKey.PubKey().SerializeUncompressed(), ecdsa.Sign(privKey, h[:]).Serialize()
-}
-
 func TestKeeperTestSuite(t *testing.T) {
 	suite.Run(t, new(KeeperTestSuite))
 }
 
 func (s *KeeperTestSuite) TestRegisterIndexer_Success() {
-	message := []byte("test-nonce")
-	peerPub, peerSig := generatePeerKey(s.T(), message)
-	nodePub, nodeSig := generateNodeIdentityKey(s.T(), message)
 	callerAddr := []byte{0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f, 0x10, 0x11, 0x12, 0x13, 0x14}
 
-	did, pid, err := s.keeper.RegisterIndexer(s.ctx, peerPub, peerSig, nodePub, nodeSig, message, callerAddr, "ethereum", 1)
+	did, err := s.keeper.RegisterIndexer(s.ctx, "192.168.1.1:8080", callerAddr, "ethereum", 1)
 	s.Require().NoError(err)
 	s.Require().NotEmpty(did)
-	s.Require().NotEmpty(pid)
 
 	bech32Addr := sdk.AccAddress(callerAddr).String()
 	indexer, found, err := s.keeper.GetIndexer(s.ctx, bech32Addr)
@@ -103,78 +81,29 @@ func (s *KeeperTestSuite) TestRegisterIndexer_Success() {
 	s.Require().True(found)
 	s.Require().Equal(bech32Addr, indexer.Address)
 	s.Require().Equal(string(did), indexer.Did)
-	s.Require().Equal(string(pid), indexer.Pid)
+	s.Require().Equal("192.168.1.1:8080", indexer.ConnectionString)
 	s.Require().Equal("ethereum", indexer.SourceChain)
 	s.Require().Equal(uint64(1), indexer.SourceChainId)
 
 	s.Require().Equal(uint64(1), s.keeper.GetIndexerCount(s.ctx))
 }
 
-func (s *KeeperTestSuite) TestRegisterIndexer_InvalidPeerSignature() {
-	message := []byte("test-nonce")
-	peerPub, _ := generatePeerKey(s.T(), message)
-	nodePub, nodeSig := generateNodeIdentityKey(s.T(), message)
-	callerAddr := []byte{0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f, 0x10, 0x11, 0x12, 0x13, 0x14}
-	_, wrongSig := generatePeerKey(s.T(), []byte("wrong"))
-
-	_, _, err := s.keeper.RegisterIndexer(s.ctx, peerPub, wrongSig, nodePub, nodeSig, message, callerAddr, "ethereum", 1)
-	s.Require().Error(err)
-}
-
-func (s *KeeperTestSuite) TestRegisterIndexer_InvalidNodeSignature() {
-	message := []byte("test-nonce")
-	peerPub, peerSig := generatePeerKey(s.T(), message)
-	nodePub, _ := generateNodeIdentityKey(s.T(), message)
-	callerAddr := []byte{0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f, 0x10, 0x11, 0x12, 0x13, 0x14}
-	_, wrongSig := generateNodeIdentityKey(s.T(), []byte("wrong"))
-
-	_, _, err := s.keeper.RegisterIndexer(s.ctx, peerPub, peerSig, nodePub, wrongSig, message, callerAddr, "ethereum", 1)
-	s.Require().Error(err)
-}
-
-func (s *KeeperTestSuite) TestRegisterIndexer_SameAddrDifferentDID_Fails() {
-	message := []byte("test-nonce")
-	peerPub1, peerSig1 := generatePeerKey(s.T(), message)
-	nodePub1, nodeSig1 := generateNodeIdentityKey(s.T(), message)
+func (s *KeeperTestSuite) TestRegisterIndexer_Idempotent() {
 	callerAddr := []byte{0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f, 0x10, 0x11, 0x12, 0x13, 0x14}
 
-	_, _, err := s.keeper.RegisterIndexer(s.ctx, peerPub1, peerSig1, nodePub1, nodeSig1, message, callerAddr, "ethereum", 1)
+	_, err := s.keeper.RegisterIndexer(s.ctx, "192.168.1.1:8080", callerAddr, "ethereum", 1)
 	s.Require().NoError(err)
 
-	peerPub2, peerSig2 := generatePeerKey(s.T(), message)
-	nodePub2, nodeSig2 := generateNodeIdentityKey(s.T(), message)
-
-	_, _, err = s.keeper.RegisterIndexer(s.ctx, peerPub2, peerSig2, nodePub2, nodeSig2, message, callerAddr, "ethereum", 1)
-	s.Require().Error(err)
-	s.Require().Contains(err.Error(), "address already registered")
-}
-
-func (s *KeeperTestSuite) TestRegisterIndexer_SameDIDDifferentAddr_Fails() {
-	message := []byte("test-nonce")
-	peerPub, peerSig := generatePeerKey(s.T(), message)
-	nodePub, nodeSig := generateNodeIdentityKey(s.T(), message)
-	callerAddr1 := []byte{0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f, 0x10, 0x11, 0x12, 0x13, 0x14}
-	callerAddr2 := []byte{0x14, 0x13, 0x12, 0x11, 0x10, 0x0f, 0x0e, 0x0d, 0x0c, 0x0b, 0x0a, 0x09, 0x08, 0x07, 0x06, 0x05, 0x04, 0x03, 0x02, 0x01}
-
-	_, _, err := s.keeper.RegisterIndexer(s.ctx, peerPub, peerSig, nodePub, nodeSig, message, callerAddr1, "ethereum", 1)
+	_, err = s.keeper.RegisterIndexer(s.ctx, "192.168.1.2:9090", callerAddr, "ethereum", 1)
 	s.Require().NoError(err)
-
-	peerPub2, peerSig2 := generatePeerKey(s.T(), message)
-
-	_, _, err = s.keeper.RegisterIndexer(s.ctx, peerPub2, peerSig2, nodePub, nodeSig, message, callerAddr2, "ethereum", 1)
-	s.Require().Error(err)
-	s.Require().Contains(err.Error(), "DID already registered")
 }
 
 func (s *KeeperTestSuite) TestRegisterIndexer_ICAFailure() {
 	s.mockSourcehub.err = fmt.Errorf("ICA not ready")
 
-	message := []byte("test-nonce")
-	peerPub, peerSig := generatePeerKey(s.T(), message)
-	nodePub, nodeSig := generateNodeIdentityKey(s.T(), message)
 	callerAddr := []byte{0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f, 0x10, 0x11, 0x12, 0x13, 0x14}
 
-	_, _, err := s.keeper.RegisterIndexer(s.ctx, peerPub, peerSig, nodePub, nodeSig, message, callerAddr, "ethereum", 1)
+	_, err := s.keeper.RegisterIndexer(s.ctx, "192.168.1.1:8080", callerAddr, "ethereum", 1)
 	s.Require().Error(err)
 	s.Require().Contains(err.Error(), "ICA not ready")
 }
@@ -207,11 +136,11 @@ func (s *KeeperTestSuite) TestGetIndexerAssertion_NotFound() {
 
 func (s *KeeperTestSuite) TestSetIndexer_GetIndexer() {
 	indexer := types.Indexer{
-		Address:       "shinzo1idx0",
-		Did:           "did:key:z0",
-		Pid:           "12D3Koo0",
-		SourceChain:   "ethereum",
-		SourceChainId: 1,
+		Address:          "shinzo1idx0",
+		Did:              "did:key:z0",
+		ConnectionString: "10.0.0.1:8080",
+		SourceChain:      "ethereum",
+		SourceChainId:    1,
 	}
 
 	err := s.keeper.SetIndexer(s.ctx, indexer)
@@ -237,20 +166,20 @@ func (s *KeeperTestSuite) TestGetIndexerCount_Empty() {
 func (s *KeeperTestSuite) TestGetIndexerCount_AfterMultiple() {
 	for i := 0; i < 3; i++ {
 		_ = s.keeper.SetIndexer(s.ctx, types.Indexer{
-			Address: fmt.Sprintf("shinzo1idx%d", i),
-			Did:     fmt.Sprintf("did:%d", i),
-			Pid:     fmt.Sprintf("pid:%d", i),
+			Address:          fmt.Sprintf("shinzo1idx%d", i),
+			Did:              fmt.Sprintf("did:%d", i),
+			ConnectionString: fmt.Sprintf("10.0.0.%d:8080", i),
 		})
 	}
 	s.Require().Equal(uint64(3), s.keeper.GetIndexerCount(s.ctx))
 }
 
 func (s *KeeperTestSuite) TestSetIndexer_UpdateDoesNotIncrementCount() {
-	indexer := types.Indexer{Address: "shinzo1idx0", Did: "did:0", Pid: "pid:0"}
+	indexer := types.Indexer{Address: "shinzo1idx0", Did: "did:0", ConnectionString: "10.0.0.1:8080"}
 	_ = s.keeper.SetIndexer(s.ctx, indexer)
 	s.Require().Equal(uint64(1), s.keeper.GetIndexerCount(s.ctx))
 
-	indexer.Pid = "pid:updated"
+	indexer.ConnectionString = "10.0.0.2:9090"
 	_ = s.keeper.SetIndexer(s.ctx, indexer)
 	s.Require().Equal(uint64(1), s.keeper.GetIndexerCount(s.ctx))
 }
@@ -264,9 +193,9 @@ func (s *KeeperTestSuite) TestGetAllIndexers_Empty() {
 func (s *KeeperTestSuite) TestGetAllIndexers_ReturnsAll() {
 	for i := 0; i < 5; i++ {
 		_ = s.keeper.SetIndexer(s.ctx, types.Indexer{
-			Address: fmt.Sprintf("shinzo1idx%d", i),
-			Did:     fmt.Sprintf("did:%d", i),
-			Pid:     fmt.Sprintf("pid:%d", i),
+			Address:          fmt.Sprintf("shinzo1idx%d", i),
+			Did:              fmt.Sprintf("did:%d", i),
+			ConnectionString: fmt.Sprintf("10.0.0.%d:8080", i),
 		})
 	}
 	indexers, _, err := s.keeper.GetAllIndexers(s.ctx, nil)
@@ -277,8 +206,8 @@ func (s *KeeperTestSuite) TestGetAllIndexers_ReturnsAll() {
 func (s *KeeperTestSuite) TestGenesis_InitExportRoundtrip() {
 	genesis := types.GenesisState{
 		Indexers: []types.Indexer{
-			{Address: "shinzo1idx0", Did: "did:0", Pid: "pid:0", SourceChain: "ethereum", SourceChainId: 1},
-			{Address: "shinzo1idx1", Did: "did:1", Pid: "pid:1", SourceChain: "polygon", SourceChainId: 137},
+			{Address: "shinzo1idx0", Did: "did:0", ConnectionString: "10.0.0.1:8080", SourceChain: "ethereum", SourceChainId: 1},
+			{Address: "shinzo1idx1", Did: "did:1", ConnectionString: "10.0.0.2:8080", SourceChain: "polygon", SourceChainId: 137},
 		},
 		Assertions: []types.IndexerAssertion{
 			{ConsensusPubKey: "pk0", DelegateAddress: "shinzo1del0", SourceChain: "ethereum", SourceChainId: 1, AssertionId: "a0"},
@@ -320,7 +249,7 @@ func (s *KeeperTestSuite) TestQueryServer_IndexerCount() {
 	s.Require().NoError(err)
 	s.Require().Equal(uint64(0), resp.Count)
 
-	_ = s.keeper.SetIndexer(s.ctx, types.Indexer{Address: "shinzo1idx0", Did: "did:0", Pid: "pid:0"})
+	_ = s.keeper.SetIndexer(s.ctx, types.Indexer{Address: "shinzo1idx0", Did: "did:0", ConnectionString: "10.0.0.1:8080"})
 	resp, err = qs.IndexerCount(s.ctx, &types.QueryIndexerCountRequest{})
 	s.Require().NoError(err)
 	s.Require().Equal(uint64(1), resp.Count)
@@ -328,7 +257,7 @@ func (s *KeeperTestSuite) TestQueryServer_IndexerCount() {
 
 func (s *KeeperTestSuite) TestQueryServer_Indexer_Found() {
 	qs := keeper.NewQueryServerImpl(s.keeper)
-	_ = s.keeper.SetIndexer(s.ctx, types.Indexer{Address: "shinzo1idx0", Did: "did:0", Pid: "pid:0"})
+	_ = s.keeper.SetIndexer(s.ctx, types.Indexer{Address: "shinzo1idx0", Did: "did:0", ConnectionString: "10.0.0.1:8080"})
 
 	resp, err := qs.Indexer(s.ctx, &types.QueryIndexerRequest{Address: "shinzo1idx0"})
 	s.Require().NoError(err)
@@ -345,9 +274,9 @@ func (s *KeeperTestSuite) TestQueryServer_Indexers() {
 	qs := keeper.NewQueryServerImpl(s.keeper)
 	for i := 0; i < 3; i++ {
 		_ = s.keeper.SetIndexer(s.ctx, types.Indexer{
-			Address: fmt.Sprintf("shinzo1idx%d", i),
-			Did:     fmt.Sprintf("did:%d", i),
-			Pid:     fmt.Sprintf("pid:%d", i),
+			Address:          fmt.Sprintf("shinzo1idx%d", i),
+			Did:              fmt.Sprintf("did:%d", i),
+			ConnectionString: fmt.Sprintf("10.0.0.%d:8080", i),
 		})
 	}
 	resp, err := qs.Indexers(s.ctx, &types.QueryIndexersRequest{})
