@@ -8,10 +8,16 @@ address constant INDEXER_REGISTRY_PRECOMPILE_ADDRESS = 0x00000000000000000000000
 /// @title IndexerRegistry Precompile
 interface IndexerRegistryI {
 
-    /// @param connectionString  Connection string for the indexer.
-    /// @param sourceChain       Source chain name.
-    /// @param sourceChainId     Source chain id.
+    /// @param nodeIdentityKeyPubkey    Node identity key public key bytes.
+    /// @param nodeIdentityKeySignature Signature by nodeIdentityKeyPubkey.
+    /// @param message                  Payload.
+    /// @param connectionString         Connection string for the indexer.
+    /// @param sourceChain              Source chain name.
+    /// @param sourceChainId            Source chain id.
     function register(
+        bytes calldata nodeIdentityKeyPubkey,
+        bytes calldata nodeIdentityKeySignature,
+        bytes calldata message,
         string calldata connectionString,
         string calldata sourceChain,
         uint64 sourceChainId

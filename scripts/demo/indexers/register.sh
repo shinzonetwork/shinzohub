@@ -10,6 +10,9 @@ NODE="${NODE:-tcp://127.0.0.1:26657}"
 FUNDER="${FUNDER:-acc0}"
 ADMIN_KEY="${ADMIN_KEY:-acc0}"
 
+TMP=$(mktemp -d)
+trap "rm -rf $TMP" EXIT
+
 PRIVATE_KEY=$(cast wallet new | grep 'Private key' | awk '{print $3}')
 FROM_ADDR=$(cast wallet address --private-key "$PRIVATE_KEY")
 BECH32_ADDR=$($BINARY debug addr "${FROM_ADDR#0x}" 2>&1 | grep 'Bech32 Acc' | awk '{print $3}')
@@ -64,6 +67,16 @@ $BINARY tx indexer add-indexer-assertion \
   --yes
 sleep 2
 
+MESSAGE_RAW="entity-registration-test-nonce"
+echo -n "$MESSAGE_RAW" > "$TMP/msg.bin"
+
+# secp256k1 node identity key
+openssl ecparam -name secp256k1 -genkey -noout -out "$TMP/node.pem" 2>/dev/null
+NODE_PUB="0x$(openssl ec -in "$TMP/node.pem" -pubout -outform DER 2>/dev/null | tail -c 65 | xxd -p | tr -d '\n')"
+NODE_SIG="0x$(openssl dgst -sha256 -sign "$TMP/node.pem" "$TMP/msg.bin" | xxd -p | tr -d '\n')"
+
+MESSAGE="0x$(echo -n "$MESSAGE_RAW" | xxd -p | tr -d '\n')"
+
 echo ""
 echo "=== Step 2: Register Indexer ==="
 echo "Address:           $FROM_ADDR"
@@ -73,7 +86,8 @@ echo "Source chain ID:   $SOURCE_CHAIN_ID"
 echo ""
 
 cast send "$INDEXER_REGISTRY" \
-  "register(string,string,uint64)" \
+  "register(bytes,bytes,bytes,string,string,uint64)" \
+  "$NODE_PUB" "$NODE_SIG" "$MESSAGE" \
   "$CONNECTION_STRING" "$SOURCE_CHAIN" "$SOURCE_CHAIN_ID" \
   --private-key "$PRIVATE_KEY" \
   --rpc-url "$RPC_URL" \

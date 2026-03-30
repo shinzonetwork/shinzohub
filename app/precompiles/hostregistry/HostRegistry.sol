@@ -11,8 +11,14 @@ HostRegistryI constant HOST_REGISTRY_CONTRACT = HostRegistryI(HOST_REGISTRY_PREC
 /// @title HostRegistry Precompile
 interface HostRegistryI {
 
-    /// @param connectionString  Connection string for the host.
+    /// @param nodeIdentityKeyPubkey    Node identity key public key bytes.
+    /// @param nodeIdentityKeySignature Signature by nodeIdentityKeyPubkey.
+    /// @param message                  Payload.
+    /// @param connectionString         Connection string for the host.
     function register(
+        bytes calldata nodeIdentityKeyPubkey,
+        bytes calldata nodeIdentityKeySignature,
+        bytes calldata message,
         string calldata connectionString
     ) external;
 
