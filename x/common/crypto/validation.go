@@ -2,11 +2,34 @@ package crypto
 
 import (
 	"bytes"
+	"crypto/sha256"
 	"fmt"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/decred/dcrd/dcrec/secp256k1/v4"
+	"github.com/decred/dcrd/dcrec/secp256k1/v4/ecdsa"
 	ethcrypto "github.com/ethereum/go-ethereum/crypto"
 )
+
+// VerifyNodeIdentityKeySignature verifies a secp256k1 DER signature over SHA-256(message).
+func VerifyNodeIdentityKeySignature(pubkey, message, signature []byte) error {
+	pk, err := secp256k1.ParsePubKey(pubkey)
+	if err != nil {
+		return fmt.Errorf("invalid pubkey: %w", err)
+	}
+
+	sig, err := ecdsa.ParseDERSignature(signature)
+	if err != nil {
+		return fmt.Errorf("invalid signature: %w", err)
+	}
+
+	h := sha256.Sum256(message)
+	if !sig.Verify(h[:], pk) {
+		return fmt.Errorf("invalid signature")
+	}
+
+	return nil
+}
 
 // VerifyDelegateSignature checks that sig (65-byte secp256k1 r||s||v) over digest
 // (32 bytes) recovers to the address bytes encoded in delegateAddrBech32.

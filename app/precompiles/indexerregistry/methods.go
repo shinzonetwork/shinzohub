@@ -26,17 +26,32 @@ func (p *Precompile) Register(
 	_ *abi.Method,
 	args []interface{},
 ) ([]byte, error) {
-	connectionString, ok := args[0].(string)
+	nodeIdentityKeyPubkey, ok := args[0].([]byte)
+	if !ok || len(nodeIdentityKeyPubkey) == 0 {
+		return nil, fmt.Errorf("invalid nodeIdentityKeyPubkey")
+	}
+
+	nodeIdentityKeySignature, ok := args[1].([]byte)
+	if !ok || len(nodeIdentityKeySignature) == 0 {
+		return nil, fmt.Errorf("invalid nodeIdentityKeySignature")
+	}
+
+	message, ok := args[2].([]byte)
+	if !ok || len(message) == 0 {
+		return nil, fmt.Errorf("invalid message")
+	}
+
+	connectionString, ok := args[3].(string)
 	if !ok || connectionString == "" {
 		return nil, fmt.Errorf("invalid connectionString")
 	}
 
-	sourceChain, ok := args[1].(string)
+	sourceChain, ok := args[4].(string)
 	if !ok || sourceChain == "" {
 		return nil, fmt.Errorf("invalid sourceChain")
 	}
 
-	sourceChainId, ok := args[2].(uint64)
+	sourceChainId, ok := args[5].(uint64)
 	if !ok || sourceChainId == 0 {
 		return nil, fmt.Errorf("invalid sourceChainId: must be non-zero")
 	}
@@ -54,6 +69,9 @@ func (p *Precompile) Register(
 
 	did, err := p.indexerKeeper.RegisterIndexer(
 		ctx,
+		nodeIdentityKeyPubkey,
+		nodeIdentityKeySignature,
+		message,
 		connectionString,
 		caller,
 		assertion.SourceChain,

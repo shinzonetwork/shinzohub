@@ -25,7 +25,22 @@ func (p *Precompile) Register(
 	_ *abi.Method,
 	args []interface{},
 ) ([]byte, error) {
-	connectionString, ok := args[0].(string)
+	nodeIdentityKeyPubkey, ok := args[0].([]byte)
+	if !ok || len(nodeIdentityKeyPubkey) == 0 {
+		return nil, fmt.Errorf("invalid nodeIdentityKeyPubkey")
+	}
+
+	nodeIdentityKeySignature, ok := args[1].([]byte)
+	if !ok || len(nodeIdentityKeySignature) == 0 {
+		return nil, fmt.Errorf("invalid nodeIdentityKeySignature")
+	}
+
+	message, ok := args[2].([]byte)
+	if !ok || len(message) == 0 {
+		return nil, fmt.Errorf("invalid message")
+	}
+
+	connectionString, ok := args[3].(string)
 	if !ok || connectionString == "" {
 		return nil, fmt.Errorf("invalid connectionString")
 	}
@@ -34,6 +49,9 @@ func (p *Precompile) Register(
 
 	did, err := p.hostKeeper.RegisterHost(
 		ctx,
+		nodeIdentityKeyPubkey,
+		nodeIdentityKeySignature,
+		message,
 		connectionString,
 		caller,
 	)

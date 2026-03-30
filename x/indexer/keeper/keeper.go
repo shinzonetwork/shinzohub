@@ -12,6 +12,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/query"
 
+	commoncrypto "github.com/shinzonetwork/shinzohub/x/common/crypto"
 	"github.com/shinzonetwork/shinzohub/x/indexer/types"
 )
 
@@ -42,13 +43,23 @@ func (k Keeper) Logger(ctx sdk.Context) log.Logger {
 
 func (k Keeper) RegisterIndexer(
 	ctx sdk.Context,
+	nodeIdentityKeyPubkey []byte,
+	nodeIdentityKeySignature []byte,
+	message []byte,
 	connectionString string,
 	callerAddr []byte,
 	sourceChain string,
 	sourceChainId uint64,
 ) ([]byte, error) {
-	// Use caller address as DID.
-	did := sdk.AccAddress(callerAddr).String()
+	if err := commoncrypto.VerifyNodeIdentityKeySignature(nodeIdentityKeyPubkey, message, nodeIdentityKeySignature); err != nil {
+		return nil, err
+	}
+
+	did, err := commoncrypto.DeriveDID(nodeIdentityKeyPubkey)
+	if err != nil {
+		return nil, err
+	}
+
 	didBytes := []byte(did)
 
 	store := runtime.KVStoreAdapter(k.storeService.OpenKVStore(ctx))

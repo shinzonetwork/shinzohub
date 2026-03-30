@@ -8,6 +8,9 @@
       "name": "register",
       "stateMutability": "nonpayable",
       "inputs": [
+        { "name": "nodeIdentityKeyPubkey", "type": "bytes" },
+        { "name": "nodeIdentityKeySignature", "type": "bytes" },
+        { "name": "message", "type": "bytes" },
         { "name": "connectionString", "type": "string" }
       ],
       "outputs": []
