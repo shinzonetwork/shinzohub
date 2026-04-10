@@ -129,6 +129,24 @@ func (k Keeper) GetIndexerAssertion(ctx sdk.Context, delegate, sourceChain strin
 	return a, true, nil
 }
 
+func (k Keeper) GetAssertionsByDelegate(ctx sdk.Context, delegate string) ([]types.IndexerAssertion, error) {
+	store := runtime.KVStoreAdapter(k.storeService.OpenKVStore(ctx))
+	assertionStore := prefix.NewStore(store, []byte(types.AssertionPrefix+delegate+":"))
+
+	var assertions []types.IndexerAssertion
+	iter := assertionStore.Iterator(nil, nil)
+	defer iter.Close()
+
+	for ; iter.Valid(); iter.Next() {
+		var a types.IndexerAssertion
+		if err := k.cdc.Unmarshal(iter.Value(), &a); err != nil {
+			return nil, err
+		}
+		assertions = append(assertions, a)
+	}
+	return assertions, nil
+}
+
 func (k Keeper) SetIndexer(ctx sdk.Context, indexer types.Indexer) error {
 	store := runtime.KVStoreAdapter(k.storeService.OpenKVStore(ctx))
 	key := []byte(types.IndexerPrefix + indexer.Address)
