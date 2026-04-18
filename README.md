@@ -8,7 +8,7 @@ Shinzohub is a Cosmos SDK–based blockchain project with EVM compatibility and 
 
 Before you start, ensure you have the following installed:
 
-- **Go** ≥ 1.24
+- **Go** ≥ 1.26
 - **Make**  
 - **Git**  
 - **Protobuf compiler (`protoc`)**  

@@ -4,7 +4,7 @@ A practical, step-by-step guide to running ShinzoHub locally and interacting wit
 
 ## Prerequisites
 
-- Go 1.22+
+- Go 1.26+
 - [Foundry](https://book.getfoundry.sh/getting-started/installation) (`cast` CLI)
 - `openssl`, `jq`, `python3`, `xxd`
 
