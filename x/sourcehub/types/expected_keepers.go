@@ -32,4 +32,10 @@ type ICAControllerKeeper interface {
 		connectionID string,
 		owner string,
 	) (string, bool)
+
+	GetActiveChannelID(
+		ctx sdk.Context,
+		connectionID string,
+		portID string,
+	) (string, bool)
 }

@@ -62,43 +62,80 @@ func (k Keeper) RegisterHost(
 
 	store := runtime.KVStoreAdapter(k.storeService.OpenKVStore(ctx))
 
-	// Check for existing registration.
 	addrKey := append([]byte(types.AddrDIDPrefix), callerAddr...)
-	existingDID := store.Get(addrKey)
-	if len(existingDID) > 0 {
-		if !bytesEqual(existingDID, didBytes) {
+	pendingAddrKey := append([]byte(types.PendingAddrDIDPrefix), callerAddr...)
+	for _, key := range [][]byte{addrKey, pendingAddrKey} {
+		existingDID := store.Get(key)
+		if len(existingDID) > 0 && !bytesEqual(existingDID, didBytes) {
 			return nil, fmt.Errorf("address already registered as host with a different DID")
 		}
 	}
 
 	didKey := append([]byte(types.DIDAddrPrefix), didBytes...)
-	existingAddr := store.Get(didKey)
-	if len(existingAddr) > 0 {
-		if !bytesEqual(existingAddr, callerAddr) {
+	pendingDidKey := append([]byte(types.PendingDIDAddrPrefix), didBytes...)
+	for _, key := range [][]byte{didKey, pendingDidKey} {
+		existingAddr := store.Get(key)
+		if len(existingAddr) > 0 && !bytesEqual(existingAddr, callerAddr) {
 			return nil, fmt.Errorf("DID already registered as host with a different address")
 		}
 	}
 
-	// Send ICA transaction for ACP relationship.
-	if err := k.sourcehubKeeper.SendICASetRelationship(ctx, did, "host"); err != nil {
-		return nil, err
-	}
-
-	// Store addr→DID and DID→addr mappings.
-	store.Set(addrKey, didBytes)
-	store.Set(didKey, callerAddr)
-
-	// Store the indexed host record.
 	bech32Addr := sdk.AccAddress(callerAddr).String()
-	if err := k.SetHost(ctx, types.Host{
+
+	host := types.Host{
 		Address:          bech32Addr,
 		Did:              did,
 		ConnectionString: connectionString,
-	}); err != nil {
-		return nil, fmt.Errorf("failed to index host: %w", err)
+	}
+	if err := k.SetPendingHost(ctx, host); err != nil {
+		return nil, fmt.Errorf("record pending host: %w", err)
+	}
+	store.Set(append([]byte(types.PendingAddrDIDPrefix), callerAddr...), didBytes)
+	store.Set(append([]byte(types.PendingDIDAddrPrefix), didBytes...), callerAddr)
+
+	if _, _, _, err := k.sourcehubKeeper.SendICASetRelationship(ctx, did, "host", bech32Addr); err != nil {
+		_ = k.DeletePendingHost(ctx, bech32Addr)
+		store.Delete(append([]byte(types.PendingAddrDIDPrefix), callerAddr...))
+		store.Delete(append([]byte(types.PendingDIDAddrPrefix), didBytes...))
+		return nil, err
 	}
 
+	ctx.EventManager().EmitEvent(sdk.NewEvent(
+		types.EventTypeHostPending,
+		sdk.NewAttribute(types.AttrKeyAddress, bech32Addr),
+		sdk.NewAttribute(types.AttrKeyDID, did),
+	))
+
 	return didBytes, nil
+}
+
+func (k Keeper) SetPendingHost(ctx sdk.Context, host types.Host) error {
+	store := runtime.KVStoreAdapter(k.storeService.OpenKVStore(ctx))
+	bz, err := k.cdc.Marshal(&host)
+	if err != nil {
+		return err
+	}
+	store.Set([]byte(types.PendingHostPrefix+host.Address), bz)
+	return nil
+}
+
+func (k Keeper) GetPendingHost(ctx sdk.Context, address string) (types.Host, bool, error) {
+	store := runtime.KVStoreAdapter(k.storeService.OpenKVStore(ctx))
+	bz := store.Get([]byte(types.PendingHostPrefix + address))
+	if len(bz) == 0 {
+		return types.Host{}, false, nil
+	}
+	var h types.Host
+	if err := k.cdc.Unmarshal(bz, &h); err != nil {
+		return types.Host{}, false, err
+	}
+	return h, true, nil
+}
+
+func (k Keeper) DeletePendingHost(ctx sdk.Context, address string) error {
+	store := runtime.KVStoreAdapter(k.storeService.OpenKVStore(ctx))
+	store.Delete([]byte(types.PendingHostPrefix + address))
+	return nil
 }
 
 func (k Keeper) IsRegisteredHost(ctx sdk.Context, address []byte) bool {
@@ -112,6 +149,15 @@ func (k Keeper) GetDIDForAddress(ctx sdk.Context, address []byte) ([]byte, bool)
 	store := runtime.KVStoreAdapter(k.storeService.OpenKVStore(ctx))
 	addrKey := append([]byte(types.AddrDIDPrefix), address...)
 	v := store.Get(addrKey)
+	if len(v) == 0 {
+		return nil, false
+	}
+	return v, true
+}
+
+func (k Keeper) GetDIDForPendingAddress(ctx sdk.Context, address []byte) ([]byte, bool) {
+	store := runtime.KVStoreAdapter(k.storeService.OpenKVStore(ctx))
+	v := store.Get(append([]byte(types.PendingAddrDIDPrefix), address...))
 	if len(v) == 0 {
 		return nil, false
 	}

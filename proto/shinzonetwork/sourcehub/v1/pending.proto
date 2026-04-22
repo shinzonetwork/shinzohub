@@ -1,0 +1,69 @@
+syntax = "proto3";
+
+package shinzonetwork.sourcehub.v1;
+
+import "gogoproto/gogo.proto";
+import "google/protobuf/any.proto";
+
+option go_package = "github.com/shinzonetwork/shinzohub/x/sourcehub/types";
+
+// RequestKind identifies which caller path produced a pending ICA request.
+enum RequestKind {
+  REQUEST_KIND_UNSPECIFIED       = 0;
+  REQUEST_KIND_SET_RELATIONSHIP  = 1;
+  REQUEST_KIND_REGISTER_OBJECT   = 2;
+  REQUEST_KIND_REGISTER_SHINZO_OBJECTS = 3;
+  REQUEST_KIND_REQUEST_STREAM_ACCESS   = 4;
+  REQUEST_KIND_REGISTER_SHINZO_POLICY  = 5;
+}
+
+// RequestStatus tracks the lifecycle of a pending ICA request.
+enum RequestStatus {
+  REQUEST_STATUS_UNSPECIFIED = 0;
+  REQUEST_STATUS_PENDING     = 1;
+  REQUEST_STATUS_SUCCESS     = 2;
+  REQUEST_STATUS_FAILURE     = 3;
+  REQUEST_STATUS_TIMEOUT     = 4;
+}
+
+// PendingICARequest records a single in-flight ICA packet from shinzohub to
+// sourcehub and its resolution once the ack or timeout lands.
+message PendingICARequest {
+  uint64        sequence       = 1;
+  string        port_id        = 2;
+  string        channel_id     = 3;
+  RequestKind   kind           = 4;
+  string        requestor      = 5;
+  int64         submitted_at   = 6;
+  RequestStatus status         = 7;
+  string        error          = 8;
+  int64         resolved_at    = 9;
+  // Kind-specific payload; callers cast to their own proto messages.
+  bytes         meta           = 10;
+  // Raw MsgResponses bytes captured from a successful ack, for callers that
+  // want per-message results.
+  repeated bytes msg_responses = 11;
+}
+
+// Meta payloads carried by PendingICARequest.meta. Callers cast according to
+// PendingICARequest.kind.
+
+message SetRelationshipMeta {
+  string did   = 1;
+  string group = 2;
+}
+
+message RegisterObjectMeta {
+  string resource_name = 1;
+  string object_id     = 2;
+}
+
+message RegisterShinzoObjectsMeta {
+  repeated string resources = 1;
+}
+
+message RequestStreamAccessMeta {
+  string did            = 1;
+  string stream_id      = 2;
+  string resource_name  = 3;
+}

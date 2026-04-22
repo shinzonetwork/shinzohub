@@ -28,14 +28,15 @@ import (
 	"github.com/shinzonetwork/shinzohub/app/precompiles/hostregistry"
 	hostkeeper "github.com/shinzonetwork/shinzohub/x/host/keeper"
 	hosttypes "github.com/shinzonetwork/shinzohub/x/host/types"
+	sourcehubtypes "github.com/shinzonetwork/shinzohub/x/sourcehub/types"
 )
 
 type mockSourcehubKeeper struct {
 	err error
 }
 
-func (m *mockSourcehubKeeper) SendICASetRelationship(_ sdk.Context, _ string, _ string) error {
-	return m.err
+func (m *mockSourcehubKeeper) SendICASetRelationship(_ sdk.Context, _ string, _ string, _ string) (uint64, string, string, error) {
+	return 0, "", "", m.err
 }
 
 type mockStateDB struct {
@@ -54,6 +55,22 @@ type PrecompileTestSuite struct {
 	hostKeeper    hostkeeper.Keeper
 	mockSourcehub *mockSourcehubKeeper
 	stateDB       *mockStateDB
+	cdc           codec.Codec
+}
+
+func (s *PrecompileTestSuite) simulateHostAck(callerAddr []byte) {
+	did, found := s.hostKeeper.GetDIDForPendingAddress(s.ctx, callerAddr)
+	s.Require().True(found, "pending host did not land in state")
+	meta := &sourcehubtypes.SetRelationshipMeta{Did: string(did), Group: "host"}
+	metaBz, err := s.cdc.Marshal(meta)
+	s.Require().NoError(err)
+	cb := hostkeeper.NewAckCallback(s.hostKeeper)
+	err = cb.OnPacketAck(s.ctx, sourcehubtypes.PendingICARequest{
+		Kind:   sourcehubtypes.RequestKind_REQUEST_KIND_SET_RELATIONSHIP,
+		Meta:   metaBz,
+		Status: sourcehubtypes.RequestStatus_REQUEST_STATUS_SUCCESS,
+	})
+	s.Require().NoError(err)
 }
 
 func (s *PrecompileTestSuite) SetupTest() {
@@ -72,6 +89,7 @@ func (s *PrecompileTestSuite) SetupTest() {
 	s.hostKeeper = hostkeeper.NewKeeper(cdc, storeService, s.mockSourcehub, "authority")
 	s.ctx = sdk.NewContext(stateStore, cmtproto.Header{}, false, cosmoslog.NewNopLogger())
 	s.stateDB = &mockStateDB{}
+	s.cdc = cdc
 
 	p, err := hostregistry.NewPrecompile(10000, s.hostKeeper)
 	require.NoError(s.T(), err)
@@ -112,6 +130,8 @@ func (s *PrecompileTestSuite) TestRegister_Success() {
 	s.Require().NoError(err)
 	s.Require().Nil(bz)
 
+	s.Require().False(s.hostKeeper.IsRegisteredHost(s.ctx, caller.Bytes()))
+	s.simulateHostAck(caller.Bytes())
 	s.Require().True(s.hostKeeper.IsRegisteredHost(s.ctx, caller.Bytes()))
 	s.Require().Len(s.stateDB.logs, 1)
 

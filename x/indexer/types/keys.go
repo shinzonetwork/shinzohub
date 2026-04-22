@@ -20,4 +20,19 @@ const (
 
 	// DIDAddrPrefix stores the DID→addr mapping.
 	DIDAddrPrefix = "did_addr/"
+
+	PendingIndexerPrefix = "pending_indexer/"
+	PendingAddrDIDPrefix = "pending_addr_did/"
+	PendingDIDAddrPrefix = "pending_did_addr/"
+)
+
+const (
+	EventTypeIndexerPending              = "indexer.indexer_pending"
+	EventTypeIndexerRegistered           = "indexer.indexer_registered"
+	EventTypeIndexerRegistrationFailed   = "indexer.indexer_registration_failed"
+	EventTypeIndexerRegistrationTimedOut = "indexer.indexer_registration_timed_out"
+
+	AttrKeyAddress = "address"
+	AttrKeyDID     = "did"
+	AttrKeyError   = "error"
 )

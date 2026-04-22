@@ -36,8 +36,8 @@ type mockSourcehubKeeper struct {
 	err error
 }
 
-func (m *mockSourcehubKeeper) RegisterObject(_ sdk.Context, _ string) error {
-	return m.err
+func (m *mockSourcehubKeeper) RegisterObject(_ sdk.Context, _ string, _ string) (uint64, string, string, error) {
+	return 0, "", "", m.err
 }
 
 type mockStateDB struct {

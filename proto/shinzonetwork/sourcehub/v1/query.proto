@@ -1,0 +1,37 @@
+syntax = "proto3";
+
+package shinzonetwork.sourcehub.v1;
+
+import "gogoproto/gogo.proto";
+import "google/api/annotations.proto";
+import "shinzonetwork/sourcehub/v1/pending.proto";
+
+option go_package = "github.com/shinzonetwork/shinzohub/x/sourcehub/types";
+
+service Query {
+  rpc RequestStatus(QueryRequestStatusRequest) returns (QueryRequestStatusResponse) {
+    option (google.api.http).get = "/shinzonetwork/sourcehub/v1/requests/{port_id}/{channel_id}/{sequence}";
+  }
+
+  rpc PendingRequestsByRequestor(QueryPendingRequestsByRequestorRequest) returns (QueryPendingRequestsByRequestorResponse) {
+    option (google.api.http).get = "/shinzonetwork/sourcehub/v1/requests/by_requestor/{requestor}";
+  }
+}
+
+message QueryRequestStatusRequest {
+  string port_id    = 1;
+  string channel_id = 2;
+  uint64 sequence   = 3;
+}
+
+message QueryRequestStatusResponse {
+  PendingICARequest request = 1 [(gogoproto.nullable) = false];
+}
+
+message QueryPendingRequestsByRequestorRequest {
+  string requestor = 1;
+}
+
+message QueryPendingRequestsByRequestorResponse {
+  repeated PendingICARequest requests = 1 [(gogoproto.nullable) = false];
+}

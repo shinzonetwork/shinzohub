@@ -29,6 +29,7 @@ import (
 	"github.com/shinzonetwork/shinzohub/app/precompiles/indexerregistry"
 	indexerkeeper "github.com/shinzonetwork/shinzohub/x/indexer/keeper"
 	indexertypes "github.com/shinzonetwork/shinzohub/x/indexer/types"
+	sourcehubtypes "github.com/shinzonetwork/shinzohub/x/sourcehub/types"
 )
 
 type mockAdminKeeper struct {
@@ -43,8 +44,8 @@ type mockSourcehubKeeper struct {
 	err error
 }
 
-func (m *mockSourcehubKeeper) SendICASetRelationship(_ sdk.Context, _ string, _ string) error {
-	return m.err
+func (m *mockSourcehubKeeper) SendICASetRelationship(_ sdk.Context, _ string, _ string, _ string) (uint64, string, string, error) {
+	return 0, "", "", m.err
 }
 
 type mockStateDB struct {
@@ -64,6 +65,22 @@ type PrecompileTestSuite struct {
 	mockAdmin     *mockAdminKeeper
 	mockSourcehub *mockSourcehubKeeper
 	stateDB       *mockStateDB
+	cdc           codec.Codec
+}
+
+func (s *PrecompileTestSuite) simulateIndexerAck(callerAddr []byte) {
+	did, found := s.indexerKeeper.GetDIDForPendingAddress(s.ctx, callerAddr)
+	s.Require().True(found, "pending indexer did not land in state")
+	meta := &sourcehubtypes.SetRelationshipMeta{Did: string(did), Group: "indexer"}
+	metaBz, err := s.cdc.Marshal(meta)
+	s.Require().NoError(err)
+	cb := indexerkeeper.NewAckCallback(s.indexerKeeper)
+	err = cb.OnPacketAck(s.ctx, sourcehubtypes.PendingICARequest{
+		Kind:   sourcehubtypes.RequestKind_REQUEST_KIND_SET_RELATIONSHIP,
+		Meta:   metaBz,
+		Status: sourcehubtypes.RequestStatus_REQUEST_STATUS_SUCCESS,
+	})
+	s.Require().NoError(err)
 }
 
 func (s *PrecompileTestSuite) SetupTest() {
@@ -83,6 +100,7 @@ func (s *PrecompileTestSuite) SetupTest() {
 	s.indexerKeeper = indexerkeeper.NewKeeper(cdc, storeService, s.mockAdmin, s.mockSourcehub)
 	s.ctx = sdk.NewContext(stateStore, cmtproto.Header{}, false, cosmoslog.NewNopLogger())
 	s.stateDB = &mockStateDB{}
+	s.cdc = cdc
 
 	p, err := indexerregistry.NewPrecompile(10000, s.indexerKeeper)
 	require.NoError(s.T(), err)
@@ -164,6 +182,7 @@ func (s *PrecompileTestSuite) TestGetSourceChain_Registered() {
 	caller := common.HexToAddress("0xdddddddddddddddddddddddddddddddddddddd")
 	_, err := s.indexerKeeper.RegisterIndexer(s.ctx, nodePub, nodeSig, message, "192.168.1.1:8080", caller.Bytes(), "ethereum", 1)
 	s.Require().NoError(err)
+	s.simulateIndexerAck(caller.Bytes())
 
 	method := s.precompile.ABI.Methods["getSourceChain"]
 	bz, err := s.precompile.GetSourceChain(s.ctx, &method, []interface{}{caller})
