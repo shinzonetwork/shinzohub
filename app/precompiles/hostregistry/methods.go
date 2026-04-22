@@ -45,6 +45,10 @@ func (p *Precompile) Register(
 		return nil, fmt.Errorf("invalid connectionString")
 	}
 
+	if err := p.sourcehubKeeper.CheckICAReady(ctx); err != nil {
+		return nil, err
+	}
+
 	caller := contract.Caller().Bytes()
 
 	did, err := p.hostKeeper.RegisterHost(
@@ -74,15 +78,6 @@ func (p *Precompile) Register(
 		},
 		Data: data,
 	})
-
-	ctx.EventManager().EmitEvent(
-		sdk.NewEvent(
-			"HostRegistered",
-			sdk.NewAttribute("owner", sdk.AccAddress(caller).String()),
-			sdk.NewAttribute("did", string(did)),
-			sdk.NewAttribute("connection_string", connectionString),
-		),
-	)
 
 	return nil, nil
 }

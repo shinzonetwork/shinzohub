@@ -56,6 +56,10 @@ func (p *Precompile) Register(
 		return nil, fmt.Errorf("invalid sourceChainId: must be non-zero")
 	}
 
+	if err := p.sourcehubKeeper.CheckICAReady(ctx); err != nil {
+		return nil, err
+	}
+
 	caller := contract.Caller().Bytes()
 	delegate := sdk.AccAddress(caller).String()
 
@@ -96,17 +100,6 @@ func (p *Precompile) Register(
 		},
 		Data: data,
 	})
-
-	ctx.EventManager().EmitEvent(
-		sdk.NewEvent(
-			"IndexerRegistered",
-			sdk.NewAttribute("owner", delegate),
-			sdk.NewAttribute("did", string(did)),
-			sdk.NewAttribute("connection_string", connectionString),
-			sdk.NewAttribute("source_chain", assertion.SourceChain),
-			sdk.NewAttribute("source_chain_id", fmt.Sprintf("%d", assertion.SourceChainId)),
-		),
-	)
 
 	return nil, nil
 }

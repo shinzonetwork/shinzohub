@@ -71,6 +71,24 @@ func (k Keeper) Logger(ctx sdk.Context) log.Logger {
 	return ctx.Logger().With("module", fmt.Sprintf("x/%s", types.ModuleName))
 }
 
+func (k Keeper) CheckICAReady(ctx sdk.Context) error {
+	connectionID := k.GetControllerConnectionID(ctx)
+	if connectionID == "" {
+		return fmt.Errorf("no connection ID set in module state")
+	}
+	portID := fmt.Sprintf("icacontroller-%s", types.ModuleAddress.String())
+	if addr, _ := k.IcaCtrlKeeper.GetInterchainAccountAddress(ctx, connectionID, portID); addr == "" {
+		return fmt.Errorf("ICA address not found for portID %s on connection %s", portID, connectionID)
+	}
+	if chanID, ok := k.IcaCtrlKeeper.GetActiveChannelID(ctx, connectionID, portID); !ok || chanID == "" {
+		return fmt.Errorf("no active ICA channel for portID %s on connection %s", portID, connectionID)
+	}
+	if k.GetPolicyId(ctx) == "" {
+		return fmt.Errorf("no policy ID set in module state")
+	}
+	return nil
+}
+
 func (k Keeper) SendICASetRelationship(ctx sdk.Context, did string, group string, requestor string) (seq uint64, portID, channelID string, err error) {
 	connectionID := k.GetControllerConnectionID(ctx)
 	if connectionID == "" {

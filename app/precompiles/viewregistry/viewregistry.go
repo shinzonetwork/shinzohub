@@ -24,13 +24,18 @@ var f embed.FS
 
 var _ vm.PrecompiledContract = &Precompile{}
 
-type Precompile struct {
-	cmn.Precompile
-	baseGas    uint64
-	viewKeeper viewkeeper.Keeper
+type SourcehubKeeper interface {
+	CheckICAReady(ctx sdk.Context) error
 }
 
-func NewPrecompile(baseGas uint64, viewKeeper viewkeeper.Keeper) (*Precompile, error) {
+type Precompile struct {
+	cmn.Precompile
+	baseGas         uint64
+	viewKeeper      viewkeeper.Keeper
+	sourcehubKeeper SourcehubKeeper
+}
+
+func NewPrecompile(baseGas uint64, viewKeeper viewkeeper.Keeper, sourcehubKeeper SourcehubKeeper) (*Precompile, error) {
 	newABI, err := cmn.LoadABI(f, "abi.json")
 	if err != nil {
 		return nil, err
@@ -42,8 +47,9 @@ func NewPrecompile(baseGas uint64, viewKeeper viewkeeper.Keeper) (*Precompile, e
 			KvGasConfig:          storetypes.GasConfig{},
 			TransientKVGasConfig: storetypes.GasConfig{},
 		},
-		baseGas:    baseGas,
-		viewKeeper: viewKeeper,
+		baseGas:         baseGas,
+		viewKeeper:      viewKeeper,
+		sourcehubKeeper: sourcehubKeeper,
 	}, nil
 }
 

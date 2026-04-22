@@ -41,11 +41,18 @@ func (m *mockAdminKeeper) IsAdmin(_ sdk.Context, address string) bool {
 }
 
 type mockSourcehubKeeper struct {
-	err error
+	err      error
+	checkErr error
+	called   bool
 }
 
 func (m *mockSourcehubKeeper) SendICASetRelationship(_ sdk.Context, _ string, _ string, _ string) (uint64, string, string, error) {
+	m.called = true
 	return 0, "", "", m.err
+}
+
+func (m *mockSourcehubKeeper) CheckICAReady(_ sdk.Context) error {
+	return m.checkErr
 }
 
 type mockStateDB struct {
@@ -102,7 +109,7 @@ func (s *PrecompileTestSuite) SetupTest() {
 	s.stateDB = &mockStateDB{}
 	s.cdc = cdc
 
-	p, err := indexerregistry.NewPrecompile(10000, s.indexerKeeper)
+	p, err := indexerregistry.NewPrecompile(10000, s.indexerKeeper, s.mockSourcehub)
 	require.NoError(s.T(), err)
 	s.precompile = p
 }
@@ -151,15 +158,33 @@ func (s *PrecompileTestSuite) TestRegister_Success() {
 	s.Require().Nil(bz)
 
 	s.Require().Len(s.stateDB.logs, 1)
+}
 
-	events := s.ctx.EventManager().Events()
-	found := false
-	for _, e := range events {
-		if e.Type == "IndexerRegistered" {
-			found = true
-		}
-	}
-	s.Require().True(found)
+func (s *PrecompileTestSuite) TestRegister_ICANotReady() {
+	s.mockSourcehub.checkErr = fmt.Errorf("no policy ID set in module state")
+
+	message := []byte("ica-not-ready")
+	nodePub, nodeSig := generateNodeIdentityKey(s.T(), message)
+	caller := common.HexToAddress("0xaabbccddaabbccddaabbccddaabbccddaabbccdd")
+	contract := makeContract(caller)
+
+	delegate := sdk.AccAddress(caller.Bytes()).String()
+	_ = s.indexerKeeper.SetIndexerAssertion(s.ctx, indexertypes.IndexerAssertion{
+		ConsensusPubKey: "pk",
+		DelegateAddress: delegate,
+		SourceChain:     "ethereum",
+		SourceChainId:   1,
+		AssertionId:     "a0",
+	})
+
+	method := s.precompile.ABI.Methods["register"]
+	args := []interface{}{nodePub, nodeSig, message, "192.168.1.1:8080", "ethereum", uint64(1)}
+
+	_, err := s.precompile.Register(s.ctx, contract, s.stateDB, &method, args)
+	s.Require().Error(err)
+	s.Require().Contains(err.Error(), "no policy ID")
+	s.Require().Empty(s.stateDB.logs)
+	s.Require().False(s.mockSourcehub.called)
 }
 
 func (s *PrecompileTestSuite) TestRegister_NotAsserted() {

@@ -814,6 +814,7 @@ func NewChainApp(
 		app.HostKeeper,
 		app.IndexerKeeper,
 		app.ViewKeeper,
+		app.SourcehubKeeper,
 		appCodec,
 	)
 	app.EVMKeeper.WithStaticPrecompiles(

@@ -33,11 +33,18 @@ func (m *mockHostKeeper) IsRegisteredHost(_ sdk.Context, _ []byte) bool {
 }
 
 type mockSourcehubKeeper struct {
-	err error
+	err      error
+	checkErr error
+	called   bool
 }
 
 func (m *mockSourcehubKeeper) RegisterObject(_ sdk.Context, _ string, _ string) (uint64, string, string, error) {
+	m.called = true
 	return 0, "", "", m.err
+}
+
+func (m *mockSourcehubKeeper) CheckICAReady(_ sdk.Context) error {
+	return m.checkErr
 }
 
 type mockStateDB struct {
@@ -81,7 +88,7 @@ func (s *PrecompileTestSuite) SetupTest() {
 		"authority",
 	)
 
-	p, err := viewregistry.NewPrecompile(50000, s.viewKeeper)
+	p, err := viewregistry.NewPrecompile(50000, s.viewKeeper, s.mockSH)
 	require.NoError(s.T(), err)
 	s.precompile = p
 
@@ -181,6 +188,25 @@ func (s *PrecompileTestSuite) TestRegister_InvalidViewbundle() {
 	_, err := s.precompile.Register(s.ctx, nil, contract, s.stateDB, &method, []interface{}{[]byte("garbage")})
 	s.Require().Error(err)
 	s.Require().Contains(err.Error(), "viewbundle")
+}
+
+func (s *PrecompileTestSuite) TestRegister_ICANotReady() {
+	s.mockSH.checkErr = fmt.Errorf("no active ICA channel for portID X on connection Y")
+
+	method := s.precompile.ABI.Methods["register"]
+	contract := vm.NewContract(
+		common.HexToAddress("0xCALLER"),
+		common.HexToAddress("0x210"),
+		nil,
+		1000000,
+		nil,
+	)
+
+	_, err := s.precompile.Register(s.ctx, nil, contract, s.stateDB, &method, []interface{}{[]byte("any-bytes")})
+	s.Require().Error(err)
+	s.Require().Contains(err.Error(), "no active ICA channel")
+	s.Require().Empty(s.stateDB.logs)
+	s.Require().False(s.mockSH.called)
 }
 
 func (s *PrecompileTestSuite) TestRegisterWithPricing_InvalidDataType() {
