@@ -64,3 +64,17 @@ func (q queryServer) IndexerCount(goCtx context.Context, req *types.QueryIndexer
 
 	return &types.QueryIndexerCountResponse{Count: count}, nil
 }
+
+func (q queryServer) IndexerAssertions(goCtx context.Context, req *types.QueryIndexerAssertionsRequest) (*types.QueryIndexerAssertionsResponse, error) {
+	if req == nil {
+		return nil, status.Error(codes.InvalidArgument, "empty request")
+	}
+
+	ctx := sdk.UnwrapSDKContext(goCtx)
+	assertions, err := q.Keeper.GetAssertionsByDelegate(ctx, req.Address)
+	if err != nil {
+		return nil, status.Error(codes.Internal, err.Error())
+	}
+
+	return &types.QueryIndexerAssertionsResponse{Assertions: assertions}, nil
+}
