@@ -21,6 +21,10 @@ service Query {
   rpc IndexerCount(QueryIndexerCountRequest) returns (QueryIndexerCountResponse) {
     option (google.api.http).get = "/shinzonetwork/indexer/v1/indexer_count";
   }
+
+  rpc IndexerAssertions(QueryIndexerAssertionsRequest) returns (QueryIndexerAssertionsResponse) {
+    option (google.api.http).get = "/shinzonetwork/indexer/v1/assertions/{address}";
+  }
 }
 
 message QueryIndexersRequest {
@@ -44,4 +48,12 @@ message QueryIndexerCountRequest {}
 
 message QueryIndexerCountResponse {
   uint64 count = 1;
+}
+
+message QueryIndexerAssertionsRequest {
+  string address = 1;
+}
+
+message QueryIndexerAssertionsResponse {
+  repeated IndexerAssertion assertions = 1 [(gogoproto.nullable) = false];
 }
