@@ -44,20 +44,59 @@ func (k Keeper) Logger(ctx sdk.Context) log.Logger {
 }
 
 func (k Keeper) RegisterView(ctx sdk.Context, viewId, name, creator, contractAddress string, data []byte) error {
-	if err := k.sourcehubKeeper.RegisterObject(ctx, viewId); err != nil {
-		return fmt.Errorf("failed to register view object: %w", err)
-	}
-
-	if err := k.SetView(ctx, types.View{
+	view := types.View{
 		Name:            name,
 		Creator:         creator,
 		ContractAddress: contractAddress,
 		Data:            data,
-		Height: uint64(ctx.BlockHeight()),
-	}); err != nil {
-		return err
+		Height:          uint64(ctx.BlockHeight()),
 	}
 
+	if err := k.SetPendingView(ctx, viewId, view); err != nil {
+		return fmt.Errorf("record pending view: %w", err)
+	}
+
+	if _, _, _, err := k.sourcehubKeeper.RegisterObject(ctx, viewId, creator); err != nil {
+		_ = k.DeletePendingView(ctx, viewId)
+		return fmt.Errorf("failed to register view object: %w", err)
+	}
+
+	ctx.EventManager().EmitEvent(sdk.NewEvent(
+		types.EventTypeViewPending,
+		sdk.NewAttribute(types.AttrKeyViewID, viewId),
+		sdk.NewAttribute(types.AttrKeyContractAddress, contractAddress),
+		sdk.NewAttribute(types.AttrKeyCreator, creator),
+	))
+
+	return nil
+}
+
+func (k Keeper) SetPendingView(ctx sdk.Context, viewId string, view types.View) error {
+	store := runtime.KVStoreAdapter(k.storeService.OpenKVStore(ctx))
+	bz, err := k.cdc.Marshal(&view)
+	if err != nil {
+		return err
+	}
+	store.Set([]byte(types.PendingViewPrefix+viewId), bz)
+	return nil
+}
+
+func (k Keeper) GetPendingView(ctx sdk.Context, viewId string) (types.View, bool, error) {
+	store := runtime.KVStoreAdapter(k.storeService.OpenKVStore(ctx))
+	bz := store.Get([]byte(types.PendingViewPrefix + viewId))
+	if len(bz) == 0 {
+		return types.View{}, false, nil
+	}
+	var v types.View
+	if err := k.cdc.Unmarshal(bz, &v); err != nil {
+		return types.View{}, false, err
+	}
+	return v, true, nil
+}
+
+func (k Keeper) DeletePendingView(ctx sdk.Context, viewId string) error {
+	store := runtime.KVStoreAdapter(k.storeService.OpenKVStore(ctx))
+	store.Delete([]byte(types.PendingViewPrefix + viewId))
 	return nil
 }
 

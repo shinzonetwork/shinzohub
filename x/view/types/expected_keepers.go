@@ -11,5 +11,5 @@ type HostKeeper interface {
 // SourcehubKeeper defines the interface for the sourcehub module's keeper
 // that the view module needs for ACP object registration.
 type SourcehubKeeper interface {
-	RegisterObject(ctx sdk.Context, id string) error
+	RegisterObject(ctx sdk.Context, id string, requestor string) (sequence uint64, portID, channelID string, err error)
 }

@@ -781,6 +781,23 @@ func NewChainApp(
 		authority,
 	)
 
+	app.SourcehubKeeper.RegisterAckCallback(
+		sourcehubtypes.RequestKind_REQUEST_KIND_REGISTER_OBJECT,
+		viewkeeper.NewAckCallback(app.ViewKeeper),
+	)
+	app.SourcehubKeeper.RegisterAckCallback(
+		sourcehubtypes.RequestKind_REQUEST_KIND_SET_RELATIONSHIP,
+		indexerkeeper.NewAckCallback(app.IndexerKeeper),
+	)
+	app.SourcehubKeeper.RegisterAckCallback(
+		sourcehubtypes.RequestKind_REQUEST_KIND_SET_RELATIONSHIP,
+		hostkeeper.NewAckCallback(app.HostKeeper),
+	)
+	app.SourcehubKeeper.RegisterAckCallback(
+		sourcehubtypes.RequestKind_REQUEST_KIND_REGISTER_SHINZO_POLICY,
+		sourcehubkeeper.NewAckCallback(app.SourcehubKeeper),
+	)
+
 	// NOTE: we are adding all available EVM extensions.
 	// Not all of them need to be enabled, which can be configured on a per-chain basis.
 	corePrecompiles := NewAvailableStaticPrecompiles(
@@ -797,6 +814,7 @@ func NewChainApp(
 		app.HostKeeper,
 		app.IndexerKeeper,
 		app.ViewKeeper,
+		app.SourcehubKeeper,
 		appCodec,
 	)
 	app.EVMKeeper.WithStaticPrecompiles(
@@ -820,6 +838,7 @@ func NewChainApp(
 	// see https://medium.com/the-interchain-foundation/ibc-go-v6-changes-to-interchain-accounts-and-how-it-impacts-your-chain-806c185300d7
 	// var noAuthzModule porttypes.IBCModule
 	icaControllerStack = icacontroller.NewIBCMiddleware(app.ICAControllerKeeper)
+	icaControllerStack = sourcehub.NewIBCMiddleware(app.SourcehubKeeper, icaControllerStack)
 	// icaControllerStack = ibcfee.NewIBCMiddleware(icaControllerStack, app.IBCFeeKeeper)
 
 	// RecvPacket, message that originates from core IBC and goes down to app, the flow is:

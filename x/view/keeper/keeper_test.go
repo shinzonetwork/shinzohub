@@ -19,6 +19,7 @@ import (
 	dbm "github.com/cosmos/cosmos-db"
 	cmtproto "github.com/cometbft/cometbft/proto/tendermint/types"
 
+	sourcehubtypes "github.com/shinzonetwork/shinzohub/x/sourcehub/types"
 	"github.com/shinzonetwork/shinzohub/x/view/keeper"
 	"github.com/shinzonetwork/shinzohub/x/view/types"
 )
@@ -35,10 +36,10 @@ type mockSourcehubKeeper struct {
 	err    error
 }
 
-func (m *mockSourcehubKeeper) RegisterObject(_ sdk.Context, id string) error {
+func (m *mockSourcehubKeeper) RegisterObject(_ sdk.Context, id string, _ string) (uint64, string, string, error) {
 	m.called = true
 	m.lastID = id
-	return m.err
+	return 0, "", "", m.err
 }
 
 type KeeperTestSuite struct {
@@ -47,6 +48,20 @@ type KeeperTestSuite struct {
 	keeper        keeper.Keeper
 	mockHost      *mockHostKeeper
 	mockSourcehub *mockSourcehubKeeper
+	cdc           codec.BinaryCodec
+}
+
+func (s *KeeperTestSuite) simulateViewAck(viewId string) {
+	meta := &sourcehubtypes.RegisterObjectMeta{ResourceName: sourcehubtypes.ViewResourceName, ObjectId: viewId}
+	metaBz, err := s.cdc.Marshal(meta)
+	s.Require().NoError(err)
+	cb := keeper.NewAckCallback(s.keeper)
+	err = cb.OnPacketAck(s.ctx, sourcehubtypes.PendingICARequest{
+		Kind:   sourcehubtypes.RequestKind_REQUEST_KIND_REGISTER_OBJECT,
+		Meta:   metaBz,
+		Status: sourcehubtypes.RequestStatus_REQUEST_STATUS_SUCCESS,
+	})
+	s.Require().NoError(err)
 }
 
 func (s *KeeperTestSuite) SetupTest() {
@@ -61,6 +76,7 @@ func (s *KeeperTestSuite) SetupTest() {
 
 	registry := codectypes.NewInterfaceRegistry()
 	cdc := codec.NewProtoCodec(registry)
+	s.cdc = cdc
 
 	storeService := runtime.NewKVStoreService(storeKey)
 
@@ -84,6 +100,15 @@ func (s *KeeperTestSuite) TestRegisterView_Success() {
 	s.Require().NoError(err)
 	s.Require().True(s.mockSourcehub.called)
 	s.Require().Equal("TestView_0xabc", s.mockSourcehub.lastID)
+
+	_, canonicalFound, _ := s.keeper.GetView(s.ctx, "0xabc")
+	s.Require().False(canonicalFound)
+	pending, pendingFound, err := s.keeper.GetPendingView(s.ctx, "TestView_0xabc")
+	s.Require().NoError(err)
+	s.Require().True(pendingFound)
+	s.Require().Equal("TestView", pending.Name)
+
+	s.simulateViewAck("TestView_0xabc")
 
 	view, found, err := s.keeper.GetView(s.ctx, "0xabc")
 	s.Require().NoError(err)

@@ -1,7 +1,6 @@
 package viewregistry
 
 import (
-	"encoding/base64"
 	"fmt"
 	"regexp"
 
@@ -39,6 +38,10 @@ func (p Precompile) Register(
 		return nil, fmt.Errorf("invalid data")
 	}
 
+	if err := p.sourcehubKeeper.CheckICAReady(ctx); err != nil {
+		return nil, err
+	}
+
 	caller := contract.Caller()
 	deployer := contract.Address()
 
@@ -53,7 +56,7 @@ func (p Precompile) Register(
 		return nil, fmt.Errorf("failed to register view in keeper: %w", err)
 	}
 
-	emitViewCreated(ctx, stateDB, contract.Address(), viewAddr, caller, viewName, data)
+	emitViewCreated(stateDB, contract.Address(), viewAddr, caller, viewName)
 
 	return method.Outputs.Pack(viewAddr)
 }
@@ -76,6 +79,10 @@ func (p Precompile) RegisterWithPricing(
 		return nil, fmt.Errorf("invalid pricing address")
 	}
 
+	if err := p.sourcehubKeeper.CheckICAReady(ctx); err != nil {
+		return nil, err
+	}
+
 	caller := contract.Caller()
 	deployer := contract.Address()
 
@@ -90,7 +97,7 @@ func (p Precompile) RegisterWithPricing(
 		return nil, fmt.Errorf("failed to register view in keeper: %w", err)
 	}
 
-	emitViewCreated(ctx, stateDB, contract.Address(), viewAddr, caller, viewName, data)
+	emitViewCreated(stateDB, contract.Address(), viewAddr, caller, viewName)
 
 	return method.Outputs.Pack(viewAddr)
 }
@@ -158,12 +165,10 @@ func (p Precompile) GetView(
 }
 
 func emitViewCreated(
-	ctx sdk.Context,
 	stateDB vm.StateDB,
 	precompileAddr common.Address,
 	viewAddr, creator common.Address,
 	name string,
-	data []byte,
 ) {
 	topic0 := crypto.Keccak256Hash([]byte("ViewCreated(address,address,string)"))
 	nameData, _ := ViewConstructorArgs[:1].Pack(name)
@@ -176,14 +181,4 @@ func emitViewCreated(
 		},
 		Data: nameData,
 	})
-
-	ctx.EventManager().EmitEvent(
-		sdk.NewEvent(
-			"ViewRegistered",
-			sdk.NewAttribute("view_address", viewAddr.Hex()),
-			sdk.NewAttribute("view_name", name),
-			sdk.NewAttribute("creator", sdk.AccAddress(creator.Bytes()).String()),
-			sdk.NewAttribute("data", base64.StdEncoding.EncodeToString(data)),
-		),
-	)
 }

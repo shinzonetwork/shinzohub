@@ -34,6 +34,11 @@ func (m msgServer) RequestStreamAccess(goCtx context.Context, msg *types.MsgRequ
 		return nil, fmt.Errorf("ICA address not found for portID %s on connection %s", portID, connectionID)
 	}
 
+	channelID, hasChannel := m.Keeper.IcaCtrlKeeper.GetActiveChannelID(ctx, connectionID, portID)
+	if !hasChannel || channelID == "" {
+		return nil, fmt.Errorf("no active ICA channel for portID %s on connection %s", portID, connectionID)
+	}
+
 	policyId := m.Keeper.GetPolicyId(ctx)
 	if policyId == "" {
 		return nil, fmt.Errorf("no policy ID set in module state")
@@ -73,17 +78,27 @@ func (m msgServer) RequestStreamAccess(goCtx context.Context, msg *types.MsgRequ
 
 	timeout := uint64(ctx.BlockTime().Add(5 * time.Minute).UnixNano())
 
-	_, err = m.Keeper.IcaCtrlKeeper.SendTx(ctx, connectionID, portID, packetData, timeout)
-
-	if err == nil {
-		ctx.EventManager().EmitEvent(
-			sdk.NewEvent(
-				"AccessRequestSuccess",
-				sdk.NewAttribute("did", actor),
-				sdk.NewAttribute("object", msg.StreamId),
-			),
-		)
+	seq, err := m.Keeper.IcaCtrlKeeper.SendTx(ctx, connectionID, portID, packetData, timeout)
+	if err != nil {
+		return nil, err
 	}
 
-	return &types.MsgRequestStreamAccessResponse{}, err
+	metaBz, _ := m.Keeper.cdc.Marshal(&types.RequestStreamAccessMeta{Did: actor, StreamId: msg.StreamId, ResourceName: resource})
+	req := NewPendingICARequest(portID, channelID, seq, types.RequestKind_REQUEST_KIND_REQUEST_STREAM_ACCESS, msg.Signer, ctx.BlockTime(), metaBz)
+	if err := m.Keeper.SetPendingRequest(ctx, req); err != nil {
+		return nil, fmt.Errorf("record pending request: %w", err)
+	}
+	emitRequestPending(ctx, req)
+	ctx.EventManager().EmitEvent(sdk.NewEvent(
+		types.EventTypeStreamAccessPending,
+		sdk.NewAttribute(types.AttrKeyDid, actor),
+		sdk.NewAttribute(types.AttrKeyStreamID, msg.StreamId),
+		sdk.NewAttribute(types.AttrKeySequence, fmt.Sprintf("%d", seq)),
+	))
+
+	return &types.MsgRequestStreamAccessResponse{
+		Sequence:  seq,
+		PortId:    portID,
+		ChannelId: channelID,
+	}, nil
 }

@@ -23,6 +23,7 @@ import (
 
 	"github.com/shinzonetwork/shinzohub/x/indexer/keeper"
 	"github.com/shinzonetwork/shinzohub/x/indexer/types"
+	sourcehubtypes "github.com/shinzonetwork/shinzohub/x/sourcehub/types"
 )
 
 type mockAdminKeeper struct {
@@ -37,8 +38,8 @@ type mockSourcehubKeeper struct {
 	err error
 }
 
-func (m *mockSourcehubKeeper) SendICASetRelationship(_ sdk.Context, _ string, _ string) error {
-	return m.err
+func (m *mockSourcehubKeeper) SendICASetRelationship(_ sdk.Context, _ string, _ string, _ string) (uint64, string, string, error) {
+	return 0, "", "", m.err
 }
 
 type KeeperTestSuite struct {
@@ -47,6 +48,22 @@ type KeeperTestSuite struct {
 	keeper        keeper.Keeper
 	mockAdmin     *mockAdminKeeper
 	mockSourcehub *mockSourcehubKeeper
+	cdc           codec.BinaryCodec
+}
+
+func (s *KeeperTestSuite) simulateIndexerAck(callerAddr []byte) {
+	did, found := s.keeper.GetDIDForPendingAddress(s.ctx, callerAddr)
+	s.Require().True(found, "pending indexer did not land in state")
+	meta := &sourcehubtypes.SetRelationshipMeta{Did: string(did), Group: "indexer"}
+	metaBz, err := s.cdc.Marshal(meta)
+	s.Require().NoError(err)
+	cb := keeper.NewAckCallback(s.keeper)
+	err = cb.OnPacketAck(s.ctx, sourcehubtypes.PendingICARequest{
+		Kind:   sourcehubtypes.RequestKind_REQUEST_KIND_SET_RELATIONSHIP,
+		Meta:   metaBz,
+		Status: sourcehubtypes.RequestStatus_REQUEST_STATUS_SUCCESS,
+	})
+	s.Require().NoError(err)
 }
 
 func (s *KeeperTestSuite) SetupTest() {
@@ -61,6 +78,7 @@ func (s *KeeperTestSuite) SetupTest() {
 
 	registry := codectypes.NewInterfaceRegistry()
 	cdc := codec.NewProtoCodec(registry)
+	s.cdc = cdc
 	storeService := runtime.NewKVStoreService(storeKey)
 
 	s.keeper = keeper.NewKeeper(cdc, storeService, s.mockAdmin, s.mockSourcehub)
@@ -86,6 +104,8 @@ func (s *KeeperTestSuite) TestRegisterIndexer_Success() {
 	did, err := s.keeper.RegisterIndexer(s.ctx, nodePub, nodeSig, message, "192.168.1.1:8080", callerAddr, "ethereum", 1)
 	s.Require().NoError(err)
 	s.Require().NotEmpty(did)
+
+	s.simulateIndexerAck(callerAddr)
 
 	bech32Addr := sdk.AccAddress(callerAddr).String()
 	indexer, found, err := s.keeper.GetIndexer(s.ctx, bech32Addr)

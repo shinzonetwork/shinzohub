@@ -24,34 +24,36 @@ func (m msgServer) RegisterShinzoPolicy(goCtx context.Context, msg *types.MsgReg
 
 	connectionID := m.Keeper.GetControllerConnectionID(ctx)
 	if connectionID == "" {
-		return &types.MsgRegisterShinzoPolicyResponse{}, fmt.Errorf("no connection ID set in module state")
+		return nil, fmt.Errorf("no connection ID set in module state")
 	}
 
 	portID := fmt.Sprintf("icacontroller-%s", types.ModuleAddress.String())
 
 	addr, _ := m.Keeper.IcaCtrlKeeper.GetInterchainAccountAddress(ctx, connectionID, portID)
 	if addr == "" {
-		return &types.MsgRegisterShinzoPolicyResponse{},
-			fmt.Errorf("ICA address not found for portID %s on connection %s", portID, connectionID)
+		return nil, fmt.Errorf("ICA address not found for portID %s on connection %s", portID, connectionID)
 	}
 
-	mt := coretypes.PolicyMarshalingType_YAML
+	channelID, hasChannel := m.Keeper.IcaCtrlKeeper.GetActiveChannelID(ctx, connectionID, portID)
+	if !hasChannel || channelID == "" {
+		return nil, fmt.Errorf("no active ICA channel for portID %s on connection %s", portID, connectionID)
+	}
 
 	policyMsg := &acptypes.MsgCreatePolicy{
 		Creator:     addr,
 		Policy:      policy,
-		MarshalType: mt,
+		MarshalType: coretypes.PolicyMarshalingType_YAML,
 	}
 
 	anyMsg, err := codectypes.NewAnyWithValue(policyMsg)
 	if err != nil {
-		return &types.MsgRegisterShinzoPolicyResponse{}, err
+		return nil, err
 	}
 
 	cosmosTx := &icatypes.CosmosTx{Messages: []*codectypes.Any{anyMsg}}
 	bz, err := gogoproto.Marshal(cosmosTx)
 	if err != nil {
-		return &types.MsgRegisterShinzoPolicyResponse{}, err
+		return nil, err
 	}
 
 	packetData := icatypes.InterchainAccountPacketData{
@@ -59,10 +61,18 @@ func (m msgServer) RegisterShinzoPolicy(goCtx context.Context, msg *types.MsgReg
 		Data: bz,
 		Memo: "",
 	}
-
 	timeout := uint64(ctx.BlockTime().Add(5 * time.Minute).UnixNano())
 
-	_, err = m.Keeper.IcaCtrlKeeper.SendTx(ctx, connectionID, portID, packetData, timeout)
+	seq, err := m.Keeper.IcaCtrlKeeper.SendTx(ctx, connectionID, portID, packetData, timeout)
+	if err != nil {
+		return nil, err
+	}
 
-	return &types.MsgRegisterShinzoPolicyResponse{}, err
+	req := NewPendingICARequest(portID, channelID, seq, types.RequestKind_REQUEST_KIND_REGISTER_SHINZO_POLICY, msg.Signer, ctx.BlockTime(), nil)
+	if err := m.Keeper.SetPendingRequest(ctx, req); err != nil {
+		return nil, fmt.Errorf("record pending request: %w", err)
+	}
+	emitRequestPending(ctx, req)
+
+	return &types.MsgRegisterShinzoPolicyResponse{}, nil
 }

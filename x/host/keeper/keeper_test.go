@@ -23,6 +23,7 @@ import (
 
 	"github.com/shinzonetwork/shinzohub/x/host/keeper"
 	"github.com/shinzonetwork/shinzohub/x/host/types"
+	sourcehubtypes "github.com/shinzonetwork/shinzohub/x/sourcehub/types"
 )
 
 type mockSourcehubKeeper struct {
@@ -32,11 +33,11 @@ type mockSourcehubKeeper struct {
 	err       error
 }
 
-func (m *mockSourcehubKeeper) SendICASetRelationship(ctx sdk.Context, did string, group string) error {
+func (m *mockSourcehubKeeper) SendICASetRelationship(_ sdk.Context, did string, group string, _ string) (uint64, string, string, error) {
 	m.called = true
 	m.lastDID = did
 	m.lastGroup = group
-	return m.err
+	return 0, "", "", m.err
 }
 
 type KeeperTestSuite struct {
@@ -83,6 +84,21 @@ func TestKeeperTestSuite(t *testing.T) {
 	suite.Run(t, new(KeeperTestSuite))
 }
 
+func (s *KeeperTestSuite) simulateHostAck(callerAddr []byte) {
+	did, found := s.keeper.GetDIDForPendingAddress(s.ctx, callerAddr)
+	s.Require().True(found, "pending host did not land in state")
+	meta := &sourcehubtypes.SetRelationshipMeta{Did: string(did), Group: "host"}
+	metaBz, err := s.cdc.Marshal(meta)
+	s.Require().NoError(err)
+	cb := keeper.NewAckCallback(s.keeper)
+	err = cb.OnPacketAck(s.ctx, sourcehubtypes.PendingICARequest{
+		Kind:   sourcehubtypes.RequestKind_REQUEST_KIND_SET_RELATIONSHIP,
+		Meta:   metaBz,
+		Status: sourcehubtypes.RequestStatus_REQUEST_STATUS_SUCCESS,
+	})
+	s.Require().NoError(err)
+}
+
 func (s *KeeperTestSuite) TestRegisterHost_Success() {
 	message := []byte("test-registration-nonce")
 	nodePub, nodeSig := generateNodeIdentityKey(s.T(), message)
@@ -94,6 +110,8 @@ func (s *KeeperTestSuite) TestRegisterHost_Success() {
 
 	s.Require().True(s.mockSourcehub.called)
 	s.Require().Equal("host", s.mockSourcehub.lastGroup)
+
+	s.simulateHostAck(callerAddr)
 
 	s.Require().True(s.keeper.IsRegisteredHost(s.ctx, callerAddr))
 

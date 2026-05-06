@@ -46,7 +46,11 @@ message MsgRegisterShinzoObjects {
   repeated string resources = 2;
 }
 
-message MsgRegisterShinzoObjectsResponse {}
+message MsgRegisterShinzoObjectsResponse {
+  uint64 sequence   = 1;
+  string port_id    = 2;
+  string channel_id = 3;
+}
 
 message MsgRequestStreamAccess {
   option (cosmos.msg.v1.signer) = "signer";
@@ -58,5 +62,9 @@ message MsgRequestStreamAccess {
   uint64 expiration = 5;
 }
 
-message MsgRequestStreamAccessResponse {}
+message MsgRequestStreamAccessResponse {
+  uint64 sequence   = 1;
+  string port_id    = 2;
+  string channel_id = 3;
+}
 

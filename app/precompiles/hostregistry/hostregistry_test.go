@@ -28,14 +28,22 @@ import (
 	"github.com/shinzonetwork/shinzohub/app/precompiles/hostregistry"
 	hostkeeper "github.com/shinzonetwork/shinzohub/x/host/keeper"
 	hosttypes "github.com/shinzonetwork/shinzohub/x/host/types"
+	sourcehubtypes "github.com/shinzonetwork/shinzohub/x/sourcehub/types"
 )
 
 type mockSourcehubKeeper struct {
-	err error
+	err      error
+	checkErr error
+	called   bool
 }
 
-func (m *mockSourcehubKeeper) SendICASetRelationship(_ sdk.Context, _ string, _ string) error {
-	return m.err
+func (m *mockSourcehubKeeper) SendICASetRelationship(_ sdk.Context, _ string, _ string, _ string) (uint64, string, string, error) {
+	m.called = true
+	return 0, "", "", m.err
+}
+
+func (m *mockSourcehubKeeper) CheckICAReady(_ sdk.Context) error {
+	return m.checkErr
 }
 
 type mockStateDB struct {
@@ -54,6 +62,22 @@ type PrecompileTestSuite struct {
 	hostKeeper    hostkeeper.Keeper
 	mockSourcehub *mockSourcehubKeeper
 	stateDB       *mockStateDB
+	cdc           codec.Codec
+}
+
+func (s *PrecompileTestSuite) simulateHostAck(callerAddr []byte) {
+	did, found := s.hostKeeper.GetDIDForPendingAddress(s.ctx, callerAddr)
+	s.Require().True(found, "pending host did not land in state")
+	meta := &sourcehubtypes.SetRelationshipMeta{Did: string(did), Group: "host"}
+	metaBz, err := s.cdc.Marshal(meta)
+	s.Require().NoError(err)
+	cb := hostkeeper.NewAckCallback(s.hostKeeper)
+	err = cb.OnPacketAck(s.ctx, sourcehubtypes.PendingICARequest{
+		Kind:   sourcehubtypes.RequestKind_REQUEST_KIND_SET_RELATIONSHIP,
+		Meta:   metaBz,
+		Status: sourcehubtypes.RequestStatus_REQUEST_STATUS_SUCCESS,
+	})
+	s.Require().NoError(err)
 }
 
 func (s *PrecompileTestSuite) SetupTest() {
@@ -72,8 +96,9 @@ func (s *PrecompileTestSuite) SetupTest() {
 	s.hostKeeper = hostkeeper.NewKeeper(cdc, storeService, s.mockSourcehub, "authority")
 	s.ctx = sdk.NewContext(stateStore, cmtproto.Header{}, false, cosmoslog.NewNopLogger())
 	s.stateDB = &mockStateDB{}
+	s.cdc = cdc
 
-	p, err := hostregistry.NewPrecompile(10000, s.hostKeeper)
+	p, err := hostregistry.NewPrecompile(10000, s.hostKeeper, s.mockSourcehub)
 	require.NoError(s.T(), err)
 	s.precompile = p
 }
@@ -112,17 +137,30 @@ func (s *PrecompileTestSuite) TestRegister_Success() {
 	s.Require().NoError(err)
 	s.Require().Nil(bz)
 
+	s.Require().False(s.hostKeeper.IsRegisteredHost(s.ctx, caller.Bytes()))
+	s.simulateHostAck(caller.Bytes())
 	s.Require().True(s.hostKeeper.IsRegisteredHost(s.ctx, caller.Bytes()))
 	s.Require().Len(s.stateDB.logs, 1)
+}
 
-	events := s.ctx.EventManager().Events()
-	found := false
-	for _, e := range events {
-		if e.Type == "HostRegistered" {
-			found = true
-		}
-	}
-	s.Require().True(found)
+func (s *PrecompileTestSuite) TestRegister_ICANotReady() {
+	s.mockSourcehub.checkErr = fmt.Errorf("no active ICA channel for portID X on connection Y")
+
+	message := []byte("ica-not-ready-nonce")
+	nodePub, nodeSig := generateNodeIdentityKey(s.T(), message)
+	caller := common.HexToAddress("0xaabbccddaabbccddaabbccddaabbccddaabbccdd")
+	contract := makeContract(caller)
+
+	method := s.precompile.ABI.Methods["register"]
+	args := []interface{}{nodePub, nodeSig, message, "192.168.1.1:8080"}
+
+	_, err := s.precompile.Register(s.ctx, contract, s.stateDB, &method, args)
+	s.Require().Error(err)
+	s.Require().Contains(err.Error(), "no active ICA channel")
+
+	s.Require().Empty(s.stateDB.logs)
+	s.Require().False(s.mockSourcehub.called)
+	s.Require().False(s.hostKeeper.IsRegisteredHost(s.ctx, caller.Bytes()))
 }
 
 func (s *PrecompileTestSuite) TestRegister_EmptyArgs() {

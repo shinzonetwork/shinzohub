@@ -37,6 +37,7 @@ import (
 	"github.com/shinzonetwork/shinzohub/app/precompiles/viewregistry"
 	hostkeeper "github.com/shinzonetwork/shinzohub/x/host/keeper"
 	indexerkeeper "github.com/shinzonetwork/shinzohub/x/indexer/keeper"
+	sourcehubkeeper "github.com/shinzonetwork/shinzohub/x/sourcehub/keeper"
 	viewkeeper "github.com/shinzonetwork/shinzohub/x/view/keeper"
 )
 
@@ -95,6 +96,7 @@ func NewAvailableStaticPrecompiles(
 	hostKeeper hostkeeper.Keeper,
 	indexerKeeper indexerkeeper.Keeper,
 	viewKeeper viewkeeper.Keeper,
+	sourcehubKeeper sourcehubkeeper.Keeper,
 	codec codec.Codec,
 	opts ...Option,
 ) map[common.Address]vm.PrecompiledContract {
@@ -156,17 +158,17 @@ func NewAvailableStaticPrecompiles(
 	}
 
 	// register custom precompiles
-	viewRegistryPrecompile, err := viewregistry.NewPrecompile(precompileBaseGas, viewKeeper)
+	viewRegistryPrecompile, err := viewregistry.NewPrecompile(precompileBaseGas, viewKeeper, sourcehubKeeper)
 	if err != nil {
 		panic(fmt.Errorf("failed to instantiate view registry precompile: %w", err))
 	}
 
-	hostRegistryPrecompile, err := hostregistry.NewPrecompile(precompileBaseGas, hostKeeper)
+	hostRegistryPrecompile, err := hostregistry.NewPrecompile(precompileBaseGas, hostKeeper, sourcehubKeeper)
 	if err != nil {
 		panic(fmt.Errorf("failed to instantiate host registry precompile: %w", err))
 	}
 
-	indexerRegistryPrecompile, err := indexerregistry.NewPrecompile(precompileBaseGas, indexerKeeper)
+	indexerRegistryPrecompile, err := indexerregistry.NewPrecompile(precompileBaseGas, indexerKeeper, sourcehubKeeper)
 	if err != nil {
 		panic(fmt.Errorf("failed to instantiate indexer registry precompile: %w", err))
 	}

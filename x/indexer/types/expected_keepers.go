@@ -10,5 +10,5 @@ type AdminKeeper interface {
 // SourcehubKeeper defines the interface for the sourcehub module's keeper
 // that the indexer module needs for ICA/ACP operations.
 type SourcehubKeeper interface {
-	SendICASetRelationship(ctx sdk.Context, did string, group string) error
+	SendICASetRelationship(ctx sdk.Context, did string, group string, requestor string) (sequence uint64, portID, channelID string, err error)
 }

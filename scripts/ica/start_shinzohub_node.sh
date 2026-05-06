@@ -106,7 +106,6 @@ from_scratch () {
 
   # enable ICA controller on ShinzoHub
   update_test_genesis '.app_state["interchainaccounts"]["controller_genesis_state"]["params"]["controller_enabled"]=true'
-  update_test_genesis '.app_state["sourcehub"]["policy_id"]="692b3f99bf9f0d87d84adb8723eba9c43c5d1b57f54d3e763fa1a0d6e5bdcb32"'
 
   # === CUSTOM MODULES ===
 

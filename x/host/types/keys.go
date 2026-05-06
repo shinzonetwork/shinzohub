@@ -18,4 +18,19 @@ const (
 	// DIDAddrPrefix stores the DID→addr mapping for backward compatibility.
 	// Key format: did_addr/<did_bytes> → address bytes
 	DIDAddrPrefix = "did_addr/"
+
+	PendingHostPrefix    = "pending_host/"
+	PendingAddrDIDPrefix = "pending_addr_did/"
+	PendingDIDAddrPrefix = "pending_did_addr/"
+)
+
+const (
+	EventTypeHostPending              = "host.host_pending"
+	EventTypeHostRegistered           = "host.host_registered"
+	EventTypeHostRegistrationFailed   = "host.host_registration_failed"
+	EventTypeHostRegistrationTimedOut = "host.host_registration_timed_out"
+
+	AttrKeyAddress = "address"
+	AttrKeyDID     = "did"
+	AttrKeyError   = "error"
 )
