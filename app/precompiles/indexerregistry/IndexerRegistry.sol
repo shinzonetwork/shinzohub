@@ -8,40 +8,38 @@ address constant INDEXER_REGISTRY_PRECOMPILE_ADDRESS = 0x00000000000000000000000
 /// @title IndexerRegistry Precompile
 interface IndexerRegistryI {
 
-    /// @param nodeIdentityKeyPubkey    Node identity key public key bytes.
-    /// @param nodeIdentityKeySignature Signature by nodeIdentityKeyPubkey.
-    /// @param message                  Payload.
+    /// @param nodeIdentityKeyPubkey    Node identity key public key (used only to derive the DID).
+    /// @param nodeIdentityKeySignature Signature by nodeIdentityKeyPubkey over `message`.
+    /// @param message                  Bytes signed by the node identity key.
     /// @param connectionString         Connection string for the indexer.
-    /// @param sourceChain              Source chain name.
-    /// @param sourceChainId            Source chain id.
     function register(
         bytes calldata nodeIdentityKeyPubkey,
         bytes calldata nodeIdentityKeySignature,
         bytes calldata message,
-        string calldata connectionString,
-        string calldata sourceChain,
-        uint64 sourceChainId
+        string calldata connectionString
     ) external;
 
-    /// @param addr The address to check.
-    /// @return result True if the address is a registered indexer.
+    /// @param addr The operator address to check.
+    /// @return result True if the indexer has completed registration.
     function isRegistered(address addr) external view returns (bool result);
 
-    /// @param addr The address to look up.
-    /// @return did The DID bytes (empty if not registered).
+    /// @param addr The operator address to look up.
+    /// @return did The DID bytes (empty if not yet registered).
     function getDid(address addr) external view returns (bytes memory did);
 
-    /// @param addr The address to look up.
-    /// @return connectionString The connection string (empty if not registered).
+    /// @param addr The operator address to look up.
+    /// @return connectionString The connection string (empty if not yet registered).
     function getConnectionString(address addr) external view returns (string memory connectionString);
 
-    /// @param addr The address to look up.
-    /// @return sourceChain The source chain name hash.
+    /// @param addr The operator address to look up.
+    /// @return sourceChain The keccak256 hash of the source chain name (zero if not asserted).
     function getSourceChain(address addr) external view returns (bytes32 sourceChain);
 
-    /// @param owner            Address that registered.
+    /// @param owner            Operator address that registered.
     /// @param did              The DID bytes.
     /// @param connectionString The connection string.
+    /// @param sourceChain      The source chain name from the indexer's assertion.
+    /// @param sourceChainId    The source chain id from the indexer's assertion.
     event Registered(
         address indexed owner,
         bytes did,
