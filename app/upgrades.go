@@ -7,10 +7,13 @@ import (
 
 	"github.com/shinzonetwork/shinzohub/app/upgrades"
 	"github.com/shinzonetwork/shinzohub/app/upgrades/noop"
+	"github.com/shinzonetwork/shinzohub/app/upgrades/wipe_indexer"
 )
 
 // Upgrades list of chain upgrades
-var Upgrades = []upgrades.Upgrade{}
+var Upgrades = []upgrades.Upgrade{
+	wipe_indexer.NewUpgrade(),
+}
 
 // RegisterUpgradeHandlers registers the chain upgrade handlers
 func (app *ChainApp) RegisterUpgradeHandlers() {
