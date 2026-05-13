@@ -3,10 +3,6 @@ package keeper
 import (
 	"context"
 
-	sdk "github.com/cosmos/cosmos-sdk/types"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
-
 	"github.com/shinzonetwork/shinzohub/x/indexer/types"
 )
 
@@ -20,61 +16,32 @@ func NewQueryServerImpl(k Keeper) types.QueryServer {
 	return &queryServer{Keeper: k}
 }
 
-func (q queryServer) Indexers(goCtx context.Context, req *types.QueryIndexersRequest) (*types.QueryIndexersResponse, error) {
-	if req == nil {
-		return nil, status.Error(codes.InvalidArgument, "empty request")
-	}
+// TODO: real implementations land in the queries commit.
 
-	ctx := sdk.UnwrapSDKContext(goCtx)
-	indexers, pageRes, err := q.Keeper.GetAllIndexers(ctx, req.Pagination)
-	if err != nil {
-		return nil, status.Error(codes.Internal, err.Error())
-	}
-
-	return &types.QueryIndexersResponse{
-		Indexers:   indexers,
-		Pagination: pageRes,
-	}, nil
+func (q queryServer) Indexers(
+	_ context.Context,
+	_ *types.QueryIndexersRequest,
+) (*types.QueryIndexersResponse, error) {
+	return nil, errUnimplemented("Indexers")
 }
 
-func (q queryServer) Indexer(goCtx context.Context, req *types.QueryIndexerRequest) (*types.QueryIndexerResponse, error) {
-	if req == nil {
-		return nil, status.Error(codes.InvalidArgument, "empty request")
-	}
-
-	ctx := sdk.UnwrapSDKContext(goCtx)
-	indexer, found, err := q.Keeper.GetIndexer(ctx, req.Address)
-	if err != nil {
-		return nil, status.Error(codes.Internal, err.Error())
-	}
-	if !found {
-		return nil, status.Error(codes.NotFound, "indexer not found")
-	}
-
-	return &types.QueryIndexerResponse{Indexer: indexer}, nil
+func (q queryServer) Indexer(
+	_ context.Context,
+	_ *types.QueryIndexerRequest,
+) (*types.QueryIndexerResponse, error) {
+	return nil, errUnimplemented("Indexer")
 }
 
-func (q queryServer) IndexerCount(goCtx context.Context, req *types.QueryIndexerCountRequest) (*types.QueryIndexerCountResponse, error) {
-	if req == nil {
-		return nil, status.Error(codes.InvalidArgument, "empty request")
-	}
-
-	ctx := sdk.UnwrapSDKContext(goCtx)
-	count := q.Keeper.GetIndexerCount(ctx)
-
-	return &types.QueryIndexerCountResponse{Count: count}, nil
+func (q queryServer) IndexerByAddress(
+	_ context.Context,
+	_ *types.QueryIndexerByAddressRequest,
+) (*types.QueryIndexerByAddressResponse, error) {
+	return nil, errUnimplemented("IndexerByAddress")
 }
 
-func (q queryServer) IndexerAssertions(goCtx context.Context, req *types.QueryIndexerAssertionsRequest) (*types.QueryIndexerAssertionsResponse, error) {
-	if req == nil {
-		return nil, status.Error(codes.InvalidArgument, "empty request")
-	}
-
-	ctx := sdk.UnwrapSDKContext(goCtx)
-	assertions, err := q.Keeper.GetAssertionsByDelegate(ctx, req.Address)
-	if err != nil {
-		return nil, status.Error(codes.Internal, err.Error())
-	}
-
-	return &types.QueryIndexerAssertionsResponse{Assertions: assertions}, nil
+func (q queryServer) IndexerCount(
+	_ context.Context,
+	_ *types.QueryIndexerCountRequest,
+) (*types.QueryIndexerCountResponse, error) {
+	return nil, errUnimplemented("IndexerCount")
 }
