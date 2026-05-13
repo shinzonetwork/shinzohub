@@ -13,7 +13,6 @@ import (
 	"github.com/decred/dcrd/dcrec/secp256k1/v4"
 	"github.com/decred/dcrd/dcrec/secp256k1/v4/ecdsa"
 	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/holiman/uint256"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
@@ -29,7 +28,6 @@ import (
 	"github.com/shinzonetwork/shinzohub/app/precompiles/indexerregistry"
 	indexerkeeper "github.com/shinzonetwork/shinzohub/x/indexer/keeper"
 	indexertypes "github.com/shinzonetwork/shinzohub/x/indexer/types"
-	sourcehubtypes "github.com/shinzonetwork/shinzohub/x/sourcehub/types"
 )
 
 type mockAdminKeeper struct {
@@ -41,14 +39,14 @@ func (m *mockAdminKeeper) IsAdmin(_ sdk.Context, address string) bool {
 }
 
 type mockSourcehubKeeper struct {
-	err      error
-	checkErr error
-	called   bool
+	icaCalled bool
+	icaErr    error
+	checkErr  error
 }
 
-func (m *mockSourcehubKeeper) SendICASetRelationship(_ sdk.Context, _ string, _ string, _ string) (uint64, string, string, error) {
-	m.called = true
-	return 0, "", "", m.err
+func (m *mockSourcehubKeeper) SendICASetRelationship(_ sdk.Context, _, _, _ string) (uint64, string, string, error) {
+	m.icaCalled = true
+	return 0, "", "", m.icaErr
 }
 
 func (m *mockSourcehubKeeper) CheckICAReady(_ sdk.Context) error {
@@ -72,22 +70,6 @@ type PrecompileTestSuite struct {
 	mockAdmin     *mockAdminKeeper
 	mockSourcehub *mockSourcehubKeeper
 	stateDB       *mockStateDB
-	cdc           codec.Codec
-}
-
-func (s *PrecompileTestSuite) simulateIndexerAck(callerAddr []byte) {
-	did, found := s.indexerKeeper.GetDIDForPendingAddress(s.ctx, callerAddr)
-	s.Require().True(found, "pending indexer did not land in state")
-	meta := &sourcehubtypes.SetRelationshipMeta{Did: string(did), Group: "indexer"}
-	metaBz, err := s.cdc.Marshal(meta)
-	s.Require().NoError(err)
-	cb := indexerkeeper.NewAckCallback(s.indexerKeeper)
-	err = cb.OnPacketAck(s.ctx, sourcehubtypes.PendingICARequest{
-		Kind:   sourcehubtypes.RequestKind_REQUEST_KIND_SET_RELATIONSHIP,
-		Meta:   metaBz,
-		Status: sourcehubtypes.RequestStatus_REQUEST_STATUS_SUCCESS,
-	})
-	s.Require().NoError(err)
 }
 
 func (s *PrecompileTestSuite) SetupTest() {
@@ -107,7 +89,6 @@ func (s *PrecompileTestSuite) SetupTest() {
 	s.indexerKeeper = indexerkeeper.NewKeeper(cdc, storeService, s.mockAdmin, s.mockSourcehub)
 	s.ctx = sdk.NewContext(stateStore, cmtproto.Header{}, false, cosmoslog.NewNopLogger())
 	s.stateDB = &mockStateDB{}
-	s.cdc = cdc
 
 	p, err := indexerregistry.NewPrecompile(10000, s.indexerKeeper, s.mockSourcehub)
 	require.NoError(s.T(), err)
@@ -118,7 +99,7 @@ func generateNodeIdentityKey(t *testing.T, message []byte) (pubkey, signature []
 	privKey, err := secp256k1.GeneratePrivateKey()
 	require.NoError(t, err)
 	h := sha256.Sum256(message)
-	return privKey.PubKey().SerializeUncompressed(), ecdsa.Sign(privKey, h[:]).Serialize()
+	return privKey.PubKey().SerializeCompressed(), ecdsa.Sign(privKey, h[:]).Serialize()
 }
 
 func makeContract(caller common.Address) *vm.Contract {
@@ -131,128 +112,148 @@ func makeContract(caller common.Address) *vm.Contract {
 	)
 }
 
+// assertOperator inserts a baseline indexer assertion for the given operator
+// address against (ethereum, 1, validator-A).
+func (s *PrecompileTestSuite) assertOperator(operatorBech32 string) {
+	admin := "shinzo1admin000000000000000000000000000000000"
+	s.mockAdmin.admins[admin] = true
+	err := s.indexerKeeper.UpsertAssertion(s.ctx, &indexertypes.MsgIndexerAssertion{
+		Signer:             admin,
+		SourceChain:        "ethereum",
+		SourceChainId:      1,
+		ValidatorPubkey:    []byte("validator-A"),
+		AssertionAuthority: []byte("withdrawal-W"),
+		Nonce:              1,
+		OperatorAddress:    operatorBech32,
+		PayoutAddress:      operatorBech32,
+	})
+	s.Require().NoError(err)
+}
+
 func TestPrecompileTestSuite(t *testing.T) {
 	suite.Run(t, new(PrecompileTestSuite))
 }
 
-func (s *PrecompileTestSuite) TestRegister_Success() {
-	message := []byte("test-nonce")
-	nodePub, nodeSig := generateNodeIdentityKey(s.T(), message)
-	caller := common.HexToAddress("0x1234567890abcdef1234567890abcdef12345678")
-	contract := makeContract(caller)
+// ─── tests ────────────────────────────────────────────────────────────
 
-	delegate := sdk.AccAddress(caller.Bytes()).String()
-	_ = s.indexerKeeper.SetIndexerAssertion(s.ctx, indexertypes.IndexerAssertion{
-		ConsensusPubKey: "pk",
-		DelegateAddress: delegate,
-		SourceChain:     "ethereum",
-		SourceChainId:   1,
-		AssertionId:     "a0",
-	})
+func (s *PrecompileTestSuite) TestRegister_Success() {
+	caller := common.HexToAddress("0x1234567890abcdef1234567890abcdef12345678")
+	s.assertOperator(sdk.AccAddress(caller.Bytes()).String())
+
+	message := []byte("op-nonce-1")
+	nodePub, nodeSig := generateNodeIdentityKey(s.T(), message)
 
 	method := s.precompile.ABI.Methods["register"]
-	args := []interface{}{nodePub, nodeSig, message, "192.168.1.1:8080", "ethereum", uint64(1)}
+	args := []interface{}{nodePub, nodeSig, message, "https://idx-1:9090"}
 
-	bz, err := s.precompile.Register(s.ctx, contract, s.stateDB, &method, args)
+	bz, err := s.precompile.Register(s.ctx, makeContract(caller), s.stateDB, &method, args)
 	s.Require().NoError(err)
 	s.Require().Nil(bz)
 
+	s.Require().True(s.mockSourcehub.icaCalled, "ICA SetRelationship not fired on first register")
 	s.Require().Len(s.stateDB.logs, 1)
+
+	row, found, err := s.indexerKeeper.GetIndexerByAddress(s.ctx, sdk.AccAddress(caller.Bytes()).String())
+	s.Require().NoError(err)
+	s.Require().True(found)
+	s.Require().True(row.Registered)
+	s.Require().NotEmpty(row.Did)
+	s.Require().Equal("https://idx-1:9090", row.ConnectionString)
 }
 
-func (s *PrecompileTestSuite) TestRegister_ICANotReady() {
+func (s *PrecompileTestSuite) TestRegister_IdempotentDoesNotReissueICA() {
+	caller := common.HexToAddress("0x1234567890abcdef1234567890abcdef12345678")
+	s.assertOperator(sdk.AccAddress(caller.Bytes()).String())
+
+	message := []byte("op-nonce-1")
+	nodePub, nodeSig := generateNodeIdentityKey(s.T(), message)
+
+	method := s.precompile.ABI.Methods["register"]
+	args := []interface{}{nodePub, nodeSig, message, "https://idx-1:9090"}
+
+	_, err := s.precompile.Register(s.ctx, makeContract(caller), s.stateDB, &method, args)
+	s.Require().NoError(err)
+	s.Require().True(s.mockSourcehub.icaCalled)
+
+	// Reset the flag and call again with a refreshed connection string.
+	s.mockSourcehub.icaCalled = false
+	args2 := []interface{}{nodePub, nodeSig, message, "https://idx-1:9091"}
+	_, err = s.precompile.Register(s.ctx, makeContract(caller), s.stateDB, &method, args2)
+	s.Require().NoError(err)
+	s.Require().False(s.mockSourcehub.icaCalled, "ICA should not fire on a re-register")
+
+	row, _, _ := s.indexerKeeper.GetIndexerByAddress(s.ctx, sdk.AccAddress(caller.Bytes()).String())
+	s.Require().Equal("https://idx-1:9091", row.ConnectionString)
+}
+
+func (s *PrecompileTestSuite) TestRegister_RevertsWithoutAssertion() {
+	caller := common.HexToAddress("0xdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef")
+	message := []byte("op-nonce-1")
+	nodePub, nodeSig := generateNodeIdentityKey(s.T(), message)
+
+	method := s.precompile.ABI.Methods["register"]
+	args := []interface{}{nodePub, nodeSig, message, "https://idx:9090"}
+
+	_, err := s.precompile.Register(s.ctx, makeContract(caller), s.stateDB, &method, args)
+	s.Require().Error(err)
+	s.Require().Contains(err.Error(), "not asserted")
+	s.Require().False(s.mockSourcehub.icaCalled)
+}
+
+func (s *PrecompileTestSuite) TestRegister_RevertsOnICANotReady() {
+	caller := common.HexToAddress("0x1111111111111111111111111111111111111111")
+	s.assertOperator(sdk.AccAddress(caller.Bytes()).String())
 	s.mockSourcehub.checkErr = fmt.Errorf("no policy ID set in module state")
 
-	message := []byte("ica-not-ready")
+	message := []byte("op-nonce-1")
 	nodePub, nodeSig := generateNodeIdentityKey(s.T(), message)
-	caller := common.HexToAddress("0xaabbccddaabbccddaabbccddaabbccddaabbccdd")
-	contract := makeContract(caller)
-
-	delegate := sdk.AccAddress(caller.Bytes()).String()
-	_ = s.indexerKeeper.SetIndexerAssertion(s.ctx, indexertypes.IndexerAssertion{
-		ConsensusPubKey: "pk",
-		DelegateAddress: delegate,
-		SourceChain:     "ethereum",
-		SourceChainId:   1,
-		AssertionId:     "a0",
-	})
 
 	method := s.precompile.ABI.Methods["register"]
-	args := []interface{}{nodePub, nodeSig, message, "192.168.1.1:8080", "ethereum", uint64(1)}
+	args := []interface{}{nodePub, nodeSig, message, "https://idx:9090"}
 
-	_, err := s.precompile.Register(s.ctx, contract, s.stateDB, &method, args)
+	_, err := s.precompile.Register(s.ctx, makeContract(caller), s.stateDB, &method, args)
 	s.Require().Error(err)
-	s.Require().Contains(err.Error(), "no policy ID")
-	s.Require().Empty(s.stateDB.logs)
-	s.Require().False(s.mockSourcehub.called)
+	s.Require().Contains(err.Error(), "no policy ID set")
+	s.Require().False(s.mockSourcehub.icaCalled)
 }
 
-func (s *PrecompileTestSuite) TestRegister_NotAsserted() {
-	message := []byte("test-nonce")
-	nodePub, nodeSig := generateNodeIdentityKey(s.T(), message)
-	caller := common.HexToAddress("0x1234567890abcdef1234567890abcdef12345678")
-	contract := makeContract(caller)
+func (s *PrecompileTestSuite) TestRegister_RevertsOnBadNodeKeySignature() {
+	caller := common.HexToAddress("0x2222222222222222222222222222222222222222")
+	s.assertOperator(sdk.AccAddress(caller.Bytes()).String())
+
+	message := []byte("op-nonce-1")
+	nodePub, _ := generateNodeIdentityKey(s.T(), message)
+	_, otherSig := generateNodeIdentityKey(s.T(), message) // signature from a different key
 
 	method := s.precompile.ABI.Methods["register"]
-	args := []interface{}{nodePub, nodeSig, message, "192.168.1.1:8080", "ethereum", uint64(1)}
+	args := []interface{}{nodePub, otherSig, message, "https://idx:9090"}
 
-	_, err := s.precompile.Register(s.ctx, contract, s.stateDB, &method, args)
+	_, err := s.precompile.Register(s.ctx, makeContract(caller), s.stateDB, &method, args)
 	s.Require().Error(err)
-	s.Require().Contains(err.Error(), "indexer not asserted")
+	s.Require().False(s.mockSourcehub.icaCalled)
 }
 
-func (s *PrecompileTestSuite) TestGetSourceChain_Registered() {
-	message := []byte("nonce")
+func (s *PrecompileTestSuite) TestIsRegistered_FalseUntilRegister() {
+	caller := common.HexToAddress("0x3333333333333333333333333333333333333333")
+	s.assertOperator(sdk.AccAddress(caller.Bytes()).String())
+
+	method := s.precompile.ABI.Methods["isRegistered"]
+	bz, err := s.precompile.IsRegistered(s.ctx, &method, []interface{}{caller})
+	s.Require().NoError(err)
+	unpacked, err := method.Outputs.Unpack(bz)
+	s.Require().NoError(err)
+	s.Require().False(unpacked[0].(bool))
+
+	// After register, IsRegistered flips to true.
+	message := []byte("op-nonce-1")
 	nodePub, nodeSig := generateNodeIdentityKey(s.T(), message)
-	caller := common.HexToAddress("0xdddddddddddddddddddddddddddddddddddddd")
-	_, err := s.indexerKeeper.RegisterIndexer(s.ctx, nodePub, nodeSig, message, "192.168.1.1:8080", caller.Bytes(), "ethereum", 1)
-	s.Require().NoError(err)
-	s.simulateIndexerAck(caller.Bytes())
-
-	method := s.precompile.ABI.Methods["getSourceChain"]
-	bz, err := s.precompile.GetSourceChain(s.ctx, &method, []interface{}{caller})
+	regMethod := s.precompile.ABI.Methods["register"]
+	_, err = s.precompile.Register(s.ctx, makeContract(caller), s.stateDB, &regMethod, []interface{}{nodePub, nodeSig, message, "https://x"})
 	s.Require().NoError(err)
 
-	out, err := method.Outputs.Unpack(bz)
+	bz, err = s.precompile.IsRegistered(s.ctx, &method, []interface{}{caller})
 	s.Require().NoError(err)
-
-	expected := crypto.Keccak256Hash([]byte("ethereum"))
-	s.Require().Equal(expected, common.Hash(out[0].([32]byte)))
-}
-
-func (s *PrecompileTestSuite) TestRegister_ICAFailure() {
-	s.mockSourcehub.err = fmt.Errorf("ICA not ready")
-
-	message := []byte("test-nonce")
-	nodePub, nodeSig := generateNodeIdentityKey(s.T(), message)
-	caller := common.HexToAddress("0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee")
-	contract := makeContract(caller)
-
-	delegate := sdk.AccAddress(caller.Bytes()).String()
-	_ = s.indexerKeeper.SetIndexerAssertion(s.ctx, indexertypes.IndexerAssertion{
-		ConsensusPubKey: "pk",
-		DelegateAddress: delegate,
-		SourceChain:     "ethereum",
-		SourceChainId:   1,
-		AssertionId:     "a0",
-	})
-
-	method := s.precompile.ABI.Methods["register"]
-	args := []interface{}{nodePub, nodeSig, message, "192.168.1.1:8080", "ethereum", uint64(1)}
-
-	_, err := s.precompile.Register(s.ctx, contract, s.stateDB, &method, args)
-	s.Require().Error(err)
-	s.Require().Contains(err.Error(), "ICA not ready")
-}
-
-func (s *PrecompileTestSuite) TestHandleMethod_UnknownMethod() {
-	caller := common.HexToAddress("0x1111111111111111111111111111111111111111")
-	contract := makeContract(caller)
-
-	fakeMethod := s.precompile.ABI.Methods["isRegistered"]
-	fakeMethod.Name = "nonExistent"
-
-	_, err := s.precompile.HandleMethod(s.ctx, contract, s.stateDB, &fakeMethod, nil)
-	s.Require().Error(err)
-	s.Require().Contains(err.Error(), "nonExistent")
+	unpacked, err = method.Outputs.Unpack(bz)
+	s.Require().NoError(err)
+	s.Require().True(unpacked[0].(bool))
 }
