@@ -14,22 +14,34 @@ import (
 )
 
 var (
-	md_Indexer                   protoreflect.MessageDescriptor
-	fd_Indexer_address           protoreflect.FieldDescriptor
-	fd_Indexer_did               protoreflect.FieldDescriptor
-	fd_Indexer_connection_string protoreflect.FieldDescriptor
-	fd_Indexer_source_chain      protoreflect.FieldDescriptor
-	fd_Indexer_source_chain_id   protoreflect.FieldDescriptor
+	md_Indexer                     protoreflect.MessageDescriptor
+	fd_Indexer_source_chain        protoreflect.FieldDescriptor
+	fd_Indexer_source_chain_id     protoreflect.FieldDescriptor
+	fd_Indexer_validator_pubkey    protoreflect.FieldDescriptor
+	fd_Indexer_assertion_authority protoreflect.FieldDescriptor
+	fd_Indexer_nonce               protoreflect.FieldDescriptor
+	fd_Indexer_chain_specific      protoreflect.FieldDescriptor
+	fd_Indexer_operator_address    protoreflect.FieldDescriptor
+	fd_Indexer_payout_address      protoreflect.FieldDescriptor
+	fd_Indexer_registered          protoreflect.FieldDescriptor
+	fd_Indexer_did                 protoreflect.FieldDescriptor
+	fd_Indexer_connection_string   protoreflect.FieldDescriptor
 )
 
 func init() {
 	file_shinzonetwork_indexer_v1_indexer_proto_init()
 	md_Indexer = File_shinzonetwork_indexer_v1_indexer_proto.Messages().ByName("Indexer")
-	fd_Indexer_address = md_Indexer.Fields().ByName("address")
-	fd_Indexer_did = md_Indexer.Fields().ByName("did")
-	fd_Indexer_connection_string = md_Indexer.Fields().ByName("connection_string")
 	fd_Indexer_source_chain = md_Indexer.Fields().ByName("source_chain")
 	fd_Indexer_source_chain_id = md_Indexer.Fields().ByName("source_chain_id")
+	fd_Indexer_validator_pubkey = md_Indexer.Fields().ByName("validator_pubkey")
+	fd_Indexer_assertion_authority = md_Indexer.Fields().ByName("assertion_authority")
+	fd_Indexer_nonce = md_Indexer.Fields().ByName("nonce")
+	fd_Indexer_chain_specific = md_Indexer.Fields().ByName("chain_specific")
+	fd_Indexer_operator_address = md_Indexer.Fields().ByName("operator_address")
+	fd_Indexer_payout_address = md_Indexer.Fields().ByName("payout_address")
+	fd_Indexer_registered = md_Indexer.Fields().ByName("registered")
+	fd_Indexer_did = md_Indexer.Fields().ByName("did")
+	fd_Indexer_connection_string = md_Indexer.Fields().ByName("connection_string")
 }
 
 var _ protoreflect.Message = (*fastReflection_Indexer)(nil)
@@ -97,9 +109,57 @@ func (x *fastReflection_Indexer) Interface() protoreflect.ProtoMessage {
 // While iterating, mutating operations may only be performed
 // on the current field descriptor.
 func (x *fastReflection_Indexer) Range(f func(protoreflect.FieldDescriptor, protoreflect.Value) bool) {
-	if x.Address != "" {
-		value := protoreflect.ValueOfString(x.Address)
-		if !f(fd_Indexer_address, value) {
+	if x.SourceChain != "" {
+		value := protoreflect.ValueOfString(x.SourceChain)
+		if !f(fd_Indexer_source_chain, value) {
+			return
+		}
+	}
+	if x.SourceChainId != uint64(0) {
+		value := protoreflect.ValueOfUint64(x.SourceChainId)
+		if !f(fd_Indexer_source_chain_id, value) {
+			return
+		}
+	}
+	if len(x.ValidatorPubkey) != 0 {
+		value := protoreflect.ValueOfBytes(x.ValidatorPubkey)
+		if !f(fd_Indexer_validator_pubkey, value) {
+			return
+		}
+	}
+	if len(x.AssertionAuthority) != 0 {
+		value := protoreflect.ValueOfBytes(x.AssertionAuthority)
+		if !f(fd_Indexer_assertion_authority, value) {
+			return
+		}
+	}
+	if x.Nonce != uint64(0) {
+		value := protoreflect.ValueOfUint64(x.Nonce)
+		if !f(fd_Indexer_nonce, value) {
+			return
+		}
+	}
+	if len(x.ChainSpecific) != 0 {
+		value := protoreflect.ValueOfBytes(x.ChainSpecific)
+		if !f(fd_Indexer_chain_specific, value) {
+			return
+		}
+	}
+	if x.OperatorAddress != "" {
+		value := protoreflect.ValueOfString(x.OperatorAddress)
+		if !f(fd_Indexer_operator_address, value) {
+			return
+		}
+	}
+	if x.PayoutAddress != "" {
+		value := protoreflect.ValueOfString(x.PayoutAddress)
+		if !f(fd_Indexer_payout_address, value) {
+			return
+		}
+	}
+	if x.Registered != false {
+		value := protoreflect.ValueOfBool(x.Registered)
+		if !f(fd_Indexer_registered, value) {
 			return
 		}
 	}
@@ -112,18 +172,6 @@ func (x *fastReflection_Indexer) Range(f func(protoreflect.FieldDescriptor, prot
 	if x.ConnectionString != "" {
 		value := protoreflect.ValueOfString(x.ConnectionString)
 		if !f(fd_Indexer_connection_string, value) {
-			return
-		}
-	}
-	if x.SourceChain != "" {
-		value := protoreflect.ValueOfString(x.SourceChain)
-		if !f(fd_Indexer_source_chain, value) {
-			return
-		}
-	}
-	if x.SourceChainId != uint64(0) {
-		value := protoreflect.ValueOfUint64(x.SourceChainId)
-		if !f(fd_Indexer_source_chain_id, value) {
 			return
 		}
 	}
@@ -142,16 +190,28 @@ func (x *fastReflection_Indexer) Range(f func(protoreflect.FieldDescriptor, prot
 // a repeated field is populated if it is non-empty.
 func (x *fastReflection_Indexer) Has(fd protoreflect.FieldDescriptor) bool {
 	switch fd.FullName() {
-	case "shinzonetwork.indexer.v1.Indexer.address":
-		return x.Address != ""
-	case "shinzonetwork.indexer.v1.Indexer.did":
-		return x.Did != ""
-	case "shinzonetwork.indexer.v1.Indexer.connection_string":
-		return x.ConnectionString != ""
 	case "shinzonetwork.indexer.v1.Indexer.source_chain":
 		return x.SourceChain != ""
 	case "shinzonetwork.indexer.v1.Indexer.source_chain_id":
 		return x.SourceChainId != uint64(0)
+	case "shinzonetwork.indexer.v1.Indexer.validator_pubkey":
+		return len(x.ValidatorPubkey) != 0
+	case "shinzonetwork.indexer.v1.Indexer.assertion_authority":
+		return len(x.AssertionAuthority) != 0
+	case "shinzonetwork.indexer.v1.Indexer.nonce":
+		return x.Nonce != uint64(0)
+	case "shinzonetwork.indexer.v1.Indexer.chain_specific":
+		return len(x.ChainSpecific) != 0
+	case "shinzonetwork.indexer.v1.Indexer.operator_address":
+		return x.OperatorAddress != ""
+	case "shinzonetwork.indexer.v1.Indexer.payout_address":
+		return x.PayoutAddress != ""
+	case "shinzonetwork.indexer.v1.Indexer.registered":
+		return x.Registered != false
+	case "shinzonetwork.indexer.v1.Indexer.did":
+		return x.Did != ""
+	case "shinzonetwork.indexer.v1.Indexer.connection_string":
+		return x.ConnectionString != ""
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: shinzonetwork.indexer.v1.Indexer"))
@@ -168,16 +228,28 @@ func (x *fastReflection_Indexer) Has(fd protoreflect.FieldDescriptor) bool {
 // Clear is a mutating operation and unsafe for concurrent use.
 func (x *fastReflection_Indexer) Clear(fd protoreflect.FieldDescriptor) {
 	switch fd.FullName() {
-	case "shinzonetwork.indexer.v1.Indexer.address":
-		x.Address = ""
-	case "shinzonetwork.indexer.v1.Indexer.did":
-		x.Did = ""
-	case "shinzonetwork.indexer.v1.Indexer.connection_string":
-		x.ConnectionString = ""
 	case "shinzonetwork.indexer.v1.Indexer.source_chain":
 		x.SourceChain = ""
 	case "shinzonetwork.indexer.v1.Indexer.source_chain_id":
 		x.SourceChainId = uint64(0)
+	case "shinzonetwork.indexer.v1.Indexer.validator_pubkey":
+		x.ValidatorPubkey = nil
+	case "shinzonetwork.indexer.v1.Indexer.assertion_authority":
+		x.AssertionAuthority = nil
+	case "shinzonetwork.indexer.v1.Indexer.nonce":
+		x.Nonce = uint64(0)
+	case "shinzonetwork.indexer.v1.Indexer.chain_specific":
+		x.ChainSpecific = nil
+	case "shinzonetwork.indexer.v1.Indexer.operator_address":
+		x.OperatorAddress = ""
+	case "shinzonetwork.indexer.v1.Indexer.payout_address":
+		x.PayoutAddress = ""
+	case "shinzonetwork.indexer.v1.Indexer.registered":
+		x.Registered = false
+	case "shinzonetwork.indexer.v1.Indexer.did":
+		x.Did = ""
+	case "shinzonetwork.indexer.v1.Indexer.connection_string":
+		x.ConnectionString = ""
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: shinzonetwork.indexer.v1.Indexer"))
@@ -194,21 +266,39 @@ func (x *fastReflection_Indexer) Clear(fd protoreflect.FieldDescriptor) {
 // of the value; to obtain a mutable reference, use Mutable.
 func (x *fastReflection_Indexer) Get(descriptor protoreflect.FieldDescriptor) protoreflect.Value {
 	switch descriptor.FullName() {
-	case "shinzonetwork.indexer.v1.Indexer.address":
-		value := x.Address
-		return protoreflect.ValueOfString(value)
-	case "shinzonetwork.indexer.v1.Indexer.did":
-		value := x.Did
-		return protoreflect.ValueOfString(value)
-	case "shinzonetwork.indexer.v1.Indexer.connection_string":
-		value := x.ConnectionString
-		return protoreflect.ValueOfString(value)
 	case "shinzonetwork.indexer.v1.Indexer.source_chain":
 		value := x.SourceChain
 		return protoreflect.ValueOfString(value)
 	case "shinzonetwork.indexer.v1.Indexer.source_chain_id":
 		value := x.SourceChainId
 		return protoreflect.ValueOfUint64(value)
+	case "shinzonetwork.indexer.v1.Indexer.validator_pubkey":
+		value := x.ValidatorPubkey
+		return protoreflect.ValueOfBytes(value)
+	case "shinzonetwork.indexer.v1.Indexer.assertion_authority":
+		value := x.AssertionAuthority
+		return protoreflect.ValueOfBytes(value)
+	case "shinzonetwork.indexer.v1.Indexer.nonce":
+		value := x.Nonce
+		return protoreflect.ValueOfUint64(value)
+	case "shinzonetwork.indexer.v1.Indexer.chain_specific":
+		value := x.ChainSpecific
+		return protoreflect.ValueOfBytes(value)
+	case "shinzonetwork.indexer.v1.Indexer.operator_address":
+		value := x.OperatorAddress
+		return protoreflect.ValueOfString(value)
+	case "shinzonetwork.indexer.v1.Indexer.payout_address":
+		value := x.PayoutAddress
+		return protoreflect.ValueOfString(value)
+	case "shinzonetwork.indexer.v1.Indexer.registered":
+		value := x.Registered
+		return protoreflect.ValueOfBool(value)
+	case "shinzonetwork.indexer.v1.Indexer.did":
+		value := x.Did
+		return protoreflect.ValueOfString(value)
+	case "shinzonetwork.indexer.v1.Indexer.connection_string":
+		value := x.ConnectionString
+		return protoreflect.ValueOfString(value)
 	default:
 		if descriptor.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: shinzonetwork.indexer.v1.Indexer"))
@@ -229,16 +319,28 @@ func (x *fastReflection_Indexer) Get(descriptor protoreflect.FieldDescriptor) pr
 // Set is a mutating operation and unsafe for concurrent use.
 func (x *fastReflection_Indexer) Set(fd protoreflect.FieldDescriptor, value protoreflect.Value) {
 	switch fd.FullName() {
-	case "shinzonetwork.indexer.v1.Indexer.address":
-		x.Address = value.Interface().(string)
-	case "shinzonetwork.indexer.v1.Indexer.did":
-		x.Did = value.Interface().(string)
-	case "shinzonetwork.indexer.v1.Indexer.connection_string":
-		x.ConnectionString = value.Interface().(string)
 	case "shinzonetwork.indexer.v1.Indexer.source_chain":
 		x.SourceChain = value.Interface().(string)
 	case "shinzonetwork.indexer.v1.Indexer.source_chain_id":
 		x.SourceChainId = value.Uint()
+	case "shinzonetwork.indexer.v1.Indexer.validator_pubkey":
+		x.ValidatorPubkey = value.Bytes()
+	case "shinzonetwork.indexer.v1.Indexer.assertion_authority":
+		x.AssertionAuthority = value.Bytes()
+	case "shinzonetwork.indexer.v1.Indexer.nonce":
+		x.Nonce = value.Uint()
+	case "shinzonetwork.indexer.v1.Indexer.chain_specific":
+		x.ChainSpecific = value.Bytes()
+	case "shinzonetwork.indexer.v1.Indexer.operator_address":
+		x.OperatorAddress = value.Interface().(string)
+	case "shinzonetwork.indexer.v1.Indexer.payout_address":
+		x.PayoutAddress = value.Interface().(string)
+	case "shinzonetwork.indexer.v1.Indexer.registered":
+		x.Registered = value.Bool()
+	case "shinzonetwork.indexer.v1.Indexer.did":
+		x.Did = value.Interface().(string)
+	case "shinzonetwork.indexer.v1.Indexer.connection_string":
+		x.ConnectionString = value.Interface().(string)
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: shinzonetwork.indexer.v1.Indexer"))
@@ -259,16 +361,28 @@ func (x *fastReflection_Indexer) Set(fd protoreflect.FieldDescriptor, value prot
 // Mutable is a mutating operation and unsafe for concurrent use.
 func (x *fastReflection_Indexer) Mutable(fd protoreflect.FieldDescriptor) protoreflect.Value {
 	switch fd.FullName() {
-	case "shinzonetwork.indexer.v1.Indexer.address":
-		panic(fmt.Errorf("field address of message shinzonetwork.indexer.v1.Indexer is not mutable"))
-	case "shinzonetwork.indexer.v1.Indexer.did":
-		panic(fmt.Errorf("field did of message shinzonetwork.indexer.v1.Indexer is not mutable"))
-	case "shinzonetwork.indexer.v1.Indexer.connection_string":
-		panic(fmt.Errorf("field connection_string of message shinzonetwork.indexer.v1.Indexer is not mutable"))
 	case "shinzonetwork.indexer.v1.Indexer.source_chain":
 		panic(fmt.Errorf("field source_chain of message shinzonetwork.indexer.v1.Indexer is not mutable"))
 	case "shinzonetwork.indexer.v1.Indexer.source_chain_id":
 		panic(fmt.Errorf("field source_chain_id of message shinzonetwork.indexer.v1.Indexer is not mutable"))
+	case "shinzonetwork.indexer.v1.Indexer.validator_pubkey":
+		panic(fmt.Errorf("field validator_pubkey of message shinzonetwork.indexer.v1.Indexer is not mutable"))
+	case "shinzonetwork.indexer.v1.Indexer.assertion_authority":
+		panic(fmt.Errorf("field assertion_authority of message shinzonetwork.indexer.v1.Indexer is not mutable"))
+	case "shinzonetwork.indexer.v1.Indexer.nonce":
+		panic(fmt.Errorf("field nonce of message shinzonetwork.indexer.v1.Indexer is not mutable"))
+	case "shinzonetwork.indexer.v1.Indexer.chain_specific":
+		panic(fmt.Errorf("field chain_specific of message shinzonetwork.indexer.v1.Indexer is not mutable"))
+	case "shinzonetwork.indexer.v1.Indexer.operator_address":
+		panic(fmt.Errorf("field operator_address of message shinzonetwork.indexer.v1.Indexer is not mutable"))
+	case "shinzonetwork.indexer.v1.Indexer.payout_address":
+		panic(fmt.Errorf("field payout_address of message shinzonetwork.indexer.v1.Indexer is not mutable"))
+	case "shinzonetwork.indexer.v1.Indexer.registered":
+		panic(fmt.Errorf("field registered of message shinzonetwork.indexer.v1.Indexer is not mutable"))
+	case "shinzonetwork.indexer.v1.Indexer.did":
+		panic(fmt.Errorf("field did of message shinzonetwork.indexer.v1.Indexer is not mutable"))
+	case "shinzonetwork.indexer.v1.Indexer.connection_string":
+		panic(fmt.Errorf("field connection_string of message shinzonetwork.indexer.v1.Indexer is not mutable"))
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: shinzonetwork.indexer.v1.Indexer"))
@@ -282,16 +396,28 @@ func (x *fastReflection_Indexer) Mutable(fd protoreflect.FieldDescriptor) protor
 // For lists, maps, and messages, this returns a new, empty, mutable value.
 func (x *fastReflection_Indexer) NewField(fd protoreflect.FieldDescriptor) protoreflect.Value {
 	switch fd.FullName() {
-	case "shinzonetwork.indexer.v1.Indexer.address":
-		return protoreflect.ValueOfString("")
-	case "shinzonetwork.indexer.v1.Indexer.did":
-		return protoreflect.ValueOfString("")
-	case "shinzonetwork.indexer.v1.Indexer.connection_string":
-		return protoreflect.ValueOfString("")
 	case "shinzonetwork.indexer.v1.Indexer.source_chain":
 		return protoreflect.ValueOfString("")
 	case "shinzonetwork.indexer.v1.Indexer.source_chain_id":
 		return protoreflect.ValueOfUint64(uint64(0))
+	case "shinzonetwork.indexer.v1.Indexer.validator_pubkey":
+		return protoreflect.ValueOfBytes(nil)
+	case "shinzonetwork.indexer.v1.Indexer.assertion_authority":
+		return protoreflect.ValueOfBytes(nil)
+	case "shinzonetwork.indexer.v1.Indexer.nonce":
+		return protoreflect.ValueOfUint64(uint64(0))
+	case "shinzonetwork.indexer.v1.Indexer.chain_specific":
+		return protoreflect.ValueOfBytes(nil)
+	case "shinzonetwork.indexer.v1.Indexer.operator_address":
+		return protoreflect.ValueOfString("")
+	case "shinzonetwork.indexer.v1.Indexer.payout_address":
+		return protoreflect.ValueOfString("")
+	case "shinzonetwork.indexer.v1.Indexer.registered":
+		return protoreflect.ValueOfBool(false)
+	case "shinzonetwork.indexer.v1.Indexer.did":
+		return protoreflect.ValueOfString("")
+	case "shinzonetwork.indexer.v1.Indexer.connection_string":
+		return protoreflect.ValueOfString("")
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: shinzonetwork.indexer.v1.Indexer"))
@@ -361,9 +487,38 @@ func (x *fastReflection_Indexer) ProtoMethods() *protoiface.Methods {
 		var n int
 		var l int
 		_ = l
-		l = len(x.Address)
+		l = len(x.SourceChain)
 		if l > 0 {
 			n += 1 + l + runtime.Sov(uint64(l))
+		}
+		if x.SourceChainId != 0 {
+			n += 1 + runtime.Sov(uint64(x.SourceChainId))
+		}
+		l = len(x.ValidatorPubkey)
+		if l > 0 {
+			n += 1 + l + runtime.Sov(uint64(l))
+		}
+		l = len(x.AssertionAuthority)
+		if l > 0 {
+			n += 1 + l + runtime.Sov(uint64(l))
+		}
+		if x.Nonce != 0 {
+			n += 1 + runtime.Sov(uint64(x.Nonce))
+		}
+		l = len(x.ChainSpecific)
+		if l > 0 {
+			n += 1 + l + runtime.Sov(uint64(l))
+		}
+		l = len(x.OperatorAddress)
+		if l > 0 {
+			n += 1 + l + runtime.Sov(uint64(l))
+		}
+		l = len(x.PayoutAddress)
+		if l > 0 {
+			n += 1 + l + runtime.Sov(uint64(l))
+		}
+		if x.Registered {
+			n += 2
 		}
 		l = len(x.Did)
 		if l > 0 {
@@ -372,13 +527,6 @@ func (x *fastReflection_Indexer) ProtoMethods() *protoiface.Methods {
 		l = len(x.ConnectionString)
 		if l > 0 {
 			n += 1 + l + runtime.Sov(uint64(l))
-		}
-		l = len(x.SourceChain)
-		if l > 0 {
-			n += 1 + l + runtime.Sov(uint64(l))
-		}
-		if x.SourceChainId != 0 {
-			n += 1 + runtime.Sov(uint64(x.SourceChainId))
 		}
 		if x.unknownFields != nil {
 			n += len(x.unknownFields)
@@ -409,36 +557,79 @@ func (x *fastReflection_Indexer) ProtoMethods() *protoiface.Methods {
 			i -= len(x.unknownFields)
 			copy(dAtA[i:], x.unknownFields)
 		}
-		if x.SourceChainId != 0 {
-			i = runtime.EncodeVarint(dAtA, i, uint64(x.SourceChainId))
-			i--
-			dAtA[i] = 0x28
-		}
-		if len(x.SourceChain) > 0 {
-			i -= len(x.SourceChain)
-			copy(dAtA[i:], x.SourceChain)
-			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.SourceChain)))
-			i--
-			dAtA[i] = 0x22
-		}
 		if len(x.ConnectionString) > 0 {
 			i -= len(x.ConnectionString)
 			copy(dAtA[i:], x.ConnectionString)
 			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.ConnectionString)))
 			i--
-			dAtA[i] = 0x1a
+			dAtA[i] = 0x5a
 		}
 		if len(x.Did) > 0 {
 			i -= len(x.Did)
 			copy(dAtA[i:], x.Did)
 			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.Did)))
 			i--
-			dAtA[i] = 0x12
+			dAtA[i] = 0x52
 		}
-		if len(x.Address) > 0 {
-			i -= len(x.Address)
-			copy(dAtA[i:], x.Address)
-			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.Address)))
+		if x.Registered {
+			i--
+			if x.Registered {
+				dAtA[i] = 1
+			} else {
+				dAtA[i] = 0
+			}
+			i--
+			dAtA[i] = 0x48
+		}
+		if len(x.PayoutAddress) > 0 {
+			i -= len(x.PayoutAddress)
+			copy(dAtA[i:], x.PayoutAddress)
+			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.PayoutAddress)))
+			i--
+			dAtA[i] = 0x42
+		}
+		if len(x.OperatorAddress) > 0 {
+			i -= len(x.OperatorAddress)
+			copy(dAtA[i:], x.OperatorAddress)
+			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.OperatorAddress)))
+			i--
+			dAtA[i] = 0x3a
+		}
+		if len(x.ChainSpecific) > 0 {
+			i -= len(x.ChainSpecific)
+			copy(dAtA[i:], x.ChainSpecific)
+			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.ChainSpecific)))
+			i--
+			dAtA[i] = 0x32
+		}
+		if x.Nonce != 0 {
+			i = runtime.EncodeVarint(dAtA, i, uint64(x.Nonce))
+			i--
+			dAtA[i] = 0x28
+		}
+		if len(x.AssertionAuthority) > 0 {
+			i -= len(x.AssertionAuthority)
+			copy(dAtA[i:], x.AssertionAuthority)
+			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.AssertionAuthority)))
+			i--
+			dAtA[i] = 0x22
+		}
+		if len(x.ValidatorPubkey) > 0 {
+			i -= len(x.ValidatorPubkey)
+			copy(dAtA[i:], x.ValidatorPubkey)
+			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.ValidatorPubkey)))
+			i--
+			dAtA[i] = 0x1a
+		}
+		if x.SourceChainId != 0 {
+			i = runtime.EncodeVarint(dAtA, i, uint64(x.SourceChainId))
+			i--
+			dAtA[i] = 0x10
+		}
+		if len(x.SourceChain) > 0 {
+			i -= len(x.SourceChain)
+			copy(dAtA[i:], x.SourceChain)
+			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.SourceChain)))
 			i--
 			dAtA[i] = 0xa
 		}
@@ -493,7 +684,7 @@ func (x *fastReflection_Indexer) ProtoMethods() *protoiface.Methods {
 			switch fieldNum {
 			case 1:
 				if wireType != 2 {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field Address", wireType)
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field SourceChain", wireType)
 				}
 				var stringLen uint64
 				for shift := uint(0); ; shift += 7 {
@@ -521,9 +712,233 @@ func (x *fastReflection_Indexer) ProtoMethods() *protoiface.Methods {
 				if postIndex > l {
 					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
 				}
-				x.Address = string(dAtA[iNdEx:postIndex])
+				x.SourceChain = string(dAtA[iNdEx:postIndex])
 				iNdEx = postIndex
 			case 2:
+				if wireType != 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field SourceChainId", wireType)
+				}
+				x.SourceChainId = 0
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					x.SourceChainId |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+			case 3:
+				if wireType != 2 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field ValidatorPubkey", wireType)
+				}
+				var byteLen int
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					byteLen |= int(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				if byteLen < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				postIndex := iNdEx + byteLen
+				if postIndex < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if postIndex > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				x.ValidatorPubkey = append(x.ValidatorPubkey[:0], dAtA[iNdEx:postIndex]...)
+				if x.ValidatorPubkey == nil {
+					x.ValidatorPubkey = []byte{}
+				}
+				iNdEx = postIndex
+			case 4:
+				if wireType != 2 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field AssertionAuthority", wireType)
+				}
+				var byteLen int
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					byteLen |= int(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				if byteLen < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				postIndex := iNdEx + byteLen
+				if postIndex < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if postIndex > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				x.AssertionAuthority = append(x.AssertionAuthority[:0], dAtA[iNdEx:postIndex]...)
+				if x.AssertionAuthority == nil {
+					x.AssertionAuthority = []byte{}
+				}
+				iNdEx = postIndex
+			case 5:
+				if wireType != 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field Nonce", wireType)
+				}
+				x.Nonce = 0
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					x.Nonce |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+			case 6:
+				if wireType != 2 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field ChainSpecific", wireType)
+				}
+				var byteLen int
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					byteLen |= int(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				if byteLen < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				postIndex := iNdEx + byteLen
+				if postIndex < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if postIndex > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				x.ChainSpecific = append(x.ChainSpecific[:0], dAtA[iNdEx:postIndex]...)
+				if x.ChainSpecific == nil {
+					x.ChainSpecific = []byte{}
+				}
+				iNdEx = postIndex
+			case 7:
+				if wireType != 2 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field OperatorAddress", wireType)
+				}
+				var stringLen uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					stringLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				intStringLen := int(stringLen)
+				if intStringLen < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				postIndex := iNdEx + intStringLen
+				if postIndex < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if postIndex > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				x.OperatorAddress = string(dAtA[iNdEx:postIndex])
+				iNdEx = postIndex
+			case 8:
+				if wireType != 2 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field PayoutAddress", wireType)
+				}
+				var stringLen uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					stringLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				intStringLen := int(stringLen)
+				if intStringLen < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				postIndex := iNdEx + intStringLen
+				if postIndex < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if postIndex > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				x.PayoutAddress = string(dAtA[iNdEx:postIndex])
+				iNdEx = postIndex
+			case 9:
+				if wireType != 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field Registered", wireType)
+				}
+				var v int
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					v |= int(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				x.Registered = bool(v != 0)
+			case 10:
 				if wireType != 2 {
 					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field Did", wireType)
 				}
@@ -555,7 +970,7 @@ func (x *fastReflection_Indexer) ProtoMethods() *protoiface.Methods {
 				}
 				x.Did = string(dAtA[iNdEx:postIndex])
 				iNdEx = postIndex
-			case 3:
+			case 11:
 				if wireType != 2 {
 					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field ConnectionString", wireType)
 				}
@@ -586,717 +1001,6 @@ func (x *fastReflection_Indexer) ProtoMethods() *protoiface.Methods {
 					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
 				}
 				x.ConnectionString = string(dAtA[iNdEx:postIndex])
-				iNdEx = postIndex
-			case 4:
-				if wireType != 2 {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field SourceChain", wireType)
-				}
-				var stringLen uint64
-				for shift := uint(0); ; shift += 7 {
-					if shift >= 64 {
-						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
-					}
-					if iNdEx >= l {
-						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
-					}
-					b := dAtA[iNdEx]
-					iNdEx++
-					stringLen |= uint64(b&0x7F) << shift
-					if b < 0x80 {
-						break
-					}
-				}
-				intStringLen := int(stringLen)
-				if intStringLen < 0 {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
-				}
-				postIndex := iNdEx + intStringLen
-				if postIndex < 0 {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
-				}
-				if postIndex > l {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
-				}
-				x.SourceChain = string(dAtA[iNdEx:postIndex])
-				iNdEx = postIndex
-			case 5:
-				if wireType != 0 {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field SourceChainId", wireType)
-				}
-				x.SourceChainId = 0
-				for shift := uint(0); ; shift += 7 {
-					if shift >= 64 {
-						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
-					}
-					if iNdEx >= l {
-						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
-					}
-					b := dAtA[iNdEx]
-					iNdEx++
-					x.SourceChainId |= uint64(b&0x7F) << shift
-					if b < 0x80 {
-						break
-					}
-				}
-			default:
-				iNdEx = preIndex
-				skippy, err := runtime.Skip(dAtA[iNdEx:])
-				if err != nil {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, err
-				}
-				if (skippy < 0) || (iNdEx+skippy) < 0 {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
-				}
-				if (iNdEx + skippy) > l {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
-				}
-				if !options.DiscardUnknown {
-					x.unknownFields = append(x.unknownFields, dAtA[iNdEx:iNdEx+skippy]...)
-				}
-				iNdEx += skippy
-			}
-		}
-
-		if iNdEx > l {
-			return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
-		}
-		return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, nil
-	}
-	return &protoiface.Methods{
-		NoUnkeyedLiterals: struct{}{},
-		Flags:             protoiface.SupportMarshalDeterministic | protoiface.SupportUnmarshalDiscardUnknown,
-		Size:              size,
-		Marshal:           marshal,
-		Unmarshal:         unmarshal,
-		Merge:             nil,
-		CheckInitialized:  nil,
-	}
-}
-
-var (
-	md_IndexerAssertion                   protoreflect.MessageDescriptor
-	fd_IndexerAssertion_consensus_pub_key protoreflect.FieldDescriptor
-	fd_IndexerAssertion_delegate_address  protoreflect.FieldDescriptor
-	fd_IndexerAssertion_source_chain      protoreflect.FieldDescriptor
-	fd_IndexerAssertion_source_chain_id   protoreflect.FieldDescriptor
-	fd_IndexerAssertion_assertion_id      protoreflect.FieldDescriptor
-)
-
-func init() {
-	file_shinzonetwork_indexer_v1_indexer_proto_init()
-	md_IndexerAssertion = File_shinzonetwork_indexer_v1_indexer_proto.Messages().ByName("IndexerAssertion")
-	fd_IndexerAssertion_consensus_pub_key = md_IndexerAssertion.Fields().ByName("consensus_pub_key")
-	fd_IndexerAssertion_delegate_address = md_IndexerAssertion.Fields().ByName("delegate_address")
-	fd_IndexerAssertion_source_chain = md_IndexerAssertion.Fields().ByName("source_chain")
-	fd_IndexerAssertion_source_chain_id = md_IndexerAssertion.Fields().ByName("source_chain_id")
-	fd_IndexerAssertion_assertion_id = md_IndexerAssertion.Fields().ByName("assertion_id")
-}
-
-var _ protoreflect.Message = (*fastReflection_IndexerAssertion)(nil)
-
-type fastReflection_IndexerAssertion IndexerAssertion
-
-func (x *IndexerAssertion) ProtoReflect() protoreflect.Message {
-	return (*fastReflection_IndexerAssertion)(x)
-}
-
-func (x *IndexerAssertion) slowProtoReflect() protoreflect.Message {
-	mi := &file_shinzonetwork_indexer_v1_indexer_proto_msgTypes[1]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-var _fastReflection_IndexerAssertion_messageType fastReflection_IndexerAssertion_messageType
-var _ protoreflect.MessageType = fastReflection_IndexerAssertion_messageType{}
-
-type fastReflection_IndexerAssertion_messageType struct{}
-
-func (x fastReflection_IndexerAssertion_messageType) Zero() protoreflect.Message {
-	return (*fastReflection_IndexerAssertion)(nil)
-}
-func (x fastReflection_IndexerAssertion_messageType) New() protoreflect.Message {
-	return new(fastReflection_IndexerAssertion)
-}
-func (x fastReflection_IndexerAssertion_messageType) Descriptor() protoreflect.MessageDescriptor {
-	return md_IndexerAssertion
-}
-
-// Descriptor returns message descriptor, which contains only the protobuf
-// type information for the message.
-func (x *fastReflection_IndexerAssertion) Descriptor() protoreflect.MessageDescriptor {
-	return md_IndexerAssertion
-}
-
-// Type returns the message type, which encapsulates both Go and protobuf
-// type information. If the Go type information is not needed,
-// it is recommended that the message descriptor be used instead.
-func (x *fastReflection_IndexerAssertion) Type() protoreflect.MessageType {
-	return _fastReflection_IndexerAssertion_messageType
-}
-
-// New returns a newly allocated and mutable empty message.
-func (x *fastReflection_IndexerAssertion) New() protoreflect.Message {
-	return new(fastReflection_IndexerAssertion)
-}
-
-// Interface unwraps the message reflection interface and
-// returns the underlying ProtoMessage interface.
-func (x *fastReflection_IndexerAssertion) Interface() protoreflect.ProtoMessage {
-	return (*IndexerAssertion)(x)
-}
-
-// Range iterates over every populated field in an undefined order,
-// calling f for each field descriptor and value encountered.
-// Range returns immediately if f returns false.
-// While iterating, mutating operations may only be performed
-// on the current field descriptor.
-func (x *fastReflection_IndexerAssertion) Range(f func(protoreflect.FieldDescriptor, protoreflect.Value) bool) {
-	if x.ConsensusPubKey != "" {
-		value := protoreflect.ValueOfString(x.ConsensusPubKey)
-		if !f(fd_IndexerAssertion_consensus_pub_key, value) {
-			return
-		}
-	}
-	if x.DelegateAddress != "" {
-		value := protoreflect.ValueOfString(x.DelegateAddress)
-		if !f(fd_IndexerAssertion_delegate_address, value) {
-			return
-		}
-	}
-	if x.SourceChain != "" {
-		value := protoreflect.ValueOfString(x.SourceChain)
-		if !f(fd_IndexerAssertion_source_chain, value) {
-			return
-		}
-	}
-	if x.SourceChainId != uint64(0) {
-		value := protoreflect.ValueOfUint64(x.SourceChainId)
-		if !f(fd_IndexerAssertion_source_chain_id, value) {
-			return
-		}
-	}
-	if x.AssertionId != "" {
-		value := protoreflect.ValueOfString(x.AssertionId)
-		if !f(fd_IndexerAssertion_assertion_id, value) {
-			return
-		}
-	}
-}
-
-// Has reports whether a field is populated.
-//
-// Some fields have the property of nullability where it is possible to
-// distinguish between the default value of a field and whether the field
-// was explicitly populated with the default value. Singular message fields,
-// member fields of a oneof, and proto2 scalar fields are nullable. Such
-// fields are populated only if explicitly set.
-//
-// In other cases (aside from the nullable cases above),
-// a proto3 scalar field is populated if it contains a non-zero value, and
-// a repeated field is populated if it is non-empty.
-func (x *fastReflection_IndexerAssertion) Has(fd protoreflect.FieldDescriptor) bool {
-	switch fd.FullName() {
-	case "shinzonetwork.indexer.v1.IndexerAssertion.consensus_pub_key":
-		return x.ConsensusPubKey != ""
-	case "shinzonetwork.indexer.v1.IndexerAssertion.delegate_address":
-		return x.DelegateAddress != ""
-	case "shinzonetwork.indexer.v1.IndexerAssertion.source_chain":
-		return x.SourceChain != ""
-	case "shinzonetwork.indexer.v1.IndexerAssertion.source_chain_id":
-		return x.SourceChainId != uint64(0)
-	case "shinzonetwork.indexer.v1.IndexerAssertion.assertion_id":
-		return x.AssertionId != ""
-	default:
-		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: shinzonetwork.indexer.v1.IndexerAssertion"))
-		}
-		panic(fmt.Errorf("message shinzonetwork.indexer.v1.IndexerAssertion does not contain field %s", fd.FullName()))
-	}
-}
-
-// Clear clears the field such that a subsequent Has call reports false.
-//
-// Clearing an extension field clears both the extension type and value
-// associated with the given field number.
-//
-// Clear is a mutating operation and unsafe for concurrent use.
-func (x *fastReflection_IndexerAssertion) Clear(fd protoreflect.FieldDescriptor) {
-	switch fd.FullName() {
-	case "shinzonetwork.indexer.v1.IndexerAssertion.consensus_pub_key":
-		x.ConsensusPubKey = ""
-	case "shinzonetwork.indexer.v1.IndexerAssertion.delegate_address":
-		x.DelegateAddress = ""
-	case "shinzonetwork.indexer.v1.IndexerAssertion.source_chain":
-		x.SourceChain = ""
-	case "shinzonetwork.indexer.v1.IndexerAssertion.source_chain_id":
-		x.SourceChainId = uint64(0)
-	case "shinzonetwork.indexer.v1.IndexerAssertion.assertion_id":
-		x.AssertionId = ""
-	default:
-		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: shinzonetwork.indexer.v1.IndexerAssertion"))
-		}
-		panic(fmt.Errorf("message shinzonetwork.indexer.v1.IndexerAssertion does not contain field %s", fd.FullName()))
-	}
-}
-
-// Get retrieves the value for a field.
-//
-// For unpopulated scalars, it returns the default value, where
-// the default value of a bytes scalar is guaranteed to be a copy.
-// For unpopulated composite types, it returns an empty, read-only view
-// of the value; to obtain a mutable reference, use Mutable.
-func (x *fastReflection_IndexerAssertion) Get(descriptor protoreflect.FieldDescriptor) protoreflect.Value {
-	switch descriptor.FullName() {
-	case "shinzonetwork.indexer.v1.IndexerAssertion.consensus_pub_key":
-		value := x.ConsensusPubKey
-		return protoreflect.ValueOfString(value)
-	case "shinzonetwork.indexer.v1.IndexerAssertion.delegate_address":
-		value := x.DelegateAddress
-		return protoreflect.ValueOfString(value)
-	case "shinzonetwork.indexer.v1.IndexerAssertion.source_chain":
-		value := x.SourceChain
-		return protoreflect.ValueOfString(value)
-	case "shinzonetwork.indexer.v1.IndexerAssertion.source_chain_id":
-		value := x.SourceChainId
-		return protoreflect.ValueOfUint64(value)
-	case "shinzonetwork.indexer.v1.IndexerAssertion.assertion_id":
-		value := x.AssertionId
-		return protoreflect.ValueOfString(value)
-	default:
-		if descriptor.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: shinzonetwork.indexer.v1.IndexerAssertion"))
-		}
-		panic(fmt.Errorf("message shinzonetwork.indexer.v1.IndexerAssertion does not contain field %s", descriptor.FullName()))
-	}
-}
-
-// Set stores the value for a field.
-//
-// For a field belonging to a oneof, it implicitly clears any other field
-// that may be currently set within the same oneof.
-// For extension fields, it implicitly stores the provided ExtensionType.
-// When setting a composite type, it is unspecified whether the stored value
-// aliases the source's memory in any way. If the composite value is an
-// empty, read-only value, then it panics.
-//
-// Set is a mutating operation and unsafe for concurrent use.
-func (x *fastReflection_IndexerAssertion) Set(fd protoreflect.FieldDescriptor, value protoreflect.Value) {
-	switch fd.FullName() {
-	case "shinzonetwork.indexer.v1.IndexerAssertion.consensus_pub_key":
-		x.ConsensusPubKey = value.Interface().(string)
-	case "shinzonetwork.indexer.v1.IndexerAssertion.delegate_address":
-		x.DelegateAddress = value.Interface().(string)
-	case "shinzonetwork.indexer.v1.IndexerAssertion.source_chain":
-		x.SourceChain = value.Interface().(string)
-	case "shinzonetwork.indexer.v1.IndexerAssertion.source_chain_id":
-		x.SourceChainId = value.Uint()
-	case "shinzonetwork.indexer.v1.IndexerAssertion.assertion_id":
-		x.AssertionId = value.Interface().(string)
-	default:
-		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: shinzonetwork.indexer.v1.IndexerAssertion"))
-		}
-		panic(fmt.Errorf("message shinzonetwork.indexer.v1.IndexerAssertion does not contain field %s", fd.FullName()))
-	}
-}
-
-// Mutable returns a mutable reference to a composite type.
-//
-// If the field is unpopulated, it may allocate a composite value.
-// For a field belonging to a oneof, it implicitly clears any other field
-// that may be currently set within the same oneof.
-// For extension fields, it implicitly stores the provided ExtensionType
-// if not already stored.
-// It panics if the field does not contain a composite type.
-//
-// Mutable is a mutating operation and unsafe for concurrent use.
-func (x *fastReflection_IndexerAssertion) Mutable(fd protoreflect.FieldDescriptor) protoreflect.Value {
-	switch fd.FullName() {
-	case "shinzonetwork.indexer.v1.IndexerAssertion.consensus_pub_key":
-		panic(fmt.Errorf("field consensus_pub_key of message shinzonetwork.indexer.v1.IndexerAssertion is not mutable"))
-	case "shinzonetwork.indexer.v1.IndexerAssertion.delegate_address":
-		panic(fmt.Errorf("field delegate_address of message shinzonetwork.indexer.v1.IndexerAssertion is not mutable"))
-	case "shinzonetwork.indexer.v1.IndexerAssertion.source_chain":
-		panic(fmt.Errorf("field source_chain of message shinzonetwork.indexer.v1.IndexerAssertion is not mutable"))
-	case "shinzonetwork.indexer.v1.IndexerAssertion.source_chain_id":
-		panic(fmt.Errorf("field source_chain_id of message shinzonetwork.indexer.v1.IndexerAssertion is not mutable"))
-	case "shinzonetwork.indexer.v1.IndexerAssertion.assertion_id":
-		panic(fmt.Errorf("field assertion_id of message shinzonetwork.indexer.v1.IndexerAssertion is not mutable"))
-	default:
-		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: shinzonetwork.indexer.v1.IndexerAssertion"))
-		}
-		panic(fmt.Errorf("message shinzonetwork.indexer.v1.IndexerAssertion does not contain field %s", fd.FullName()))
-	}
-}
-
-// NewField returns a new value that is assignable to the field
-// for the given descriptor. For scalars, this returns the default value.
-// For lists, maps, and messages, this returns a new, empty, mutable value.
-func (x *fastReflection_IndexerAssertion) NewField(fd protoreflect.FieldDescriptor) protoreflect.Value {
-	switch fd.FullName() {
-	case "shinzonetwork.indexer.v1.IndexerAssertion.consensus_pub_key":
-		return protoreflect.ValueOfString("")
-	case "shinzonetwork.indexer.v1.IndexerAssertion.delegate_address":
-		return protoreflect.ValueOfString("")
-	case "shinzonetwork.indexer.v1.IndexerAssertion.source_chain":
-		return protoreflect.ValueOfString("")
-	case "shinzonetwork.indexer.v1.IndexerAssertion.source_chain_id":
-		return protoreflect.ValueOfUint64(uint64(0))
-	case "shinzonetwork.indexer.v1.IndexerAssertion.assertion_id":
-		return protoreflect.ValueOfString("")
-	default:
-		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: shinzonetwork.indexer.v1.IndexerAssertion"))
-		}
-		panic(fmt.Errorf("message shinzonetwork.indexer.v1.IndexerAssertion does not contain field %s", fd.FullName()))
-	}
-}
-
-// WhichOneof reports which field within the oneof is populated,
-// returning nil if none are populated.
-// It panics if the oneof descriptor does not belong to this message.
-func (x *fastReflection_IndexerAssertion) WhichOneof(d protoreflect.OneofDescriptor) protoreflect.FieldDescriptor {
-	switch d.FullName() {
-	default:
-		panic(fmt.Errorf("%s is not a oneof field in shinzonetwork.indexer.v1.IndexerAssertion", d.FullName()))
-	}
-	panic("unreachable")
-}
-
-// GetUnknown retrieves the entire list of unknown fields.
-// The caller may only mutate the contents of the RawFields
-// if the mutated bytes are stored back into the message with SetUnknown.
-func (x *fastReflection_IndexerAssertion) GetUnknown() protoreflect.RawFields {
-	return x.unknownFields
-}
-
-// SetUnknown stores an entire list of unknown fields.
-// The raw fields must be syntactically valid according to the wire format.
-// An implementation may panic if this is not the case.
-// Once stored, the caller must not mutate the content of the RawFields.
-// An empty RawFields may be passed to clear the fields.
-//
-// SetUnknown is a mutating operation and unsafe for concurrent use.
-func (x *fastReflection_IndexerAssertion) SetUnknown(fields protoreflect.RawFields) {
-	x.unknownFields = fields
-}
-
-// IsValid reports whether the message is valid.
-//
-// An invalid message is an empty, read-only value.
-//
-// An invalid message often corresponds to a nil pointer of the concrete
-// message type, but the details are implementation dependent.
-// Validity is not part of the protobuf data model, and may not
-// be preserved in marshaling or other operations.
-func (x *fastReflection_IndexerAssertion) IsValid() bool {
-	return x != nil
-}
-
-// ProtoMethods returns optional fastReflectionFeature-path implementations of various operations.
-// This method may return nil.
-//
-// The returned methods type is identical to
-// "google.golang.org/protobuf/runtime/protoiface".Methods.
-// Consult the protoiface package documentation for details.
-func (x *fastReflection_IndexerAssertion) ProtoMethods() *protoiface.Methods {
-	size := func(input protoiface.SizeInput) protoiface.SizeOutput {
-		x := input.Message.Interface().(*IndexerAssertion)
-		if x == nil {
-			return protoiface.SizeOutput{
-				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
-				Size:              0,
-			}
-		}
-		options := runtime.SizeInputToOptions(input)
-		_ = options
-		var n int
-		var l int
-		_ = l
-		l = len(x.ConsensusPubKey)
-		if l > 0 {
-			n += 1 + l + runtime.Sov(uint64(l))
-		}
-		l = len(x.DelegateAddress)
-		if l > 0 {
-			n += 1 + l + runtime.Sov(uint64(l))
-		}
-		l = len(x.SourceChain)
-		if l > 0 {
-			n += 1 + l + runtime.Sov(uint64(l))
-		}
-		if x.SourceChainId != 0 {
-			n += 1 + runtime.Sov(uint64(x.SourceChainId))
-		}
-		l = len(x.AssertionId)
-		if l > 0 {
-			n += 1 + l + runtime.Sov(uint64(l))
-		}
-		if x.unknownFields != nil {
-			n += len(x.unknownFields)
-		}
-		return protoiface.SizeOutput{
-			NoUnkeyedLiterals: input.NoUnkeyedLiterals,
-			Size:              n,
-		}
-	}
-
-	marshal := func(input protoiface.MarshalInput) (protoiface.MarshalOutput, error) {
-		x := input.Message.Interface().(*IndexerAssertion)
-		if x == nil {
-			return protoiface.MarshalOutput{
-				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
-				Buf:               input.Buf,
-			}, nil
-		}
-		options := runtime.MarshalInputToOptions(input)
-		_ = options
-		size := options.Size(x)
-		dAtA := make([]byte, size)
-		i := len(dAtA)
-		_ = i
-		var l int
-		_ = l
-		if x.unknownFields != nil {
-			i -= len(x.unknownFields)
-			copy(dAtA[i:], x.unknownFields)
-		}
-		if len(x.AssertionId) > 0 {
-			i -= len(x.AssertionId)
-			copy(dAtA[i:], x.AssertionId)
-			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.AssertionId)))
-			i--
-			dAtA[i] = 0x2a
-		}
-		if x.SourceChainId != 0 {
-			i = runtime.EncodeVarint(dAtA, i, uint64(x.SourceChainId))
-			i--
-			dAtA[i] = 0x20
-		}
-		if len(x.SourceChain) > 0 {
-			i -= len(x.SourceChain)
-			copy(dAtA[i:], x.SourceChain)
-			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.SourceChain)))
-			i--
-			dAtA[i] = 0x1a
-		}
-		if len(x.DelegateAddress) > 0 {
-			i -= len(x.DelegateAddress)
-			copy(dAtA[i:], x.DelegateAddress)
-			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.DelegateAddress)))
-			i--
-			dAtA[i] = 0x12
-		}
-		if len(x.ConsensusPubKey) > 0 {
-			i -= len(x.ConsensusPubKey)
-			copy(dAtA[i:], x.ConsensusPubKey)
-			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.ConsensusPubKey)))
-			i--
-			dAtA[i] = 0xa
-		}
-		if input.Buf != nil {
-			input.Buf = append(input.Buf, dAtA...)
-		} else {
-			input.Buf = dAtA
-		}
-		return protoiface.MarshalOutput{
-			NoUnkeyedLiterals: input.NoUnkeyedLiterals,
-			Buf:               input.Buf,
-		}, nil
-	}
-	unmarshal := func(input protoiface.UnmarshalInput) (protoiface.UnmarshalOutput, error) {
-		x := input.Message.Interface().(*IndexerAssertion)
-		if x == nil {
-			return protoiface.UnmarshalOutput{
-				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
-				Flags:             input.Flags,
-			}, nil
-		}
-		options := runtime.UnmarshalInputToOptions(input)
-		_ = options
-		dAtA := input.Buf
-		l := len(dAtA)
-		iNdEx := 0
-		for iNdEx < l {
-			preIndex := iNdEx
-			var wire uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
-				}
-				if iNdEx >= l {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				wire |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			fieldNum := int32(wire >> 3)
-			wireType := int(wire & 0x7)
-			if wireType == 4 {
-				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: IndexerAssertion: wiretype end group for non-group")
-			}
-			if fieldNum <= 0 {
-				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: IndexerAssertion: illegal tag %d (wire type %d)", fieldNum, wire)
-			}
-			switch fieldNum {
-			case 1:
-				if wireType != 2 {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field ConsensusPubKey", wireType)
-				}
-				var stringLen uint64
-				for shift := uint(0); ; shift += 7 {
-					if shift >= 64 {
-						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
-					}
-					if iNdEx >= l {
-						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
-					}
-					b := dAtA[iNdEx]
-					iNdEx++
-					stringLen |= uint64(b&0x7F) << shift
-					if b < 0x80 {
-						break
-					}
-				}
-				intStringLen := int(stringLen)
-				if intStringLen < 0 {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
-				}
-				postIndex := iNdEx + intStringLen
-				if postIndex < 0 {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
-				}
-				if postIndex > l {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
-				}
-				x.ConsensusPubKey = string(dAtA[iNdEx:postIndex])
-				iNdEx = postIndex
-			case 2:
-				if wireType != 2 {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field DelegateAddress", wireType)
-				}
-				var stringLen uint64
-				for shift := uint(0); ; shift += 7 {
-					if shift >= 64 {
-						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
-					}
-					if iNdEx >= l {
-						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
-					}
-					b := dAtA[iNdEx]
-					iNdEx++
-					stringLen |= uint64(b&0x7F) << shift
-					if b < 0x80 {
-						break
-					}
-				}
-				intStringLen := int(stringLen)
-				if intStringLen < 0 {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
-				}
-				postIndex := iNdEx + intStringLen
-				if postIndex < 0 {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
-				}
-				if postIndex > l {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
-				}
-				x.DelegateAddress = string(dAtA[iNdEx:postIndex])
-				iNdEx = postIndex
-			case 3:
-				if wireType != 2 {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field SourceChain", wireType)
-				}
-				var stringLen uint64
-				for shift := uint(0); ; shift += 7 {
-					if shift >= 64 {
-						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
-					}
-					if iNdEx >= l {
-						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
-					}
-					b := dAtA[iNdEx]
-					iNdEx++
-					stringLen |= uint64(b&0x7F) << shift
-					if b < 0x80 {
-						break
-					}
-				}
-				intStringLen := int(stringLen)
-				if intStringLen < 0 {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
-				}
-				postIndex := iNdEx + intStringLen
-				if postIndex < 0 {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
-				}
-				if postIndex > l {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
-				}
-				x.SourceChain = string(dAtA[iNdEx:postIndex])
-				iNdEx = postIndex
-			case 4:
-				if wireType != 0 {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field SourceChainId", wireType)
-				}
-				x.SourceChainId = 0
-				for shift := uint(0); ; shift += 7 {
-					if shift >= 64 {
-						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
-					}
-					if iNdEx >= l {
-						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
-					}
-					b := dAtA[iNdEx]
-					iNdEx++
-					x.SourceChainId |= uint64(b&0x7F) << shift
-					if b < 0x80 {
-						break
-					}
-				}
-			case 5:
-				if wireType != 2 {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field AssertionId", wireType)
-				}
-				var stringLen uint64
-				for shift := uint(0); ; shift += 7 {
-					if shift >= 64 {
-						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
-					}
-					if iNdEx >= l {
-						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
-					}
-					b := dAtA[iNdEx]
-					iNdEx++
-					stringLen |= uint64(b&0x7F) << shift
-					if b < 0x80 {
-						break
-					}
-				}
-				intStringLen := int(stringLen)
-				if intStringLen < 0 {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
-				}
-				postIndex := iNdEx + intStringLen
-				if postIndex < 0 {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
-				}
-				if postIndex > l {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
-				}
-				x.AssertionId = string(dAtA[iNdEx:postIndex])
 				iNdEx = postIndex
 			default:
 				iNdEx = preIndex
@@ -1346,17 +1050,29 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
-// Indexer represents a registered indexer entity.
+// Indexer is the on-chain record for one validator's indexer slot.
+// One row per (source_chain_id, validator_pubkey). The row grows from
+// pending to registered over its lifecycle.
 type Indexer struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Address          string `protobuf:"bytes,1,opt,name=address,proto3" json:"address,omitempty"`
-	Did              string `protobuf:"bytes,2,opt,name=did,proto3" json:"did,omitempty"`
-	ConnectionString string `protobuf:"bytes,3,opt,name=connection_string,json=connectionString,proto3" json:"connection_string,omitempty"`
-	SourceChain      string `protobuf:"bytes,4,opt,name=source_chain,json=sourceChain,proto3" json:"source_chain,omitempty"`
-	SourceChainId    uint64 `protobuf:"varint,5,opt,name=source_chain_id,json=sourceChainId,proto3" json:"source_chain_id,omitempty"`
+	// ── Validator-side facts (set by MsgIndexerAssertion). ───────────────
+	// Mirrored by the relayer from the outpost event on the source chain.
+	SourceChain        string `protobuf:"bytes,1,opt,name=source_chain,json=sourceChain,proto3" json:"source_chain,omitempty"`
+	SourceChainId      uint64 `protobuf:"varint,2,opt,name=source_chain_id,json=sourceChainId,proto3" json:"source_chain_id,omitempty"`
+	ValidatorPubkey    []byte `protobuf:"bytes,3,opt,name=validator_pubkey,json=validatorPubkey,proto3" json:"validator_pubkey,omitempty"`
+	AssertionAuthority []byte `protobuf:"bytes,4,opt,name=assertion_authority,json=assertionAuthority,proto3" json:"assertion_authority,omitempty"`
+	Nonce              uint64 `protobuf:"varint,5,opt,name=nonce,proto3" json:"nonce,omitempty"`
+	ChainSpecific      []byte `protobuf:"bytes,6,opt,name=chain_specific,json=chainSpecific,proto3" json:"chain_specific,omitempty"`
+	// ── Delegation facts (set by MsgIndexerAssertion). ───────────────────
+	OperatorAddress string `protobuf:"bytes,7,opt,name=operator_address,json=operatorAddress,proto3" json:"operator_address,omitempty"`
+	PayoutAddress   string `protobuf:"bytes,8,opt,name=payout_address,json=payoutAddress,proto3" json:"payout_address,omitempty"`
+	// ── Operator-side facts (set by IndexerRegistry.register). ──────────
+	Registered       bool   `protobuf:"varint,9,opt,name=registered,proto3" json:"registered,omitempty"`
+	Did              string `protobuf:"bytes,10,opt,name=did,proto3" json:"did,omitempty"`
+	ConnectionString string `protobuf:"bytes,11,opt,name=connection_string,json=connectionString,proto3" json:"connection_string,omitempty"`
 }
 
 func (x *Indexer) Reset() {
@@ -1379,11 +1095,67 @@ func (*Indexer) Descriptor() ([]byte, []int) {
 	return file_shinzonetwork_indexer_v1_indexer_proto_rawDescGZIP(), []int{0}
 }
 
-func (x *Indexer) GetAddress() string {
+func (x *Indexer) GetSourceChain() string {
 	if x != nil {
-		return x.Address
+		return x.SourceChain
 	}
 	return ""
+}
+
+func (x *Indexer) GetSourceChainId() uint64 {
+	if x != nil {
+		return x.SourceChainId
+	}
+	return 0
+}
+
+func (x *Indexer) GetValidatorPubkey() []byte {
+	if x != nil {
+		return x.ValidatorPubkey
+	}
+	return nil
+}
+
+func (x *Indexer) GetAssertionAuthority() []byte {
+	if x != nil {
+		return x.AssertionAuthority
+	}
+	return nil
+}
+
+func (x *Indexer) GetNonce() uint64 {
+	if x != nil {
+		return x.Nonce
+	}
+	return 0
+}
+
+func (x *Indexer) GetChainSpecific() []byte {
+	if x != nil {
+		return x.ChainSpecific
+	}
+	return nil
+}
+
+func (x *Indexer) GetOperatorAddress() string {
+	if x != nil {
+		return x.OperatorAddress
+	}
+	return ""
+}
+
+func (x *Indexer) GetPayoutAddress() string {
+	if x != nil {
+		return x.PayoutAddress
+	}
+	return ""
+}
+
+func (x *Indexer) GetRegistered() bool {
+	if x != nil {
+		return x.Registered
+	}
+	return false
 }
 
 func (x *Indexer) GetDid() string {
@@ -1400,88 +1172,6 @@ func (x *Indexer) GetConnectionString() string {
 	return ""
 }
 
-func (x *Indexer) GetSourceChain() string {
-	if x != nil {
-		return x.SourceChain
-	}
-	return ""
-}
-
-func (x *Indexer) GetSourceChainId() uint64 {
-	if x != nil {
-		return x.SourceChainId
-	}
-	return 0
-}
-
-// IndexerAssertion stores the assertion record for an indexer.
-type IndexerAssertion struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-
-	ConsensusPubKey string `protobuf:"bytes,1,opt,name=consensus_pub_key,json=consensusPubKey,proto3" json:"consensus_pub_key,omitempty"`
-	DelegateAddress string `protobuf:"bytes,2,opt,name=delegate_address,json=delegateAddress,proto3" json:"delegate_address,omitempty"`
-	SourceChain     string `protobuf:"bytes,3,opt,name=source_chain,json=sourceChain,proto3" json:"source_chain,omitempty"`
-	SourceChainId   uint64 `protobuf:"varint,4,opt,name=source_chain_id,json=sourceChainId,proto3" json:"source_chain_id,omitempty"`
-	AssertionId     string `protobuf:"bytes,5,opt,name=assertion_id,json=assertionId,proto3" json:"assertion_id,omitempty"`
-}
-
-func (x *IndexerAssertion) Reset() {
-	*x = IndexerAssertion{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_shinzonetwork_indexer_v1_indexer_proto_msgTypes[1]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *IndexerAssertion) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*IndexerAssertion) ProtoMessage() {}
-
-// Deprecated: Use IndexerAssertion.ProtoReflect.Descriptor instead.
-func (*IndexerAssertion) Descriptor() ([]byte, []int) {
-	return file_shinzonetwork_indexer_v1_indexer_proto_rawDescGZIP(), []int{1}
-}
-
-func (x *IndexerAssertion) GetConsensusPubKey() string {
-	if x != nil {
-		return x.ConsensusPubKey
-	}
-	return ""
-}
-
-func (x *IndexerAssertion) GetDelegateAddress() string {
-	if x != nil {
-		return x.DelegateAddress
-	}
-	return ""
-}
-
-func (x *IndexerAssertion) GetSourceChain() string {
-	if x != nil {
-		return x.SourceChain
-	}
-	return ""
-}
-
-func (x *IndexerAssertion) GetSourceChainId() uint64 {
-	if x != nil {
-		return x.SourceChainId
-	}
-	return 0
-}
-
-func (x *IndexerAssertion) GetAssertionId() string {
-	if x != nil {
-		return x.AssertionId
-	}
-	return ""
-}
-
 var File_shinzonetwork_indexer_v1_indexer_proto protoreflect.FileDescriptor
 
 var file_shinzonetwork_indexer_v1_indexer_proto_rawDesc = []byte{
@@ -1490,48 +1180,49 @@ var file_shinzonetwork_indexer_v1_indexer_proto_rawDesc = []byte{
 	0x65, 0x72, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x12, 0x18, 0x73, 0x68, 0x69, 0x6e, 0x7a, 0x6f,
 	0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x2e, 0x69, 0x6e, 0x64, 0x65, 0x78, 0x65, 0x72, 0x2e,
 	0x76, 0x31, 0x1a, 0x14, 0x67, 0x6f, 0x67, 0x6f, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2f, 0x67, 0x6f,
-	0x67, 0x6f, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x22, 0xad, 0x01, 0x0a, 0x07, 0x49, 0x6e, 0x64,
-	0x65, 0x78, 0x65, 0x72, 0x12, 0x18, 0x0a, 0x07, 0x61, 0x64, 0x64, 0x72, 0x65, 0x73, 0x73, 0x18,
-	0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x07, 0x61, 0x64, 0x64, 0x72, 0x65, 0x73, 0x73, 0x12, 0x10,
-	0x0a, 0x03, 0x64, 0x69, 0x64, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x03, 0x64, 0x69, 0x64,
-	0x12, 0x2b, 0x0a, 0x11, 0x63, 0x6f, 0x6e, 0x6e, 0x65, 0x63, 0x74, 0x69, 0x6f, 0x6e, 0x5f, 0x73,
-	0x74, 0x72, 0x69, 0x6e, 0x67, 0x18, 0x03, 0x20, 0x01, 0x28, 0x09, 0x52, 0x10, 0x63, 0x6f, 0x6e,
-	0x6e, 0x65, 0x63, 0x74, 0x69, 0x6f, 0x6e, 0x53, 0x74, 0x72, 0x69, 0x6e, 0x67, 0x12, 0x21, 0x0a,
-	0x0c, 0x73, 0x6f, 0x75, 0x72, 0x63, 0x65, 0x5f, 0x63, 0x68, 0x61, 0x69, 0x6e, 0x18, 0x04, 0x20,
-	0x01, 0x28, 0x09, 0x52, 0x0b, 0x73, 0x6f, 0x75, 0x72, 0x63, 0x65, 0x43, 0x68, 0x61, 0x69, 0x6e,
-	0x12, 0x26, 0x0a, 0x0f, 0x73, 0x6f, 0x75, 0x72, 0x63, 0x65, 0x5f, 0x63, 0x68, 0x61, 0x69, 0x6e,
-	0x5f, 0x69, 0x64, 0x18, 0x05, 0x20, 0x01, 0x28, 0x04, 0x52, 0x0d, 0x73, 0x6f, 0x75, 0x72, 0x63,
-	0x65, 0x43, 0x68, 0x61, 0x69, 0x6e, 0x49, 0x64, 0x22, 0xd7, 0x01, 0x0a, 0x10, 0x49, 0x6e, 0x64,
-	0x65, 0x78, 0x65, 0x72, 0x41, 0x73, 0x73, 0x65, 0x72, 0x74, 0x69, 0x6f, 0x6e, 0x12, 0x2a, 0x0a,
-	0x11, 0x63, 0x6f, 0x6e, 0x73, 0x65, 0x6e, 0x73, 0x75, 0x73, 0x5f, 0x70, 0x75, 0x62, 0x5f, 0x6b,
-	0x65, 0x79, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x0f, 0x63, 0x6f, 0x6e, 0x73, 0x65, 0x6e,
-	0x73, 0x75, 0x73, 0x50, 0x75, 0x62, 0x4b, 0x65, 0x79, 0x12, 0x29, 0x0a, 0x10, 0x64, 0x65, 0x6c,
-	0x65, 0x67, 0x61, 0x74, 0x65, 0x5f, 0x61, 0x64, 0x64, 0x72, 0x65, 0x73, 0x73, 0x18, 0x02, 0x20,
-	0x01, 0x28, 0x09, 0x52, 0x0f, 0x64, 0x65, 0x6c, 0x65, 0x67, 0x61, 0x74, 0x65, 0x41, 0x64, 0x64,
-	0x72, 0x65, 0x73, 0x73, 0x12, 0x21, 0x0a, 0x0c, 0x73, 0x6f, 0x75, 0x72, 0x63, 0x65, 0x5f, 0x63,
-	0x68, 0x61, 0x69, 0x6e, 0x18, 0x03, 0x20, 0x01, 0x28, 0x09, 0x52, 0x0b, 0x73, 0x6f, 0x75, 0x72,
+	0x67, 0x6f, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x22, 0x9e, 0x03, 0x0a, 0x07, 0x49, 0x6e, 0x64,
+	0x65, 0x78, 0x65, 0x72, 0x12, 0x21, 0x0a, 0x0c, 0x73, 0x6f, 0x75, 0x72, 0x63, 0x65, 0x5f, 0x63,
+	0x68, 0x61, 0x69, 0x6e, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x0b, 0x73, 0x6f, 0x75, 0x72,
 	0x63, 0x65, 0x43, 0x68, 0x61, 0x69, 0x6e, 0x12, 0x26, 0x0a, 0x0f, 0x73, 0x6f, 0x75, 0x72, 0x63,
-	0x65, 0x5f, 0x63, 0x68, 0x61, 0x69, 0x6e, 0x5f, 0x69, 0x64, 0x18, 0x04, 0x20, 0x01, 0x28, 0x04,
+	0x65, 0x5f, 0x63, 0x68, 0x61, 0x69, 0x6e, 0x5f, 0x69, 0x64, 0x18, 0x02, 0x20, 0x01, 0x28, 0x04,
 	0x52, 0x0d, 0x73, 0x6f, 0x75, 0x72, 0x63, 0x65, 0x43, 0x68, 0x61, 0x69, 0x6e, 0x49, 0x64, 0x12,
-	0x21, 0x0a, 0x0c, 0x61, 0x73, 0x73, 0x65, 0x72, 0x74, 0x69, 0x6f, 0x6e, 0x5f, 0x69, 0x64, 0x18,
-	0x05, 0x20, 0x01, 0x28, 0x09, 0x52, 0x0b, 0x61, 0x73, 0x73, 0x65, 0x72, 0x74, 0x69, 0x6f, 0x6e,
-	0x49, 0x64, 0x42, 0xf9, 0x01, 0x0a, 0x1c, 0x63, 0x6f, 0x6d, 0x2e, 0x73, 0x68, 0x69, 0x6e, 0x7a,
-	0x6f, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x2e, 0x69, 0x6e, 0x64, 0x65, 0x78, 0x65, 0x72,
-	0x2e, 0x76, 0x31, 0x42, 0x0c, 0x49, 0x6e, 0x64, 0x65, 0x78, 0x65, 0x72, 0x50, 0x72, 0x6f, 0x74,
-	0x6f, 0x50, 0x01, 0x5a, 0x49, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f,
-	0x73, 0x68, 0x69, 0x6e, 0x7a, 0x6f, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x2f, 0x73, 0x68,
-	0x69, 0x6e, 0x7a, 0x6f, 0x68, 0x75, 0x62, 0x2f, 0x61, 0x70, 0x69, 0x2f, 0x73, 0x68, 0x69, 0x6e,
-	0x7a, 0x6f, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x2f, 0x69, 0x6e, 0x64, 0x65, 0x78, 0x65,
-	0x72, 0x2f, 0x76, 0x31, 0x3b, 0x69, 0x6e, 0x64, 0x65, 0x78, 0x65, 0x72, 0x76, 0x31, 0xa2, 0x02,
-	0x03, 0x53, 0x49, 0x58, 0xaa, 0x02, 0x18, 0x53, 0x68, 0x69, 0x6e, 0x7a, 0x6f, 0x6e, 0x65, 0x74,
-	0x77, 0x6f, 0x72, 0x6b, 0x2e, 0x49, 0x6e, 0x64, 0x65, 0x78, 0x65, 0x72, 0x2e, 0x56, 0x31, 0xca,
-	0x02, 0x18, 0x53, 0x68, 0x69, 0x6e, 0x7a, 0x6f, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x5c,
-	0x49, 0x6e, 0x64, 0x65, 0x78, 0x65, 0x72, 0x5c, 0x56, 0x31, 0xe2, 0x02, 0x24, 0x53, 0x68, 0x69,
-	0x6e, 0x7a, 0x6f, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x5c, 0x49, 0x6e, 0x64, 0x65, 0x78,
-	0x65, 0x72, 0x5c, 0x56, 0x31, 0x5c, 0x47, 0x50, 0x42, 0x4d, 0x65, 0x74, 0x61, 0x64, 0x61, 0x74,
-	0x61, 0xea, 0x02, 0x1a, 0x53, 0x68, 0x69, 0x6e, 0x7a, 0x6f, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72,
-	0x6b, 0x3a, 0x3a, 0x49, 0x6e, 0x64, 0x65, 0x78, 0x65, 0x72, 0x3a, 0x3a, 0x56, 0x31, 0x62, 0x06,
-	0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
+	0x29, 0x0a, 0x10, 0x76, 0x61, 0x6c, 0x69, 0x64, 0x61, 0x74, 0x6f, 0x72, 0x5f, 0x70, 0x75, 0x62,
+	0x6b, 0x65, 0x79, 0x18, 0x03, 0x20, 0x01, 0x28, 0x0c, 0x52, 0x0f, 0x76, 0x61, 0x6c, 0x69, 0x64,
+	0x61, 0x74, 0x6f, 0x72, 0x50, 0x75, 0x62, 0x6b, 0x65, 0x79, 0x12, 0x2f, 0x0a, 0x13, 0x61, 0x73,
+	0x73, 0x65, 0x72, 0x74, 0x69, 0x6f, 0x6e, 0x5f, 0x61, 0x75, 0x74, 0x68, 0x6f, 0x72, 0x69, 0x74,
+	0x79, 0x18, 0x04, 0x20, 0x01, 0x28, 0x0c, 0x52, 0x12, 0x61, 0x73, 0x73, 0x65, 0x72, 0x74, 0x69,
+	0x6f, 0x6e, 0x41, 0x75, 0x74, 0x68, 0x6f, 0x72, 0x69, 0x74, 0x79, 0x12, 0x14, 0x0a, 0x05, 0x6e,
+	0x6f, 0x6e, 0x63, 0x65, 0x18, 0x05, 0x20, 0x01, 0x28, 0x04, 0x52, 0x05, 0x6e, 0x6f, 0x6e, 0x63,
+	0x65, 0x12, 0x25, 0x0a, 0x0e, 0x63, 0x68, 0x61, 0x69, 0x6e, 0x5f, 0x73, 0x70, 0x65, 0x63, 0x69,
+	0x66, 0x69, 0x63, 0x18, 0x06, 0x20, 0x01, 0x28, 0x0c, 0x52, 0x0d, 0x63, 0x68, 0x61, 0x69, 0x6e,
+	0x53, 0x70, 0x65, 0x63, 0x69, 0x66, 0x69, 0x63, 0x12, 0x29, 0x0a, 0x10, 0x6f, 0x70, 0x65, 0x72,
+	0x61, 0x74, 0x6f, 0x72, 0x5f, 0x61, 0x64, 0x64, 0x72, 0x65, 0x73, 0x73, 0x18, 0x07, 0x20, 0x01,
+	0x28, 0x09, 0x52, 0x0f, 0x6f, 0x70, 0x65, 0x72, 0x61, 0x74, 0x6f, 0x72, 0x41, 0x64, 0x64, 0x72,
+	0x65, 0x73, 0x73, 0x12, 0x25, 0x0a, 0x0e, 0x70, 0x61, 0x79, 0x6f, 0x75, 0x74, 0x5f, 0x61, 0x64,
+	0x64, 0x72, 0x65, 0x73, 0x73, 0x18, 0x08, 0x20, 0x01, 0x28, 0x09, 0x52, 0x0d, 0x70, 0x61, 0x79,
+	0x6f, 0x75, 0x74, 0x41, 0x64, 0x64, 0x72, 0x65, 0x73, 0x73, 0x12, 0x1e, 0x0a, 0x0a, 0x72, 0x65,
+	0x67, 0x69, 0x73, 0x74, 0x65, 0x72, 0x65, 0x64, 0x18, 0x09, 0x20, 0x01, 0x28, 0x08, 0x52, 0x0a,
+	0x72, 0x65, 0x67, 0x69, 0x73, 0x74, 0x65, 0x72, 0x65, 0x64, 0x12, 0x10, 0x0a, 0x03, 0x64, 0x69,
+	0x64, 0x18, 0x0a, 0x20, 0x01, 0x28, 0x09, 0x52, 0x03, 0x64, 0x69, 0x64, 0x12, 0x2b, 0x0a, 0x11,
+	0x63, 0x6f, 0x6e, 0x6e, 0x65, 0x63, 0x74, 0x69, 0x6f, 0x6e, 0x5f, 0x73, 0x74, 0x72, 0x69, 0x6e,
+	0x67, 0x18, 0x0b, 0x20, 0x01, 0x28, 0x09, 0x52, 0x10, 0x63, 0x6f, 0x6e, 0x6e, 0x65, 0x63, 0x74,
+	0x69, 0x6f, 0x6e, 0x53, 0x74, 0x72, 0x69, 0x6e, 0x67, 0x42, 0xf9, 0x01, 0x0a, 0x1c, 0x63, 0x6f,
+	0x6d, 0x2e, 0x73, 0x68, 0x69, 0x6e, 0x7a, 0x6f, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x2e,
+	0x69, 0x6e, 0x64, 0x65, 0x78, 0x65, 0x72, 0x2e, 0x76, 0x31, 0x42, 0x0c, 0x49, 0x6e, 0x64, 0x65,
+	0x78, 0x65, 0x72, 0x50, 0x72, 0x6f, 0x74, 0x6f, 0x50, 0x01, 0x5a, 0x49, 0x67, 0x69, 0x74, 0x68,
+	0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x73, 0x68, 0x69, 0x6e, 0x7a, 0x6f, 0x6e, 0x65, 0x74,
+	0x77, 0x6f, 0x72, 0x6b, 0x2f, 0x73, 0x68, 0x69, 0x6e, 0x7a, 0x6f, 0x68, 0x75, 0x62, 0x2f, 0x61,
+	0x70, 0x69, 0x2f, 0x73, 0x68, 0x69, 0x6e, 0x7a, 0x6f, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b,
+	0x2f, 0x69, 0x6e, 0x64, 0x65, 0x78, 0x65, 0x72, 0x2f, 0x76, 0x31, 0x3b, 0x69, 0x6e, 0x64, 0x65,
+	0x78, 0x65, 0x72, 0x76, 0x31, 0xa2, 0x02, 0x03, 0x53, 0x49, 0x58, 0xaa, 0x02, 0x18, 0x53, 0x68,
+	0x69, 0x6e, 0x7a, 0x6f, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x2e, 0x49, 0x6e, 0x64, 0x65,
+	0x78, 0x65, 0x72, 0x2e, 0x56, 0x31, 0xca, 0x02, 0x18, 0x53, 0x68, 0x69, 0x6e, 0x7a, 0x6f, 0x6e,
+	0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x5c, 0x49, 0x6e, 0x64, 0x65, 0x78, 0x65, 0x72, 0x5c, 0x56,
+	0x31, 0xe2, 0x02, 0x24, 0x53, 0x68, 0x69, 0x6e, 0x7a, 0x6f, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72,
+	0x6b, 0x5c, 0x49, 0x6e, 0x64, 0x65, 0x78, 0x65, 0x72, 0x5c, 0x56, 0x31, 0x5c, 0x47, 0x50, 0x42,
+	0x4d, 0x65, 0x74, 0x61, 0x64, 0x61, 0x74, 0x61, 0xea, 0x02, 0x1a, 0x53, 0x68, 0x69, 0x6e, 0x7a,
+	0x6f, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x3a, 0x3a, 0x49, 0x6e, 0x64, 0x65, 0x78, 0x65,
+	0x72, 0x3a, 0x3a, 0x56, 0x31, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
 }
 
 var (
@@ -1546,10 +1237,9 @@ func file_shinzonetwork_indexer_v1_indexer_proto_rawDescGZIP() []byte {
 	return file_shinzonetwork_indexer_v1_indexer_proto_rawDescData
 }
 
-var file_shinzonetwork_indexer_v1_indexer_proto_msgTypes = make([]protoimpl.MessageInfo, 2)
+var file_shinzonetwork_indexer_v1_indexer_proto_msgTypes = make([]protoimpl.MessageInfo, 1)
 var file_shinzonetwork_indexer_v1_indexer_proto_goTypes = []interface{}{
-	(*Indexer)(nil),          // 0: shinzonetwork.indexer.v1.Indexer
-	(*IndexerAssertion)(nil), // 1: shinzonetwork.indexer.v1.IndexerAssertion
+	(*Indexer)(nil), // 0: shinzonetwork.indexer.v1.Indexer
 }
 var file_shinzonetwork_indexer_v1_indexer_proto_depIdxs = []int32{
 	0, // [0:0] is the sub-list for method output_type
@@ -1577,18 +1267,6 @@ func file_shinzonetwork_indexer_v1_indexer_proto_init() {
 				return nil
 			}
 		}
-		file_shinzonetwork_indexer_v1_indexer_proto_msgTypes[1].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*IndexerAssertion); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
 	}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
@@ -1596,7 +1274,7 @@ func file_shinzonetwork_indexer_v1_indexer_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_shinzonetwork_indexer_v1_indexer_proto_rawDesc,
 			NumEnums:      0,
-			NumMessages:   2,
+			NumMessages:   1,
 			NumExtensions: 0,
 			NumServices:   0,
 		},
