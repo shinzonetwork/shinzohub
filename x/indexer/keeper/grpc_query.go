@@ -2,9 +2,12 @@ package keeper
 
 import (
 	"context"
+	"errors"
 
 	"github.com/shinzonetwork/shinzohub/x/indexer/types"
 )
+
+func errUnimplemented(name string) error { return errors.New(name + " not implemented yet") }
 
 type queryServer struct {
 	Keeper

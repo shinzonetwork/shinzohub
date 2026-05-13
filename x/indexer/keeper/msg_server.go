@@ -2,12 +2,12 @@ package keeper
 
 import (
 	"context"
-	"errors"
+
+	sdk "github.com/cosmos/cosmos-sdk/types"
+	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 
 	"github.com/shinzonetwork/shinzohub/x/indexer/types"
 )
-
-func errUnimplemented(name string) error { return errors.New(name + " not implemented yet") }
 
 type msgServer struct {
 	Keeper
@@ -19,25 +19,44 @@ func NewMsgServerImpl(k Keeper) types.MsgServer {
 	return &msgServer{Keeper: k}
 }
 
-// TODO: real implementations land in the next commit.
-
 func (m msgServer) AddIndexerAssertion(
-	_ context.Context,
-	_ *types.MsgIndexerAssertion,
+	goCtx context.Context,
+	msg *types.MsgIndexerAssertion,
 ) (*types.MsgIndexerAssertionResponse, error) {
-	return nil, errUnimplemented("AddIndexerAssertion")
+	ctx := sdk.UnwrapSDKContext(goCtx)
+	if !m.Keeper.adminKeeper.IsAdmin(ctx, msg.Signer) {
+		return nil, sdkerrors.ErrUnauthorized.Wrap("admin required")
+	}
+	if err := m.Keeper.UpsertAssertion(ctx, msg); err != nil {
+		return nil, err
+	}
+	return &types.MsgIndexerAssertionResponse{}, nil
 }
 
 func (m msgServer) SetPayout(
-	_ context.Context,
-	_ *types.MsgSetPayout,
+	goCtx context.Context,
+	msg *types.MsgSetPayout,
 ) (*types.MsgSetPayoutResponse, error) {
-	return nil, errUnimplemented("SetPayout")
+	ctx := sdk.UnwrapSDKContext(goCtx)
+	if !m.Keeper.adminKeeper.IsAdmin(ctx, msg.Signer) {
+		return nil, sdkerrors.ErrUnauthorized.Wrap("admin required")
+	}
+	if err := m.Keeper.SetPayout(ctx, msg); err != nil {
+		return nil, err
+	}
+	return &types.MsgSetPayoutResponse{}, nil
 }
 
 func (m msgServer) RevokeIndexer(
-	_ context.Context,
-	_ *types.MsgRevokeIndexer,
+	goCtx context.Context,
+	msg *types.MsgRevokeIndexer,
 ) (*types.MsgRevokeIndexerResponse, error) {
-	return nil, errUnimplemented("RevokeIndexer")
+	ctx := sdk.UnwrapSDKContext(goCtx)
+	if !m.Keeper.adminKeeper.IsAdmin(ctx, msg.Signer) {
+		return nil, sdkerrors.ErrUnauthorized.Wrap("admin required")
+	}
+	if err := m.Keeper.RevokeIndexer(ctx, msg); err != nil {
+		return nil, err
+	}
+	return &types.MsgRevokeIndexerResponse{}, nil
 }
