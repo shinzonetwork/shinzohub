@@ -4,35 +4,36 @@ const (
 	ModuleName = "indexer"
 	StoreKey   = ModuleName
 
-	// IndexerPrefix is the KVStore prefix for indexer records.
-	// Key format: indexer/<bech32_address> → Indexer proto bytes
-	IndexerPrefix = "indexer/"
+	// IndexerByValidatorPrefix is the primary store prefix for indexer rows.
+	// Key format: indexer/<source_chain_id>/<validator_pubkey> → Indexer proto bytes
+	IndexerByValidatorPrefix = "indexer/"
 
-	// IndexerCountKey stores the total number of registered indexers.
+	// AddrIndexPrefix is the inverse index from operator bech32 address to
+	// the validator row key.
+	// Key format: addr_idx/<operator_address> → "<source_chain_id>/<hex(validator_pubkey)>"
+	AddrIndexPrefix = "addr_idx/"
+
+	// IndexerCountKey stores the total number of indexer rows.
 	IndexerCountKey = "indexer_count"
-
-	// AssertionPrefix is the KVStore prefix for indexer assertions.
-	// Key format: assertion/<delegate>:<sourceChain>:<sourceChainId> → IndexerAssertion proto bytes
-	AssertionPrefix = "assertion/"
-
-	// AddrDIDPrefix stores the addr→DID mapping.
-	AddrDIDPrefix = "addr_did/"
-
-	// DIDAddrPrefix stores the DID→addr mapping.
-	DIDAddrPrefix = "did_addr/"
-
-	PendingIndexerPrefix = "pending_indexer/"
-	PendingAddrDIDPrefix = "pending_addr_did/"
-	PendingDIDAddrPrefix = "pending_did_addr/"
 )
 
 const (
-	EventTypeIndexerPending              = "indexer.indexer_pending"
-	EventTypeIndexerRegistered           = "indexer.indexer_registered"
-	EventTypeIndexerRegistrationFailed   = "indexer.indexer_registration_failed"
-	EventTypeIndexerRegistrationTimedOut = "indexer.indexer_registration_timed_out"
+	EventTypeIndexerAsserted      = "indexer.indexer_asserted"
+	EventTypeIndexerSuperseded    = "indexer.indexer_superseded"
+	EventTypeIndexerPayoutUpdated = "indexer.indexer_payout_updated"
+	EventTypeIndexerRevoked       = "indexer.indexer_revoked"
+	EventTypeIndexerRegistered    = "indexer.indexer_registered"
 
-	AttrKeyAddress = "address"
-	AttrKeyDID     = "did"
-	AttrKeyError   = "error"
+	AttrKeySourceChain      = "source_chain"
+	AttrKeySourceChainID    = "source_chain_id"
+	AttrKeyValidatorPubkey  = "validator_pubkey"
+	AttrKeyOperatorAddress  = "operator_address"
+	AttrKeyOldOperator      = "old_operator_address"
+	AttrKeyNewOperator      = "new_operator_address"
+	AttrKeyPayoutAddress    = "payout_address"
+	AttrKeyNonce            = "nonce"
+	AttrKeyOldNonce         = "old_nonce"
+	AttrKeyNewNonce         = "new_nonce"
+	AttrKeyDID              = "did"
+	AttrKeyConnectionString = "connection_string"
 )
