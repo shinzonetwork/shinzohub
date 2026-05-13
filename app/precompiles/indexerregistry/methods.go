@@ -9,6 +9,8 @@ import (
 	gethtypes "github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/core/vm"
 	"github.com/ethereum/go-ethereum/crypto"
+
+	commoncrypto "github.com/shinzonetwork/shinzohub/x/common/crypto"
 )
 
 const (
@@ -19,6 +21,10 @@ const (
 	MethodGetSourceChain      = "getSourceChain"
 )
 
+// Register completes the operator-side registration of an indexer. The
+// caller's EVM address must already be the operator_address recorded by a
+// prior MsgIndexerAssertion. The supplied node identity key is the key used
+// to derive the indexer's DID — it is separate from the operator key.
 func (p *Precompile) Register(
 	ctx sdk.Context,
 	contract *vm.Contract,
@@ -30,65 +36,54 @@ func (p *Precompile) Register(
 	if !ok || len(nodeIdentityKeyPubkey) == 0 {
 		return nil, fmt.Errorf("invalid nodeIdentityKeyPubkey")
 	}
-
 	nodeIdentityKeySignature, ok := args[1].([]byte)
 	if !ok || len(nodeIdentityKeySignature) == 0 {
 		return nil, fmt.Errorf("invalid nodeIdentityKeySignature")
 	}
-
 	message, ok := args[2].([]byte)
 	if !ok || len(message) == 0 {
 		return nil, fmt.Errorf("invalid message")
 	}
-
 	connectionString, ok := args[3].(string)
 	if !ok || connectionString == "" {
 		return nil, fmt.Errorf("invalid connectionString")
-	}
-
-	sourceChain, ok := args[4].(string)
-	if !ok || sourceChain == "" {
-		return nil, fmt.Errorf("invalid sourceChain")
-	}
-
-	sourceChainId, ok := args[5].(uint64)
-	if !ok || sourceChainId == 0 {
-		return nil, fmt.Errorf("invalid sourceChainId: must be non-zero")
 	}
 
 	if err := p.sourcehubKeeper.CheckICAReady(ctx); err != nil {
 		return nil, err
 	}
 
+	// Confirm caller controls the node identity key.
+	if err := commoncrypto.VerifyNodeIdentityKeySignature(nodeIdentityKeyPubkey, message, nodeIdentityKeySignature); err != nil {
+		return nil, err
+	}
+
 	caller := contract.Caller().Bytes()
-	delegate := sdk.AccAddress(caller).String()
+	callerBech32 := sdk.AccAddress(caller).String()
 
-	assertion, found, err := p.indexerKeeper.GetIndexerAssertion(ctx, delegate, sourceChain, sourceChainId)
+	did, err := commoncrypto.DeriveDID(nodeIdentityKeyPubkey)
 	if err != nil {
-		return nil, fmt.Errorf("indexer assertion lookup failed: %w", err)
-	}
-	if !found {
-		return nil, fmt.Errorf("indexer not asserted for delegate %s on chain %s/%d", delegate, sourceChain, sourceChainId)
+		return nil, fmt.Errorf("derive did: %w", err)
 	}
 
-	did, err := p.indexerKeeper.RegisterIndexer(
-		ctx,
-		nodeIdentityKeyPubkey,
-		nodeIdentityKeySignature,
-		message,
-		connectionString,
-		caller,
-		assertion.SourceChain,
-		assertion.SourceChainId,
-	)
+	row, firstTime, err := p.indexerKeeper.CompleteRegistration(ctx, callerBech32, did, connectionString)
 	if err != nil {
 		return nil, err
 	}
 
+	// Fire the ICA only on first registration. Subsequent re-registrations
+	// (connection-string refreshes) reuse the existing relationship.
+	if firstTime {
+		if _, _, _, err := p.indexerKeeper.SourcehubKeeper().SendICASetRelationship(ctx, did, "indexer", callerBech32); err != nil {
+			return nil, err
+		}
+	}
+
+	// Emit the EVM Registered log.
 	precompAddr := contract.Address()
 	topic0 := crypto.Keccak256Hash([]byte("Registered(address,bytes,string,string,uint64)"))
 	event := p.ABI.Events["Registered"]
-	data, err := event.Inputs.NonIndexed().Pack(did, connectionString, assertion.SourceChain, assertion.SourceChainId)
+	data, err := event.Inputs.NonIndexed().Pack([]byte(did), connectionString, row.SourceChain, row.SourceChainId)
 	if err != nil {
 		return nil, fmt.Errorf("failed to pack Registered event: %w", err)
 	}
@@ -113,13 +108,12 @@ func (p *Precompile) IsRegistered(
 	if !ok {
 		return nil, fmt.Errorf("invalid type for addr")
 	}
-
 	bech32Addr := sdk.AccAddress(addr.Bytes()).String()
-	_, found, err := p.indexerKeeper.GetIndexer(ctx, bech32Addr)
+	row, found, err := p.indexerKeeper.GetIndexerByAddress(ctx, bech32Addr)
 	if err != nil {
 		return nil, err
 	}
-	return method.Outputs.Pack(found)
+	return method.Outputs.Pack(found && row.Registered)
 }
 
 func (p *Precompile) GetDid(
@@ -131,16 +125,15 @@ func (p *Precompile) GetDid(
 	if !ok {
 		return nil, fmt.Errorf("invalid type for addr")
 	}
-
 	bech32Addr := sdk.AccAddress(addr.Bytes()).String()
-	indexer, found, err := p.indexerKeeper.GetIndexer(ctx, bech32Addr)
+	row, found, err := p.indexerKeeper.GetIndexerByAddress(ctx, bech32Addr)
 	if err != nil {
 		return nil, err
 	}
 	if !found {
 		return method.Outputs.Pack([]byte{})
 	}
-	return method.Outputs.Pack([]byte(indexer.Did))
+	return method.Outputs.Pack([]byte(row.Did))
 }
 
 func (p *Precompile) GetConnectionString(
@@ -152,16 +145,15 @@ func (p *Precompile) GetConnectionString(
 	if !ok {
 		return nil, fmt.Errorf("invalid type for addr")
 	}
-
 	bech32Addr := sdk.AccAddress(addr.Bytes()).String()
-	indexer, found, err := p.indexerKeeper.GetIndexer(ctx, bech32Addr)
+	row, found, err := p.indexerKeeper.GetIndexerByAddress(ctx, bech32Addr)
 	if err != nil {
 		return nil, err
 	}
 	if !found {
 		return method.Outputs.Pack("")
 	}
-	return method.Outputs.Pack(indexer.ConnectionString)
+	return method.Outputs.Pack(row.ConnectionString)
 }
 
 func (p *Precompile) GetSourceChain(
@@ -173,14 +165,13 @@ func (p *Precompile) GetSourceChain(
 	if !ok {
 		return nil, fmt.Errorf("invalid type for addr")
 	}
-
 	bech32Addr := sdk.AccAddress(addr.Bytes()).String()
-	indexer, found, err := p.indexerKeeper.GetIndexer(ctx, bech32Addr)
+	row, found, err := p.indexerKeeper.GetIndexerByAddress(ctx, bech32Addr)
 	if err != nil {
 		return nil, err
 	}
 	if !found {
 		return method.Outputs.Pack(common.Hash{})
 	}
-	return method.Outputs.Pack(crypto.Keccak256Hash([]byte(indexer.SourceChain)))
+	return method.Outputs.Pack(crypto.Keccak256Hash([]byte(row.SourceChain)))
 }
