@@ -1,6 +1,7 @@
 package keeper_test
 
 import (
+	"crypto/sha256"
 	"testing"
 
 	storetypes "cosmossdk.io/store/types"
@@ -8,6 +9,8 @@ import (
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	"github.com/cosmos/cosmos-sdk/runtime"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/decred/dcrd/dcrec/secp256k1/v4"
+	"github.com/decred/dcrd/dcrec/secp256k1/v4/ecdsa"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
 
@@ -30,12 +33,43 @@ func (m *mockAdminKeeper) IsAdmin(_ sdk.Context, address string) bool {
 }
 
 type mockSourcehubKeeper struct {
-	calls int
-	err   error
+	setCalls         int
+	setAndDelCalls   int
+	lastDid          string
+	lastPrev         string
+	lastGroup        string
+	lastReq          string
+	err              error
 }
 
-func (m *mockSourcehubKeeper) SendICASetRelationship(_ sdk.Context, _, _, _ string) (uint64, string, string, error) {
-	m.calls++
+func (m *mockSourcehubKeeper) calls() int { return m.setCalls + m.setAndDelCalls }
+
+func (m *mockSourcehubKeeper) SendICASetRelationship(
+	_ sdk.Context,
+	did string,
+	group string,
+	requestor string,
+) (uint64, string, string, error) {
+	m.setCalls++
+	m.lastDid = did
+	m.lastPrev = ""
+	m.lastGroup = group
+	m.lastReq = requestor
+	return 0, "", "", m.err
+}
+
+func (m *mockSourcehubKeeper) SendICASetAndDeleteRelationship(
+	_ sdk.Context,
+	newDid string,
+	prevDid string,
+	group string,
+	requestor string,
+) (uint64, string, string, error) {
+	m.setAndDelCalls++
+	m.lastDid = newDid
+	m.lastPrev = prevDid
+	m.lastGroup = group
+	m.lastReq = requestor
 	return 0, "", "", m.err
 }
 
@@ -45,7 +79,10 @@ type KeeperTestSuite struct {
 	keeper        keeper.Keeper
 	mockAdmin     *mockAdminKeeper
 	mockSourcehub *mockSourcehubKeeper
+	codec         codec.Codec
 }
+
+func (s *KeeperTestSuite) cdc() codec.Codec { return s.codec }
 
 func (s *KeeperTestSuite) SetupTest() {
 	s.mockAdmin = &mockAdminKeeper{admins: map[string]bool{}}
@@ -61,6 +98,7 @@ func (s *KeeperTestSuite) SetupTest() {
 	cdc := codec.NewProtoCodec(registry)
 	storeService := runtime.NewKVStoreService(storeKey)
 
+	s.codec = cdc
 	s.keeper = keeper.NewKeeper(cdc, storeService, s.mockAdmin, s.mockSourcehub)
 	s.ctx = sdk.NewContext(stateStore, cmtproto.Header{}, false, cosmoslog.NewNopLogger())
 }
@@ -76,6 +114,22 @@ func addr(b byte) string {
 		bz[i] = b
 	}
 	return sdk.AccAddress(bz).String()
+}
+
+// claimAndConfirm is a helper for tests that want a fully-registered indexer.
+// In the new ack-confirmed flow, that just means calling ApplyRegistration
+// directly (as the ack callback would on SUCCESS).
+func (s *KeeperTestSuite) claimAndConfirm(op, did, conn string) {
+	s.Require().NoError(s.keeper.ApplyRegistration(s.ctx, op, did, conn))
+}
+
+// nodeIdentityKey returns a fresh secp256k1 keypair and a DER signature over
+// sha256(message) — the shape Keeper.RegisterIndexer expects.
+func nodeIdentityKey(t *testing.T, message []byte) (pubkey, signature []byte) {
+	priv, err := secp256k1.GeneratePrivateKey()
+	require.NoError(t, err)
+	h := sha256.Sum256(message)
+	return priv.PubKey().SerializeCompressed(), ecdsa.Sign(priv, h[:]).Serialize()
 }
 
 func validatorA() []byte { return []byte("validator-A") }
@@ -141,9 +195,7 @@ func (s *KeeperTestSuite) TestUpsertAssertion_Rotation_ResetsOperatorSide() {
 
 	// Initial assert + complete registration.
 	s.Require().NoError(s.keeper.UpsertAssertion(s.ctx, baseAssertion(op1, pay)))
-	_, prevDid, err := s.keeper.CompleteRegistration(s.ctx, op1, "did:op1", "https://op1/9090")
-	s.Require().NoError(err)
-	s.Require().Empty(prevDid)
+	s.claimAndConfirm(op1, "did:op1", "https://op1/9090")
 
 	// Rotate: same validator, new operator, higher nonce.
 	rotate := baseAssertion(op2, pay)
@@ -177,9 +229,7 @@ func (s *KeeperTestSuite) TestUpsertAssertion_SameOperator_PreservesRegistration
 	pay := addr(0x02)
 
 	s.Require().NoError(s.keeper.UpsertAssertion(s.ctx, baseAssertion(op, pay)))
-	_, prevDid, err := s.keeper.CompleteRegistration(s.ctx, op, "did:op", "https://op/9090")
-	s.Require().NoError(err)
-	s.Require().Empty(prevDid)
+	s.claimAndConfirm(op, "did:op", "https://op/9090")
 
 	// Re-assert with same operator, higher nonce, fresh proof.
 	refresh := baseAssertion(op, pay)
@@ -228,10 +278,9 @@ func (s *KeeperTestSuite) TestSetPayout_OperatorUntouched() {
 	pay2 := addr(0x03)
 
 	s.Require().NoError(s.keeper.UpsertAssertion(s.ctx, baseAssertion(op, pay)))
-	_, _, err := s.keeper.CompleteRegistration(s.ctx, op, "did:op", "https://op/9090")
-	s.Require().NoError(err)
+	s.claimAndConfirm(op, "did:op", "https://op/9090")
 
-	err = s.keeper.SetPayout(s.ctx, &types.MsgSetPayout{
+	err := s.keeper.SetPayout(s.ctx, &types.MsgSetPayout{
 		Signer:          addr(0xAA),
 		SourceChainId:   1,
 		ValidatorPubkey: validatorA(),
@@ -275,34 +324,184 @@ func (s *KeeperTestSuite) TestRevokeIndexer_DropsRowAndIndex() {
 	s.Require().Equal(uint64(0), s.keeper.GetIndexerCount(s.ctx))
 }
 
-func (s *KeeperTestSuite) TestCompleteRegistration_PreviousDIDTracksChange() {
+func (s *KeeperTestSuite) TestRegisterIndexer_FirstTime_FiresICA_NoRowMutation() {
 	op := addr(0x01)
 	pay := addr(0x02)
 	s.Require().NoError(s.keeper.UpsertAssertion(s.ctx, baseAssertion(op, pay)))
 
-	// First registration: prevDid is empty.
-	_, prevDid, err := s.keeper.CompleteRegistration(s.ctx, op, "did:op-A", "https://op/9090")
-	s.Require().NoError(err)
-	s.Require().Empty(prevDid)
+	msg := []byte("op-claim-1")
+	pub, sig := nodeIdentityKey(s.T(), msg)
 
-	// Refresh with the SAME DID: prevDid equals the new DID — caller can skip the ICA.
-	_, prevDid, err = s.keeper.CompleteRegistration(s.ctx, op, "did:op-A", "https://op/new")
+	result, err := s.keeper.RegisterIndexer(s.ctx, op, pub, sig, msg, "https://op/9090")
 	s.Require().NoError(err)
-	s.Require().Equal("did:op-A", prevDid)
+	s.Require().True(result.Pending)
+	s.Require().NotEmpty(result.Did)
+	s.Require().Equal("ethereum", result.SourceChain)
+	s.Require().Equal(uint64(1), result.SourceChainID)
 
-	// Refresh with a DIFFERENT DID: prevDid is the old one and differs from the new — caller fires a fresh SetRelationship.
-	_, prevDid, err = s.keeper.CompleteRegistration(s.ctx, op, "did:op-B", "https://op/newer")
+	s.Require().Equal(1, s.mockSourcehub.calls())
+	s.Require().Equal(result.Did, s.mockSourcehub.lastDid)
+	s.Require().Equal("indexer", s.mockSourcehub.lastGroup)
+	s.Require().Equal(op, s.mockSourcehub.lastReq)
+
+	// Pending claim recorded so the ack callback can find the operator +
+	// connection string when the SetRelationship ack lands.
+	claim, found, err := s.keeper.GetPendingClaim(s.ctx, result.Did)
 	s.Require().NoError(err)
-	s.Require().Equal("did:op-A", prevDid)
+	s.Require().True(found)
+	s.Require().Equal(op, claim.OperatorAddress)
+	s.Require().Equal("https://op/9090", claim.ConnectionString)
 
-	row, _, _ := s.keeper.GetIndexerByValidator(s.ctx, 1, validatorA())
-	s.Require().Equal("did:op-B", row.Did)
-	s.Require().Equal("https://op/newer", row.ConnectionString)
+	// Row is NOT mutated yet — operator-side fields stay empty until ack.
+	row, _, _ := s.keeper.GetIndexerByAddress(s.ctx, op)
+	s.Require().False(row.Registered)
+	s.Require().Empty(row.Did)
+	s.Require().Empty(row.ConnectionString)
 }
 
-func (s *KeeperTestSuite) TestCompleteRegistration_UnknownOperatorErrors() {
-	_, _, err := s.keeper.CompleteRegistration(s.ctx, addr(0x99), "did:any", "https://x")
+func (s *KeeperTestSuite) TestRegisterIndexer_AppliedOnAck_FlipsRow() {
+	op := addr(0x01)
+	pay := addr(0x02)
+	s.Require().NoError(s.keeper.UpsertAssertion(s.ctx, baseAssertion(op, pay)))
+
+	msg := []byte("op-claim")
+	pub, sig := nodeIdentityKey(s.T(), msg)
+	result, err := s.keeper.RegisterIndexer(s.ctx, op, pub, sig, msg, "https://op/9090")
+	s.Require().NoError(err)
+
+	// Simulate ack landing successfully — the keeper's ack-side helper writes
+	// the target state into the row.
+	s.Require().NoError(s.keeper.ApplyRegistration(s.ctx, op, result.Did, "https://op/9090"))
+
+	row, _, _ := s.keeper.GetIndexerByAddress(s.ctx, op)
+	s.Require().True(row.Registered)
+	s.Require().Equal(result.Did, row.Did)
+	s.Require().Equal("https://op/9090", row.ConnectionString)
+}
+
+func (s *KeeperTestSuite) TestRegisterIndexer_NewDIDRecordsFreshPendingClaim() {
+	op := addr(0x01)
+	pay := addr(0x02)
+	s.Require().NoError(s.keeper.UpsertAssertion(s.ctx, baseAssertion(op, pay)))
+
+	// Confirmed registration with key A.
+	msgA := []byte("op-key-A")
+	pubA, sigA := nodeIdentityKey(s.T(), msgA)
+	resultA, err := s.keeper.RegisterIndexer(s.ctx, op, pubA, sigA, msgA, "https://op/A")
+	s.Require().NoError(err)
+	s.Require().NoError(s.keeper.ApplyRegistration(s.ctx, op, resultA.Did, "https://op/A"))
+	s.keeper.DeletePendingClaim(s.ctx, resultA.Did)
+
+	// New registration with key B — fires a fresh SetRelationship ICA and
+	// records a new pending-claim entry keyed by the new DID.
+	msgB := []byte("op-key-B")
+	pubB, sigB := nodeIdentityKey(s.T(), msgB)
+	priorSetCalls := s.mockSourcehub.setCalls
+	resultB, err := s.keeper.RegisterIndexer(s.ctx, op, pubB, sigB, msgB, "https://op/B")
+	s.Require().NoError(err)
+	s.Require().True(resultB.Pending)
+	s.Require().NotEqual(resultA.Did, resultB.Did)
+	s.Require().Equal(resultB.Did, s.mockSourcehub.lastDid)
+
+	// Rotation goes through the atomic Set+Delete path; the single-Set path
+	// is not used again.
+	s.Require().Equal(priorSetCalls, s.mockSourcehub.setCalls, "single-Set ICA should not fire on rotation")
+	s.Require().Equal(1, s.mockSourcehub.setAndDelCalls, "Set+Delete ICA should fire on rotation")
+	s.Require().Equal(resultA.Did, s.mockSourcehub.lastPrev, "rotation must forward the prev DID to sourcehub for the atomic Delete")
+
+	claim, found, err := s.keeper.GetPendingClaim(s.ctx, resultB.Did)
+	s.Require().NoError(err)
+	s.Require().True(found)
+	s.Require().Equal(op, claim.OperatorAddress)
+	s.Require().Equal("https://op/B", claim.ConnectionString)
+
+	// Row still reflects the previously-confirmed state — no speculative write.
+	row, _, _ := s.keeper.GetIndexerByAddress(s.ctx, op)
+	s.Require().True(row.Registered)
+	s.Require().Equal(resultA.Did, row.Did)
+	s.Require().Equal("https://op/A", row.ConnectionString)
+}
+
+func (s *KeeperTestSuite) TestRegisterIndexer_IdempotentNoICA() {
+	op := addr(0x01)
+	pay := addr(0x02)
+	s.Require().NoError(s.keeper.UpsertAssertion(s.ctx, baseAssertion(op, pay)))
+
+	msg := []byte("op-claim")
+	pub, sig := nodeIdentityKey(s.T(), msg)
+	first, err := s.keeper.RegisterIndexer(s.ctx, op, pub, sig, msg, "https://op/9090")
+	s.Require().NoError(err)
+	s.Require().NoError(s.keeper.ApplyRegistration(s.ctx, op, first.Did, "https://op/9090"))
+	s.mockSourcehub.setCalls = 0
+	s.mockSourcehub.setAndDelCalls = 0
+
+	// Same node identity key + same connection string while row is Registered:
+	// keeper returns Pending=false and skips the ICA.
+	second, err := s.keeper.RegisterIndexer(s.ctx, op, pub, sig, msg, "https://op/9090")
+	s.Require().NoError(err)
+	s.Require().False(second.Pending)
+	s.Require().Equal(first.Did, second.Did)
+	s.Require().Equal(0, s.mockSourcehub.calls())
+}
+
+func (s *KeeperTestSuite) TestRegisterIndexer_UnknownOperatorErrors() {
+	msg := []byte("op-claim")
+	pub, sig := nodeIdentityKey(s.T(), msg)
+	_, err := s.keeper.RegisterIndexer(s.ctx, addr(0x99), pub, sig, msg, "https://x")
 	s.Require().ErrorContains(err, "not asserted")
+}
+
+func (s *KeeperTestSuite) TestRegisterIndexer_BadSignatureErrors() {
+	op := addr(0x01)
+	pay := addr(0x02)
+	s.Require().NoError(s.keeper.UpsertAssertion(s.ctx, baseAssertion(op, pay)))
+
+	msg := []byte("op-claim")
+	pub, _ := nodeIdentityKey(s.T(), msg)
+	_, otherSig := nodeIdentityKey(s.T(), msg) // signature from a DIFFERENT key
+	_, err := s.keeper.RegisterIndexer(s.ctx, op, pub, otherSig, msg, "https://x")
+	s.Require().Error(err)
+	s.Require().Equal(0, s.mockSourcehub.calls())
+}
+
+func (s *KeeperTestSuite) TestIterateIndexers_FiltersBySourceChain() {
+	// Seed three rows across two chains.
+	mkAssert := func(op string, chainID uint64, chain string, pubkey []byte) *types.MsgIndexerAssertion {
+		return &types.MsgIndexerAssertion{
+			Signer:             addr(0xAA),
+			SourceChain:        chain,
+			SourceChainId:      chainID,
+			ValidatorPubkey:    pubkey,
+			AssertionAuthority: []byte("auth"),
+			Nonce:              1,
+			OperatorAddress:    op,
+			PayoutAddress:      op,
+		}
+	}
+	s.Require().NoError(s.keeper.UpsertAssertion(s.ctx, mkAssert(addr(0x01), 1, "ethereum", validatorA())))
+	s.Require().NoError(s.keeper.UpsertAssertion(s.ctx, mkAssert(addr(0x02), 1, "ethereum", validatorB())))
+	s.Require().NoError(s.keeper.UpsertAssertion(s.ctx, mkAssert(addr(0x03), 501, "solana", []byte("validator-S"))))
+
+	all, _, err := s.keeper.IterateIndexers(s.ctx, 0, nil)
+	s.Require().NoError(err)
+	s.Require().Len(all, 3, "no filter returns every row")
+
+	ethOnly, _, err := s.keeper.IterateIndexers(s.ctx, 1, nil)
+	s.Require().NoError(err)
+	s.Require().Len(ethOnly, 2)
+	for _, ix := range ethOnly {
+		s.Require().Equal(uint64(1), ix.SourceChainId)
+		s.Require().Equal("ethereum", ix.SourceChain)
+	}
+
+	solOnly, _, err := s.keeper.IterateIndexers(s.ctx, 501, nil)
+	s.Require().NoError(err)
+	s.Require().Len(solOnly, 1)
+	s.Require().Equal(uint64(501), solOnly[0].SourceChainId)
+
+	none, _, err := s.keeper.IterateIndexers(s.ctx, 999, nil)
+	s.Require().NoError(err)
+	s.Require().Empty(none, "unknown chain returns empty list")
 }
 
 func (s *KeeperTestSuite) TestSetPayout_NonceMustAdvance() {

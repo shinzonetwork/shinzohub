@@ -3233,17 +3233,15 @@ type MsgIndexerAssertion struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Signer string `protobuf:"bytes,1,opt,name=signer,proto3" json:"signer,omitempty"`
-	// Validator-side facts (mirror of outpost event).
+	Signer             string `protobuf:"bytes,1,opt,name=signer,proto3" json:"signer,omitempty"`
 	SourceChain        string `protobuf:"bytes,2,opt,name=source_chain,json=sourceChain,proto3" json:"source_chain,omitempty"`
 	SourceChainId      uint64 `protobuf:"varint,3,opt,name=source_chain_id,json=sourceChainId,proto3" json:"source_chain_id,omitempty"`
 	ValidatorPubkey    []byte `protobuf:"bytes,4,opt,name=validator_pubkey,json=validatorPubkey,proto3" json:"validator_pubkey,omitempty"`
 	AssertionAuthority []byte `protobuf:"bytes,5,opt,name=assertion_authority,json=assertionAuthority,proto3" json:"assertion_authority,omitempty"`
 	Nonce              uint64 `protobuf:"varint,6,opt,name=nonce,proto3" json:"nonce,omitempty"`
 	ChainSpecific      []byte `protobuf:"bytes,7,opt,name=chain_specific,json=chainSpecific,proto3" json:"chain_specific,omitempty"`
-	// Delegation facts.
-	OperatorAddress string `protobuf:"bytes,8,opt,name=operator_address,json=operatorAddress,proto3" json:"operator_address,omitempty"`
-	PayoutAddress   string `protobuf:"bytes,9,opt,name=payout_address,json=payoutAddress,proto3" json:"payout_address,omitempty"`
+	OperatorAddress    string `protobuf:"bytes,8,opt,name=operator_address,json=operatorAddress,proto3" json:"operator_address,omitempty"`
+	PayoutAddress      string `protobuf:"bytes,9,opt,name=payout_address,json=payoutAddress,proto3" json:"payout_address,omitempty"`
 }
 
 func (x *MsgIndexerAssertion) Reset() {

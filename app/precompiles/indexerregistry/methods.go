@@ -9,8 +9,6 @@ import (
 	gethtypes "github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/core/vm"
 	"github.com/ethereum/go-ethereum/crypto"
-
-	commoncrypto "github.com/shinzonetwork/shinzohub/x/common/crypto"
 )
 
 const (
@@ -21,10 +19,6 @@ const (
 	MethodGetSourceChain      = "getSourceChain"
 )
 
-// Register completes the operator-side registration of an indexer. The
-// caller's EVM address must already be the operator_address recorded by a
-// prior MsgIndexerAssertion. The supplied node identity key is the key used
-// to derive the indexer's DID — it is separate from the operator key.
 func (p *Precompile) Register(
 	ctx sdk.Context,
 	contract *vm.Contract,
@@ -53,50 +47,41 @@ func (p *Precompile) Register(
 		return nil, err
 	}
 
-	// Confirm caller controls the node identity key.
-	if err := commoncrypto.VerifyNodeIdentityKeySignature(nodeIdentityKeyPubkey, message, nodeIdentityKeySignature); err != nil {
-		return nil, err
-	}
-
 	caller := contract.Caller().Bytes()
 	callerBech32 := sdk.AccAddress(caller).String()
-
-	did, err := commoncrypto.DeriveDID(nodeIdentityKeyPubkey)
-	if err != nil {
-		return nil, fmt.Errorf("derive did: %w", err)
-	}
-
-	row, prevDid, err := p.indexerKeeper.CompleteRegistration(ctx, callerBech32, did, connectionString)
+	result, err := p.indexerKeeper.RegisterIndexer(
+		ctx,
+		callerBech32,
+		nodeIdentityKeyPubkey,
+		nodeIdentityKeySignature,
+		message,
+		connectionString,
+	)
 	if err != nil {
 		return nil, err
 	}
 
-	// Fire the ICA whenever the on-chain DID is new (first registration) or
-	// differs from what was previously on chain (operator supplied a fresh
-	// node identity key). A pure connection-string refresh reuses the
-	// existing DID and skips the ICA.
-	if prevDid != did {
-		if _, _, _, err := p.indexerKeeper.SourcehubKeeper().SendICASetRelationship(ctx, did, "indexer", callerBech32); err != nil {
-			return nil, err
+	if result.Pending {
+		topic0 := crypto.Keccak256Hash([]byte("Registered(address,bytes,string,string,uint64)"))
+		event := p.ABI.Events["Registered"]
+		data, perr := event.Inputs.NonIndexed().Pack(
+			[]byte(result.Did),
+			connectionString,
+			result.SourceChain,
+			result.SourceChainID,
+		)
+		if perr != nil {
+			return nil, fmt.Errorf("failed to pack Registered event: %w", perr)
 		}
+		stateDB.AddLog(&gethtypes.Log{
+			Address: contract.Address(),
+			Topics: []common.Hash{
+				topic0,
+				common.BytesToHash(caller),
+			},
+			Data: data,
+		})
 	}
-
-	// Emit the EVM Registered log.
-	precompAddr := contract.Address()
-	topic0 := crypto.Keccak256Hash([]byte("Registered(address,bytes,string,string,uint64)"))
-	event := p.ABI.Events["Registered"]
-	data, err := event.Inputs.NonIndexed().Pack([]byte(did), connectionString, row.SourceChain, row.SourceChainId)
-	if err != nil {
-		return nil, fmt.Errorf("failed to pack Registered event: %w", err)
-	}
-	stateDB.AddLog(&gethtypes.Log{
-		Address: precompAddr,
-		Topics: []common.Hash{
-			topic0,
-			common.BytesToHash(caller),
-		},
-		Data: data,
-	})
 
 	return nil, nil
 }

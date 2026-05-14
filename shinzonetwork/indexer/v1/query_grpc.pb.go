@@ -29,11 +29,8 @@ const (
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type QueryClient interface {
-	// Indexers lists all indexer rows.
 	Indexers(ctx context.Context, in *QueryIndexersRequest, opts ...grpc.CallOption) (*QueryIndexersResponse, error)
-	// Indexer looks up a single row by (source_chain_id, validator_pubkey).
 	Indexer(ctx context.Context, in *QueryIndexerRequest, opts ...grpc.CallOption) (*QueryIndexerResponse, error)
-	// IndexerByAddress looks up a row by operator bech32 address.
 	IndexerByAddress(ctx context.Context, in *QueryIndexerByAddressRequest, opts ...grpc.CallOption) (*QueryIndexerByAddressResponse, error)
 	IndexerCount(ctx context.Context, in *QueryIndexerCountRequest, opts ...grpc.CallOption) (*QueryIndexerCountResponse, error)
 }
@@ -90,11 +87,8 @@ func (c *queryClient) IndexerCount(ctx context.Context, in *QueryIndexerCountReq
 // All implementations must embed UnimplementedQueryServer
 // for forward compatibility.
 type QueryServer interface {
-	// Indexers lists all indexer rows.
 	Indexers(context.Context, *QueryIndexersRequest) (*QueryIndexersResponse, error)
-	// Indexer looks up a single row by (source_chain_id, validator_pubkey).
 	Indexer(context.Context, *QueryIndexerRequest) (*QueryIndexerResponse, error)
-	// IndexerByAddress looks up a row by operator bech32 address.
 	IndexerByAddress(context.Context, *QueryIndexerByAddressRequest) (*QueryIndexerByAddressResponse, error)
 	IndexerCount(context.Context, *QueryIndexerCountRequest) (*QueryIndexerCountResponse, error)
 	mustEmbedUnimplementedQueryServer()

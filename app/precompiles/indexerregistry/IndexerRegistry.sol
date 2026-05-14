@@ -35,16 +35,19 @@ interface IndexerRegistryI {
     /// @return sourceChain The keccak256 hash of the source chain name (zero if not asserted).
     function getSourceChain(address addr) external view returns (bytes32 sourceChain);
 
-    /// @param owner            Operator address that registered.
-    /// @param did              The DID bytes.
-    /// @param connectionString The connection string.
+    /// Emitted by `register` when the submission successfully fired an ICA to
+    /// sourcehub. The final on-chain confirmation arrives asynchronously
+    /// via the cosmos `indexer.indexer_registered` event once the ack lands.
+    /// @param owner            Operator address that submitted the registration.
+    /// @param did              The DID derived from the supplied node identity key.
+    /// @param connectionString The operator-controlled endpoint.
     /// @param sourceChain      The source chain name from the indexer's assertion.
     /// @param sourceChainId    The source chain id from the indexer's assertion.
     event Registered(
         address indexed owner,
-        bytes did,
-        string connectionString,
-        string sourceChain,
-        uint64 sourceChainId
+        bytes   did,
+        string  connectionString,
+        string  sourceChain,
+        uint64  sourceChainId
     );
 }

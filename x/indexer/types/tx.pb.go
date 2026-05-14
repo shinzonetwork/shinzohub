@@ -29,17 +29,15 @@ var _ = math.Inf
 const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
 type MsgIndexerAssertion struct {
-	Signer string `protobuf:"bytes,1,opt,name=signer,proto3" json:"signer,omitempty"`
-	// Validator-side facts (mirror of outpost event).
+	Signer             string `protobuf:"bytes,1,opt,name=signer,proto3" json:"signer,omitempty"`
 	SourceChain        string `protobuf:"bytes,2,opt,name=source_chain,json=sourceChain,proto3" json:"source_chain,omitempty"`
 	SourceChainId      uint64 `protobuf:"varint,3,opt,name=source_chain_id,json=sourceChainId,proto3" json:"source_chain_id,omitempty"`
 	ValidatorPubkey    []byte `protobuf:"bytes,4,opt,name=validator_pubkey,json=validatorPubkey,proto3" json:"validator_pubkey,omitempty"`
 	AssertionAuthority []byte `protobuf:"bytes,5,opt,name=assertion_authority,json=assertionAuthority,proto3" json:"assertion_authority,omitempty"`
 	Nonce              uint64 `protobuf:"varint,6,opt,name=nonce,proto3" json:"nonce,omitempty"`
 	ChainSpecific      []byte `protobuf:"bytes,7,opt,name=chain_specific,json=chainSpecific,proto3" json:"chain_specific,omitempty"`
-	// Delegation facts.
-	OperatorAddress string `protobuf:"bytes,8,opt,name=operator_address,json=operatorAddress,proto3" json:"operator_address,omitempty"`
-	PayoutAddress   string `protobuf:"bytes,9,opt,name=payout_address,json=payoutAddress,proto3" json:"payout_address,omitempty"`
+	OperatorAddress    string `protobuf:"bytes,8,opt,name=operator_address,json=operatorAddress,proto3" json:"operator_address,omitempty"`
+	PayoutAddress      string `protobuf:"bytes,9,opt,name=payout_address,json=payoutAddress,proto3" json:"payout_address,omitempty"`
 }
 
 func (m *MsgIndexerAssertion) Reset()         { *m = MsgIndexerAssertion{} }
@@ -451,14 +449,8 @@ const _ = grpc.SupportPackageIsVersion4
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://godoc.org/google.golang.org/grpc#ClientConn.NewStream.
 type MsgClient interface {
-	// AddIndexerAssertion creates or updates the indexer row for a validator.
-	// Admin-signed; mirrors an outpost IndexerDelegated event.
 	AddIndexerAssertion(ctx context.Context, in *MsgIndexerAssertion, opts ...grpc.CallOption) (*MsgIndexerAssertionResponse, error)
-	// SetPayout updates only the payout address on an existing row.
-	// Admin-signed; mirrors an outpost PayoutUpdated event.
 	SetPayout(ctx context.Context, in *MsgSetPayout, opts ...grpc.CallOption) (*MsgSetPayoutResponse, error)
-	// RevokeIndexer deletes the indexer row.
-	// Admin-signed; mirrors an outpost Revoked event.
 	RevokeIndexer(ctx context.Context, in *MsgRevokeIndexer, opts ...grpc.CallOption) (*MsgRevokeIndexerResponse, error)
 }
 
@@ -499,14 +491,8 @@ func (c *msgClient) RevokeIndexer(ctx context.Context, in *MsgRevokeIndexer, opt
 
 // MsgServer is the server API for Msg service.
 type MsgServer interface {
-	// AddIndexerAssertion creates or updates the indexer row for a validator.
-	// Admin-signed; mirrors an outpost IndexerDelegated event.
 	AddIndexerAssertion(context.Context, *MsgIndexerAssertion) (*MsgIndexerAssertionResponse, error)
-	// SetPayout updates only the payout address on an existing row.
-	// Admin-signed; mirrors an outpost PayoutUpdated event.
 	SetPayout(context.Context, *MsgSetPayout) (*MsgSetPayoutResponse, error)
-	// RevokeIndexer deletes the indexer row.
-	// Admin-signed; mirrors an outpost Revoked event.
 	RevokeIndexer(context.Context, *MsgRevokeIndexer) (*MsgRevokeIndexerResponse, error)
 }
 

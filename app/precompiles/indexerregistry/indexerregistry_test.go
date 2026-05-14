@@ -42,10 +42,38 @@ type mockSourcehubKeeper struct {
 	icaCalled bool
 	icaErr    error
 	checkErr  error
+	lastDid   string
+	lastPrev  string
+	lastGroup string
+	lastReq   string
 }
 
-func (m *mockSourcehubKeeper) SendICASetRelationship(_ sdk.Context, _, _, _ string) (uint64, string, string, error) {
+func (m *mockSourcehubKeeper) SendICASetRelationship(
+	_ sdk.Context,
+	did string,
+	group string,
+	requestor string,
+) (uint64, string, string, error) {
 	m.icaCalled = true
+	m.lastDid = did
+	m.lastGroup = group
+	m.lastReq = requestor
+	m.lastPrev = ""
+	return 0, "", "", m.icaErr
+}
+
+func (m *mockSourcehubKeeper) SendICASetAndDeleteRelationship(
+	_ sdk.Context,
+	newDid string,
+	prevDid string,
+	group string,
+	requestor string,
+) (uint64, string, string, error) {
+	m.icaCalled = true
+	m.lastDid = newDid
+	m.lastPrev = prevDid
+	m.lastGroup = group
+	m.lastReq = requestor
 	return 0, "", "", m.icaErr
 }
 
@@ -130,6 +158,21 @@ func (s *PrecompileTestSuite) assertOperator(operatorBech32 string) {
 	s.Require().NoError(err)
 }
 
+// confirmAck simulates the sourcehub-side ack landing successfully for the
+// most recently submitted DID, mirroring what the real ack callback does:
+// it reads the pending claim, applies it onto the indexer row, deletes the
+// pending entry.
+func (s *PrecompileTestSuite) confirmAck(_ string) {
+	did := s.mockSourcehub.lastDid
+	claim, found, err := s.indexerKeeper.GetPendingClaim(s.ctx, did)
+	s.Require().NoError(err)
+	s.Require().True(found, "no pending claim recorded for the last submitted DID")
+	s.Require().NoError(s.indexerKeeper.ApplyRegistration(
+		s.ctx, claim.OperatorAddress, did, claim.ConnectionString,
+	))
+	s.indexerKeeper.DeletePendingClaim(s.ctx, did)
+}
+
 func TestPrecompileTestSuite(t *testing.T) {
 	suite.Run(t, new(PrecompileTestSuite))
 }
@@ -138,7 +181,8 @@ func TestPrecompileTestSuite(t *testing.T) {
 
 func (s *PrecompileTestSuite) TestRegister_Success() {
 	caller := common.HexToAddress("0x1234567890abcdef1234567890abcdef12345678")
-	s.assertOperator(sdk.AccAddress(caller.Bytes()).String())
+	op := sdk.AccAddress(caller.Bytes()).String()
+	s.assertOperator(op)
 
 	message := []byte("op-nonce-1")
 	nodePub, nodeSig := generateNodeIdentityKey(s.T(), message)
@@ -150,12 +194,21 @@ func (s *PrecompileTestSuite) TestRegister_Success() {
 	s.Require().NoError(err)
 	s.Require().Nil(bz)
 
-	s.Require().True(s.mockSourcehub.icaCalled, "ICA SetRelationship not fired on first register")
-	s.Require().Len(s.stateDB.logs, 1)
+	s.Require().True(s.mockSourcehub.icaCalled, "ICA not fired on first register")
+	s.Require().Len(s.stateDB.logs, 1, "precompile emits a Registered EVM log on submission")
 
-	row, found, err := s.indexerKeeper.GetIndexerByAddress(s.ctx, sdk.AccAddress(caller.Bytes()).String())
+	// Row is NOT mutated by the precompile — operator-side fields stay empty
+	// until the ack callback runs.
+	row, found, err := s.indexerKeeper.GetIndexerByAddress(s.ctx, op)
 	s.Require().NoError(err)
 	s.Require().True(found)
+	s.Require().False(row.Registered)
+	s.Require().Empty(row.Did)
+	s.Require().Empty(row.ConnectionString)
+
+	// Simulate the sourcehub ack landing — operator-side fields get written.
+	s.confirmAck(op)
+	row, _, _ = s.indexerKeeper.GetIndexerByAddress(s.ctx, op)
 	s.Require().True(row.Registered)
 	s.Require().NotEmpty(row.Did)
 	s.Require().Equal("https://idx-1:9090", row.ConnectionString)
@@ -163,7 +216,8 @@ func (s *PrecompileTestSuite) TestRegister_Success() {
 
 func (s *PrecompileTestSuite) TestRegister_IdempotentDoesNotReissueICA() {
 	caller := common.HexToAddress("0x1234567890abcdef1234567890abcdef12345678")
-	s.assertOperator(sdk.AccAddress(caller.Bytes()).String())
+	op := sdk.AccAddress(caller.Bytes()).String()
+	s.assertOperator(op)
 
 	message := []byte("op-nonce-1")
 	nodePub, nodeSig := generateNodeIdentityKey(s.T(), message)
@@ -171,46 +225,56 @@ func (s *PrecompileTestSuite) TestRegister_IdempotentDoesNotReissueICA() {
 	method := s.precompile.ABI.Methods["register"]
 	args := []interface{}{nodePub, nodeSig, message, "https://idx-1:9090"}
 
+	// First registration: ICA fires, then ack lands.
 	_, err := s.precompile.Register(s.ctx, makeContract(caller), s.stateDB, &method, args)
 	s.Require().NoError(err)
 	s.Require().True(s.mockSourcehub.icaCalled)
+	s.confirmAck(op)
 
-	// Reset the flag and call again with the SAME node identity key but a
-	// refreshed connection string.
+	// Same DID + same connection string while Registered=true → idempotent
+	// fast path in the keeper → no ICA.
 	s.mockSourcehub.icaCalled = false
-	args2 := []interface{}{nodePub, nodeSig, message, "https://idx-1:9091"}
-	_, err = s.precompile.Register(s.ctx, makeContract(caller), s.stateDB, &method, args2)
+	_, err = s.precompile.Register(s.ctx, makeContract(caller), s.stateDB, &method, args)
 	s.Require().NoError(err)
-	s.Require().False(s.mockSourcehub.icaCalled, "ICA should not fire when DID is unchanged")
-
-	row, _, _ := s.indexerKeeper.GetIndexerByAddress(s.ctx, sdk.AccAddress(caller.Bytes()).String())
-	s.Require().Equal("https://idx-1:9091", row.ConnectionString)
+	s.Require().False(s.mockSourcehub.icaCalled, "ICA should not fire on an idempotent re-register")
 }
 
-func (s *PrecompileTestSuite) TestRegister_NewNodeKeyReissuesICA() {
+func (s *PrecompileTestSuite) TestRegister_NewNodeKeyFiresFreshICA() {
 	caller := common.HexToAddress("0x4444444444444444444444444444444444444444")
-	s.assertOperator(sdk.AccAddress(caller.Bytes()).String())
+	op := sdk.AccAddress(caller.Bytes()).String()
+	s.assertOperator(op)
 
-	// First register with node identity key A.
+	// First register with node identity key A; confirm via ack.
 	msgA := []byte("op-key-A")
 	pubA, sigA := generateNodeIdentityKey(s.T(), msgA)
 	method := s.precompile.ABI.Methods["register"]
 	_, err := s.precompile.Register(s.ctx, makeContract(caller), s.stateDB, &method, []interface{}{pubA, sigA, msgA, "https://idx:9090"})
 	s.Require().NoError(err)
 	s.Require().True(s.mockSourcehub.icaCalled)
-	didA, _, _ := s.indexerKeeper.GetIndexerByAddress(s.ctx, sdk.AccAddress(caller.Bytes()).String())
+	s.confirmAck(op)
+	rowA, _, _ := s.indexerKeeper.GetIndexerByAddress(s.ctx, op)
 
-	// Re-register with a DIFFERENT node identity key — should fire ICA again
-	// because the DID changes.
+	// Re-register with a DIFFERENT node identity key — ICA fires again with
+	// the new DID. The row still shows the previously-confirmed state until
+	// the new ack lands.
 	s.mockSourcehub.icaCalled = false
 	msgB := []byte("op-key-B")
 	pubB, sigB := generateNodeIdentityKey(s.T(), msgB)
 	_, err = s.precompile.Register(s.ctx, makeContract(caller), s.stateDB, &method, []interface{}{pubB, sigB, msgB, "https://idx:9090"})
 	s.Require().NoError(err)
 	s.Require().True(s.mockSourcehub.icaCalled, "ICA should fire when DID changes")
+	s.Require().NotEqual(rowA.Did, s.mockSourcehub.lastDid)
 
-	didB, _, _ := s.indexerKeeper.GetIndexerByAddress(s.ctx, sdk.AccAddress(caller.Bytes()).String())
-	s.Require().NotEqual(didA.Did, didB.Did)
+	rowMid, _, _ := s.indexerKeeper.GetIndexerByAddress(s.ctx, op)
+	s.Require().True(rowMid.Registered)
+	s.Require().Equal(rowA.Did, rowMid.Did)
+
+	// Once the new ack confirms, the row flips to didB.
+	s.confirmAck(op)
+	rowB, _, _ := s.indexerKeeper.GetIndexerByAddress(s.ctx, op)
+	s.Require().True(rowB.Registered)
+	s.Require().Equal(s.mockSourcehub.lastDid, rowB.Did)
+	s.Require().NotEqual(rowA.Did, rowB.Did)
 }
 
 func (s *PrecompileTestSuite) TestRegister_RevertsWithoutAssertion() {
@@ -260,27 +324,32 @@ func (s *PrecompileTestSuite) TestRegister_RevertsOnBadNodeKeySignature() {
 	s.Require().False(s.mockSourcehub.icaCalled)
 }
 
-func (s *PrecompileTestSuite) TestIsRegistered_FalseUntilRegister() {
+func (s *PrecompileTestSuite) TestIsRegistered_TracksRowState() {
 	caller := common.HexToAddress("0x3333333333333333333333333333333333333333")
-	s.assertOperator(sdk.AccAddress(caller.Bytes()).String())
+	op := sdk.AccAddress(caller.Bytes()).String()
+	s.assertOperator(op)
 
 	method := s.precompile.ABI.Methods["isRegistered"]
-	bz, err := s.precompile.IsRegistered(s.ctx, &method, []interface{}{caller})
-	s.Require().NoError(err)
-	unpacked, err := method.Outputs.Unpack(bz)
-	s.Require().NoError(err)
-	s.Require().False(unpacked[0].(bool))
+	check := func() bool {
+		bz, err := s.precompile.IsRegistered(s.ctx, &method, []interface{}{caller})
+		s.Require().NoError(err)
+		unpacked, err := method.Outputs.Unpack(bz)
+		s.Require().NoError(err)
+		return unpacked[0].(bool)
+	}
 
-	// After register, IsRegistered flips to true.
+	// Asserted but not registered yet.
+	s.Require().False(check())
+
+	// After register() — still false: row is pending until ack.
 	message := []byte("op-nonce-1")
 	nodePub, nodeSig := generateNodeIdentityKey(s.T(), message)
 	regMethod := s.precompile.ABI.Methods["register"]
-	_, err = s.precompile.Register(s.ctx, makeContract(caller), s.stateDB, &regMethod, []interface{}{nodePub, nodeSig, message, "https://x"})
+	_, err := s.precompile.Register(s.ctx, makeContract(caller), s.stateDB, &regMethod, []interface{}{nodePub, nodeSig, message, "https://x"})
 	s.Require().NoError(err)
+	s.Require().False(check())
 
-	bz, err = s.precompile.IsRegistered(s.ctx, &method, []interface{}{caller})
-	s.Require().NoError(err)
-	unpacked, err = method.Outputs.Unpack(bz)
-	s.Require().NoError(err)
-	s.Require().True(unpacked[0].(bool))
+	// Ack lands → flips to true.
+	s.confirmAck(op)
+	s.Require().True(check())
 }

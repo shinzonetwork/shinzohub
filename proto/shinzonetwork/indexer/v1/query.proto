@@ -10,17 +10,14 @@ import "shinzonetwork/indexer/v1/indexer.proto";
 option go_package = "github.com/shinzonetwork/shinzohub/x/indexer/types";
 
 service Query {
-  // Indexers lists all indexer rows.
   rpc Indexers(QueryIndexersRequest) returns (QueryIndexersResponse) {
     option (google.api.http).get = "/shinzonetwork/indexer/v1/indexers";
   }
 
-  // Indexer looks up a single row by (source_chain_id, validator_pubkey).
   rpc Indexer(QueryIndexerRequest) returns (QueryIndexerResponse) {
     option (google.api.http).get = "/shinzonetwork/indexer/v1/validator/{source_chain_id}/{validator_pubkey}";
   }
 
-  // IndexerByAddress looks up a row by operator bech32 address.
   rpc IndexerByAddress(QueryIndexerByAddressRequest) returns (QueryIndexerByAddressResponse) {
     option (google.api.http).get = "/shinzonetwork/indexer/v1/indexers/{operator_address}";
   }
@@ -32,6 +29,7 @@ service Query {
 
 message QueryIndexersRequest {
   cosmos.base.query.v1beta1.PageRequest pagination = 1;
+  uint64 source_chain_id = 2;
 }
 
 message QueryIndexersResponse {

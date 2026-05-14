@@ -13,6 +13,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/query"
 
+	commoncrypto "github.com/shinzonetwork/shinzohub/x/common/crypto"
 	"github.com/shinzonetwork/shinzohub/x/indexer/types"
 )
 
@@ -41,13 +42,9 @@ func (k Keeper) Logger(ctx sdk.Context) log.Logger {
 	return ctx.Logger().With("module", fmt.Sprintf("x/%s", types.ModuleName))
 }
 
-func (k Keeper) AdminKeeper() types.AdminKeeper            { return k.adminKeeper }
-func (k Keeper) SourcehubKeeper() types.SourcehubKeeper    { return k.sourcehubKeeper }
+func (k Keeper) AdminKeeper() types.AdminKeeper         { return k.adminKeeper }
+func (k Keeper) SourcehubKeeper() types.SourcehubKeeper { return k.sourcehubKeeper }
 
-// ─── Key encoding ─────────────────────────────────────────────────────
-
-// indexerRowKey encodes a row's primary key.
-// Format: IndexerByValidatorPrefix | 8-byte big-endian source_chain_id | validator_pubkey
 func indexerRowKey(sourceChainID uint64, validatorPubkey []byte) []byte {
 	out := make([]byte, 0, len(types.IndexerByValidatorPrefix)+8+len(validatorPubkey))
 	out = append(out, []byte(types.IndexerByValidatorPrefix)...)
@@ -58,13 +55,10 @@ func indexerRowKey(sourceChainID uint64, validatorPubkey []byte) []byte {
 	return out
 }
 
-// addrIndexKey encodes an operator-address inverse index key.
 func addrIndexKey(operatorAddress string) []byte {
 	return []byte(types.AddrIndexPrefix + operatorAddress)
 }
 
-// encodeAddrIndexValue encodes (source_chain_id, validator_pubkey) for storage as
-// the value of an addr_idx entry.
 func encodeAddrIndexValue(sourceChainID uint64, validatorPubkey []byte) []byte {
 	out := make([]byte, 8+len(validatorPubkey))
 	binary.BigEndian.PutUint64(out[:8], sourceChainID)
@@ -78,8 +72,6 @@ func decodeAddrIndexValue(v []byte) (uint64, []byte, error) {
 	}
 	return binary.BigEndian.Uint64(v[:8]), v[8:], nil
 }
-
-// ─── Reads ────────────────────────────────────────────────────────────
 
 func (k Keeper) GetIndexerByValidator(ctx sdk.Context, sourceChainID uint64, validatorPubkey []byte) (types.Indexer, bool, error) {
 	store := runtime.KVStoreAdapter(k.storeService.OpenKVStore(ctx))
@@ -107,9 +99,16 @@ func (k Keeper) GetIndexerByAddress(ctx sdk.Context, operatorAddress string) (ty
 	return k.GetIndexerByValidator(ctx, chainID, pub)
 }
 
-func (k Keeper) IterateIndexers(ctx sdk.Context, pageReq *query.PageRequest) ([]types.Indexer, *query.PageResponse, error) {
+func (k Keeper) IterateIndexers(ctx sdk.Context, sourceChainID uint64, pageReq *query.PageRequest) ([]types.Indexer, *query.PageResponse, error) {
 	store := runtime.KVStoreAdapter(k.storeService.OpenKVStore(ctx))
-	indexerStore := prefix.NewStore(store, []byte(types.IndexerByValidatorPrefix))
+
+	iterPrefix := []byte(types.IndexerByValidatorPrefix)
+	if sourceChainID != 0 {
+		var buf [8]byte
+		binary.BigEndian.PutUint64(buf[:], sourceChainID)
+		iterPrefix = append(iterPrefix, buf[:]...)
+	}
+	indexerStore := prefix.NewStore(store, iterPrefix)
 
 	var indexers []types.Indexer
 	pageRes, err := query.Paginate(indexerStore, pageReq, func(_, value []byte) error {
@@ -135,12 +134,6 @@ func (k Keeper) GetIndexerCount(ctx sdk.Context) uint64 {
 	return binary.BigEndian.Uint64(bz)
 }
 
-// ─── Writes ───────────────────────────────────────────────────────────
-
-// UpsertAssertion handles a MsgIndexerAssertion. Creates or updates the row
-// keyed by (source_chain_id, validator_pubkey). Enforces nonce monotonicity,
-// rejects operator-address collisions across validators, and resets
-// operator-side fields when the operator changes.
 func (k Keeper) UpsertAssertion(ctx sdk.Context, msg *types.MsgIndexerAssertion) error {
 	store := runtime.KVStoreAdapter(k.storeService.OpenKVStore(ctx))
 
@@ -148,8 +141,8 @@ func (k Keeper) UpsertAssertion(ctx sdk.Context, msg *types.MsgIndexerAssertion)
 	existingBz := store.Get(rowKey)
 
 	var (
-		existing       types.Indexer
-		isUpdate       = len(existingBz) > 0
+		existing        types.Indexer
+		isUpdate        = len(existingBz) > 0
 		operatorChanged = true
 	)
 	if isUpdate {
@@ -162,8 +155,6 @@ func (k Keeper) UpsertAssertion(ctx sdk.Context, msg *types.MsgIndexerAssertion)
 		operatorChanged = existing.OperatorAddress != msg.OperatorAddress
 	}
 
-	// Collision check: if addr_idx for this operator points to a different
-	// (source_chain_id, validator_pubkey), reject.
 	existingAddrVal := store.Get(addrIndexKey(msg.OperatorAddress))
 	if len(existingAddrVal) > 0 {
 		existingChainID, existingPub, err := decodeAddrIndexValue(existingAddrVal)
@@ -175,7 +166,6 @@ func (k Keeper) UpsertAssertion(ctx sdk.Context, msg *types.MsgIndexerAssertion)
 		}
 	}
 
-	// Build new row.
 	row := types.Indexer{
 		SourceChain:        msg.SourceChain,
 		SourceChainId:      msg.SourceChainId,
@@ -187,14 +177,11 @@ func (k Keeper) UpsertAssertion(ctx sdk.Context, msg *types.MsgIndexerAssertion)
 		PayoutAddress:      msg.PayoutAddress,
 	}
 	if isUpdate && !operatorChanged {
-		// Idempotent path: preserve operator-side fields.
 		row.Registered = existing.Registered
 		row.Did = existing.Did
 		row.ConnectionString = existing.ConnectionString
 	}
-	// If operator changed, operator-side fields are zero-valued — new operator must register.
 
-	// If operator changed, drop the old addr_idx and emit the supersession event.
 	if isUpdate && operatorChanged {
 		store.Delete(addrIndexKey(existing.OperatorAddress))
 		emitSuperseded(ctx, msg.SourceChainId, msg.ValidatorPubkey, existing.OperatorAddress, msg.OperatorAddress, existing.Nonce, msg.Nonce)
@@ -215,8 +202,6 @@ func (k Keeper) UpsertAssertion(ctx sdk.Context, msg *types.MsgIndexerAssertion)
 	return nil
 }
 
-// SetPayout handles a MsgSetPayout. Updates only payout_address and nonce on
-// an existing row; operator-side fields are untouched.
 func (k Keeper) SetPayout(ctx sdk.Context, msg *types.MsgSetPayout) error {
 	store := runtime.KVStoreAdapter(k.storeService.OpenKVStore(ctx))
 	rowKey := indexerRowKey(msg.SourceChainId, msg.ValidatorPubkey)
@@ -246,8 +231,6 @@ func (k Keeper) SetPayout(ctx sdk.Context, msg *types.MsgSetPayout) error {
 	return nil
 }
 
-// RevokeIndexer handles a MsgRevokeIndexer. Deletes the row and the inverse
-// index entry.
 func (k Keeper) RevokeIndexer(ctx sdk.Context, msg *types.MsgRevokeIndexer) error {
 	store := runtime.KVStoreAdapter(k.storeService.OpenKVStore(ctx))
 	rowKey := indexerRowKey(msg.SourceChainId, msg.ValidatorPubkey)
@@ -272,55 +255,158 @@ func (k Keeper) RevokeIndexer(ctx sdk.Context, msg *types.MsgRevokeIndexer) erro
 	return nil
 }
 
-// CompleteRegistration flips an indexer row to registered. Called by the EVM
-// precompile after verifying the operator's possession of the node identity
-// key. Returns the updated row plus the previous DID on the row (empty if the
-// row was not yet registered). The caller uses the previous DID to decide
-// whether a new ICA SetRelationship is needed: if it differs from the new DID,
-// the caller should fire it (and optionally clean up the old DID's
-// relationship).
-func (k Keeper) CompleteRegistration(
+type RegisterResult struct {
+	Did           string
+	SourceChain   string
+	SourceChainID uint64
+	Pending       bool
+}
+
+func (k Keeper) RegisterIndexer(
+	ctx sdk.Context,
+	operatorAddress string,
+	nodeIdentityKeyPubkey []byte,
+	nodeIdentityKeySignature []byte,
+	message []byte,
+	connectionString string,
+) (RegisterResult, error) {
+	if err := commoncrypto.VerifyNodeIdentityKeySignature(nodeIdentityKeyPubkey, message, nodeIdentityKeySignature); err != nil {
+		return RegisterResult{}, err
+	}
+
+	store := runtime.KVStoreAdapter(k.storeService.OpenKVStore(ctx))
+	v := store.Get(addrIndexKey(operatorAddress))
+	if len(v) == 0 {
+		return RegisterResult{}, fmt.Errorf("indexer not asserted for address %s", operatorAddress)
+	}
+	chainID, pub, decErr := decodeAddrIndexValue(v)
+	if decErr != nil {
+		return RegisterResult{}, decErr
+	}
+	rowBz := store.Get(indexerRowKey(chainID, pub))
+	if len(rowBz) == 0 {
+		return RegisterResult{}, fmt.Errorf("addr_idx points at missing row")
+	}
+	var row types.Indexer
+	if err := k.cdc.Unmarshal(rowBz, &row); err != nil {
+		return RegisterResult{}, err
+	}
+
+	did, err := commoncrypto.DeriveDID(nodeIdentityKeyPubkey)
+	if err != nil {
+		return RegisterResult{}, fmt.Errorf("derive did: %w", err)
+	}
+
+	out := RegisterResult{
+		Did:           did,
+		SourceChain:   row.SourceChain,
+		SourceChainID: row.SourceChainId,
+	}
+
+	if row.Registered && row.Did == did && row.ConnectionString == connectionString {
+		out.Pending = false
+		return out, nil
+	}
+
+	claim := &types.PendingClaim{
+		OperatorAddress:  operatorAddress,
+		ConnectionString: connectionString,
+	}
+	claimBz, mErr := k.cdc.Marshal(claim)
+	if mErr != nil {
+		return RegisterResult{}, fmt.Errorf("marshal pending claim: %w", mErr)
+	}
+	store.Set(pendingClaimKey(did), claimBz)
+
+	if row.Did == "" {
+		if _, _, _, err := k.sourcehubKeeper.SendICASetRelationship(ctx, did, "indexer", operatorAddress); err != nil {
+			store.Delete(pendingClaimKey(did))
+			return RegisterResult{}, err
+		}
+	} else {
+		if _, _, _, err := k.sourcehubKeeper.SendICASetAndDeleteRelationship(ctx, did, row.Did, "indexer", operatorAddress); err != nil {
+			store.Delete(pendingClaimKey(did))
+			return RegisterResult{}, err
+		}
+	}
+
+	emitPending(ctx, &row, did, connectionString)
+	out.Pending = true
+	return out, nil
+}
+
+func pendingClaimKey(did string) []byte {
+	return []byte(types.PendingClaimPrefix + did)
+}
+
+func (k Keeper) SetPendingClaim(ctx sdk.Context, did string, claim types.PendingClaim) error {
+	store := runtime.KVStoreAdapter(k.storeService.OpenKVStore(ctx))
+	bz, err := k.cdc.Marshal(&claim)
+	if err != nil {
+		return err
+	}
+	store.Set(pendingClaimKey(did), bz)
+	return nil
+}
+
+func (k Keeper) GetPendingClaim(ctx sdk.Context, did string) (types.PendingClaim, bool, error) {
+	store := runtime.KVStoreAdapter(k.storeService.OpenKVStore(ctx))
+	bz := store.Get(pendingClaimKey(did))
+	if len(bz) == 0 {
+		return types.PendingClaim{}, false, nil
+	}
+	var c types.PendingClaim
+	if err := k.cdc.Unmarshal(bz, &c); err != nil {
+		return types.PendingClaim{}, false, err
+	}
+	return c, true, nil
+}
+
+func (k Keeper) DeletePendingClaim(ctx sdk.Context, did string) {
+	store := runtime.KVStoreAdapter(k.storeService.OpenKVStore(ctx))
+	store.Delete(pendingClaimKey(did))
+}
+
+func (k Keeper) ApplyRegistration(
 	ctx sdk.Context,
 	operatorAddress string,
 	did string,
 	connectionString string,
-) (row types.Indexer, prevDid string, err error) {
+) error {
 	store := runtime.KVStoreAdapter(k.storeService.OpenKVStore(ctx))
 
 	v := store.Get(addrIndexKey(operatorAddress))
 	if len(v) == 0 {
-		return types.Indexer{}, "", fmt.Errorf("indexer not asserted for address %s", operatorAddress)
+		return nil
 	}
-	chainID, pub, decErr := decodeAddrIndexValue(v)
-	if decErr != nil {
-		return types.Indexer{}, "", decErr
+	chainID, pub, err := decodeAddrIndexValue(v)
+	if err != nil {
+		return err
 	}
 
 	rowKey := indexerRowKey(chainID, pub)
 	bz := store.Get(rowKey)
 	if len(bz) == 0 {
-		return types.Indexer{}, "", fmt.Errorf("addr_idx points at missing row")
+		return nil
 	}
+	var row types.Indexer
 	if err := k.cdc.Unmarshal(bz, &row); err != nil {
-		return types.Indexer{}, "", err
+		return err
 	}
 
-	prevDid = row.Did
-	row.Registered = true
 	row.Did = did
 	row.ConnectionString = connectionString
+	row.Registered = true
 
-	out, mErr := k.cdc.Marshal(&row)
-	if mErr != nil {
-		return types.Indexer{}, "", fmt.Errorf("marshal indexer: %w", mErr)
+	out, err := k.cdc.Marshal(&row)
+	if err != nil {
+		return err
 	}
 	store.Set(rowKey, out)
 
 	emitRegistered(ctx, &row)
-	return row, prevDid, nil
+	return nil
 }
-
-// ─── Count helpers ────────────────────────────────────────────────────
 
 func (k Keeper) incrementCount(ctx sdk.Context) {
 	store := runtime.KVStoreAdapter(k.storeService.OpenKVStore(ctx))
@@ -341,8 +427,6 @@ func (k Keeper) decrementCount(ctx sdk.Context) {
 	store.Set([]byte(types.IndexerCountKey), buf[:])
 }
 
-// ─── Genesis ──────────────────────────────────────────────────────────
-
 func (k Keeper) InitGenesis(ctx sdk.Context, gs types.GenesisState) {
 	store := runtime.KVStoreAdapter(k.storeService.OpenKVStore(ctx))
 	for i := range gs.Indexers {
@@ -360,6 +444,6 @@ func (k Keeper) InitGenesis(ctx sdk.Context, gs types.GenesisState) {
 }
 
 func (k Keeper) ExportGenesis(ctx sdk.Context) *types.GenesisState {
-	indexers, _, _ := k.IterateIndexers(ctx, &query.PageRequest{Limit: 10_000_000})
+	indexers, _, _ := k.IterateIndexers(ctx, 0, &query.PageRequest{Limit: 10_000_000})
 	return &types.GenesisState{Indexers: indexers}
 }

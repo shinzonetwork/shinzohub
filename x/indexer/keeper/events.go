@@ -54,6 +54,17 @@ func emitRevoked(ctx sdk.Context, row *types.Indexer, atNonce uint64) {
 	))
 }
 
+func emitPending(ctx sdk.Context, row *types.Indexer, did, connectionString string) {
+	ctx.EventManager().EmitEvent(sdk.NewEvent(
+		types.EventTypeIndexerPending,
+		sdk.NewAttribute(types.AttrKeySourceChainID, strconv.FormatUint(row.SourceChainId, 10)),
+		sdk.NewAttribute(types.AttrKeyValidatorPubkey, hex.EncodeToString(row.ValidatorPubkey)),
+		sdk.NewAttribute(types.AttrKeyOperatorAddress, row.OperatorAddress),
+		sdk.NewAttribute(types.AttrKeyDID, did),
+		sdk.NewAttribute(types.AttrKeyConnectionString, connectionString),
+	))
+}
+
 func emitRegistered(ctx sdk.Context, row *types.Indexer) {
 	ctx.EventManager().EmitEvent(sdk.NewEvent(
 		types.EventTypeIndexerRegistered,
@@ -62,5 +73,14 @@ func emitRegistered(ctx sdk.Context, row *types.Indexer) {
 		sdk.NewAttribute(types.AttrKeyOperatorAddress, row.OperatorAddress),
 		sdk.NewAttribute(types.AttrKeyDID, row.Did),
 		sdk.NewAttribute(types.AttrKeyConnectionString, row.ConnectionString),
+	))
+}
+
+func emitRegistrationFailed(ctx sdk.Context, operatorAddress, attemptedDid, reason string) {
+	ctx.EventManager().EmitEvent(sdk.NewEvent(
+		types.EventTypeIndexerRegistrationFailed,
+		sdk.NewAttribute(types.AttrKeyOperatorAddress, operatorAddress),
+		sdk.NewAttribute(types.AttrKeyDID, attemptedDid),
+		sdk.NewAttribute(types.AttrKeyReason, reason),
 	))
 }

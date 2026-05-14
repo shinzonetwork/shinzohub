@@ -6,12 +6,12 @@ import "gogoproto/gogo.proto";
 
 option go_package = "github.com/shinzonetwork/shinzohub/x/indexer/types";
 
-// Indexer is the on-chain record for one validator's indexer slot.
-// One row per (source_chain_id, validator_pubkey). The row grows from
-// pending to registered over its lifecycle.
+message PendingClaim {
+  string operator_address = 1;
+  string connection_string = 2;
+}
+
 message Indexer {
-  // ── Validator-side facts (set by MsgIndexerAssertion). ───────────────
-  // Mirrored by the relayer from the outpost event on the source chain.
   string source_chain = 1;
   uint64 source_chain_id = 2;
   bytes validator_pubkey = 3;
@@ -19,11 +19,9 @@ message Indexer {
   uint64 nonce = 5;
   bytes chain_specific = 6;
 
-  // ── Delegation facts (set by MsgIndexerAssertion). ───────────────────
   string operator_address = 7;
   string payout_address = 8;
 
-  // ── Operator-side facts (set by IndexerRegistry.register). ──────────
   bool registered = 9;
   string did = 10;
   string connection_string = 11;

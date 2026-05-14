@@ -6,20 +6,11 @@ import "cosmos/msg/v1/msg.proto";
 
 option go_package = "github.com/shinzonetwork/shinzohub/x/indexer/types";
 
-// Msg defines the indexer module Msg service.
 service Msg {
   option (cosmos.msg.v1.service) = true;
 
-  // AddIndexerAssertion creates or updates the indexer row for a validator.
-  // Admin-signed; mirrors an outpost IndexerDelegated event.
   rpc AddIndexerAssertion(MsgIndexerAssertion) returns (MsgIndexerAssertionResponse);
-
-  // SetPayout updates only the payout address on an existing row.
-  // Admin-signed; mirrors an outpost PayoutUpdated event.
   rpc SetPayout(MsgSetPayout) returns (MsgSetPayoutResponse);
-
-  // RevokeIndexer deletes the indexer row.
-  // Admin-signed; mirrors an outpost Revoked event.
   rpc RevokeIndexer(MsgRevokeIndexer) returns (MsgRevokeIndexerResponse);
 }
 
@@ -27,16 +18,12 @@ message MsgIndexerAssertion {
   option (cosmos.msg.v1.signer) = "signer";
 
   string signer = 1;
-
-  // Validator-side facts (mirror of outpost event).
   string source_chain = 2;
   uint64 source_chain_id = 3;
   bytes validator_pubkey = 4;
   bytes assertion_authority = 5;
   uint64 nonce = 6;
   bytes chain_specific = 7;
-
-  // Delegation facts.
   string operator_address = 8;
   string payout_address = 9;
 }

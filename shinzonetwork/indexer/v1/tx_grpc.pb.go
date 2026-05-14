@@ -27,17 +27,9 @@ const (
 // MsgClient is the client API for Msg service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
-//
-// Msg defines the indexer module Msg service.
 type MsgClient interface {
-	// AddIndexerAssertion creates or updates the indexer row for a validator.
-	// Admin-signed; mirrors an outpost IndexerDelegated event.
 	AddIndexerAssertion(ctx context.Context, in *MsgIndexerAssertion, opts ...grpc.CallOption) (*MsgIndexerAssertionResponse, error)
-	// SetPayout updates only the payout address on an existing row.
-	// Admin-signed; mirrors an outpost PayoutUpdated event.
 	SetPayout(ctx context.Context, in *MsgSetPayout, opts ...grpc.CallOption) (*MsgSetPayoutResponse, error)
-	// RevokeIndexer deletes the indexer row.
-	// Admin-signed; mirrors an outpost Revoked event.
 	RevokeIndexer(ctx context.Context, in *MsgRevokeIndexer, opts ...grpc.CallOption) (*MsgRevokeIndexerResponse, error)
 }
 
@@ -82,17 +74,9 @@ func (c *msgClient) RevokeIndexer(ctx context.Context, in *MsgRevokeIndexer, opt
 // MsgServer is the server API for Msg service.
 // All implementations must embed UnimplementedMsgServer
 // for forward compatibility.
-//
-// Msg defines the indexer module Msg service.
 type MsgServer interface {
-	// AddIndexerAssertion creates or updates the indexer row for a validator.
-	// Admin-signed; mirrors an outpost IndexerDelegated event.
 	AddIndexerAssertion(context.Context, *MsgIndexerAssertion) (*MsgIndexerAssertionResponse, error)
-	// SetPayout updates only the payout address on an existing row.
-	// Admin-signed; mirrors an outpost PayoutUpdated event.
 	SetPayout(context.Context, *MsgSetPayout) (*MsgSetPayoutResponse, error)
-	// RevokeIndexer deletes the indexer row.
-	// Admin-signed; mirrors an outpost Revoked event.
 	RevokeIndexer(context.Context, *MsgRevokeIndexer) (*MsgRevokeIndexerResponse, error)
 	mustEmbedUnimplementedMsgServer()
 }

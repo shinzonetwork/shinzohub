@@ -28,7 +28,7 @@ func (q queryServer) Indexers(
 		return nil, status.Error(codes.InvalidArgument, "empty request")
 	}
 	ctx := sdk.UnwrapSDKContext(goCtx)
-	indexers, pageRes, err := q.Keeper.IterateIndexers(ctx, req.Pagination)
+	indexers, pageRes, err := q.Keeper.IterateIndexers(ctx, req.SourceChainId, req.Pagination)
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
