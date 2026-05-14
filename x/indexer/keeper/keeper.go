@@ -272,50 +272,52 @@ func (k Keeper) RevokeIndexer(ctx sdk.Context, msg *types.MsgRevokeIndexer) erro
 	return nil
 }
 
-// CompleteRegistration flips an indexer row from pending to registered. Called
-// by the EVM precompile after verifying the operator's possession of the node
-// identity key. Returns the row's source_chain_id and validator_pubkey so the
-// caller can emit follow-up events.
+// CompleteRegistration flips an indexer row to registered. Called by the EVM
+// precompile after verifying the operator's possession of the node identity
+// key. Returns the updated row plus the previous DID on the row (empty if the
+// row was not yet registered). The caller uses the previous DID to decide
+// whether a new ICA SetRelationship is needed: if it differs from the new DID,
+// the caller should fire it (and optionally clean up the old DID's
+// relationship).
 func (k Keeper) CompleteRegistration(
 	ctx sdk.Context,
 	operatorAddress string,
 	did string,
 	connectionString string,
-) (types.Indexer, bool, error) {
+) (row types.Indexer, prevDid string, err error) {
 	store := runtime.KVStoreAdapter(k.storeService.OpenKVStore(ctx))
 
 	v := store.Get(addrIndexKey(operatorAddress))
 	if len(v) == 0 {
-		return types.Indexer{}, false, fmt.Errorf("indexer not asserted for address %s", operatorAddress)
+		return types.Indexer{}, "", fmt.Errorf("indexer not asserted for address %s", operatorAddress)
 	}
-	chainID, pub, err := decodeAddrIndexValue(v)
-	if err != nil {
-		return types.Indexer{}, false, err
+	chainID, pub, decErr := decodeAddrIndexValue(v)
+	if decErr != nil {
+		return types.Indexer{}, "", decErr
 	}
 
 	rowKey := indexerRowKey(chainID, pub)
 	bz := store.Get(rowKey)
 	if len(bz) == 0 {
-		return types.Indexer{}, false, fmt.Errorf("addr_idx points at missing row")
+		return types.Indexer{}, "", fmt.Errorf("addr_idx points at missing row")
 	}
-	var row types.Indexer
 	if err := k.cdc.Unmarshal(bz, &row); err != nil {
-		return types.Indexer{}, false, err
+		return types.Indexer{}, "", err
 	}
 
-	firstTime := !row.Registered
+	prevDid = row.Did
 	row.Registered = true
 	row.Did = did
 	row.ConnectionString = connectionString
 
-	out, err := k.cdc.Marshal(&row)
-	if err != nil {
-		return types.Indexer{}, false, fmt.Errorf("marshal indexer: %w", err)
+	out, mErr := k.cdc.Marshal(&row)
+	if mErr != nil {
+		return types.Indexer{}, "", fmt.Errorf("marshal indexer: %w", mErr)
 	}
 	store.Set(rowKey, out)
 
 	emitRegistered(ctx, &row)
-	return row, firstTime, nil
+	return row, prevDid, nil
 }
 
 // ─── Count helpers ────────────────────────────────────────────────────

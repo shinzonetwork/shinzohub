@@ -66,14 +66,16 @@ func (p *Precompile) Register(
 		return nil, fmt.Errorf("derive did: %w", err)
 	}
 
-	row, firstTime, err := p.indexerKeeper.CompleteRegistration(ctx, callerBech32, did, connectionString)
+	row, prevDid, err := p.indexerKeeper.CompleteRegistration(ctx, callerBech32, did, connectionString)
 	if err != nil {
 		return nil, err
 	}
 
-	// Fire the ICA only on first registration. Subsequent re-registrations
-	// (connection-string refreshes) reuse the existing relationship.
-	if firstTime {
+	// Fire the ICA whenever the on-chain DID is new (first registration) or
+	// differs from what was previously on chain (operator supplied a fresh
+	// node identity key). A pure connection-string refresh reuses the
+	// existing DID and skips the ICA.
+	if prevDid != did {
 		if _, _, _, err := p.indexerKeeper.SourcehubKeeper().SendICASetRelationship(ctx, did, "indexer", callerBech32); err != nil {
 			return nil, err
 		}

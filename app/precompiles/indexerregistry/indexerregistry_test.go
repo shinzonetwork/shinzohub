@@ -175,15 +175,42 @@ func (s *PrecompileTestSuite) TestRegister_IdempotentDoesNotReissueICA() {
 	s.Require().NoError(err)
 	s.Require().True(s.mockSourcehub.icaCalled)
 
-	// Reset the flag and call again with a refreshed connection string.
+	// Reset the flag and call again with the SAME node identity key but a
+	// refreshed connection string.
 	s.mockSourcehub.icaCalled = false
 	args2 := []interface{}{nodePub, nodeSig, message, "https://idx-1:9091"}
 	_, err = s.precompile.Register(s.ctx, makeContract(caller), s.stateDB, &method, args2)
 	s.Require().NoError(err)
-	s.Require().False(s.mockSourcehub.icaCalled, "ICA should not fire on a re-register")
+	s.Require().False(s.mockSourcehub.icaCalled, "ICA should not fire when DID is unchanged")
 
 	row, _, _ := s.indexerKeeper.GetIndexerByAddress(s.ctx, sdk.AccAddress(caller.Bytes()).String())
 	s.Require().Equal("https://idx-1:9091", row.ConnectionString)
+}
+
+func (s *PrecompileTestSuite) TestRegister_NewNodeKeyReissuesICA() {
+	caller := common.HexToAddress("0x4444444444444444444444444444444444444444")
+	s.assertOperator(sdk.AccAddress(caller.Bytes()).String())
+
+	// First register with node identity key A.
+	msgA := []byte("op-key-A")
+	pubA, sigA := generateNodeIdentityKey(s.T(), msgA)
+	method := s.precompile.ABI.Methods["register"]
+	_, err := s.precompile.Register(s.ctx, makeContract(caller), s.stateDB, &method, []interface{}{pubA, sigA, msgA, "https://idx:9090"})
+	s.Require().NoError(err)
+	s.Require().True(s.mockSourcehub.icaCalled)
+	didA, _, _ := s.indexerKeeper.GetIndexerByAddress(s.ctx, sdk.AccAddress(caller.Bytes()).String())
+
+	// Re-register with a DIFFERENT node identity key — should fire ICA again
+	// because the DID changes.
+	s.mockSourcehub.icaCalled = false
+	msgB := []byte("op-key-B")
+	pubB, sigB := generateNodeIdentityKey(s.T(), msgB)
+	_, err = s.precompile.Register(s.ctx, makeContract(caller), s.stateDB, &method, []interface{}{pubB, sigB, msgB, "https://idx:9090"})
+	s.Require().NoError(err)
+	s.Require().True(s.mockSourcehub.icaCalled, "ICA should fire when DID changes")
+
+	didB, _, _ := s.indexerKeeper.GetIndexerByAddress(s.ctx, sdk.AccAddress(caller.Bytes()).String())
+	s.Require().NotEqual(didA.Did, didB.Did)
 }
 
 func (s *PrecompileTestSuite) TestRegister_RevertsWithoutAssertion() {

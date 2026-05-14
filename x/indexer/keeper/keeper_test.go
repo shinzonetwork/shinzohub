@@ -141,9 +141,9 @@ func (s *KeeperTestSuite) TestUpsertAssertion_Rotation_ResetsOperatorSide() {
 
 	// Initial assert + complete registration.
 	s.Require().NoError(s.keeper.UpsertAssertion(s.ctx, baseAssertion(op1, pay)))
-	_, firstTime, err := s.keeper.CompleteRegistration(s.ctx, op1, "did:op1", "https://op1/9090")
+	_, prevDid, err := s.keeper.CompleteRegistration(s.ctx, op1, "did:op1", "https://op1/9090")
 	s.Require().NoError(err)
-	s.Require().True(firstTime)
+	s.Require().Empty(prevDid)
 
 	// Rotate: same validator, new operator, higher nonce.
 	rotate := baseAssertion(op2, pay)
@@ -177,8 +177,9 @@ func (s *KeeperTestSuite) TestUpsertAssertion_SameOperator_PreservesRegistration
 	pay := addr(0x02)
 
 	s.Require().NoError(s.keeper.UpsertAssertion(s.ctx, baseAssertion(op, pay)))
-	_, _, err := s.keeper.CompleteRegistration(s.ctx, op, "did:op", "https://op/9090")
+	_, prevDid, err := s.keeper.CompleteRegistration(s.ctx, op, "did:op", "https://op/9090")
 	s.Require().NoError(err)
+	s.Require().Empty(prevDid)
 
 	// Re-assert with same operator, higher nonce, fresh proof.
 	refresh := baseAssertion(op, pay)
@@ -274,22 +275,29 @@ func (s *KeeperTestSuite) TestRevokeIndexer_DropsRowAndIndex() {
 	s.Require().Equal(uint64(0), s.keeper.GetIndexerCount(s.ctx))
 }
 
-func (s *KeeperTestSuite) TestCompleteRegistration_FiresOnce() {
+func (s *KeeperTestSuite) TestCompleteRegistration_PreviousDIDTracksChange() {
 	op := addr(0x01)
 	pay := addr(0x02)
 	s.Require().NoError(s.keeper.UpsertAssertion(s.ctx, baseAssertion(op, pay)))
 
-	_, firstTime, err := s.keeper.CompleteRegistration(s.ctx, op, "did:op", "https://op/9090")
+	// First registration: prevDid is empty.
+	_, prevDid, err := s.keeper.CompleteRegistration(s.ctx, op, "did:op-A", "https://op/9090")
 	s.Require().NoError(err)
-	s.Require().True(firstTime)
+	s.Require().Empty(prevDid)
 
-	// Idempotent re-register: row stays registered, firstTime is false.
-	_, firstTime, err = s.keeper.CompleteRegistration(s.ctx, op, "did:op", "https://op/new")
+	// Refresh with the SAME DID: prevDid equals the new DID — caller can skip the ICA.
+	_, prevDid, err = s.keeper.CompleteRegistration(s.ctx, op, "did:op-A", "https://op/new")
 	s.Require().NoError(err)
-	s.Require().False(firstTime)
+	s.Require().Equal("did:op-A", prevDid)
+
+	// Refresh with a DIFFERENT DID: prevDid is the old one and differs from the new — caller fires a fresh SetRelationship.
+	_, prevDid, err = s.keeper.CompleteRegistration(s.ctx, op, "did:op-B", "https://op/newer")
+	s.Require().NoError(err)
+	s.Require().Equal("did:op-A", prevDid)
 
 	row, _, _ := s.keeper.GetIndexerByValidator(s.ctx, 1, validatorA())
-	s.Require().Equal("https://op/new", row.ConnectionString)
+	s.Require().Equal("did:op-B", row.Did)
+	s.Require().Equal("https://op/newer", row.ConnectionString)
 }
 
 func (s *KeeperTestSuite) TestCompleteRegistration_UnknownOperatorErrors() {
