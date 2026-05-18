@@ -15,6 +15,7 @@ enum RequestKind {
   REQUEST_KIND_REGISTER_SHINZO_OBJECTS = 3;
   REQUEST_KIND_REQUEST_STREAM_ACCESS   = 4;
   REQUEST_KIND_REGISTER_SHINZO_POLICY  = 5;
+  REQUEST_KIND_DELETE_STREAM_ACCESS    = 6;
 }
 
 // RequestStatus tracks the lifecycle of a pending ICA request.

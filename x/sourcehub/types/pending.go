@@ -33,10 +33,11 @@ const (
 	EventTypeRequestFailed       = "sourcehub.request_failed"
 	EventTypeRequestTimedOut     = "sourcehub.request_timed_out"
 
-	EventTypeStreamAccessPending  = "sourcehub.stream_access_pending"
-	EventTypeStreamAccessGranted  = "sourcehub.stream_access_granted"
-	EventTypeStreamAccessDenied   = "sourcehub.stream_access_denied"
-	EventTypeStreamAccessTimedOut = "sourcehub.stream_access_timed_out"
+	EventTypeStreamAccessPending       = "sourcehub.stream_access_pending"
+	EventTypeStreamAccessGranted       = "sourcehub.stream_access_granted"
+	EventTypeStreamAccessDenied        = "sourcehub.stream_access_denied"
+	EventTypeStreamAccessTimedOut      = "sourcehub.stream_access_timed_out"
+	EventTypeStreamAccessDeletePending = "sourcehub.stream_access_delete_pending"
 
 	EventTypeShinzoObjectsRegistered          = "sourcehub.shinzo_objects_registered"
 	EventTypeShinzoObjectsRegistrationFailed  = "sourcehub.shinzo_objects_registration_failed"

@@ -3945,6 +3945,1134 @@ func (x *fastReflection_MsgRequestStreamAccessResponse) ProtoMethods() *protoifa
 	}
 }
 
+var (
+	md_MsgDeleteStreamAccess           protoreflect.MessageDescriptor
+	fd_MsgDeleteStreamAccess_signer    protoreflect.FieldDescriptor
+	fd_MsgDeleteStreamAccess_resource  protoreflect.FieldDescriptor
+	fd_MsgDeleteStreamAccess_stream_id protoreflect.FieldDescriptor
+	fd_MsgDeleteStreamAccess_did       protoreflect.FieldDescriptor
+)
+
+func init() {
+	file_shinzonetwork_sourcehub_v1_tx_proto_init()
+	md_MsgDeleteStreamAccess = File_shinzonetwork_sourcehub_v1_tx_proto.Messages().ByName("MsgDeleteStreamAccess")
+	fd_MsgDeleteStreamAccess_signer = md_MsgDeleteStreamAccess.Fields().ByName("signer")
+	fd_MsgDeleteStreamAccess_resource = md_MsgDeleteStreamAccess.Fields().ByName("resource")
+	fd_MsgDeleteStreamAccess_stream_id = md_MsgDeleteStreamAccess.Fields().ByName("stream_id")
+	fd_MsgDeleteStreamAccess_did = md_MsgDeleteStreamAccess.Fields().ByName("did")
+}
+
+var _ protoreflect.Message = (*fastReflection_MsgDeleteStreamAccess)(nil)
+
+type fastReflection_MsgDeleteStreamAccess MsgDeleteStreamAccess
+
+func (x *MsgDeleteStreamAccess) ProtoReflect() protoreflect.Message {
+	return (*fastReflection_MsgDeleteStreamAccess)(x)
+}
+
+func (x *MsgDeleteStreamAccess) slowProtoReflect() protoreflect.Message {
+	mi := &file_shinzonetwork_sourcehub_v1_tx_proto_msgTypes[8]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+var _fastReflection_MsgDeleteStreamAccess_messageType fastReflection_MsgDeleteStreamAccess_messageType
+var _ protoreflect.MessageType = fastReflection_MsgDeleteStreamAccess_messageType{}
+
+type fastReflection_MsgDeleteStreamAccess_messageType struct{}
+
+func (x fastReflection_MsgDeleteStreamAccess_messageType) Zero() protoreflect.Message {
+	return (*fastReflection_MsgDeleteStreamAccess)(nil)
+}
+func (x fastReflection_MsgDeleteStreamAccess_messageType) New() protoreflect.Message {
+	return new(fastReflection_MsgDeleteStreamAccess)
+}
+func (x fastReflection_MsgDeleteStreamAccess_messageType) Descriptor() protoreflect.MessageDescriptor {
+	return md_MsgDeleteStreamAccess
+}
+
+// Descriptor returns message descriptor, which contains only the protobuf
+// type information for the message.
+func (x *fastReflection_MsgDeleteStreamAccess) Descriptor() protoreflect.MessageDescriptor {
+	return md_MsgDeleteStreamAccess
+}
+
+// Type returns the message type, which encapsulates both Go and protobuf
+// type information. If the Go type information is not needed,
+// it is recommended that the message descriptor be used instead.
+func (x *fastReflection_MsgDeleteStreamAccess) Type() protoreflect.MessageType {
+	return _fastReflection_MsgDeleteStreamAccess_messageType
+}
+
+// New returns a newly allocated and mutable empty message.
+func (x *fastReflection_MsgDeleteStreamAccess) New() protoreflect.Message {
+	return new(fastReflection_MsgDeleteStreamAccess)
+}
+
+// Interface unwraps the message reflection interface and
+// returns the underlying ProtoMessage interface.
+func (x *fastReflection_MsgDeleteStreamAccess) Interface() protoreflect.ProtoMessage {
+	return (*MsgDeleteStreamAccess)(x)
+}
+
+// Range iterates over every populated field in an undefined order,
+// calling f for each field descriptor and value encountered.
+// Range returns immediately if f returns false.
+// While iterating, mutating operations may only be performed
+// on the current field descriptor.
+func (x *fastReflection_MsgDeleteStreamAccess) Range(f func(protoreflect.FieldDescriptor, protoreflect.Value) bool) {
+	if x.Signer != "" {
+		value := protoreflect.ValueOfString(x.Signer)
+		if !f(fd_MsgDeleteStreamAccess_signer, value) {
+			return
+		}
+	}
+	if x.Resource != 0 {
+		value := protoreflect.ValueOfEnum((protoreflect.EnumNumber)(x.Resource))
+		if !f(fd_MsgDeleteStreamAccess_resource, value) {
+			return
+		}
+	}
+	if x.StreamId != "" {
+		value := protoreflect.ValueOfString(x.StreamId)
+		if !f(fd_MsgDeleteStreamAccess_stream_id, value) {
+			return
+		}
+	}
+	if x.Did != "" {
+		value := protoreflect.ValueOfString(x.Did)
+		if !f(fd_MsgDeleteStreamAccess_did, value) {
+			return
+		}
+	}
+}
+
+// Has reports whether a field is populated.
+//
+// Some fields have the property of nullability where it is possible to
+// distinguish between the default value of a field and whether the field
+// was explicitly populated with the default value. Singular message fields,
+// member fields of a oneof, and proto2 scalar fields are nullable. Such
+// fields are populated only if explicitly set.
+//
+// In other cases (aside from the nullable cases above),
+// a proto3 scalar field is populated if it contains a non-zero value, and
+// a repeated field is populated if it is non-empty.
+func (x *fastReflection_MsgDeleteStreamAccess) Has(fd protoreflect.FieldDescriptor) bool {
+	switch fd.FullName() {
+	case "shinzonetwork.sourcehub.v1.MsgDeleteStreamAccess.signer":
+		return x.Signer != ""
+	case "shinzonetwork.sourcehub.v1.MsgDeleteStreamAccess.resource":
+		return x.Resource != 0
+	case "shinzonetwork.sourcehub.v1.MsgDeleteStreamAccess.stream_id":
+		return x.StreamId != ""
+	case "shinzonetwork.sourcehub.v1.MsgDeleteStreamAccess.did":
+		return x.Did != ""
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: shinzonetwork.sourcehub.v1.MsgDeleteStreamAccess"))
+		}
+		panic(fmt.Errorf("message shinzonetwork.sourcehub.v1.MsgDeleteStreamAccess does not contain field %s", fd.FullName()))
+	}
+}
+
+// Clear clears the field such that a subsequent Has call reports false.
+//
+// Clearing an extension field clears both the extension type and value
+// associated with the given field number.
+//
+// Clear is a mutating operation and unsafe for concurrent use.
+func (x *fastReflection_MsgDeleteStreamAccess) Clear(fd protoreflect.FieldDescriptor) {
+	switch fd.FullName() {
+	case "shinzonetwork.sourcehub.v1.MsgDeleteStreamAccess.signer":
+		x.Signer = ""
+	case "shinzonetwork.sourcehub.v1.MsgDeleteStreamAccess.resource":
+		x.Resource = 0
+	case "shinzonetwork.sourcehub.v1.MsgDeleteStreamAccess.stream_id":
+		x.StreamId = ""
+	case "shinzonetwork.sourcehub.v1.MsgDeleteStreamAccess.did":
+		x.Did = ""
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: shinzonetwork.sourcehub.v1.MsgDeleteStreamAccess"))
+		}
+		panic(fmt.Errorf("message shinzonetwork.sourcehub.v1.MsgDeleteStreamAccess does not contain field %s", fd.FullName()))
+	}
+}
+
+// Get retrieves the value for a field.
+//
+// For unpopulated scalars, it returns the default value, where
+// the default value of a bytes scalar is guaranteed to be a copy.
+// For unpopulated composite types, it returns an empty, read-only view
+// of the value; to obtain a mutable reference, use Mutable.
+func (x *fastReflection_MsgDeleteStreamAccess) Get(descriptor protoreflect.FieldDescriptor) protoreflect.Value {
+	switch descriptor.FullName() {
+	case "shinzonetwork.sourcehub.v1.MsgDeleteStreamAccess.signer":
+		value := x.Signer
+		return protoreflect.ValueOfString(value)
+	case "shinzonetwork.sourcehub.v1.MsgDeleteStreamAccess.resource":
+		value := x.Resource
+		return protoreflect.ValueOfEnum((protoreflect.EnumNumber)(value))
+	case "shinzonetwork.sourcehub.v1.MsgDeleteStreamAccess.stream_id":
+		value := x.StreamId
+		return protoreflect.ValueOfString(value)
+	case "shinzonetwork.sourcehub.v1.MsgDeleteStreamAccess.did":
+		value := x.Did
+		return protoreflect.ValueOfString(value)
+	default:
+		if descriptor.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: shinzonetwork.sourcehub.v1.MsgDeleteStreamAccess"))
+		}
+		panic(fmt.Errorf("message shinzonetwork.sourcehub.v1.MsgDeleteStreamAccess does not contain field %s", descriptor.FullName()))
+	}
+}
+
+// Set stores the value for a field.
+//
+// For a field belonging to a oneof, it implicitly clears any other field
+// that may be currently set within the same oneof.
+// For extension fields, it implicitly stores the provided ExtensionType.
+// When setting a composite type, it is unspecified whether the stored value
+// aliases the source's memory in any way. If the composite value is an
+// empty, read-only value, then it panics.
+//
+// Set is a mutating operation and unsafe for concurrent use.
+func (x *fastReflection_MsgDeleteStreamAccess) Set(fd protoreflect.FieldDescriptor, value protoreflect.Value) {
+	switch fd.FullName() {
+	case "shinzonetwork.sourcehub.v1.MsgDeleteStreamAccess.signer":
+		x.Signer = value.Interface().(string)
+	case "shinzonetwork.sourcehub.v1.MsgDeleteStreamAccess.resource":
+		x.Resource = (Resource)(value.Enum())
+	case "shinzonetwork.sourcehub.v1.MsgDeleteStreamAccess.stream_id":
+		x.StreamId = value.Interface().(string)
+	case "shinzonetwork.sourcehub.v1.MsgDeleteStreamAccess.did":
+		x.Did = value.Interface().(string)
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: shinzonetwork.sourcehub.v1.MsgDeleteStreamAccess"))
+		}
+		panic(fmt.Errorf("message shinzonetwork.sourcehub.v1.MsgDeleteStreamAccess does not contain field %s", fd.FullName()))
+	}
+}
+
+// Mutable returns a mutable reference to a composite type.
+//
+// If the field is unpopulated, it may allocate a composite value.
+// For a field belonging to a oneof, it implicitly clears any other field
+// that may be currently set within the same oneof.
+// For extension fields, it implicitly stores the provided ExtensionType
+// if not already stored.
+// It panics if the field does not contain a composite type.
+//
+// Mutable is a mutating operation and unsafe for concurrent use.
+func (x *fastReflection_MsgDeleteStreamAccess) Mutable(fd protoreflect.FieldDescriptor) protoreflect.Value {
+	switch fd.FullName() {
+	case "shinzonetwork.sourcehub.v1.MsgDeleteStreamAccess.signer":
+		panic(fmt.Errorf("field signer of message shinzonetwork.sourcehub.v1.MsgDeleteStreamAccess is not mutable"))
+	case "shinzonetwork.sourcehub.v1.MsgDeleteStreamAccess.resource":
+		panic(fmt.Errorf("field resource of message shinzonetwork.sourcehub.v1.MsgDeleteStreamAccess is not mutable"))
+	case "shinzonetwork.sourcehub.v1.MsgDeleteStreamAccess.stream_id":
+		panic(fmt.Errorf("field stream_id of message shinzonetwork.sourcehub.v1.MsgDeleteStreamAccess is not mutable"))
+	case "shinzonetwork.sourcehub.v1.MsgDeleteStreamAccess.did":
+		panic(fmt.Errorf("field did of message shinzonetwork.sourcehub.v1.MsgDeleteStreamAccess is not mutable"))
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: shinzonetwork.sourcehub.v1.MsgDeleteStreamAccess"))
+		}
+		panic(fmt.Errorf("message shinzonetwork.sourcehub.v1.MsgDeleteStreamAccess does not contain field %s", fd.FullName()))
+	}
+}
+
+// NewField returns a new value that is assignable to the field
+// for the given descriptor. For scalars, this returns the default value.
+// For lists, maps, and messages, this returns a new, empty, mutable value.
+func (x *fastReflection_MsgDeleteStreamAccess) NewField(fd protoreflect.FieldDescriptor) protoreflect.Value {
+	switch fd.FullName() {
+	case "shinzonetwork.sourcehub.v1.MsgDeleteStreamAccess.signer":
+		return protoreflect.ValueOfString("")
+	case "shinzonetwork.sourcehub.v1.MsgDeleteStreamAccess.resource":
+		return protoreflect.ValueOfEnum(0)
+	case "shinzonetwork.sourcehub.v1.MsgDeleteStreamAccess.stream_id":
+		return protoreflect.ValueOfString("")
+	case "shinzonetwork.sourcehub.v1.MsgDeleteStreamAccess.did":
+		return protoreflect.ValueOfString("")
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: shinzonetwork.sourcehub.v1.MsgDeleteStreamAccess"))
+		}
+		panic(fmt.Errorf("message shinzonetwork.sourcehub.v1.MsgDeleteStreamAccess does not contain field %s", fd.FullName()))
+	}
+}
+
+// WhichOneof reports which field within the oneof is populated,
+// returning nil if none are populated.
+// It panics if the oneof descriptor does not belong to this message.
+func (x *fastReflection_MsgDeleteStreamAccess) WhichOneof(d protoreflect.OneofDescriptor) protoreflect.FieldDescriptor {
+	switch d.FullName() {
+	default:
+		panic(fmt.Errorf("%s is not a oneof field in shinzonetwork.sourcehub.v1.MsgDeleteStreamAccess", d.FullName()))
+	}
+	panic("unreachable")
+}
+
+// GetUnknown retrieves the entire list of unknown fields.
+// The caller may only mutate the contents of the RawFields
+// if the mutated bytes are stored back into the message with SetUnknown.
+func (x *fastReflection_MsgDeleteStreamAccess) GetUnknown() protoreflect.RawFields {
+	return x.unknownFields
+}
+
+// SetUnknown stores an entire list of unknown fields.
+// The raw fields must be syntactically valid according to the wire format.
+// An implementation may panic if this is not the case.
+// Once stored, the caller must not mutate the content of the RawFields.
+// An empty RawFields may be passed to clear the fields.
+//
+// SetUnknown is a mutating operation and unsafe for concurrent use.
+func (x *fastReflection_MsgDeleteStreamAccess) SetUnknown(fields protoreflect.RawFields) {
+	x.unknownFields = fields
+}
+
+// IsValid reports whether the message is valid.
+//
+// An invalid message is an empty, read-only value.
+//
+// An invalid message often corresponds to a nil pointer of the concrete
+// message type, but the details are implementation dependent.
+// Validity is not part of the protobuf data model, and may not
+// be preserved in marshaling or other operations.
+func (x *fastReflection_MsgDeleteStreamAccess) IsValid() bool {
+	return x != nil
+}
+
+// ProtoMethods returns optional fastReflectionFeature-path implementations of various operations.
+// This method may return nil.
+//
+// The returned methods type is identical to
+// "google.golang.org/protobuf/runtime/protoiface".Methods.
+// Consult the protoiface package documentation for details.
+func (x *fastReflection_MsgDeleteStreamAccess) ProtoMethods() *protoiface.Methods {
+	size := func(input protoiface.SizeInput) protoiface.SizeOutput {
+		x := input.Message.Interface().(*MsgDeleteStreamAccess)
+		if x == nil {
+			return protoiface.SizeOutput{
+				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+				Size:              0,
+			}
+		}
+		options := runtime.SizeInputToOptions(input)
+		_ = options
+		var n int
+		var l int
+		_ = l
+		l = len(x.Signer)
+		if l > 0 {
+			n += 1 + l + runtime.Sov(uint64(l))
+		}
+		if x.Resource != 0 {
+			n += 1 + runtime.Sov(uint64(x.Resource))
+		}
+		l = len(x.StreamId)
+		if l > 0 {
+			n += 1 + l + runtime.Sov(uint64(l))
+		}
+		l = len(x.Did)
+		if l > 0 {
+			n += 1 + l + runtime.Sov(uint64(l))
+		}
+		if x.unknownFields != nil {
+			n += len(x.unknownFields)
+		}
+		return protoiface.SizeOutput{
+			NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+			Size:              n,
+		}
+	}
+
+	marshal := func(input protoiface.MarshalInput) (protoiface.MarshalOutput, error) {
+		x := input.Message.Interface().(*MsgDeleteStreamAccess)
+		if x == nil {
+			return protoiface.MarshalOutput{
+				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+				Buf:               input.Buf,
+			}, nil
+		}
+		options := runtime.MarshalInputToOptions(input)
+		_ = options
+		size := options.Size(x)
+		dAtA := make([]byte, size)
+		i := len(dAtA)
+		_ = i
+		var l int
+		_ = l
+		if x.unknownFields != nil {
+			i -= len(x.unknownFields)
+			copy(dAtA[i:], x.unknownFields)
+		}
+		if len(x.Did) > 0 {
+			i -= len(x.Did)
+			copy(dAtA[i:], x.Did)
+			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.Did)))
+			i--
+			dAtA[i] = 0x22
+		}
+		if len(x.StreamId) > 0 {
+			i -= len(x.StreamId)
+			copy(dAtA[i:], x.StreamId)
+			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.StreamId)))
+			i--
+			dAtA[i] = 0x1a
+		}
+		if x.Resource != 0 {
+			i = runtime.EncodeVarint(dAtA, i, uint64(x.Resource))
+			i--
+			dAtA[i] = 0x10
+		}
+		if len(x.Signer) > 0 {
+			i -= len(x.Signer)
+			copy(dAtA[i:], x.Signer)
+			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.Signer)))
+			i--
+			dAtA[i] = 0xa
+		}
+		if input.Buf != nil {
+			input.Buf = append(input.Buf, dAtA...)
+		} else {
+			input.Buf = dAtA
+		}
+		return protoiface.MarshalOutput{
+			NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+			Buf:               input.Buf,
+		}, nil
+	}
+	unmarshal := func(input protoiface.UnmarshalInput) (protoiface.UnmarshalOutput, error) {
+		x := input.Message.Interface().(*MsgDeleteStreamAccess)
+		if x == nil {
+			return protoiface.UnmarshalOutput{
+				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+				Flags:             input.Flags,
+			}, nil
+		}
+		options := runtime.UnmarshalInputToOptions(input)
+		_ = options
+		dAtA := input.Buf
+		l := len(dAtA)
+		iNdEx := 0
+		for iNdEx < l {
+			preIndex := iNdEx
+			var wire uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				wire |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			fieldNum := int32(wire >> 3)
+			wireType := int(wire & 0x7)
+			if wireType == 4 {
+				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: MsgDeleteStreamAccess: wiretype end group for non-group")
+			}
+			if fieldNum <= 0 {
+				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: MsgDeleteStreamAccess: illegal tag %d (wire type %d)", fieldNum, wire)
+			}
+			switch fieldNum {
+			case 1:
+				if wireType != 2 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field Signer", wireType)
+				}
+				var stringLen uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					stringLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				intStringLen := int(stringLen)
+				if intStringLen < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				postIndex := iNdEx + intStringLen
+				if postIndex < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if postIndex > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				x.Signer = string(dAtA[iNdEx:postIndex])
+				iNdEx = postIndex
+			case 2:
+				if wireType != 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field Resource", wireType)
+				}
+				x.Resource = 0
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					x.Resource |= Resource(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+			case 3:
+				if wireType != 2 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field StreamId", wireType)
+				}
+				var stringLen uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					stringLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				intStringLen := int(stringLen)
+				if intStringLen < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				postIndex := iNdEx + intStringLen
+				if postIndex < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if postIndex > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				x.StreamId = string(dAtA[iNdEx:postIndex])
+				iNdEx = postIndex
+			case 4:
+				if wireType != 2 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field Did", wireType)
+				}
+				var stringLen uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					stringLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				intStringLen := int(stringLen)
+				if intStringLen < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				postIndex := iNdEx + intStringLen
+				if postIndex < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if postIndex > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				x.Did = string(dAtA[iNdEx:postIndex])
+				iNdEx = postIndex
+			default:
+				iNdEx = preIndex
+				skippy, err := runtime.Skip(dAtA[iNdEx:])
+				if err != nil {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, err
+				}
+				if (skippy < 0) || (iNdEx+skippy) < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if (iNdEx + skippy) > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				if !options.DiscardUnknown {
+					x.unknownFields = append(x.unknownFields, dAtA[iNdEx:iNdEx+skippy]...)
+				}
+				iNdEx += skippy
+			}
+		}
+
+		if iNdEx > l {
+			return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+		}
+		return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, nil
+	}
+	return &protoiface.Methods{
+		NoUnkeyedLiterals: struct{}{},
+		Flags:             protoiface.SupportMarshalDeterministic | protoiface.SupportUnmarshalDiscardUnknown,
+		Size:              size,
+		Marshal:           marshal,
+		Unmarshal:         unmarshal,
+		Merge:             nil,
+		CheckInitialized:  nil,
+	}
+}
+
+var (
+	md_MsgDeleteStreamAccessResponse            protoreflect.MessageDescriptor
+	fd_MsgDeleteStreamAccessResponse_sequence   protoreflect.FieldDescriptor
+	fd_MsgDeleteStreamAccessResponse_port_id    protoreflect.FieldDescriptor
+	fd_MsgDeleteStreamAccessResponse_channel_id protoreflect.FieldDescriptor
+)
+
+func init() {
+	file_shinzonetwork_sourcehub_v1_tx_proto_init()
+	md_MsgDeleteStreamAccessResponse = File_shinzonetwork_sourcehub_v1_tx_proto.Messages().ByName("MsgDeleteStreamAccessResponse")
+	fd_MsgDeleteStreamAccessResponse_sequence = md_MsgDeleteStreamAccessResponse.Fields().ByName("sequence")
+	fd_MsgDeleteStreamAccessResponse_port_id = md_MsgDeleteStreamAccessResponse.Fields().ByName("port_id")
+	fd_MsgDeleteStreamAccessResponse_channel_id = md_MsgDeleteStreamAccessResponse.Fields().ByName("channel_id")
+}
+
+var _ protoreflect.Message = (*fastReflection_MsgDeleteStreamAccessResponse)(nil)
+
+type fastReflection_MsgDeleteStreamAccessResponse MsgDeleteStreamAccessResponse
+
+func (x *MsgDeleteStreamAccessResponse) ProtoReflect() protoreflect.Message {
+	return (*fastReflection_MsgDeleteStreamAccessResponse)(x)
+}
+
+func (x *MsgDeleteStreamAccessResponse) slowProtoReflect() protoreflect.Message {
+	mi := &file_shinzonetwork_sourcehub_v1_tx_proto_msgTypes[9]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+var _fastReflection_MsgDeleteStreamAccessResponse_messageType fastReflection_MsgDeleteStreamAccessResponse_messageType
+var _ protoreflect.MessageType = fastReflection_MsgDeleteStreamAccessResponse_messageType{}
+
+type fastReflection_MsgDeleteStreamAccessResponse_messageType struct{}
+
+func (x fastReflection_MsgDeleteStreamAccessResponse_messageType) Zero() protoreflect.Message {
+	return (*fastReflection_MsgDeleteStreamAccessResponse)(nil)
+}
+func (x fastReflection_MsgDeleteStreamAccessResponse_messageType) New() protoreflect.Message {
+	return new(fastReflection_MsgDeleteStreamAccessResponse)
+}
+func (x fastReflection_MsgDeleteStreamAccessResponse_messageType) Descriptor() protoreflect.MessageDescriptor {
+	return md_MsgDeleteStreamAccessResponse
+}
+
+// Descriptor returns message descriptor, which contains only the protobuf
+// type information for the message.
+func (x *fastReflection_MsgDeleteStreamAccessResponse) Descriptor() protoreflect.MessageDescriptor {
+	return md_MsgDeleteStreamAccessResponse
+}
+
+// Type returns the message type, which encapsulates both Go and protobuf
+// type information. If the Go type information is not needed,
+// it is recommended that the message descriptor be used instead.
+func (x *fastReflection_MsgDeleteStreamAccessResponse) Type() protoreflect.MessageType {
+	return _fastReflection_MsgDeleteStreamAccessResponse_messageType
+}
+
+// New returns a newly allocated and mutable empty message.
+func (x *fastReflection_MsgDeleteStreamAccessResponse) New() protoreflect.Message {
+	return new(fastReflection_MsgDeleteStreamAccessResponse)
+}
+
+// Interface unwraps the message reflection interface and
+// returns the underlying ProtoMessage interface.
+func (x *fastReflection_MsgDeleteStreamAccessResponse) Interface() protoreflect.ProtoMessage {
+	return (*MsgDeleteStreamAccessResponse)(x)
+}
+
+// Range iterates over every populated field in an undefined order,
+// calling f for each field descriptor and value encountered.
+// Range returns immediately if f returns false.
+// While iterating, mutating operations may only be performed
+// on the current field descriptor.
+func (x *fastReflection_MsgDeleteStreamAccessResponse) Range(f func(protoreflect.FieldDescriptor, protoreflect.Value) bool) {
+	if x.Sequence != uint64(0) {
+		value := protoreflect.ValueOfUint64(x.Sequence)
+		if !f(fd_MsgDeleteStreamAccessResponse_sequence, value) {
+			return
+		}
+	}
+	if x.PortId != "" {
+		value := protoreflect.ValueOfString(x.PortId)
+		if !f(fd_MsgDeleteStreamAccessResponse_port_id, value) {
+			return
+		}
+	}
+	if x.ChannelId != "" {
+		value := protoreflect.ValueOfString(x.ChannelId)
+		if !f(fd_MsgDeleteStreamAccessResponse_channel_id, value) {
+			return
+		}
+	}
+}
+
+// Has reports whether a field is populated.
+//
+// Some fields have the property of nullability where it is possible to
+// distinguish between the default value of a field and whether the field
+// was explicitly populated with the default value. Singular message fields,
+// member fields of a oneof, and proto2 scalar fields are nullable. Such
+// fields are populated only if explicitly set.
+//
+// In other cases (aside from the nullable cases above),
+// a proto3 scalar field is populated if it contains a non-zero value, and
+// a repeated field is populated if it is non-empty.
+func (x *fastReflection_MsgDeleteStreamAccessResponse) Has(fd protoreflect.FieldDescriptor) bool {
+	switch fd.FullName() {
+	case "shinzonetwork.sourcehub.v1.MsgDeleteStreamAccessResponse.sequence":
+		return x.Sequence != uint64(0)
+	case "shinzonetwork.sourcehub.v1.MsgDeleteStreamAccessResponse.port_id":
+		return x.PortId != ""
+	case "shinzonetwork.sourcehub.v1.MsgDeleteStreamAccessResponse.channel_id":
+		return x.ChannelId != ""
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: shinzonetwork.sourcehub.v1.MsgDeleteStreamAccessResponse"))
+		}
+		panic(fmt.Errorf("message shinzonetwork.sourcehub.v1.MsgDeleteStreamAccessResponse does not contain field %s", fd.FullName()))
+	}
+}
+
+// Clear clears the field such that a subsequent Has call reports false.
+//
+// Clearing an extension field clears both the extension type and value
+// associated with the given field number.
+//
+// Clear is a mutating operation and unsafe for concurrent use.
+func (x *fastReflection_MsgDeleteStreamAccessResponse) Clear(fd protoreflect.FieldDescriptor) {
+	switch fd.FullName() {
+	case "shinzonetwork.sourcehub.v1.MsgDeleteStreamAccessResponse.sequence":
+		x.Sequence = uint64(0)
+	case "shinzonetwork.sourcehub.v1.MsgDeleteStreamAccessResponse.port_id":
+		x.PortId = ""
+	case "shinzonetwork.sourcehub.v1.MsgDeleteStreamAccessResponse.channel_id":
+		x.ChannelId = ""
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: shinzonetwork.sourcehub.v1.MsgDeleteStreamAccessResponse"))
+		}
+		panic(fmt.Errorf("message shinzonetwork.sourcehub.v1.MsgDeleteStreamAccessResponse does not contain field %s", fd.FullName()))
+	}
+}
+
+// Get retrieves the value for a field.
+//
+// For unpopulated scalars, it returns the default value, where
+// the default value of a bytes scalar is guaranteed to be a copy.
+// For unpopulated composite types, it returns an empty, read-only view
+// of the value; to obtain a mutable reference, use Mutable.
+func (x *fastReflection_MsgDeleteStreamAccessResponse) Get(descriptor protoreflect.FieldDescriptor) protoreflect.Value {
+	switch descriptor.FullName() {
+	case "shinzonetwork.sourcehub.v1.MsgDeleteStreamAccessResponse.sequence":
+		value := x.Sequence
+		return protoreflect.ValueOfUint64(value)
+	case "shinzonetwork.sourcehub.v1.MsgDeleteStreamAccessResponse.port_id":
+		value := x.PortId
+		return protoreflect.ValueOfString(value)
+	case "shinzonetwork.sourcehub.v1.MsgDeleteStreamAccessResponse.channel_id":
+		value := x.ChannelId
+		return protoreflect.ValueOfString(value)
+	default:
+		if descriptor.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: shinzonetwork.sourcehub.v1.MsgDeleteStreamAccessResponse"))
+		}
+		panic(fmt.Errorf("message shinzonetwork.sourcehub.v1.MsgDeleteStreamAccessResponse does not contain field %s", descriptor.FullName()))
+	}
+}
+
+// Set stores the value for a field.
+//
+// For a field belonging to a oneof, it implicitly clears any other field
+// that may be currently set within the same oneof.
+// For extension fields, it implicitly stores the provided ExtensionType.
+// When setting a composite type, it is unspecified whether the stored value
+// aliases the source's memory in any way. If the composite value is an
+// empty, read-only value, then it panics.
+//
+// Set is a mutating operation and unsafe for concurrent use.
+func (x *fastReflection_MsgDeleteStreamAccessResponse) Set(fd protoreflect.FieldDescriptor, value protoreflect.Value) {
+	switch fd.FullName() {
+	case "shinzonetwork.sourcehub.v1.MsgDeleteStreamAccessResponse.sequence":
+		x.Sequence = value.Uint()
+	case "shinzonetwork.sourcehub.v1.MsgDeleteStreamAccessResponse.port_id":
+		x.PortId = value.Interface().(string)
+	case "shinzonetwork.sourcehub.v1.MsgDeleteStreamAccessResponse.channel_id":
+		x.ChannelId = value.Interface().(string)
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: shinzonetwork.sourcehub.v1.MsgDeleteStreamAccessResponse"))
+		}
+		panic(fmt.Errorf("message shinzonetwork.sourcehub.v1.MsgDeleteStreamAccessResponse does not contain field %s", fd.FullName()))
+	}
+}
+
+// Mutable returns a mutable reference to a composite type.
+//
+// If the field is unpopulated, it may allocate a composite value.
+// For a field belonging to a oneof, it implicitly clears any other field
+// that may be currently set within the same oneof.
+// For extension fields, it implicitly stores the provided ExtensionType
+// if not already stored.
+// It panics if the field does not contain a composite type.
+//
+// Mutable is a mutating operation and unsafe for concurrent use.
+func (x *fastReflection_MsgDeleteStreamAccessResponse) Mutable(fd protoreflect.FieldDescriptor) protoreflect.Value {
+	switch fd.FullName() {
+	case "shinzonetwork.sourcehub.v1.MsgDeleteStreamAccessResponse.sequence":
+		panic(fmt.Errorf("field sequence of message shinzonetwork.sourcehub.v1.MsgDeleteStreamAccessResponse is not mutable"))
+	case "shinzonetwork.sourcehub.v1.MsgDeleteStreamAccessResponse.port_id":
+		panic(fmt.Errorf("field port_id of message shinzonetwork.sourcehub.v1.MsgDeleteStreamAccessResponse is not mutable"))
+	case "shinzonetwork.sourcehub.v1.MsgDeleteStreamAccessResponse.channel_id":
+		panic(fmt.Errorf("field channel_id of message shinzonetwork.sourcehub.v1.MsgDeleteStreamAccessResponse is not mutable"))
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: shinzonetwork.sourcehub.v1.MsgDeleteStreamAccessResponse"))
+		}
+		panic(fmt.Errorf("message shinzonetwork.sourcehub.v1.MsgDeleteStreamAccessResponse does not contain field %s", fd.FullName()))
+	}
+}
+
+// NewField returns a new value that is assignable to the field
+// for the given descriptor. For scalars, this returns the default value.
+// For lists, maps, and messages, this returns a new, empty, mutable value.
+func (x *fastReflection_MsgDeleteStreamAccessResponse) NewField(fd protoreflect.FieldDescriptor) protoreflect.Value {
+	switch fd.FullName() {
+	case "shinzonetwork.sourcehub.v1.MsgDeleteStreamAccessResponse.sequence":
+		return protoreflect.ValueOfUint64(uint64(0))
+	case "shinzonetwork.sourcehub.v1.MsgDeleteStreamAccessResponse.port_id":
+		return protoreflect.ValueOfString("")
+	case "shinzonetwork.sourcehub.v1.MsgDeleteStreamAccessResponse.channel_id":
+		return protoreflect.ValueOfString("")
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: shinzonetwork.sourcehub.v1.MsgDeleteStreamAccessResponse"))
+		}
+		panic(fmt.Errorf("message shinzonetwork.sourcehub.v1.MsgDeleteStreamAccessResponse does not contain field %s", fd.FullName()))
+	}
+}
+
+// WhichOneof reports which field within the oneof is populated,
+// returning nil if none are populated.
+// It panics if the oneof descriptor does not belong to this message.
+func (x *fastReflection_MsgDeleteStreamAccessResponse) WhichOneof(d protoreflect.OneofDescriptor) protoreflect.FieldDescriptor {
+	switch d.FullName() {
+	default:
+		panic(fmt.Errorf("%s is not a oneof field in shinzonetwork.sourcehub.v1.MsgDeleteStreamAccessResponse", d.FullName()))
+	}
+	panic("unreachable")
+}
+
+// GetUnknown retrieves the entire list of unknown fields.
+// The caller may only mutate the contents of the RawFields
+// if the mutated bytes are stored back into the message with SetUnknown.
+func (x *fastReflection_MsgDeleteStreamAccessResponse) GetUnknown() protoreflect.RawFields {
+	return x.unknownFields
+}
+
+// SetUnknown stores an entire list of unknown fields.
+// The raw fields must be syntactically valid according to the wire format.
+// An implementation may panic if this is not the case.
+// Once stored, the caller must not mutate the content of the RawFields.
+// An empty RawFields may be passed to clear the fields.
+//
+// SetUnknown is a mutating operation and unsafe for concurrent use.
+func (x *fastReflection_MsgDeleteStreamAccessResponse) SetUnknown(fields protoreflect.RawFields) {
+	x.unknownFields = fields
+}
+
+// IsValid reports whether the message is valid.
+//
+// An invalid message is an empty, read-only value.
+//
+// An invalid message often corresponds to a nil pointer of the concrete
+// message type, but the details are implementation dependent.
+// Validity is not part of the protobuf data model, and may not
+// be preserved in marshaling or other operations.
+func (x *fastReflection_MsgDeleteStreamAccessResponse) IsValid() bool {
+	return x != nil
+}
+
+// ProtoMethods returns optional fastReflectionFeature-path implementations of various operations.
+// This method may return nil.
+//
+// The returned methods type is identical to
+// "google.golang.org/protobuf/runtime/protoiface".Methods.
+// Consult the protoiface package documentation for details.
+func (x *fastReflection_MsgDeleteStreamAccessResponse) ProtoMethods() *protoiface.Methods {
+	size := func(input protoiface.SizeInput) protoiface.SizeOutput {
+		x := input.Message.Interface().(*MsgDeleteStreamAccessResponse)
+		if x == nil {
+			return protoiface.SizeOutput{
+				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+				Size:              0,
+			}
+		}
+		options := runtime.SizeInputToOptions(input)
+		_ = options
+		var n int
+		var l int
+		_ = l
+		if x.Sequence != 0 {
+			n += 1 + runtime.Sov(uint64(x.Sequence))
+		}
+		l = len(x.PortId)
+		if l > 0 {
+			n += 1 + l + runtime.Sov(uint64(l))
+		}
+		l = len(x.ChannelId)
+		if l > 0 {
+			n += 1 + l + runtime.Sov(uint64(l))
+		}
+		if x.unknownFields != nil {
+			n += len(x.unknownFields)
+		}
+		return protoiface.SizeOutput{
+			NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+			Size:              n,
+		}
+	}
+
+	marshal := func(input protoiface.MarshalInput) (protoiface.MarshalOutput, error) {
+		x := input.Message.Interface().(*MsgDeleteStreamAccessResponse)
+		if x == nil {
+			return protoiface.MarshalOutput{
+				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+				Buf:               input.Buf,
+			}, nil
+		}
+		options := runtime.MarshalInputToOptions(input)
+		_ = options
+		size := options.Size(x)
+		dAtA := make([]byte, size)
+		i := len(dAtA)
+		_ = i
+		var l int
+		_ = l
+		if x.unknownFields != nil {
+			i -= len(x.unknownFields)
+			copy(dAtA[i:], x.unknownFields)
+		}
+		if len(x.ChannelId) > 0 {
+			i -= len(x.ChannelId)
+			copy(dAtA[i:], x.ChannelId)
+			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.ChannelId)))
+			i--
+			dAtA[i] = 0x1a
+		}
+		if len(x.PortId) > 0 {
+			i -= len(x.PortId)
+			copy(dAtA[i:], x.PortId)
+			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.PortId)))
+			i--
+			dAtA[i] = 0x12
+		}
+		if x.Sequence != 0 {
+			i = runtime.EncodeVarint(dAtA, i, uint64(x.Sequence))
+			i--
+			dAtA[i] = 0x8
+		}
+		if input.Buf != nil {
+			input.Buf = append(input.Buf, dAtA...)
+		} else {
+			input.Buf = dAtA
+		}
+		return protoiface.MarshalOutput{
+			NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+			Buf:               input.Buf,
+		}, nil
+	}
+	unmarshal := func(input protoiface.UnmarshalInput) (protoiface.UnmarshalOutput, error) {
+		x := input.Message.Interface().(*MsgDeleteStreamAccessResponse)
+		if x == nil {
+			return protoiface.UnmarshalOutput{
+				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+				Flags:             input.Flags,
+			}, nil
+		}
+		options := runtime.UnmarshalInputToOptions(input)
+		_ = options
+		dAtA := input.Buf
+		l := len(dAtA)
+		iNdEx := 0
+		for iNdEx < l {
+			preIndex := iNdEx
+			var wire uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				wire |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			fieldNum := int32(wire >> 3)
+			wireType := int(wire & 0x7)
+			if wireType == 4 {
+				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: MsgDeleteStreamAccessResponse: wiretype end group for non-group")
+			}
+			if fieldNum <= 0 {
+				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: MsgDeleteStreamAccessResponse: illegal tag %d (wire type %d)", fieldNum, wire)
+			}
+			switch fieldNum {
+			case 1:
+				if wireType != 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field Sequence", wireType)
+				}
+				x.Sequence = 0
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					x.Sequence |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+			case 2:
+				if wireType != 2 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field PortId", wireType)
+				}
+				var stringLen uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					stringLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				intStringLen := int(stringLen)
+				if intStringLen < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				postIndex := iNdEx + intStringLen
+				if postIndex < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if postIndex > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				x.PortId = string(dAtA[iNdEx:postIndex])
+				iNdEx = postIndex
+			case 3:
+				if wireType != 2 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field ChannelId", wireType)
+				}
+				var stringLen uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					stringLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				intStringLen := int(stringLen)
+				if intStringLen < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				postIndex := iNdEx + intStringLen
+				if postIndex < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if postIndex > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				x.ChannelId = string(dAtA[iNdEx:postIndex])
+				iNdEx = postIndex
+			default:
+				iNdEx = preIndex
+				skippy, err := runtime.Skip(dAtA[iNdEx:])
+				if err != nil {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, err
+				}
+				if (skippy < 0) || (iNdEx+skippy) < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if (iNdEx + skippy) > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				if !options.DiscardUnknown {
+					x.unknownFields = append(x.unknownFields, dAtA[iNdEx:iNdEx+skippy]...)
+				}
+				iNdEx += skippy
+			}
+		}
+
+		if iNdEx > l {
+			return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+		}
+		return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, nil
+	}
+	return &protoiface.Methods{
+		NoUnkeyedLiterals: struct{}{},
+		Flags:             protoiface.SupportMarshalDeterministic | protoiface.SupportUnmarshalDiscardUnknown,
+		Size:              size,
+		Marshal:           marshal,
+		Unmarshal:         unmarshal,
+		Merge:             nil,
+		CheckInitialized:  nil,
+	}
+}
+
 // Code generated by protoc-gen-go. DO NOT EDIT.
 // versions:
 // 	protoc-gen-go v1.27.0
@@ -4354,6 +5482,120 @@ func (x *MsgRequestStreamAccessResponse) GetChannelId() string {
 	return ""
 }
 
+// MsgDeleteStreamAccess revokes a subscriber tuple on sourcehub via the
+// shinzohub-controlled ICA channel. Admin-gated; mirrors
+// MsgRequestStreamAccess but writes a DeleteRelationship instead of a
+// SetRelationship. No expiration field: revocation is immediate.
+type MsgDeleteStreamAccess struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Signer   string   `protobuf:"bytes,1,opt,name=signer,proto3" json:"signer,omitempty"`
+	Resource Resource `protobuf:"varint,2,opt,name=resource,proto3,enum=shinzonetwork.sourcehub.v1.Resource" json:"resource,omitempty"`
+	StreamId string   `protobuf:"bytes,3,opt,name=stream_id,json=streamId,proto3" json:"stream_id,omitempty"`
+	Did      string   `protobuf:"bytes,4,opt,name=did,proto3" json:"did,omitempty"`
+}
+
+func (x *MsgDeleteStreamAccess) Reset() {
+	*x = MsgDeleteStreamAccess{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_shinzonetwork_sourcehub_v1_tx_proto_msgTypes[8]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *MsgDeleteStreamAccess) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*MsgDeleteStreamAccess) ProtoMessage() {}
+
+// Deprecated: Use MsgDeleteStreamAccess.ProtoReflect.Descriptor instead.
+func (*MsgDeleteStreamAccess) Descriptor() ([]byte, []int) {
+	return file_shinzonetwork_sourcehub_v1_tx_proto_rawDescGZIP(), []int{8}
+}
+
+func (x *MsgDeleteStreamAccess) GetSigner() string {
+	if x != nil {
+		return x.Signer
+	}
+	return ""
+}
+
+func (x *MsgDeleteStreamAccess) GetResource() Resource {
+	if x != nil {
+		return x.Resource
+	}
+	return Resource_RESOURCE_PRIMITIVE
+}
+
+func (x *MsgDeleteStreamAccess) GetStreamId() string {
+	if x != nil {
+		return x.StreamId
+	}
+	return ""
+}
+
+func (x *MsgDeleteStreamAccess) GetDid() string {
+	if x != nil {
+		return x.Did
+	}
+	return ""
+}
+
+type MsgDeleteStreamAccessResponse struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Sequence  uint64 `protobuf:"varint,1,opt,name=sequence,proto3" json:"sequence,omitempty"`
+	PortId    string `protobuf:"bytes,2,opt,name=port_id,json=portId,proto3" json:"port_id,omitempty"`
+	ChannelId string `protobuf:"bytes,3,opt,name=channel_id,json=channelId,proto3" json:"channel_id,omitempty"`
+}
+
+func (x *MsgDeleteStreamAccessResponse) Reset() {
+	*x = MsgDeleteStreamAccessResponse{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_shinzonetwork_sourcehub_v1_tx_proto_msgTypes[9]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *MsgDeleteStreamAccessResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*MsgDeleteStreamAccessResponse) ProtoMessage() {}
+
+// Deprecated: Use MsgDeleteStreamAccessResponse.ProtoReflect.Descriptor instead.
+func (*MsgDeleteStreamAccessResponse) Descriptor() ([]byte, []int) {
+	return file_shinzonetwork_sourcehub_v1_tx_proto_rawDescGZIP(), []int{9}
+}
+
+func (x *MsgDeleteStreamAccessResponse) GetSequence() uint64 {
+	if x != nil {
+		return x.Sequence
+	}
+	return 0
+}
+
+func (x *MsgDeleteStreamAccessResponse) GetPortId() string {
+	if x != nil {
+		return x.PortId
+	}
+	return ""
+}
+
+func (x *MsgDeleteStreamAccessResponse) GetChannelId() string {
+	if x != nil {
+		return x.ChannelId
+	}
+	return ""
+}
+
 var File_shinzonetwork_sourcehub_v1_tx_proto protoreflect.FileDescriptor
 
 var file_shinzonetwork_sourcehub_v1_tx_proto_rawDesc = []byte{
@@ -4415,63 +5657,89 @@ var file_shinzonetwork_sourcehub_v1_tx_proto_rawDesc = []byte{
 	0x17, 0x0a, 0x07, 0x70, 0x6f, 0x72, 0x74, 0x5f, 0x69, 0x64, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09,
 	0x52, 0x06, 0x70, 0x6f, 0x72, 0x74, 0x49, 0x64, 0x12, 0x1d, 0x0a, 0x0a, 0x63, 0x68, 0x61, 0x6e,
 	0x6e, 0x65, 0x6c, 0x5f, 0x69, 0x64, 0x18, 0x03, 0x20, 0x01, 0x28, 0x09, 0x52, 0x09, 0x63, 0x68,
-	0x61, 0x6e, 0x6e, 0x65, 0x6c, 0x49, 0x64, 0x2a, 0x35, 0x0a, 0x08, 0x52, 0x65, 0x73, 0x6f, 0x75,
-	0x72, 0x63, 0x65, 0x12, 0x16, 0x0a, 0x12, 0x52, 0x45, 0x53, 0x4f, 0x55, 0x52, 0x43, 0x45, 0x5f,
-	0x50, 0x52, 0x49, 0x4d, 0x49, 0x54, 0x49, 0x56, 0x45, 0x10, 0x00, 0x12, 0x11, 0x0a, 0x0d, 0x52,
-	0x45, 0x53, 0x4f, 0x55, 0x52, 0x43, 0x45, 0x5f, 0x56, 0x49, 0x45, 0x57, 0x10, 0x01, 0x32, 0xb8,
-	0x04, 0x0a, 0x03, 0x4d, 0x73, 0x67, 0x12, 0x88, 0x01, 0x0a, 0x14, 0x52, 0x65, 0x67, 0x69, 0x73,
-	0x74, 0x65, 0x72, 0x53, 0x6f, 0x75, 0x72, 0x63, 0x65, 0x68, 0x75, 0x62, 0x49, 0x43, 0x41, 0x12,
-	0x33, 0x2e, 0x73, 0x68, 0x69, 0x6e, 0x7a, 0x6f, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x2e,
-	0x73, 0x6f, 0x75, 0x72, 0x63, 0x65, 0x68, 0x75, 0x62, 0x2e, 0x76, 0x31, 0x2e, 0x4d, 0x73, 0x67,
+	0x61, 0x6e, 0x6e, 0x65, 0x6c, 0x49, 0x64, 0x22, 0xad, 0x01, 0x0a, 0x15, 0x4d, 0x73, 0x67, 0x44,
+	0x65, 0x6c, 0x65, 0x74, 0x65, 0x53, 0x74, 0x72, 0x65, 0x61, 0x6d, 0x41, 0x63, 0x63, 0x65, 0x73,
+	0x73, 0x12, 0x16, 0x0a, 0x06, 0x73, 0x69, 0x67, 0x6e, 0x65, 0x72, 0x18, 0x01, 0x20, 0x01, 0x28,
+	0x09, 0x52, 0x06, 0x73, 0x69, 0x67, 0x6e, 0x65, 0x72, 0x12, 0x40, 0x0a, 0x08, 0x72, 0x65, 0x73,
+	0x6f, 0x75, 0x72, 0x63, 0x65, 0x18, 0x02, 0x20, 0x01, 0x28, 0x0e, 0x32, 0x24, 0x2e, 0x73, 0x68,
+	0x69, 0x6e, 0x7a, 0x6f, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x2e, 0x73, 0x6f, 0x75, 0x72,
+	0x63, 0x65, 0x68, 0x75, 0x62, 0x2e, 0x76, 0x31, 0x2e, 0x52, 0x65, 0x73, 0x6f, 0x75, 0x72, 0x63,
+	0x65, 0x52, 0x08, 0x72, 0x65, 0x73, 0x6f, 0x75, 0x72, 0x63, 0x65, 0x12, 0x1b, 0x0a, 0x09, 0x73,
+	0x74, 0x72, 0x65, 0x61, 0x6d, 0x5f, 0x69, 0x64, 0x18, 0x03, 0x20, 0x01, 0x28, 0x09, 0x52, 0x08,
+	0x73, 0x74, 0x72, 0x65, 0x61, 0x6d, 0x49, 0x64, 0x12, 0x10, 0x0a, 0x03, 0x64, 0x69, 0x64, 0x18,
+	0x04, 0x20, 0x01, 0x28, 0x09, 0x52, 0x03, 0x64, 0x69, 0x64, 0x3a, 0x0b, 0x82, 0xe7, 0xb0, 0x2a,
+	0x06, 0x73, 0x69, 0x67, 0x6e, 0x65, 0x72, 0x22, 0x73, 0x0a, 0x1d, 0x4d, 0x73, 0x67, 0x44, 0x65,
+	0x6c, 0x65, 0x74, 0x65, 0x53, 0x74, 0x72, 0x65, 0x61, 0x6d, 0x41, 0x63, 0x63, 0x65, 0x73, 0x73,
+	0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x1a, 0x0a, 0x08, 0x73, 0x65, 0x71, 0x75,
+	0x65, 0x6e, 0x63, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x04, 0x52, 0x08, 0x73, 0x65, 0x71, 0x75,
+	0x65, 0x6e, 0x63, 0x65, 0x12, 0x17, 0x0a, 0x07, 0x70, 0x6f, 0x72, 0x74, 0x5f, 0x69, 0x64, 0x18,
+	0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x06, 0x70, 0x6f, 0x72, 0x74, 0x49, 0x64, 0x12, 0x1d, 0x0a,
+	0x0a, 0x63, 0x68, 0x61, 0x6e, 0x6e, 0x65, 0x6c, 0x5f, 0x69, 0x64, 0x18, 0x03, 0x20, 0x01, 0x28,
+	0x09, 0x52, 0x09, 0x63, 0x68, 0x61, 0x6e, 0x6e, 0x65, 0x6c, 0x49, 0x64, 0x2a, 0x35, 0x0a, 0x08,
+	0x52, 0x65, 0x73, 0x6f, 0x75, 0x72, 0x63, 0x65, 0x12, 0x16, 0x0a, 0x12, 0x52, 0x45, 0x53, 0x4f,
+	0x55, 0x52, 0x43, 0x45, 0x5f, 0x50, 0x52, 0x49, 0x4d, 0x49, 0x54, 0x49, 0x56, 0x45, 0x10, 0x00,
+	0x12, 0x11, 0x0a, 0x0d, 0x52, 0x45, 0x53, 0x4f, 0x55, 0x52, 0x43, 0x45, 0x5f, 0x56, 0x49, 0x45,
+	0x57, 0x10, 0x01, 0x32, 0xbd, 0x05, 0x0a, 0x03, 0x4d, 0x73, 0x67, 0x12, 0x88, 0x01, 0x0a, 0x14,
 	0x52, 0x65, 0x67, 0x69, 0x73, 0x74, 0x65, 0x72, 0x53, 0x6f, 0x75, 0x72, 0x63, 0x65, 0x68, 0x75,
-	0x62, 0x49, 0x43, 0x41, 0x1a, 0x3b, 0x2e, 0x73, 0x68, 0x69, 0x6e, 0x7a, 0x6f, 0x6e, 0x65, 0x74,
+	0x62, 0x49, 0x43, 0x41, 0x12, 0x33, 0x2e, 0x73, 0x68, 0x69, 0x6e, 0x7a, 0x6f, 0x6e, 0x65, 0x74,
 	0x77, 0x6f, 0x72, 0x6b, 0x2e, 0x73, 0x6f, 0x75, 0x72, 0x63, 0x65, 0x68, 0x75, 0x62, 0x2e, 0x76,
 	0x31, 0x2e, 0x4d, 0x73, 0x67, 0x52, 0x65, 0x67, 0x69, 0x73, 0x74, 0x65, 0x72, 0x53, 0x6f, 0x75,
-	0x72, 0x63, 0x65, 0x68, 0x75, 0x62, 0x49, 0x43, 0x41, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73,
-	0x65, 0x12, 0x88, 0x01, 0x0a, 0x14, 0x52, 0x65, 0x67, 0x69, 0x73, 0x74, 0x65, 0x72, 0x53, 0x68,
-	0x69, 0x6e, 0x7a, 0x6f, 0x50, 0x6f, 0x6c, 0x69, 0x63, 0x79, 0x12, 0x33, 0x2e, 0x73, 0x68, 0x69,
-	0x6e, 0x7a, 0x6f, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x2e, 0x73, 0x6f, 0x75, 0x72, 0x63,
-	0x65, 0x68, 0x75, 0x62, 0x2e, 0x76, 0x31, 0x2e, 0x4d, 0x73, 0x67, 0x52, 0x65, 0x67, 0x69, 0x73,
-	0x74, 0x65, 0x72, 0x53, 0x68, 0x69, 0x6e, 0x7a, 0x6f, 0x50, 0x6f, 0x6c, 0x69, 0x63, 0x79, 0x1a,
-	0x3b, 0x2e, 0x73, 0x68, 0x69, 0x6e, 0x7a, 0x6f, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x2e,
+	0x72, 0x63, 0x65, 0x68, 0x75, 0x62, 0x49, 0x43, 0x41, 0x1a, 0x3b, 0x2e, 0x73, 0x68, 0x69, 0x6e,
+	0x7a, 0x6f, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x2e, 0x73, 0x6f, 0x75, 0x72, 0x63, 0x65,
+	0x68, 0x75, 0x62, 0x2e, 0x76, 0x31, 0x2e, 0x4d, 0x73, 0x67, 0x52, 0x65, 0x67, 0x69, 0x73, 0x74,
+	0x65, 0x72, 0x53, 0x6f, 0x75, 0x72, 0x63, 0x65, 0x68, 0x75, 0x62, 0x49, 0x43, 0x41, 0x52, 0x65,
+	0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x88, 0x01, 0x0a, 0x14, 0x52, 0x65, 0x67, 0x69, 0x73,
+	0x74, 0x65, 0x72, 0x53, 0x68, 0x69, 0x6e, 0x7a, 0x6f, 0x50, 0x6f, 0x6c, 0x69, 0x63, 0x79, 0x12,
+	0x33, 0x2e, 0x73, 0x68, 0x69, 0x6e, 0x7a, 0x6f, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x2e,
 	0x73, 0x6f, 0x75, 0x72, 0x63, 0x65, 0x68, 0x75, 0x62, 0x2e, 0x76, 0x31, 0x2e, 0x4d, 0x73, 0x67,
 	0x52, 0x65, 0x67, 0x69, 0x73, 0x74, 0x65, 0x72, 0x53, 0x68, 0x69, 0x6e, 0x7a, 0x6f, 0x50, 0x6f,
-	0x6c, 0x69, 0x63, 0x79, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x8b, 0x01, 0x0a,
-	0x15, 0x52, 0x65, 0x67, 0x69, 0x73, 0x74, 0x65, 0x72, 0x53, 0x68, 0x69, 0x6e, 0x7a, 0x6f, 0x4f,
-	0x62, 0x6a, 0x65, 0x63, 0x74, 0x73, 0x12, 0x34, 0x2e, 0x73, 0x68, 0x69, 0x6e, 0x7a, 0x6f, 0x6e,
-	0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x2e, 0x73, 0x6f, 0x75, 0x72, 0x63, 0x65, 0x68, 0x75, 0x62,
-	0x2e, 0x76, 0x31, 0x2e, 0x4d, 0x73, 0x67, 0x52, 0x65, 0x67, 0x69, 0x73, 0x74, 0x65, 0x72, 0x53,
-	0x68, 0x69, 0x6e, 0x7a, 0x6f, 0x4f, 0x62, 0x6a, 0x65, 0x63, 0x74, 0x73, 0x1a, 0x3c, 0x2e, 0x73,
-	0x68, 0x69, 0x6e, 0x7a, 0x6f, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x2e, 0x73, 0x6f, 0x75,
-	0x72, 0x63, 0x65, 0x68, 0x75, 0x62, 0x2e, 0x76, 0x31, 0x2e, 0x4d, 0x73, 0x67, 0x52, 0x65, 0x67,
-	0x69, 0x73, 0x74, 0x65, 0x72, 0x53, 0x68, 0x69, 0x6e, 0x7a, 0x6f, 0x4f, 0x62, 0x6a, 0x65, 0x63,
-	0x74, 0x73, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x85, 0x01, 0x0a, 0x13, 0x52,
-	0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x53, 0x74, 0x72, 0x65, 0x61, 0x6d, 0x41, 0x63, 0x63, 0x65,
-	0x73, 0x73, 0x12, 0x32, 0x2e, 0x73, 0x68, 0x69, 0x6e, 0x7a, 0x6f, 0x6e, 0x65, 0x74, 0x77, 0x6f,
-	0x72, 0x6b, 0x2e, 0x73, 0x6f, 0x75, 0x72, 0x63, 0x65, 0x68, 0x75, 0x62, 0x2e, 0x76, 0x31, 0x2e,
-	0x4d, 0x73, 0x67, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x53, 0x74, 0x72, 0x65, 0x61, 0x6d,
-	0x41, 0x63, 0x63, 0x65, 0x73, 0x73, 0x1a, 0x3a, 0x2e, 0x73, 0x68, 0x69, 0x6e, 0x7a, 0x6f, 0x6e,
-	0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x2e, 0x73, 0x6f, 0x75, 0x72, 0x63, 0x65, 0x68, 0x75, 0x62,
-	0x2e, 0x76, 0x31, 0x2e, 0x4d, 0x73, 0x67, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x53, 0x74,
-	0x72, 0x65, 0x61, 0x6d, 0x41, 0x63, 0x63, 0x65, 0x73, 0x73, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e,
-	0x73, 0x65, 0x1a, 0x05, 0x80, 0xe7, 0xb0, 0x2a, 0x01, 0x42, 0x82, 0x02, 0x0a, 0x1e, 0x63, 0x6f,
-	0x6d, 0x2e, 0x73, 0x68, 0x69, 0x6e, 0x7a, 0x6f, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x2e,
-	0x73, 0x6f, 0x75, 0x72, 0x63, 0x65, 0x68, 0x75, 0x62, 0x2e, 0x76, 0x31, 0x42, 0x07, 0x54, 0x78,
-	0x50, 0x72, 0x6f, 0x74, 0x6f, 0x50, 0x01, 0x5a, 0x4d, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e,
-	0x63, 0x6f, 0x6d, 0x2f, 0x73, 0x68, 0x69, 0x6e, 0x7a, 0x6f, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72,
-	0x6b, 0x2f, 0x73, 0x68, 0x69, 0x6e, 0x7a, 0x6f, 0x68, 0x75, 0x62, 0x2f, 0x61, 0x70, 0x69, 0x2f,
-	0x73, 0x68, 0x69, 0x6e, 0x7a, 0x6f, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x2f, 0x73, 0x6f,
-	0x75, 0x72, 0x63, 0x65, 0x68, 0x75, 0x62, 0x2f, 0x76, 0x31, 0x3b, 0x73, 0x6f, 0x75, 0x72, 0x63,
-	0x65, 0x68, 0x75, 0x62, 0x76, 0x31, 0xa2, 0x02, 0x03, 0x53, 0x53, 0x58, 0xaa, 0x02, 0x1a, 0x53,
-	0x68, 0x69, 0x6e, 0x7a, 0x6f, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x2e, 0x53, 0x6f, 0x75,
-	0x72, 0x63, 0x65, 0x68, 0x75, 0x62, 0x2e, 0x56, 0x31, 0xca, 0x02, 0x1a, 0x53, 0x68, 0x69, 0x6e,
-	0x7a, 0x6f, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x5c, 0x53, 0x6f, 0x75, 0x72, 0x63, 0x65,
-	0x68, 0x75, 0x62, 0x5c, 0x56, 0x31, 0xe2, 0x02, 0x26, 0x53, 0x68, 0x69, 0x6e, 0x7a, 0x6f, 0x6e,
-	0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x5c, 0x53, 0x6f, 0x75, 0x72, 0x63, 0x65, 0x68, 0x75, 0x62,
-	0x5c, 0x56, 0x31, 0x5c, 0x47, 0x50, 0x42, 0x4d, 0x65, 0x74, 0x61, 0x64, 0x61, 0x74, 0x61, 0xea,
-	0x02, 0x1c, 0x53, 0x68, 0x69, 0x6e, 0x7a, 0x6f, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x3a,
-	0x3a, 0x53, 0x6f, 0x75, 0x72, 0x63, 0x65, 0x68, 0x75, 0x62, 0x3a, 0x3a, 0x56, 0x31, 0x62, 0x06,
-	0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
+	0x6c, 0x69, 0x63, 0x79, 0x1a, 0x3b, 0x2e, 0x73, 0x68, 0x69, 0x6e, 0x7a, 0x6f, 0x6e, 0x65, 0x74,
+	0x77, 0x6f, 0x72, 0x6b, 0x2e, 0x73, 0x6f, 0x75, 0x72, 0x63, 0x65, 0x68, 0x75, 0x62, 0x2e, 0x76,
+	0x31, 0x2e, 0x4d, 0x73, 0x67, 0x52, 0x65, 0x67, 0x69, 0x73, 0x74, 0x65, 0x72, 0x53, 0x68, 0x69,
+	0x6e, 0x7a, 0x6f, 0x50, 0x6f, 0x6c, 0x69, 0x63, 0x79, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73,
+	0x65, 0x12, 0x8b, 0x01, 0x0a, 0x15, 0x52, 0x65, 0x67, 0x69, 0x73, 0x74, 0x65, 0x72, 0x53, 0x68,
+	0x69, 0x6e, 0x7a, 0x6f, 0x4f, 0x62, 0x6a, 0x65, 0x63, 0x74, 0x73, 0x12, 0x34, 0x2e, 0x73, 0x68,
+	0x69, 0x6e, 0x7a, 0x6f, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x2e, 0x73, 0x6f, 0x75, 0x72,
+	0x63, 0x65, 0x68, 0x75, 0x62, 0x2e, 0x76, 0x31, 0x2e, 0x4d, 0x73, 0x67, 0x52, 0x65, 0x67, 0x69,
+	0x73, 0x74, 0x65, 0x72, 0x53, 0x68, 0x69, 0x6e, 0x7a, 0x6f, 0x4f, 0x62, 0x6a, 0x65, 0x63, 0x74,
+	0x73, 0x1a, 0x3c, 0x2e, 0x73, 0x68, 0x69, 0x6e, 0x7a, 0x6f, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72,
+	0x6b, 0x2e, 0x73, 0x6f, 0x75, 0x72, 0x63, 0x65, 0x68, 0x75, 0x62, 0x2e, 0x76, 0x31, 0x2e, 0x4d,
+	0x73, 0x67, 0x52, 0x65, 0x67, 0x69, 0x73, 0x74, 0x65, 0x72, 0x53, 0x68, 0x69, 0x6e, 0x7a, 0x6f,
+	0x4f, 0x62, 0x6a, 0x65, 0x63, 0x74, 0x73, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12,
+	0x85, 0x01, 0x0a, 0x13, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x53, 0x74, 0x72, 0x65, 0x61,
+	0x6d, 0x41, 0x63, 0x63, 0x65, 0x73, 0x73, 0x12, 0x32, 0x2e, 0x73, 0x68, 0x69, 0x6e, 0x7a, 0x6f,
+	0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x2e, 0x73, 0x6f, 0x75, 0x72, 0x63, 0x65, 0x68, 0x75,
+	0x62, 0x2e, 0x76, 0x31, 0x2e, 0x4d, 0x73, 0x67, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x53,
+	0x74, 0x72, 0x65, 0x61, 0x6d, 0x41, 0x63, 0x63, 0x65, 0x73, 0x73, 0x1a, 0x3a, 0x2e, 0x73, 0x68,
+	0x69, 0x6e, 0x7a, 0x6f, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x2e, 0x73, 0x6f, 0x75, 0x72,
+	0x63, 0x65, 0x68, 0x75, 0x62, 0x2e, 0x76, 0x31, 0x2e, 0x4d, 0x73, 0x67, 0x52, 0x65, 0x71, 0x75,
+	0x65, 0x73, 0x74, 0x53, 0x74, 0x72, 0x65, 0x61, 0x6d, 0x41, 0x63, 0x63, 0x65, 0x73, 0x73, 0x52,
+	0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x82, 0x01, 0x0a, 0x12, 0x44, 0x65, 0x6c, 0x65,
+	0x74, 0x65, 0x53, 0x74, 0x72, 0x65, 0x61, 0x6d, 0x41, 0x63, 0x63, 0x65, 0x73, 0x73, 0x12, 0x31,
+	0x2e, 0x73, 0x68, 0x69, 0x6e, 0x7a, 0x6f, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x2e, 0x73,
+	0x6f, 0x75, 0x72, 0x63, 0x65, 0x68, 0x75, 0x62, 0x2e, 0x76, 0x31, 0x2e, 0x4d, 0x73, 0x67, 0x44,
+	0x65, 0x6c, 0x65, 0x74, 0x65, 0x53, 0x74, 0x72, 0x65, 0x61, 0x6d, 0x41, 0x63, 0x63, 0x65, 0x73,
+	0x73, 0x1a, 0x39, 0x2e, 0x73, 0x68, 0x69, 0x6e, 0x7a, 0x6f, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72,
+	0x6b, 0x2e, 0x73, 0x6f, 0x75, 0x72, 0x63, 0x65, 0x68, 0x75, 0x62, 0x2e, 0x76, 0x31, 0x2e, 0x4d,
+	0x73, 0x67, 0x44, 0x65, 0x6c, 0x65, 0x74, 0x65, 0x53, 0x74, 0x72, 0x65, 0x61, 0x6d, 0x41, 0x63,
+	0x63, 0x65, 0x73, 0x73, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x1a, 0x05, 0x80, 0xe7,
+	0xb0, 0x2a, 0x01, 0x42, 0x82, 0x02, 0x0a, 0x1e, 0x63, 0x6f, 0x6d, 0x2e, 0x73, 0x68, 0x69, 0x6e,
+	0x7a, 0x6f, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x2e, 0x73, 0x6f, 0x75, 0x72, 0x63, 0x65,
+	0x68, 0x75, 0x62, 0x2e, 0x76, 0x31, 0x42, 0x07, 0x54, 0x78, 0x50, 0x72, 0x6f, 0x74, 0x6f, 0x50,
+	0x01, 0x5a, 0x4d, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x73, 0x68,
+	0x69, 0x6e, 0x7a, 0x6f, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x2f, 0x73, 0x68, 0x69, 0x6e,
+	0x7a, 0x6f, 0x68, 0x75, 0x62, 0x2f, 0x61, 0x70, 0x69, 0x2f, 0x73, 0x68, 0x69, 0x6e, 0x7a, 0x6f,
+	0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x2f, 0x73, 0x6f, 0x75, 0x72, 0x63, 0x65, 0x68, 0x75,
+	0x62, 0x2f, 0x76, 0x31, 0x3b, 0x73, 0x6f, 0x75, 0x72, 0x63, 0x65, 0x68, 0x75, 0x62, 0x76, 0x31,
+	0xa2, 0x02, 0x03, 0x53, 0x53, 0x58, 0xaa, 0x02, 0x1a, 0x53, 0x68, 0x69, 0x6e, 0x7a, 0x6f, 0x6e,
+	0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x2e, 0x53, 0x6f, 0x75, 0x72, 0x63, 0x65, 0x68, 0x75, 0x62,
+	0x2e, 0x56, 0x31, 0xca, 0x02, 0x1a, 0x53, 0x68, 0x69, 0x6e, 0x7a, 0x6f, 0x6e, 0x65, 0x74, 0x77,
+	0x6f, 0x72, 0x6b, 0x5c, 0x53, 0x6f, 0x75, 0x72, 0x63, 0x65, 0x68, 0x75, 0x62, 0x5c, 0x56, 0x31,
+	0xe2, 0x02, 0x26, 0x53, 0x68, 0x69, 0x6e, 0x7a, 0x6f, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b,
+	0x5c, 0x53, 0x6f, 0x75, 0x72, 0x63, 0x65, 0x68, 0x75, 0x62, 0x5c, 0x56, 0x31, 0x5c, 0x47, 0x50,
+	0x42, 0x4d, 0x65, 0x74, 0x61, 0x64, 0x61, 0x74, 0x61, 0xea, 0x02, 0x1c, 0x53, 0x68, 0x69, 0x6e,
+	0x7a, 0x6f, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x3a, 0x3a, 0x53, 0x6f, 0x75, 0x72, 0x63,
+	0x65, 0x68, 0x75, 0x62, 0x3a, 0x3a, 0x56, 0x31, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
 }
 
 var (
@@ -4487,7 +5755,7 @@ func file_shinzonetwork_sourcehub_v1_tx_proto_rawDescGZIP() []byte {
 }
 
 var file_shinzonetwork_sourcehub_v1_tx_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
-var file_shinzonetwork_sourcehub_v1_tx_proto_msgTypes = make([]protoimpl.MessageInfo, 8)
+var file_shinzonetwork_sourcehub_v1_tx_proto_msgTypes = make([]protoimpl.MessageInfo, 10)
 var file_shinzonetwork_sourcehub_v1_tx_proto_goTypes = []interface{}{
 	(Resource)(0),                            // 0: shinzonetwork.sourcehub.v1.Resource
 	(*MsgRegisterSourcehubICA)(nil),          // 1: shinzonetwork.sourcehub.v1.MsgRegisterSourcehubICA
@@ -4498,22 +5766,27 @@ var file_shinzonetwork_sourcehub_v1_tx_proto_goTypes = []interface{}{
 	(*MsgRegisterShinzoObjectsResponse)(nil), // 6: shinzonetwork.sourcehub.v1.MsgRegisterShinzoObjectsResponse
 	(*MsgRequestStreamAccess)(nil),           // 7: shinzonetwork.sourcehub.v1.MsgRequestStreamAccess
 	(*MsgRequestStreamAccessResponse)(nil),   // 8: shinzonetwork.sourcehub.v1.MsgRequestStreamAccessResponse
+	(*MsgDeleteStreamAccess)(nil),            // 9: shinzonetwork.sourcehub.v1.MsgDeleteStreamAccess
+	(*MsgDeleteStreamAccessResponse)(nil),    // 10: shinzonetwork.sourcehub.v1.MsgDeleteStreamAccessResponse
 }
 var file_shinzonetwork_sourcehub_v1_tx_proto_depIdxs = []int32{
-	0, // 0: shinzonetwork.sourcehub.v1.MsgRequestStreamAccess.resource:type_name -> shinzonetwork.sourcehub.v1.Resource
-	1, // 1: shinzonetwork.sourcehub.v1.Msg.RegisterSourcehubICA:input_type -> shinzonetwork.sourcehub.v1.MsgRegisterSourcehubICA
-	3, // 2: shinzonetwork.sourcehub.v1.Msg.RegisterShinzoPolicy:input_type -> shinzonetwork.sourcehub.v1.MsgRegisterShinzoPolicy
-	5, // 3: shinzonetwork.sourcehub.v1.Msg.RegisterShinzoObjects:input_type -> shinzonetwork.sourcehub.v1.MsgRegisterShinzoObjects
-	7, // 4: shinzonetwork.sourcehub.v1.Msg.RequestStreamAccess:input_type -> shinzonetwork.sourcehub.v1.MsgRequestStreamAccess
-	2, // 5: shinzonetwork.sourcehub.v1.Msg.RegisterSourcehubICA:output_type -> shinzonetwork.sourcehub.v1.MsgRegisterSourcehubICAResponse
-	4, // 6: shinzonetwork.sourcehub.v1.Msg.RegisterShinzoPolicy:output_type -> shinzonetwork.sourcehub.v1.MsgRegisterShinzoPolicyResponse
-	6, // 7: shinzonetwork.sourcehub.v1.Msg.RegisterShinzoObjects:output_type -> shinzonetwork.sourcehub.v1.MsgRegisterShinzoObjectsResponse
-	8, // 8: shinzonetwork.sourcehub.v1.Msg.RequestStreamAccess:output_type -> shinzonetwork.sourcehub.v1.MsgRequestStreamAccessResponse
-	5, // [5:9] is the sub-list for method output_type
-	1, // [1:5] is the sub-list for method input_type
-	1, // [1:1] is the sub-list for extension type_name
-	1, // [1:1] is the sub-list for extension extendee
-	0, // [0:1] is the sub-list for field type_name
+	0,  // 0: shinzonetwork.sourcehub.v1.MsgRequestStreamAccess.resource:type_name -> shinzonetwork.sourcehub.v1.Resource
+	0,  // 1: shinzonetwork.sourcehub.v1.MsgDeleteStreamAccess.resource:type_name -> shinzonetwork.sourcehub.v1.Resource
+	1,  // 2: shinzonetwork.sourcehub.v1.Msg.RegisterSourcehubICA:input_type -> shinzonetwork.sourcehub.v1.MsgRegisterSourcehubICA
+	3,  // 3: shinzonetwork.sourcehub.v1.Msg.RegisterShinzoPolicy:input_type -> shinzonetwork.sourcehub.v1.MsgRegisterShinzoPolicy
+	5,  // 4: shinzonetwork.sourcehub.v1.Msg.RegisterShinzoObjects:input_type -> shinzonetwork.sourcehub.v1.MsgRegisterShinzoObjects
+	7,  // 5: shinzonetwork.sourcehub.v1.Msg.RequestStreamAccess:input_type -> shinzonetwork.sourcehub.v1.MsgRequestStreamAccess
+	9,  // 6: shinzonetwork.sourcehub.v1.Msg.DeleteStreamAccess:input_type -> shinzonetwork.sourcehub.v1.MsgDeleteStreamAccess
+	2,  // 7: shinzonetwork.sourcehub.v1.Msg.RegisterSourcehubICA:output_type -> shinzonetwork.sourcehub.v1.MsgRegisterSourcehubICAResponse
+	4,  // 8: shinzonetwork.sourcehub.v1.Msg.RegisterShinzoPolicy:output_type -> shinzonetwork.sourcehub.v1.MsgRegisterShinzoPolicyResponse
+	6,  // 9: shinzonetwork.sourcehub.v1.Msg.RegisterShinzoObjects:output_type -> shinzonetwork.sourcehub.v1.MsgRegisterShinzoObjectsResponse
+	8,  // 10: shinzonetwork.sourcehub.v1.Msg.RequestStreamAccess:output_type -> shinzonetwork.sourcehub.v1.MsgRequestStreamAccessResponse
+	10, // 11: shinzonetwork.sourcehub.v1.Msg.DeleteStreamAccess:output_type -> shinzonetwork.sourcehub.v1.MsgDeleteStreamAccessResponse
+	7,  // [7:12] is the sub-list for method output_type
+	2,  // [2:7] is the sub-list for method input_type
+	2,  // [2:2] is the sub-list for extension type_name
+	2,  // [2:2] is the sub-list for extension extendee
+	0,  // [0:2] is the sub-list for field type_name
 }
 
 func init() { file_shinzonetwork_sourcehub_v1_tx_proto_init() }
@@ -4618,6 +5891,30 @@ func file_shinzonetwork_sourcehub_v1_tx_proto_init() {
 				return nil
 			}
 		}
+		file_shinzonetwork_sourcehub_v1_tx_proto_msgTypes[8].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*MsgDeleteStreamAccess); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_shinzonetwork_sourcehub_v1_tx_proto_msgTypes[9].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*MsgDeleteStreamAccessResponse); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
 	}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
@@ -4625,7 +5922,7 @@ func file_shinzonetwork_sourcehub_v1_tx_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_shinzonetwork_sourcehub_v1_tx_proto_rawDesc,
 			NumEnums:      1,
-			NumMessages:   8,
+			NumMessages:   10,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

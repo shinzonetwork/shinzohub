@@ -18,28 +18,28 @@ import (
 func (m msgServer) RequestStreamAccess(goCtx context.Context, msg *types.MsgRequestStreamAccess) (*types.MsgRequestStreamAccessResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
-	if !m.Keeper.adminKeeper.IsAdmin(ctx, msg.Signer) {
+	if !m.adminKeeper.IsAdmin(ctx, msg.Signer) {
 		return nil, sdkerrors.ErrUnauthorized.Wrap("admin required")
 	}
 
-	connectionID := m.Keeper.GetControllerConnectionID(ctx)
+	connectionID := m.GetControllerConnectionID(ctx)
 	if connectionID == "" {
 		return nil, fmt.Errorf("no connection ID set in module state")
 	}
 
 	portID := fmt.Sprintf("icacontroller-%s", types.ModuleAddress.String())
 
-	addr, _ := m.Keeper.IcaCtrlKeeper.GetInterchainAccountAddress(ctx, connectionID, portID)
+	addr, _ := m.IcaCtrlKeeper.GetInterchainAccountAddress(ctx, connectionID, portID)
 	if addr == "" {
 		return nil, fmt.Errorf("ICA address not found for portID %s on connection %s", portID, connectionID)
 	}
 
-	channelID, hasChannel := m.Keeper.IcaCtrlKeeper.GetActiveChannelID(ctx, connectionID, portID)
+	channelID, hasChannel := m.IcaCtrlKeeper.GetActiveChannelID(ctx, connectionID, portID)
 	if !hasChannel || channelID == "" {
 		return nil, fmt.Errorf("no active ICA channel for portID %s on connection %s", portID, connectionID)
 	}
 
-	policyId := m.Keeper.GetPolicyId(ctx)
+	policyId := m.GetPolicyId(ctx)
 	if policyId == "" {
 		return nil, fmt.Errorf("no policy ID set in module state")
 	}
@@ -78,14 +78,14 @@ func (m msgServer) RequestStreamAccess(goCtx context.Context, msg *types.MsgRequ
 
 	timeout := uint64(ctx.BlockTime().Add(5 * time.Minute).UnixNano())
 
-	seq, err := m.Keeper.IcaCtrlKeeper.SendTx(ctx, connectionID, portID, packetData, timeout)
+	seq, err := m.IcaCtrlKeeper.SendTx(ctx, connectionID, portID, packetData, timeout)
 	if err != nil {
 		return nil, err
 	}
 
-	metaBz, _ := m.Keeper.cdc.Marshal(&types.RequestStreamAccessMeta{Did: actor, StreamId: msg.StreamId, ResourceName: resource})
+	metaBz, _ := m.cdc.Marshal(&types.RequestStreamAccessMeta{Did: actor, StreamId: msg.StreamId, ResourceName: resource})
 	req := NewPendingICARequest(portID, channelID, seq, types.RequestKind_REQUEST_KIND_REQUEST_STREAM_ACCESS, msg.Signer, ctx.BlockTime(), metaBz)
-	if err := m.Keeper.SetPendingRequest(ctx, req); err != nil {
+	if err := m.SetPendingRequest(ctx, req); err != nil {
 		return nil, fmt.Errorf("record pending request: %w", err)
 	}
 	emitRequestPending(ctx, req)

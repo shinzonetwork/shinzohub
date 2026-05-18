@@ -12,18 +12,18 @@ import (
 func (m msgServer) RegisterSourcehubICA(goCtx context.Context, msg *types.MsgRegisterSourcehubICA) (*types.MsgRegisterSourcehubICAResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
-	if !m.Keeper.adminKeeper.IsAdmin(ctx, msg.Signer) {
+	if !m.adminKeeper.IsAdmin(ctx, msg.Signer) {
 		return nil, sdkerrors.ErrUnauthorized.Wrap("admin required")
 	}
 
-	m.Keeper.SetControllerConnectionID(ctx, msg.ControllerConnectionId)
-	m.Keeper.SetHostConnectionID(ctx, msg.HostConnectionId)
+	m.SetControllerConnectionID(ctx, msg.ControllerConnectionId)
+	m.SetHostConnectionID(ctx, msg.HostConnectionId)
 
-	if err := m.Keeper.IcaCtrlKeeper.RegisterInterchainAccount(
+	if err := m.IcaCtrlKeeper.RegisterInterchainAccount(
 		ctx,
-		m.Keeper.GetControllerConnectionID(ctx),
+		m.GetControllerConnectionID(ctx),
 		types.ModuleAddress.String(),
-		m.Keeper.GetICAMetadata(ctx),
+		m.GetICAMetadata(ctx),
 		channeltypes.ORDERED,
 	); err != nil {
 		return nil, err
