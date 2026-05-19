@@ -8,10 +8,27 @@ option go_package = "github.com/shinzonetwork/shinzohub/x/view/types";
 
 // View represents a registered view.
 message View {
-  string name              = 1;
-  string creator           = 2;
-  reserved 3;                     // was: old name field
-  string contract_address  = 4;
-  bytes  data              = 5;
+  string name = 1;
+  string creator = 2;
+  reserved 3; // was: old name field
+  string contract_address = 4;
+  bytes data = 5;
   uint64 height = 6;
+  ViewMetadata metadata = 7;
+}
+
+// ViewMetadata is derived from a stored viewbundle.
+message ViewMetadata {
+  string query = 1;
+  string sdl = 2;
+  string root_type = 3;
+  repeated ViewLensMetadata lenses = 4 [(gogoproto.nullable) = false];
+  string parse_error = 5;
+}
+
+// ViewLensMetadata contains derived metadata for one lens in a viewbundle.
+message ViewLensMetadata {
+  uint32 id = 1;
+  string args = 2;
+  string hash = 3;
 }
