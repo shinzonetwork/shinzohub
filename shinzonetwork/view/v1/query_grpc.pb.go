@@ -27,9 +27,14 @@ const (
 // QueryClient is the client API for Query service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
+//
+// Query defines the gRPC query service for the view module.
 type QueryClient interface {
+	// Views returns registered views, optionally filtered and enriched with data or metadata.
 	Views(ctx context.Context, in *QueryViewsRequest, opts ...grpc.CallOption) (*QueryViewsResponse, error)
+	// View returns a registered view by contract address.
 	View(ctx context.Context, in *QueryViewRequest, opts ...grpc.CallOption) (*QueryViewResponse, error)
+	// ViewCount returns the total number of registered views.
 	ViewCount(ctx context.Context, in *QueryViewCountRequest, opts ...grpc.CallOption) (*QueryViewCountResponse, error)
 }
 
@@ -74,9 +79,14 @@ func (c *queryClient) ViewCount(ctx context.Context, in *QueryViewCountRequest, 
 // QueryServer is the server API for Query service.
 // All implementations must embed UnimplementedQueryServer
 // for forward compatibility.
+//
+// Query defines the gRPC query service for the view module.
 type QueryServer interface {
+	// Views returns registered views, optionally filtered and enriched with data or metadata.
 	Views(context.Context, *QueryViewsRequest) (*QueryViewsResponse, error)
+	// View returns a registered view by contract address.
 	View(context.Context, *QueryViewRequest) (*QueryViewResponse, error)
+	// ViewCount returns the total number of registered views.
 	ViewCount(context.Context, *QueryViewCountRequest) (*QueryViewCountResponse, error)
 	mustEmbedUnimplementedQueryServer()
 }

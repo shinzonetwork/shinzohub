@@ -1,6 +1,8 @@
 package keeper_test
 
 import (
+	"encoding/base64"
+	"encoding/hex"
 	"fmt"
 	"testing"
 
@@ -10,14 +12,16 @@ import (
 	"github.com/cosmos/cosmos-sdk/runtime"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/query"
+	"github.com/ethereum/go-ethereum/crypto"
+	viewbundle "github.com/shinzonetwork/viewbundle-go"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
 
 	cosmoslog "cosmossdk.io/log"
 	storetypes2 "cosmossdk.io/store"
 	"cosmossdk.io/store/metrics"
-	dbm "github.com/cosmos/cosmos-db"
 	cmtproto "github.com/cometbft/cometbft/proto/tendermint/types"
+	dbm "github.com/cosmos/cosmos-db"
 
 	sourcehubtypes "github.com/shinzonetwork/shinzohub/x/sourcehub/types"
 	"github.com/shinzonetwork/shinzohub/x/view/keeper"
@@ -93,6 +97,30 @@ func (s *KeeperTestSuite) SetupTest() {
 
 func TestKeeperTestSuite(t *testing.T) {
 	suite.Run(t, new(KeeperTestSuite))
+}
+
+func mustBuildViewBundle(t require.TestingT, query, sdl string, lenses ...viewbundle.Lens) []byte {
+	bundle, err := viewbundle.NewBundler().BundleView(viewbundle.View{
+		Query: query,
+		Sdl:   sdl,
+		Transform: viewbundle.Transform{
+			Lenses: lenses,
+		},
+	})
+	require.NoError(t, err)
+	return bundle
+}
+
+func testLens(wasm []byte, args string) viewbundle.Lens {
+	return viewbundle.Lens{
+		Path:      base64.StdEncoding.EncodeToString(wasm),
+		Arguments: args,
+	}
+}
+
+func expectedShortLensHash(wasm []byte) string {
+	hash := crypto.Keccak256(wasm)
+	return "0x" + hex.EncodeToString(hash[:16])
 }
 
 func (s *KeeperTestSuite) TestRegisterView_Success() {
@@ -306,6 +334,161 @@ func (s *KeeperTestSuite) TestQueryServer_Views_IncludeData() {
 	s.Require().Equal([]byte("bigdata"), resp.Views[0].Data)
 }
 
+func (s *KeeperTestSuite) TestQueryServer_Views_FilterByNameAndCreator() {
+	_ = s.keeper.SetView(s.ctx, types.View{ContractAddress: "0x1", Name: "V1", Creator: "c1"})
+	_ = s.keeper.SetView(s.ctx, types.View{ContractAddress: "0x2", Name: "V2", Creator: "c1"})
+	_ = s.keeper.SetView(s.ctx, types.View{ContractAddress: "0x3", Name: "V2", Creator: "c2"})
+
+	qs := keeper.NewQueryServerImpl(s.keeper)
+
+	resp, err := qs.Views(s.ctx, &types.QueryViewsRequest{
+		Pagination: &query.PageRequest{Limit: 100},
+		Name:       "V2",
+	})
+	s.Require().NoError(err)
+	s.Require().Len(resp.Views, 2)
+	s.Require().Equal("V2", resp.Views[0].Name)
+	s.Require().Equal("V2", resp.Views[1].Name)
+
+	resp, err = qs.Views(s.ctx, &types.QueryViewsRequest{
+		Pagination: &query.PageRequest{Limit: 100},
+		Creator:    "c1",
+	})
+	s.Require().NoError(err)
+	s.Require().Len(resp.Views, 2)
+	s.Require().Equal("c1", resp.Views[0].Creator)
+	s.Require().Equal("c1", resp.Views[1].Creator)
+
+	resp, err = qs.Views(s.ctx, &types.QueryViewsRequest{
+		Pagination: &query.PageRequest{Limit: 100},
+		Name:       "V2",
+		Creator:    "c2",
+	})
+	s.Require().NoError(err)
+	s.Require().Len(resp.Views, 1)
+	s.Require().Equal("0x3", resp.Views[0].ContractAddress)
+}
+
+func (s *KeeperTestSuite) TestQueryServer_Views_IncludeMetadata() {
+	viewQuery := "Ethereum__Mainnet__Log { address blockNumber }"
+	viewSdl := "type TestRoot @materialized(if: false) { address: String blockNumber: Int }"
+	lensWasm := []byte("lens-one")
+	lensArgs := `{"token":"0x1"}`
+	bundle := mustBuildViewBundle(s.T(), viewQuery, viewSdl, testLens(lensWasm, lensArgs))
+
+	_ = s.keeper.SetView(s.ctx, types.View{
+		ContractAddress: "0x1",
+		Name:            "TestRoot",
+		Creator:         "c1",
+		Data:            bundle,
+	})
+
+	qs := keeper.NewQueryServerImpl(s.keeper)
+	resp, err := qs.Views(s.ctx, &types.QueryViewsRequest{
+		Pagination:      &query.PageRequest{Limit: 100},
+		IncludeMetadata: true,
+	})
+	s.Require().NoError(err)
+	s.Require().Len(resp.Views, 1)
+	s.Require().Nil(resp.Views[0].Data)
+	s.Require().NotNil(resp.Views[0].Metadata)
+	s.Require().Equal(viewQuery, resp.Views[0].Metadata.Query)
+	s.Require().Equal(viewSdl, resp.Views[0].Metadata.Sdl)
+	s.Require().Equal("TestRoot", resp.Views[0].Metadata.RootType)
+	s.Require().Empty(resp.Views[0].Metadata.ParseError)
+	s.Require().Len(resp.Views[0].Metadata.Lenses, 1)
+	s.Require().Equal(uint32(1), resp.Views[0].Metadata.Lenses[0].Id)
+	s.Require().Equal(lensArgs, resp.Views[0].Metadata.Lenses[0].Args)
+	s.Require().Equal(expectedShortLensHash(lensWasm), resp.Views[0].Metadata.Lenses[0].Hash)
+}
+
+func (s *KeeperTestSuite) TestQueryServer_Views_MetadataFilters() {
+	firstQuery := "Ethereum__Mainnet__Log { address targetField }"
+	firstSdl := "type FirstRoot @materialized(if: false) { targetField: String }"
+	firstWasm := []byte("first-lens")
+	firstArgs := `{"filter":"needle"}`
+	firstBundle := mustBuildViewBundle(s.T(), firstQuery, firstSdl, testLens(firstWasm, firstArgs))
+
+	secondQuery := "Ethereum__Mainnet__Block { number }"
+	secondSdl := "type SecondRoot @materialized(if: false) { number: Int }"
+	secondBundle := mustBuildViewBundle(s.T(), secondQuery, secondSdl, testLens([]byte("second-lens"), `{"filter":"other"}`))
+
+	_ = s.keeper.SetView(s.ctx, types.View{ContractAddress: "0x1", Name: "FirstRoot", Data: firstBundle})
+	_ = s.keeper.SetView(s.ctx, types.View{ContractAddress: "0x2", Name: "SecondRoot", Data: secondBundle})
+
+	qs := keeper.NewQueryServerImpl(s.keeper)
+	assertSingleMatch := func(req *types.QueryViewsRequest) {
+		req.Pagination = &query.PageRequest{Limit: 100}
+		resp, err := qs.Views(s.ctx, req)
+		s.Require().NoError(err)
+		s.Require().Len(resp.Views, 1)
+		s.Require().Equal("0x1", resp.Views[0].ContractAddress)
+		s.Require().Nil(resp.Views[0].Metadata)
+	}
+
+	assertSingleMatch(&types.QueryViewsRequest{MetadataRootType: "FirstRoot"})
+	assertSingleMatch(&types.QueryViewsRequest{MetadataLensHash: expectedShortLensHash(firstWasm)})
+	assertSingleMatch(&types.QueryViewsRequest{MetadataQueryContains: "targetField"})
+	assertSingleMatch(&types.QueryViewsRequest{MetadataSdlContains: "targetField"})
+	assertSingleMatch(&types.QueryViewsRequest{MetadataLensArgsContains: "needle"})
+}
+
+func (s *KeeperTestSuite) TestQueryServer_Views_MetadataFilterCanIncludeMetadata() {
+	viewQuery := "Ethereum__Mainnet__Log { address }"
+	viewSdl := "type FilterRoot @materialized(if: false) { address: String }"
+	bundle := mustBuildViewBundle(s.T(), viewQuery, viewSdl, testLens([]byte("lens"), "{}"))
+
+	_ = s.keeper.SetView(s.ctx, types.View{ContractAddress: "0x1", Name: "FilterRoot", Data: bundle})
+
+	qs := keeper.NewQueryServerImpl(s.keeper)
+	resp, err := qs.Views(s.ctx, &types.QueryViewsRequest{
+		Pagination:       &query.PageRequest{Limit: 100},
+		IncludeMetadata:  true,
+		MetadataRootType: "FilterRoot",
+	})
+	s.Require().NoError(err)
+	s.Require().Len(resp.Views, 1)
+	s.Require().NotNil(resp.Views[0].Metadata)
+	s.Require().Equal("FilterRoot", resp.Views[0].Metadata.RootType)
+}
+
+func (s *KeeperTestSuite) TestQueryServer_Views_MalformedMetadata() {
+	validBundle := mustBuildViewBundle(
+		s.T(),
+		"Ethereum__Mainnet__Log { address }",
+		"type ValidRoot @materialized(if: false) { address: String }",
+		testLens([]byte("valid-lens"), "{}"),
+	)
+	_ = s.keeper.SetView(s.ctx, types.View{ContractAddress: "0x1", Name: "Broken", Data: []byte("not-a-viewbundle")})
+	_ = s.keeper.SetView(s.ctx, types.View{ContractAddress: "0x2", Name: "Valid", Data: validBundle})
+
+	qs := keeper.NewQueryServerImpl(s.keeper)
+
+	resp, err := qs.Views(s.ctx, &types.QueryViewsRequest{
+		Pagination: &query.PageRequest{Limit: 100},
+	})
+	s.Require().NoError(err)
+	s.Require().Len(resp.Views, 2)
+
+	resp, err = qs.Views(s.ctx, &types.QueryViewsRequest{
+		Pagination:      &query.PageRequest{Limit: 100},
+		IncludeMetadata: true,
+		Name:            "Broken",
+	})
+	s.Require().NoError(err)
+	s.Require().Len(resp.Views, 1)
+	s.Require().NotNil(resp.Views[0].Metadata)
+	s.Require().NotEmpty(resp.Views[0].Metadata.ParseError)
+
+	resp, err = qs.Views(s.ctx, &types.QueryViewsRequest{
+		Pagination:       &query.PageRequest{Limit: 100},
+		MetadataRootType: "ValidRoot",
+	})
+	s.Require().NoError(err)
+	s.Require().Len(resp.Views, 1)
+	s.Require().Equal("0x2", resp.Views[0].ContractAddress)
+}
+
 func (s *KeeperTestSuite) TestQueryServer_View_Found() {
 	_ = s.keeper.SetView(s.ctx, types.View{ContractAddress: "0xabc", Name: "V1", Creator: "cosmos1x"})
 
@@ -313,6 +496,26 @@ func (s *KeeperTestSuite) TestQueryServer_View_Found() {
 	resp, err := qs.View(s.ctx, &types.QueryViewRequest{ContractAddress: "0xabc"})
 	s.Require().NoError(err)
 	s.Require().Equal("V1", resp.View.Name)
+}
+
+func (s *KeeperTestSuite) TestQueryServer_View_IncludeMetadata() {
+	viewQuery := "Ethereum__Mainnet__Log { address }"
+	viewSdl := "type SingleRoot @materialized(if: false) { address: String }"
+	bundle := mustBuildViewBundle(s.T(), viewQuery, viewSdl, testLens([]byte("single-lens"), "{}"))
+
+	_ = s.keeper.SetView(s.ctx, types.View{ContractAddress: "0xabc", Name: "SingleRoot", Data: bundle})
+
+	qs := keeper.NewQueryServerImpl(s.keeper)
+	resp, err := qs.View(s.ctx, &types.QueryViewRequest{
+		ContractAddress: "0xabc",
+		IncludeMetadata: true,
+	})
+	s.Require().NoError(err)
+	s.Require().Nil(resp.View.Data)
+	s.Require().NotNil(resp.View.Metadata)
+	s.Require().Equal("SingleRoot", resp.View.Metadata.RootType)
+	s.Require().Equal(viewQuery, resp.View.Metadata.Query)
+	s.Require().Equal(viewSdl, resp.View.Metadata.Sdl)
 }
 
 func (s *KeeperTestSuite) TestQueryServer_View_NotFound() {
