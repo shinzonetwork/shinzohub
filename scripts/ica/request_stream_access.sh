@@ -8,7 +8,8 @@ export HOME_DIR=$(eval echo "${HOME_DIR:-"~/.shinzohub"}")
 export BINARY="./build/shinzohubd"
 export RPC=${RPC:-"26657"}
 
-export RESOURCE="view"
+# Resource enum: 0 = primitive, 1 = view (see proto/shinzonetwork/sourcehub/v1/tx.proto)
+export RESOURCE="1"
 export STREAM_ID="FilteredAndDecodedLogs_0xc5d55f9a4e8788abaaf74d4772c2a4afe"
 export DID="testuserdid"
 
