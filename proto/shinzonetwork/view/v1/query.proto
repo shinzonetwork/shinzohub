@@ -2,49 +2,68 @@ syntax = "proto3";
 
 package shinzonetwork.view.v1;
 
+import "cosmos/base/query/v1beta1/pagination.proto";
 import "gogoproto/gogo.proto";
 import "google/api/annotations.proto";
-import "cosmos/base/query/v1beta1/pagination.proto";
 import "shinzonetwork/view/v1/view.proto";
 
 option go_package = "github.com/shinzonetwork/shinzohub/x/view/types";
 
+// Query defines the gRPC query service for the view module.
 service Query {
+  // Views returns registered views, optionally filtered and enriched with data or metadata.
   rpc Views(QueryViewsRequest) returns (QueryViewsResponse) {
     option (google.api.http).get = "/shinzonetwork/view/v1/views";
   }
 
+  // View returns a registered view by contract address.
   rpc View(QueryViewRequest) returns (QueryViewResponse) {
     option (google.api.http).get = "/shinzonetwork/view/v1/views/{contract_address}";
   }
 
+  // ViewCount returns the total number of registered views.
   rpc ViewCount(QueryViewCountRequest) returns (QueryViewCountResponse) {
     option (google.api.http).get = "/shinzonetwork/view/v1/view_count";
   }
 }
 
+// QueryViewsRequest is the request type for listing registered views.
 message QueryViewsRequest {
   cosmos.base.query.v1beta1.PageRequest pagination = 1;
-  bool   include_data = 2;
-  uint64 since_block  = 3;
+  bool include_data = 2;
+  uint64 since_block = 3;
+  bool include_metadata = 4;
+  string name = 5;
+  string creator = 6;
+  string metadata_root_type = 7;
+  string metadata_lens_hash = 8;
+  string metadata_query_contains = 9;
+  string metadata_sdl_contains = 10;
+  string metadata_lens_args_contains = 11;
 }
 
+// QueryViewsResponse is the response type for listing registered views.
 message QueryViewsResponse {
   repeated View views = 1 [(gogoproto.nullable) = false];
   cosmos.base.query.v1beta1.PageResponse pagination = 2;
 }
 
+// QueryViewRequest is the request type for fetching one registered view.
 message QueryViewRequest {
   string contract_address = 1;
-  bool   include_data     = 2;
+  bool include_data = 2;
+  bool include_metadata = 3;
 }
 
+// QueryViewResponse is the response type for fetching one registered view.
 message QueryViewResponse {
   View view = 1 [(gogoproto.nullable) = false];
 }
 
+// QueryViewCountRequest is the request type for counting registered views.
 message QueryViewCountRequest {}
 
+// QueryViewCountResponse is the response type for counting registered views.
 message QueryViewCountResponse {
   uint64 count = 1;
 }
