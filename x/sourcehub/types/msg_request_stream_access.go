@@ -31,11 +31,11 @@ func (m *MsgRequestStreamAccess) ValidateBasic() error {
 	}
 
 	if m.StreamId == "" {
-		return fmt.Errorf("Stream ID cannot be empty")
+		return fmt.Errorf("stream id cannot be empty")
 	}
 
 	if m.Did == "" {
-		return fmt.Errorf("DID cannot be empty")
+		return fmt.Errorf("did cannot be empty")
 	}
 
 	// TODO: validate admin

@@ -23,6 +23,7 @@ const (
 	Msg_RegisterShinzoPolicy_FullMethodName  = "/shinzonetwork.sourcehub.v1.Msg/RegisterShinzoPolicy"
 	Msg_RegisterShinzoObjects_FullMethodName = "/shinzonetwork.sourcehub.v1.Msg/RegisterShinzoObjects"
 	Msg_RequestStreamAccess_FullMethodName   = "/shinzonetwork.sourcehub.v1.Msg/RequestStreamAccess"
+	Msg_DeleteStreamAccess_FullMethodName    = "/shinzonetwork.sourcehub.v1.Msg/DeleteStreamAccess"
 )
 
 // MsgClient is the client API for Msg service.
@@ -35,6 +36,7 @@ type MsgClient interface {
 	RegisterShinzoPolicy(ctx context.Context, in *MsgRegisterShinzoPolicy, opts ...grpc.CallOption) (*MsgRegisterShinzoPolicyResponse, error)
 	RegisterShinzoObjects(ctx context.Context, in *MsgRegisterShinzoObjects, opts ...grpc.CallOption) (*MsgRegisterShinzoObjectsResponse, error)
 	RequestStreamAccess(ctx context.Context, in *MsgRequestStreamAccess, opts ...grpc.CallOption) (*MsgRequestStreamAccessResponse, error)
+	DeleteStreamAccess(ctx context.Context, in *MsgDeleteStreamAccess, opts ...grpc.CallOption) (*MsgDeleteStreamAccessResponse, error)
 }
 
 type msgClient struct {
@@ -85,6 +87,16 @@ func (c *msgClient) RequestStreamAccess(ctx context.Context, in *MsgRequestStrea
 	return out, nil
 }
 
+func (c *msgClient) DeleteStreamAccess(ctx context.Context, in *MsgDeleteStreamAccess, opts ...grpc.CallOption) (*MsgDeleteStreamAccessResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(MsgDeleteStreamAccessResponse)
+	err := c.cc.Invoke(ctx, Msg_DeleteStreamAccess_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // MsgServer is the server API for Msg service.
 // All implementations must embed UnimplementedMsgServer
 // for forward compatibility.
@@ -95,6 +107,7 @@ type MsgServer interface {
 	RegisterShinzoPolicy(context.Context, *MsgRegisterShinzoPolicy) (*MsgRegisterShinzoPolicyResponse, error)
 	RegisterShinzoObjects(context.Context, *MsgRegisterShinzoObjects) (*MsgRegisterShinzoObjectsResponse, error)
 	RequestStreamAccess(context.Context, *MsgRequestStreamAccess) (*MsgRequestStreamAccessResponse, error)
+	DeleteStreamAccess(context.Context, *MsgDeleteStreamAccess) (*MsgDeleteStreamAccessResponse, error)
 	mustEmbedUnimplementedMsgServer()
 }
 
@@ -116,6 +129,9 @@ func (UnimplementedMsgServer) RegisterShinzoObjects(context.Context, *MsgRegiste
 }
 func (UnimplementedMsgServer) RequestStreamAccess(context.Context, *MsgRequestStreamAccess) (*MsgRequestStreamAccessResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method RequestStreamAccess not implemented")
+}
+func (UnimplementedMsgServer) DeleteStreamAccess(context.Context, *MsgDeleteStreamAccess) (*MsgDeleteStreamAccessResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DeleteStreamAccess not implemented")
 }
 func (UnimplementedMsgServer) mustEmbedUnimplementedMsgServer() {}
 func (UnimplementedMsgServer) testEmbeddedByValue()             {}
@@ -210,6 +226,24 @@ func _Msg_RequestStreamAccess_Handler(srv interface{}, ctx context.Context, dec 
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Msg_DeleteStreamAccess_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(MsgDeleteStreamAccess)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MsgServer).DeleteStreamAccess(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Msg_DeleteStreamAccess_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MsgServer).DeleteStreamAccess(ctx, req.(*MsgDeleteStreamAccess))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Msg_ServiceDesc is the grpc.ServiceDesc for Msg service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -232,6 +266,10 @@ var Msg_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "RequestStreamAccess",
 			Handler:    _Msg_RequestStreamAccess_Handler,
+		},
+		{
+			MethodName: "DeleteStreamAccess",
+			Handler:    _Msg_DeleteStreamAccess_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

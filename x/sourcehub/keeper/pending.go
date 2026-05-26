@@ -67,7 +67,7 @@ func (k Keeper) IteratePendingByRequestor(ctx sdk.Context, requestor string, cb 
 	store := runtime.KVStoreAdapter(k.storeService.OpenKVStore(ctx))
 	idx := prefix.NewStore(store, types.PendingByRequestorPrefixKey(requestor))
 	iter := idx.Iterator(nil, nil)
-	defer iter.Close()
+	defer func() { _ = iter.Close() }()
 	for ; iter.Valid(); iter.Next() {
 		var portID, channelID string
 		var sequence uint64
