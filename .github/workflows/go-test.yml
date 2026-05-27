@@ -19,6 +19,7 @@ jobs:
     - name: Set up Go
       uses: actions/setup-go@v6
       with:
+        go-version: '1.24'
         go-version-file: 'go.mod'
 
     - name: Cache Go build
@@ -37,4 +38,11 @@ jobs:
           https://github.com/shinzonetwork/wasm-bucket/raw/refs/heads/main/bucket/filter_transaction/filter_transaction.wasm
 
     - name: Run tests
-      run: go test -count=1 -timeout=3m -v ./...
+      run: go test -count=1 -timeout=3m -v -coverprofile=coverage.out -covermode=atomic ./pkg/...
+
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v4
+      with:
+        token: ${{ secrets.CODECOV_TOKEN }}
+        files: ./coverage.out
+        fail_ci_if_error: true
