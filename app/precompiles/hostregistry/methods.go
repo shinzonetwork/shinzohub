@@ -71,9 +71,9 @@ func (p *Precompile) Register(
 	}
 
 	precompAddr := contract.Address()
-	topic0 := crypto.Keccak256Hash([]byte("Registered(address,bytes,string)"))
+	topic0 := crypto.Keccak256Hash([]byte("Registered(address,bytes,string,string)"))
 	event := p.ABI.Events["Registered"]
-	data, err := event.Inputs.NonIndexed().Pack(did, connectionString)
+	data, err := event.Inputs.NonIndexed().Pack(did, connectionString, endpointAddress)
 	if err != nil {
 		return nil, fmt.Errorf("failed to pack Registered event: %w", err)
 	}
