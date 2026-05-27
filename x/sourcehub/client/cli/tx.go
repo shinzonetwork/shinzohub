@@ -24,6 +24,7 @@ func GetTxCmd() *cobra.Command {
 
 	cmd.AddCommand(CmdRegisterSourcehubICA())
 	cmd.AddCommand(CmdRequestStreamAccess())
+	cmd.AddCommand(CmdDeleteStreamAccess())
 	cmd.AddCommand(CmdRegisterShinzoPolicy())
 	cmd.AddCommand(CmdRegisterObjects())
 
@@ -82,6 +83,44 @@ func CmdRequestStreamAccess() *cobra.Command {
 			}
 
 			msg := &types.MsgRequestStreamAccess{
+				Signer:   clientCtx.GetFromAddress().String(),
+				Resource: types.Resource(resourceInt),
+				StreamId: streamID,
+				Did:      did,
+			}
+
+			if err := msg.ValidateBasic(); err != nil {
+				return err
+			}
+
+			return tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), msg)
+		},
+	}
+
+	flags.AddTxFlagsToCmd(cmd)
+	return cmd
+}
+
+func CmdDeleteStreamAccess() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "delete-stream [resource] [stream-id] [did]",
+		Short: "Revoke a subscriber tuple by stream ID and DID",
+		Args:  cobra.ExactArgs(3),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			streamID := args[1]
+			did := args[2]
+
+			resourceInt, err := strconv.Atoi(args[0])
+			if err != nil {
+				return fmt.Errorf("invalid resource: %w", err)
+			}
+
+			clientCtx, err := client.GetClientTxContext(cmd)
+			if err != nil {
+				return err
+			}
+
+			msg := &types.MsgDeleteStreamAccess{
 				Signer:   clientCtx.GetFromAddress().String(),
 				Resource: types.Resource(resourceInt),
 				StreamId: streamID,

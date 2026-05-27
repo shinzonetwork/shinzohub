@@ -10,10 +10,10 @@ export RPC=${RPC:-"26657"}
 
 # Resource enum: 0 = primitive, 1 = view (see proto/shinzonetwork/sourcehub/v1/tx.proto)
 export RESOURCE="1"
-export STREAM_ID="FilteredAndDecodedLogs_0xc5d55f9a4e8788abaaf74d4772c2a4afe"
+export STREAM_ID="0xc5d55f9a4e8788abaaf74d4772c2a4afe60a23a3"
 export DID="testuserdid"
 
-$BINARY tx sourcehub request-stream $RESOURCE $STREAM_ID $DID \
+$BINARY tx sourcehub delete-stream $RESOURCE $STREAM_ID $DID \
   --from $KEY \
   --keyring-backend $KEYRING \
   --chain-id $CHAIN_ID \

@@ -14,6 +14,7 @@ service Msg {
   rpc RegisterShinzoPolicy(MsgRegisterShinzoPolicy) returns (MsgRegisterShinzoPolicyResponse);
   rpc RegisterShinzoObjects(MsgRegisterShinzoObjects) returns (MsgRegisterShinzoObjectsResponse);
   rpc RequestStreamAccess(MsgRequestStreamAccess) returns (MsgRequestStreamAccessResponse);
+  rpc DeleteStreamAccess(MsgDeleteStreamAccess) returns (MsgDeleteStreamAccessResponse);
 }
 
 message MsgRegisterSourcehubICA {
@@ -63,6 +64,25 @@ message MsgRequestStreamAccess {
 }
 
 message MsgRequestStreamAccessResponse {
+  uint64 sequence   = 1;
+  string port_id    = 2;
+  string channel_id = 3;
+}
+
+// MsgDeleteStreamAccess revokes a subscriber tuple on sourcehub via the
+// shinzohub-controlled ICA channel. Admin-gated; mirrors
+// MsgRequestStreamAccess but writes a DeleteRelationship instead of a
+// SetRelationship. No expiration field: revocation is immediate.
+message MsgDeleteStreamAccess {
+  option (cosmos.msg.v1.signer) = "signer";
+
+  string signer    = 1;
+  Resource resource = 2;
+  string stream_id = 3;
+  string did       = 4;
+}
+
+message MsgDeleteStreamAccessResponse {
   uint64 sequence   = 1;
   string port_id    = 2;
   string channel_id = 3;

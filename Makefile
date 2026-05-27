@@ -79,8 +79,9 @@ proto-deps:
 	@go install github.com/cosmos/cosmos-proto/cmd/protoc-gen-go-pulsar@v1.0.0-beta.5
 	@go install github.com/cosmos/gogoproto/protoc-gen-gocosmos@v1.7.0
 	@go install github.com/grpc-ecosystem/grpc-gateway/protoc-gen-grpc-gateway@v1.16.0
-	@go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@v1.1.0
+	@go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@v1.5.1
 	@go install google.golang.org/protobuf/cmd/protoc-gen-go@v1.36.8
+	@go install cosmossdk.io/orm/cmd/protoc-gen-go-cosmos-orm@latest
 
 proto-gen:
 	@echo "⚙️  Generating Protobuf files..."
