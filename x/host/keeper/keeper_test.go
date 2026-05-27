@@ -18,8 +18,8 @@ import (
 	cosmoslog "cosmossdk.io/log"
 	storetypes2 "cosmossdk.io/store"
 	"cosmossdk.io/store/metrics"
-	dbm "github.com/cosmos/cosmos-db"
 	cmtproto "github.com/cometbft/cometbft/proto/tendermint/types"
+	dbm "github.com/cosmos/cosmos-db"
 
 	"github.com/shinzonetwork/shinzohub/x/host/keeper"
 	"github.com/shinzonetwork/shinzohub/x/host/types"
@@ -104,7 +104,7 @@ func (s *KeeperTestSuite) TestRegisterHost_Success() {
 	nodePub, nodeSig := generateNodeIdentityKey(s.T(), message)
 	callerAddr := []byte{0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f, 0x10, 0x11, 0x12, 0x13, 0x14}
 
-	did, err := s.keeper.RegisterHost(s.ctx, nodePub, nodeSig, message, "192.168.1.1:8080", callerAddr)
+	did, err := s.keeper.RegisterHost(s.ctx, nodePub, nodeSig, message, "192.168.1.1:8080", "https://192.168.1.1:8443/api/v0/graphql", callerAddr)
 	s.Require().NoError(err)
 	s.Require().NotEmpty(did)
 
@@ -136,7 +136,7 @@ func (s *KeeperTestSuite) TestRegisterHost_InvalidNodeSignature() {
 	callerAddr := []byte{0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f, 0x10, 0x11, 0x12, 0x13, 0x14}
 	_, wrongSig := generateNodeIdentityKey(s.T(), []byte("wrong-message"))
 
-	_, err := s.keeper.RegisterHost(s.ctx, nodePub, wrongSig, message, "192.168.1.1:8080", callerAddr)
+	_, err := s.keeper.RegisterHost(s.ctx, nodePub, wrongSig, message, "192.168.1.1:8080", "https://192.168.1.1:8443/api/v0/graphql", callerAddr)
 	s.Require().Error(err)
 }
 
@@ -145,11 +145,11 @@ func (s *KeeperTestSuite) TestRegisterHost_SameAddrDifferentDID_Fails() {
 	nodePub1, nodeSig1 := generateNodeIdentityKey(s.T(), message)
 	callerAddr := []byte{0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f, 0x10, 0x11, 0x12, 0x13, 0x14}
 
-	_, err := s.keeper.RegisterHost(s.ctx, nodePub1, nodeSig1, message, "192.168.1.1:8080", callerAddr)
+	_, err := s.keeper.RegisterHost(s.ctx, nodePub1, nodeSig1, message, "192.168.1.1:8080", "https://192.168.1.1:8443/api/v0/graphql", callerAddr)
 	s.Require().NoError(err)
 
 	nodePub2, nodeSig2 := generateNodeIdentityKey(s.T(), message)
-	_, err = s.keeper.RegisterHost(s.ctx, nodePub2, nodeSig2, message, "192.168.1.2:8080", callerAddr)
+	_, err = s.keeper.RegisterHost(s.ctx, nodePub2, nodeSig2, message, "192.168.1.2:8080", "https://192.168.1.2:8443/api/v0/graphql", callerAddr)
 	s.Require().Error(err)
 	s.Require().Contains(err.Error(), "address already registered")
 }
@@ -161,7 +161,7 @@ func (s *KeeperTestSuite) TestRegisterHost_ICAFailure_Propagates() {
 	nodePub, nodeSig := generateNodeIdentityKey(s.T(), message)
 	callerAddr := []byte{0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f, 0x10, 0x11, 0x12, 0x13, 0x14}
 
-	_, err := s.keeper.RegisterHost(s.ctx, nodePub, nodeSig, message, "192.168.1.1:8080", callerAddr)
+	_, err := s.keeper.RegisterHost(s.ctx, nodePub, nodeSig, message, "192.168.1.1:8080", "https://192.168.1.1:8443/api/v0/graphql", callerAddr)
 	s.Require().Error(err)
 	s.Require().Contains(err.Error(), "ICA channel not open")
 }

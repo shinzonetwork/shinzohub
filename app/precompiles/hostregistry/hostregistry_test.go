@@ -20,8 +20,8 @@ import (
 	cosmoslog "cosmossdk.io/log"
 	storetypes2 "cosmossdk.io/store"
 	"cosmossdk.io/store/metrics"
-	dbm "github.com/cosmos/cosmos-db"
 	cmtproto "github.com/cometbft/cometbft/proto/tendermint/types"
+	dbm "github.com/cosmos/cosmos-db"
 	gethtypes "github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/core/vm"
 
@@ -131,7 +131,7 @@ func (s *PrecompileTestSuite) TestRegister_Success() {
 	contract := makeContract(caller)
 
 	method := s.precompile.ABI.Methods["register"]
-	args := []interface{}{nodePub, nodeSig, message, "192.168.1.1:8080"}
+	args := []interface{}{nodePub, nodeSig, message, "192.168.1.1:8080", "https://192.168.1.1:8443/api/v0/graphql"}
 
 	bz, err := s.precompile.Register(s.ctx, contract, s.stateDB, &method, args)
 	s.Require().NoError(err)
@@ -152,7 +152,7 @@ func (s *PrecompileTestSuite) TestRegister_ICANotReady() {
 	contract := makeContract(caller)
 
 	method := s.precompile.ABI.Methods["register"]
-	args := []interface{}{nodePub, nodeSig, message, "192.168.1.1:8080"}
+	args := []interface{}{nodePub, nodeSig, message, "192.168.1.1:8080", "https://192.168.1.1:8443/api/v0/graphql"}
 
 	_, err := s.precompile.Register(s.ctx, contract, s.stateDB, &method, args)
 	s.Require().Error(err)
@@ -202,7 +202,7 @@ func (s *PrecompileTestSuite) TestRegister_ICAFailure() {
 	contract := makeContract(caller)
 
 	method := s.precompile.ABI.Methods["register"]
-	args := []interface{}{nodePub, nodeSig, message, "192.168.1.1:8080"}
+	args := []interface{}{nodePub, nodeSig, message, "192.168.1.1:8080", "https://192.168.1.1:8443/api/v0/graphql"}
 
 	_, err := s.precompile.Register(s.ctx, contract, s.stateDB, &method, args)
 	s.Require().Error(err)

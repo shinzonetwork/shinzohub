@@ -47,6 +47,7 @@ func (k Keeper) RegisterHost(
 	nodeIdentityKeySignature []byte,
 	message []byte,
 	connectionString string,
+	endpointAddress string,
 	callerAddr []byte,
 ) ([]byte, error) {
 	if err := commoncrypto.VerifyNodeIdentityKeySignature(nodeIdentityKeyPubkey, message, nodeIdentityKeySignature); err != nil {
@@ -86,6 +87,7 @@ func (k Keeper) RegisterHost(
 		Address:          bech32Addr,
 		Did:              did,
 		ConnectionString: connectionString,
+		EndpointAddress:  endpointAddress,
 	}
 	if err := k.SetPendingHost(ctx, host); err != nil {
 		return nil, fmt.Errorf("record pending host: %w", err)
