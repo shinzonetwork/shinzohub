@@ -129,6 +129,7 @@ func (s *KeeperTestSuite) TestRegisterHost_Success() {
 	s.Require().Equal(bech32Addr, host.Address)
 	s.Require().Equal(string(did), host.Did)
 	s.Require().Equal("192.168.1.1:8080", host.ConnectionString)
+	s.Require().Equal("https://192.168.1.1:8443/api/v0/graphql", host.EndpointAddress)
 
 	s.Require().Equal(uint64(1), s.keeper.GetHostCount(s.ctx))
 }

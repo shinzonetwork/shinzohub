@@ -13,6 +13,7 @@ import (
 	"github.com/decred/dcrd/dcrec/secp256k1/v4"
 	"github.com/decred/dcrd/dcrec/secp256k1/v4/ecdsa"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/holiman/uint256"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
@@ -130,8 +131,11 @@ func (s *PrecompileTestSuite) TestRegister_Success() {
 	caller := common.HexToAddress("0x1234567890abcdef1234567890abcdef12345678")
 	contract := makeContract(caller)
 
+	const connStr = "192.168.1.1:8080"
+	const endpoint = "https://192.168.1.1:8443/api/v0/graphql"
+
 	method := s.precompile.ABI.Methods["register"]
-	args := []interface{}{nodePub, nodeSig, message, "192.168.1.1:8080", "https://192.168.1.1:8443/api/v0/graphql"}
+	args := []interface{}{nodePub, nodeSig, message, connStr, endpoint}
 
 	bz, err := s.precompile.Register(s.ctx, contract, s.stateDB, &method, args)
 	s.Require().NoError(err)
@@ -141,6 +145,22 @@ func (s *PrecompileTestSuite) TestRegister_Success() {
 	s.simulateHostAck(caller.Bytes())
 	s.Require().True(s.hostKeeper.IsRegisteredHost(s.ctx, caller.Bytes()))
 	s.Require().Len(s.stateDB.logs, 1)
+
+	log := s.stateDB.logs[0]
+	s.Require().Equal(common.HexToAddress(hostregistry.PrecompileAddress), log.Address)
+	s.Require().Len(log.Topics, 2)
+	s.Require().Equal(crypto.Keccak256Hash([]byte("Registered(address,bytes,string,string)")), log.Topics[0])
+	s.Require().Equal(common.BytesToHash(caller.Bytes()), log.Topics[1])
+
+	event := s.precompile.ABI.Events["Registered"]
+	unpacked, err := event.Inputs.NonIndexed().Unpack(log.Data)
+	s.Require().NoError(err)
+	s.Require().Len(unpacked, 3)
+	gotDID, ok := unpacked[0].([]byte)
+	s.Require().True(ok)
+	s.Require().NotEmpty(gotDID)
+	s.Require().Equal(connStr, unpacked[1])
+	s.Require().Equal(endpoint, unpacked[2])
 }
 
 func (s *PrecompileTestSuite) TestRegister_ICANotReady() {
