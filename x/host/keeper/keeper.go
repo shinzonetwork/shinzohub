@@ -3,6 +3,7 @@ package keeper
 import (
 	"encoding/binary"
 	"fmt"
+	"net/url"
 
 	storetypes "cosmossdk.io/core/store"
 	"cosmossdk.io/log"
@@ -15,6 +16,20 @@ import (
 	commoncrypto "github.com/shinzonetwork/shinzohub/x/common/crypto"
 	"github.com/shinzonetwork/shinzohub/x/host/types"
 )
+
+func validateEndpointAddress(endpointAddress string) error {
+	u, err := url.Parse(endpointAddress)
+	if err != nil {
+		return fmt.Errorf("%w: %w", types.ErrInvalidEndpointAddress, err)
+	}
+	if u.Scheme != "http" && u.Scheme != "https" {
+		return fmt.Errorf("%w: scheme must be http or https, got %q", types.ErrInvalidEndpointAddress, u.Scheme)
+	}
+	if u.Host == "" {
+		return fmt.Errorf("%w: missing host", types.ErrInvalidEndpointAddress)
+	}
+	return nil
+}
 
 type Keeper struct {
 	cdc             codec.BinaryCodec
@@ -51,6 +66,10 @@ func (k Keeper) RegisterHost(
 	callerAddr []byte,
 ) ([]byte, error) {
 	if err := commoncrypto.VerifyNodeIdentityKeySignature(nodeIdentityKeyPubkey, message, nodeIdentityKeySignature); err != nil {
+		return nil, err
+	}
+
+	if err := validateEndpointAddress(endpointAddress); err != nil {
 		return nil, err
 	}
 

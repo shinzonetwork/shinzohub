@@ -130,6 +130,25 @@ func (s *KeeperTestSuite) TestRegisterHost_Success() {
 	s.Require().Equal(uint64(1), s.keeper.GetHostCount(s.ctx))
 }
 
+func (s *KeeperTestSuite) TestRegisterHost_InvalidEndpointAddress() {
+	message := []byte("test-nonce")
+	nodePub, nodeSig := generateNodeIdentityKey(s.T(), message)
+	callerAddr := []byte{0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f, 0x10, 0x11, 0x12, 0x13, 0x14}
+
+	cases := []string{
+		"",
+		"not a url",
+		"ftp://example.com/graphql",
+		"http://",
+		"https:///graphql",
+	}
+	for _, ep := range cases {
+		_, err := s.keeper.RegisterHost(s.ctx, nodePub, nodeSig, message, "192.168.1.1:8080", ep, callerAddr)
+		s.Require().Error(err, "expected error for endpointAddress=%q", ep)
+		s.Require().ErrorIs(err, types.ErrInvalidEndpointAddress, "endpointAddress=%q", ep)
+	}
+}
+
 func (s *KeeperTestSuite) TestRegisterHost_InvalidNodeSignature() {
 	message := []byte("test-nonce")
 	nodePub, _ := generateNodeIdentityKey(s.T(), message)
