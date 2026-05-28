@@ -87,7 +87,7 @@ func (k Keeper) RegisterHost(
 	for _, key := range [][]byte{addrKey, pendingAddrKey} {
 		existingDID := store.Get(key)
 		if len(existingDID) > 0 && !bytesEqual(existingDID, didBytes) {
-			return nil, fmt.Errorf("address already registered as host with a different DID")
+			return nil, types.ErrAddressRegisteredDifferentDID
 		}
 	}
 
@@ -96,7 +96,7 @@ func (k Keeper) RegisterHost(
 	for _, key := range [][]byte{didKey, pendingDidKey} {
 		existingAddr := store.Get(key)
 		if len(existingAddr) > 0 && !bytesEqual(existingAddr, callerAddr) {
-			return nil, fmt.Errorf("DID already registered as host with a different address")
+			return nil, types.ErrDIDRegisteredDifferentAddress
 		}
 	}
 

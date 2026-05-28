@@ -2,6 +2,7 @@ package keeper_test
 
 import (
 	"crypto/sha256"
+	"errors"
 	"fmt"
 	"testing"
 
@@ -25,6 +26,8 @@ import (
 	"github.com/shinzonetwork/shinzohub/x/host/types"
 	sourcehubtypes "github.com/shinzonetwork/shinzohub/x/sourcehub/types"
 )
+
+var errICAChannelNotOpen = errors.New("ICA channel not open")
 
 type mockSourcehubKeeper struct {
 	called    bool
@@ -174,7 +177,7 @@ func (s *KeeperTestSuite) TestRegisterHost_SameAddrDifferentDID_Fails() {
 }
 
 func (s *KeeperTestSuite) TestRegisterHost_ICAFailure_Propagates() {
-	s.mockSourcehub.err = fmt.Errorf("ICA channel not open")
+	s.mockSourcehub.err = errICAChannelNotOpen
 
 	message := []byte("test-nonce")
 	nodePub, nodeSig := generateNodeIdentityKey(s.T(), message)
