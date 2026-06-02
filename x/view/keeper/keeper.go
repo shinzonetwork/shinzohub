@@ -3,7 +3,9 @@ package keeper
 import (
 	"encoding/base64"
 	"encoding/binary"
+	"encoding/hex"
 	"fmt"
+	"strings"
 
 	storetypes "cosmossdk.io/core/store"
 	"cosmossdk.io/log"
@@ -17,18 +19,20 @@ import (
 )
 
 type Keeper struct {
-	cdc          codec.BinaryCodec
-	storeService storetypes.KVStoreService
+	cdc             codec.BinaryCodec
+	storeService    storetypes.KVStoreService
+	sourcehubKeeper types.SourcehubKeeper
 }
 
-func NewKeeper(cdc codec.BinaryCodec, storeService storetypes.KVStoreService) Keeper {
-	return Keeper{cdc: cdc, storeService: storeService}
+func NewKeeper(cdc codec.BinaryCodec, storeService storetypes.KVStoreService, sourcehubKeeper types.SourcehubKeeper) Keeper {
+	return Keeper{cdc: cdc, storeService: storeService, sourcehubKeeper: sourcehubKeeper}
 }
 
 func (k Keeper) Logger(ctx sdk.Context) log.Logger {
 	return ctx.Logger().With("module", fmt.Sprintf("x/%s", types.ModuleName))
 }
 
+// Stages a pending view and fires the ACP register-object ICA. Finalised in ack_callback.go on SUCCESS.
 func (k Keeper) RegisterView(ctx sdk.Context, name, creator, address string, data []byte) (types.View, error) {
 	view := types.View{
 		Name:    name,
@@ -37,18 +41,59 @@ func (k Keeper) RegisterView(ctx sdk.Context, name, creator, address string, dat
 		Data:    data,
 		Height:  uint64(ctx.BlockHeight()),
 	}
-	if err := k.SetView(ctx, view); err != nil {
-		return types.View{}, err
+
+	if err := k.SetPendingView(ctx, view); err != nil {
+		return types.View{}, fmt.Errorf("record pending view: %w", err)
+	}
+
+	requestor, err := evmHexToBech32(creator)
+	if err != nil {
+		_ = k.DeletePendingView(ctx, address)
+		return types.View{}, fmt.Errorf("convert creator to bech32: %w", err)
+	}
+	if _, _, _, err := k.sourcehubKeeper.RegisterObject(ctx, address, requestor); err != nil {
+		_ = k.DeletePendingView(ctx, address)
+		return types.View{}, fmt.Errorf("register view object via ICA: %w", err)
 	}
 
 	ctx.EventManager().EmitEvent(sdk.NewEvent(
-		types.EventTypeViewRegistered,
+		types.EventTypeViewPending,
 		sdk.NewAttribute(types.AttrKeyAddress, address),
 		sdk.NewAttribute(types.AttrKeyCreator, creator),
 		sdk.NewAttribute(types.AttrKeyName, name),
 		sdk.NewAttribute(types.AttrKeyData, base64.StdEncoding.EncodeToString(data)),
 	))
+
 	return view, nil
+}
+
+func (k Keeper) SetPendingView(ctx sdk.Context, view types.View) error {
+	store := runtime.KVStoreAdapter(k.storeService.OpenKVStore(ctx))
+	bz, err := k.cdc.Marshal(&view)
+	if err != nil {
+		return err
+	}
+	store.Set([]byte(types.PendingViewPrefix+view.Address), bz)
+	return nil
+}
+
+func (k Keeper) GetPendingView(ctx sdk.Context, address string) (types.View, bool, error) {
+	store := runtime.KVStoreAdapter(k.storeService.OpenKVStore(ctx))
+	bz := store.Get([]byte(types.PendingViewPrefix + address))
+	if len(bz) == 0 {
+		return types.View{}, false, nil
+	}
+	var v types.View
+	if err := k.cdc.Unmarshal(bz, &v); err != nil {
+		return types.View{}, false, err
+	}
+	return v, true, nil
+}
+
+func (k Keeper) DeletePendingView(ctx sdk.Context, address string) error {
+	store := runtime.KVStoreAdapter(k.storeService.OpenKVStore(ctx))
+	store.Delete([]byte(types.PendingViewPrefix + address))
+	return nil
 }
 
 func (k Keeper) SetView(ctx sdk.Context, view types.View) error {
@@ -127,4 +172,16 @@ func (k Keeper) InitGenesis(ctx sdk.Context, gs types.GenesisState) {
 func (k Keeper) ExportGenesis(ctx sdk.Context) *types.GenesisState {
 	views, _, _ := k.GetAllViews(ctx, &query.PageRequest{Limit: 10_000_000})
 	return &types.GenesisState{Views: views}
+}
+
+// Sourcehub expects the ACP requestor as bech32, but the keeper holds EVM hex.
+func evmHexToBech32(addr string) (string, error) {
+	raw, err := hex.DecodeString(strings.TrimPrefix(addr, "0x"))
+	if err != nil {
+		return "", err
+	}
+	if len(raw) != 20 {
+		return "", fmt.Errorf("expected 20 bytes, got %d", len(raw))
+	}
+	return sdk.AccAddress(raw).String(), nil
 }

@@ -776,8 +776,13 @@ func NewChainApp(
 	app.ViewKeeper = viewkeeper.NewKeeper(
 		appCodec,
 		runtime.NewKVStoreService(keys[viewtypes.StoreKey]),
+		&app.SourcehubKeeper,
 	)
 
+	app.SourcehubKeeper.RegisterAckCallback(
+		sourcehubtypes.RequestKind_REQUEST_KIND_REGISTER_OBJECT,
+		viewkeeper.NewAckCallback(app.ViewKeeper),
+	)
 	app.SourcehubKeeper.RegisterAckCallback(
 		sourcehubtypes.RequestKind_REQUEST_KIND_SET_RELATIONSHIP,
 		hostkeeper.NewAckCallback(app.HostKeeper),

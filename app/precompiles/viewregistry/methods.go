@@ -33,19 +33,27 @@ var viewCreatedDataArgs = func() abi.Arguments {
 	return abi.Arguments{{Name: "name", Type: stringType}}
 }()
 
+const (
+	statusNone       uint8 = 0
+	statusPending    uint8 = 1
+	statusRegistered uint8 = 2
+)
+
 type viewTuple struct {
 	ViewAddress common.Address `abi:"viewAddress"`
 	Name        string         `abi:"name"`
 	Creator     string         `abi:"creator"`
 	Height      uint64         `abi:"height"`
+	Status      uint8          `abi:"status"`
 }
 
-func toViewTuple(v types.View) viewTuple {
+func toViewTuple(v types.View, status uint8) viewTuple {
 	return viewTuple{
 		ViewAddress: common.HexToAddress(v.Address),
 		Name:        v.Name,
 		Creator:     v.Creator,
 		Height:      v.Height,
+		Status:      status,
 	}
 }
 
@@ -83,6 +91,7 @@ func (p Precompile) Register(
 	if err != nil {
 		return nil, fmt.Errorf("pack event data: %w", err)
 	}
+
 	stateDB.AddLog(&gethtypes.Log{
 		Address: p.Address(),
 		Topics: []common.Hash{
@@ -106,14 +115,21 @@ func (p Precompile) GetView(
 		return nil, fmt.Errorf("invalid viewAddress")
 	}
 
-	view, found, err := p.viewKeeper.GetView(ctx, viewAddress.Hex())
-	if err != nil {
+	addr := viewAddress.Hex()
+
+	if view, found, err := p.viewKeeper.GetView(ctx, addr); err != nil {
 		return nil, err
+	} else if found {
+		return method.Outputs.Pack(toViewTuple(view, statusRegistered))
 	}
-	if !found {
-		return method.Outputs.Pack(viewTuple{})
+
+	if view, found, err := p.viewKeeper.GetPendingView(ctx, addr); err != nil {
+		return nil, err
+	} else if found {
+		return method.Outputs.Pack(toViewTuple(view, statusPending))
 	}
-	return method.Outputs.Pack(toViewTuple(view))
+
+	return method.Outputs.Pack(viewTuple{Status: statusNone})
 }
 
 func (p Precompile) ListViews(
@@ -140,7 +156,7 @@ func (p Precompile) ListViews(
 
 	out := make([]viewTuple, len(views))
 	for i, v := range views {
-		out[i] = toViewTuple(v)
+		out[i] = toViewTuple(v, statusRegistered)
 	}
 	return method.Outputs.Pack(out)
 }

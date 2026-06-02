@@ -36,7 +36,8 @@
             { "internalType": "address", "name": "viewAddress", "type": "address" },
             { "internalType": "string", "name": "name", "type": "string" },
             { "internalType": "string", "name": "creator", "type": "string" },
-            { "internalType": "uint64", "name": "height", "type": "uint64" }
+            { "internalType": "uint64", "name": "height", "type": "uint64" },
+            { "internalType": "uint8", "name": "status", "type": "uint8" }
           ],
           "internalType": "struct ViewRegistryI.View",
           "name": "",
@@ -58,7 +59,8 @@
             { "internalType": "address", "name": "viewAddress", "type": "address" },
             { "internalType": "string", "name": "name", "type": "string" },
             { "internalType": "string", "name": "creator", "type": "string" },
-            { "internalType": "uint64", "name": "height", "type": "uint64" }
+            { "internalType": "uint64", "name": "height", "type": "uint64" },
+            { "internalType": "uint8", "name": "status", "type": "uint8" }
           ],
           "internalType": "struct ViewRegistryI.View[]",
           "name": "",
