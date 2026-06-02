@@ -15,41 +15,32 @@ import (
 	viewkeeper "github.com/shinzonetwork/shinzohub/x/view/keeper"
 )
 
-const (
-	PrecompileAddress = "0x0000000000000000000000000000000000000210"
-)
+const PrecompileAddress = "0x0000000000000000000000000000000000000210"
 
 //go:embed abi.json
 var f embed.FS
 
 var _ vm.PrecompiledContract = &Precompile{}
 
-type SourcehubKeeper interface {
-	CheckICAReady(ctx sdk.Context) error
-}
-
 type Precompile struct {
 	cmn.Precompile
-	baseGas         uint64
-	viewKeeper      viewkeeper.Keeper
-	sourcehubKeeper SourcehubKeeper
+	baseGas    uint64
+	viewKeeper viewkeeper.Keeper
 }
 
-func NewPrecompile(baseGas uint64, viewKeeper viewkeeper.Keeper, sourcehubKeeper SourcehubKeeper) (*Precompile, error) {
+func NewPrecompile(baseGas uint64, viewKeeper viewkeeper.Keeper) (*Precompile, error) {
 	newABI, err := cmn.LoadABI(f, "abi.json")
 	if err != nil {
 		return nil, err
 	}
-
 	return &Precompile{
 		Precompile: cmn.Precompile{
 			ABI:                  newABI,
 			KvGasConfig:          storetypes.GasConfig{},
 			TransientKVGasConfig: storetypes.GasConfig{},
 		},
-		baseGas:         baseGas,
-		viewKeeper:      viewKeeper,
-		sourcehubKeeper: sourcehubKeeper,
+		baseGas:    baseGas,
+		viewKeeper: viewKeeper,
 	}, nil
 }
 
@@ -70,49 +61,41 @@ func (p Precompile) Run(evm *vm.EVM, contract *vm.Contract, readOnly bool) (bz [
 	if err != nil {
 		return nil, err
 	}
-
 	defer cmn.HandleGasError(ctx, contract, initialGas, &err)()
 
-	bz, err = p.HandleMethod(ctx, evm, contract, stateDB, method, args)
+	bz, err = p.handle(ctx, contract, stateDB, method, args)
 	if err != nil {
 		return nil, err
 	}
 
 	cost := ctx.GasMeter().GasConsumed() - initialGas
-	if !contract.UseGas(uint64(cost), nil, tracing.GasChangeUnspecified) {
+	if !contract.UseGas(cost, nil, tracing.GasChangeUnspecified) {
 		return nil, vm.ErrOutOfGas
 	}
-
 	return bz, nil
 }
 
 func (Precompile) IsTransaction(method *abi.Method) bool {
-	switch method.Name {
-	case MethodRegister, MethodRegisterWithPricing:
-		return true
-	default:
-		return false
-	}
+	return method.Name == MethodRegister
 }
 
-func (p *Precompile) HandleMethod(
+func (p *Precompile) handle(
 	ctx sdk.Context,
-	evm *vm.EVM,
 	contract *vm.Contract,
 	stateDB vm.StateDB,
 	method *abi.Method,
 	args []interface{},
-) (bz []byte, err error) {
+) ([]byte, error) {
 	switch method.Name {
 	case MethodRegister:
-		bz, err = p.Register(ctx, evm, contract, stateDB, method, args)
-	case MethodRegisterWithPricing:
-		bz, err = p.RegisterWithPricing(ctx, evm, contract, stateDB, method, args)
+		return p.Register(ctx, contract, stateDB, method, args)
 	case MethodGetView:
-		bz, err = p.GetView(ctx, method, args)
+		return p.GetView(ctx, method, args)
+	case MethodListViews:
+		return p.ListViews(ctx, method, args)
+	case MethodViewCount:
+		return p.ViewCount(ctx, method)
 	default:
 		return nil, fmt.Errorf(cmn.ErrUnknownMethod, method.Name)
 	}
-
-	return bz, err
 }

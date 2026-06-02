@@ -49,7 +49,7 @@ echo "Name:    $VIEW_NAME"
 echo ""
 
 TX_RESULT=$(cast send "$VIEW_REGISTRY" \
-  "register(bytes)(address)" \
+  "register(bytes)(address,string)" \
   "0x${BUNDLE_HEX}" \
   --private-key "$PRIVATE_KEY" \
   --rpc-url "$RPC_URL" \
@@ -61,7 +61,7 @@ echo "TX Hash:  $TX_HASH"
 
 STATUS=$(cast receipt "$TX_HASH" --rpc-url "$RPC_URL" --json | jq -r '.status')
 if [ "$STATUS" = "0x0" ]; then
-  echo "TX reverted. If you see 'ICA address not found', run start_all.sh first."
+  echo "TX reverted. Inspect:"
   echo "  cast receipt $TX_HASH --rpc-url $RPC_URL"
 else
   VIEW_ADDR=$(cast receipt "$TX_HASH" --rpc-url "$RPC_URL" --json \

@@ -2,46 +2,22 @@
 set -euo pipefail
 
 RPC_URL="${RPC_URL:-http://localhost:8545}"
-VIEW_ADDR="${VIEW_ADDR:?Set VIEW_ADDR to a deployed view contract address}"
+VIEW_REGISTRY="0x0000000000000000000000000000000000000210"
+VIEW_ADDR="${VIEW_ADDR:?Set VIEW_ADDR to a registered view address}"
 
 echo "=== View Info ==="
 echo "Address: $VIEW_ADDR"
 echo ""
 
-echo "--- name ---"
-cast call "$VIEW_ADDR" "name()(string)" --rpc-url "$RPC_URL"
+echo "--- getView ---"
+cast call "$VIEW_REGISTRY" \
+  "getView(address)((address,string,string,uint64))" \
+  "$VIEW_ADDR" \
+  --rpc-url "$RPC_URL"
 echo ""
 
-echo "--- creator ---"
-cast call "$VIEW_ADDR" "creator()(address)" --rpc-url "$RPC_URL"
-echo ""
-
-echo "--- price ---"
-cast call "$VIEW_ADDR" "price()(uint256)" --rpc-url "$RPC_URL"
-echo ""
-
-echo "--- rate ---"
-cast call "$VIEW_ADDR" "rate()(uint256)" --rpc-url "$RPC_URL"
-echo ""
-
-echo "--- complexity ---"
-cast call "$VIEW_ADDR" "complexity()(uint256)" --rpc-url "$RPC_URL"
-echo ""
-
-echo "--- hosts ---"
-cast call "$VIEW_ADDR" "hosts()(address[])" --rpc-url "$RPC_URL"
-echo ""
-
-echo "--- totalStake ---"
-cast call "$VIEW_ADDR" "totalStake()(uint256)" --rpc-url "$RPC_URL"
-echo ""
-
-echo "--- earnings ---"
-cast call "$VIEW_ADDR" "earnings()(uint256)" --rpc-url "$RPC_URL"
-echo ""
-
-echo "--- pricingContract ---"
-cast call "$VIEW_ADDR" "pricingContract()(address)" --rpc-url "$RPC_URL"
+echo "--- viewCount ---"
+cast call "$VIEW_REGISTRY" "viewCount()(uint256)" --rpc-url "$RPC_URL"
 echo ""
 
 echo "=== Done ==="

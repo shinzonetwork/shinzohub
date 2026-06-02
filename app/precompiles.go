@@ -158,7 +158,7 @@ func NewAvailableStaticPrecompiles(
 	}
 
 	// register custom precompiles
-	viewRegistryPrecompile, err := viewregistry.NewPrecompile(precompileBaseGas, viewKeeper, sourcehubKeeper)
+	viewRegistryPrecompile, err := viewregistry.NewPrecompile(precompileBaseGas, viewKeeper)
 	if err != nil {
 		panic(fmt.Errorf("failed to instantiate view registry precompile: %w", err))
 	}

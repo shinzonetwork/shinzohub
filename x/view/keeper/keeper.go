@@ -1,6 +1,7 @@
 package keeper
 
 import (
+	"encoding/base64"
 	"encoding/binary"
 	"fmt"
 
@@ -16,93 +17,43 @@ import (
 )
 
 type Keeper struct {
-	cdc             codec.BinaryCodec
-	storeService    storetypes.KVStoreService
-	authority       string
-	hostKeeper      types.HostKeeper
-	sourcehubKeeper types.SourcehubKeeper
+	cdc          codec.BinaryCodec
+	storeService storetypes.KVStoreService
 }
 
-func NewKeeper(
-	cdc codec.BinaryCodec,
-	storeService storetypes.KVStoreService,
-	hostKeeper types.HostKeeper,
-	sourcehubKeeper types.SourcehubKeeper,
-	authority string,
-) Keeper {
-	return Keeper{
-		cdc:             cdc,
-		storeService:    storeService,
-		hostKeeper:      hostKeeper,
-		sourcehubKeeper: sourcehubKeeper,
-		authority:       authority,
-	}
+func NewKeeper(cdc codec.BinaryCodec, storeService storetypes.KVStoreService) Keeper {
+	return Keeper{cdc: cdc, storeService: storeService}
 }
 
 func (k Keeper) Logger(ctx sdk.Context) log.Logger {
 	return ctx.Logger().With("module", fmt.Sprintf("x/%s", types.ModuleName))
 }
 
-func (k Keeper) RegisterView(ctx sdk.Context, viewId, name, creator, contractAddress string, data []byte) error {
+func (k Keeper) RegisterView(ctx sdk.Context, name, creator, address string, data []byte) (types.View, error) {
 	view := types.View{
-		Name:            name,
-		Creator:         creator,
-		ContractAddress: contractAddress,
-		Data:            data,
-		Height:          uint64(ctx.BlockHeight()),
+		Name:    name,
+		Creator: creator,
+		Address: address,
+		Data:    data,
+		Height:  uint64(ctx.BlockHeight()),
 	}
-
-	if err := k.SetPendingView(ctx, viewId, view); err != nil {
-		return fmt.Errorf("record pending view: %w", err)
-	}
-
-	if _, _, _, err := k.sourcehubKeeper.RegisterObject(ctx, viewId, creator); err != nil {
-		_ = k.DeletePendingView(ctx, viewId)
-		return fmt.Errorf("failed to register view object: %w", err)
+	if err := k.SetView(ctx, view); err != nil {
+		return types.View{}, err
 	}
 
 	ctx.EventManager().EmitEvent(sdk.NewEvent(
-		types.EventTypeViewPending,
-		sdk.NewAttribute(types.AttrKeyViewID, viewId),
-		sdk.NewAttribute(types.AttrKeyContractAddress, contractAddress),
+		types.EventTypeViewRegistered,
+		sdk.NewAttribute(types.AttrKeyAddress, address),
 		sdk.NewAttribute(types.AttrKeyCreator, creator),
+		sdk.NewAttribute(types.AttrKeyName, name),
+		sdk.NewAttribute(types.AttrKeyData, base64.StdEncoding.EncodeToString(data)),
 	))
-
-	return nil
-}
-
-func (k Keeper) SetPendingView(ctx sdk.Context, viewId string, view types.View) error {
-	store := runtime.KVStoreAdapter(k.storeService.OpenKVStore(ctx))
-	bz, err := k.cdc.Marshal(&view)
-	if err != nil {
-		return err
-	}
-	store.Set([]byte(types.PendingViewPrefix+viewId), bz)
-	return nil
-}
-
-func (k Keeper) GetPendingView(ctx sdk.Context, viewId string) (types.View, bool, error) {
-	store := runtime.KVStoreAdapter(k.storeService.OpenKVStore(ctx))
-	bz := store.Get([]byte(types.PendingViewPrefix + viewId))
-	if len(bz) == 0 {
-		return types.View{}, false, nil
-	}
-	var v types.View
-	if err := k.cdc.Unmarshal(bz, &v); err != nil {
-		return types.View{}, false, err
-	}
-	return v, true, nil
-}
-
-func (k Keeper) DeletePendingView(ctx sdk.Context, viewId string) error {
-	store := runtime.KVStoreAdapter(k.storeService.OpenKVStore(ctx))
-	store.Delete([]byte(types.PendingViewPrefix + viewId))
-	return nil
+	return view, nil
 }
 
 func (k Keeper) SetView(ctx sdk.Context, view types.View) error {
 	store := runtime.KVStoreAdapter(k.storeService.OpenKVStore(ctx))
-	key := []byte(types.ViewPrefix + view.ContractAddress)
+	key := []byte(types.ViewPrefix + view.Address)
 
 	isNew := len(store.Get(key)) == 0
 
@@ -118,15 +69,12 @@ func (k Keeper) SetView(ctx sdk.Context, view types.View) error {
 	return nil
 }
 
-func (k Keeper) GetView(ctx sdk.Context, contractAddress string) (types.View, bool, error) {
+func (k Keeper) GetView(ctx sdk.Context, address string) (types.View, bool, error) {
 	store := runtime.KVStoreAdapter(k.storeService.OpenKVStore(ctx))
-	key := []byte(types.ViewPrefix + contractAddress)
-
-	bz := store.Get(key)
+	bz := store.Get([]byte(types.ViewPrefix + address))
 	if len(bz) == 0 {
 		return types.View{}, false, nil
 	}
-
 	var view types.View
 	if err := k.cdc.Unmarshal(bz, &view); err != nil {
 		return types.View{}, false, err
@@ -134,16 +82,12 @@ func (k Keeper) GetView(ctx sdk.Context, contractAddress string) (types.View, bo
 	return view, true, nil
 }
 
-func (k Keeper) GetViewByAddress(ctx sdk.Context, contractAddress string) (types.View, bool, error) {
-	return k.GetView(ctx, contractAddress)
-}
-
 func (k Keeper) GetAllViews(ctx sdk.Context, pageReq *query.PageRequest) ([]types.View, *query.PageResponse, error) {
 	store := runtime.KVStoreAdapter(k.storeService.OpenKVStore(ctx))
 	viewStore := prefix.NewStore(store, []byte(types.ViewPrefix))
 
 	var views []types.View
-	pageRes, err := query.Paginate(viewStore, pageReq, func(key, value []byte) error {
+	pageRes, err := query.Paginate(viewStore, pageReq, func(_, value []byte) error {
 		var view types.View
 		if err := k.cdc.Unmarshal(value, &view); err != nil {
 			return err
@@ -181,6 +125,6 @@ func (k Keeper) InitGenesis(ctx sdk.Context, gs types.GenesisState) {
 }
 
 func (k Keeper) ExportGenesis(ctx sdk.Context) *types.GenesisState {
-	views, _, _ := k.GetAllViews(ctx, &query.PageRequest{Limit: uint64(10000000)})
+	views, _, _ := k.GetAllViews(ctx, &query.PageRequest{Limit: 10_000_000})
 	return &types.GenesisState{Views: views}
 }

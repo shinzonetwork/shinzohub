@@ -9,35 +9,40 @@ ViewRegistryI constant VIEW_REGISTRY_CONTRACT = ViewRegistryI(VIEW_REGISTRY_PREC
 
 /// @author Shinzo Team
 /// @title ViewRegistry Precompile
-/// @notice Precompile that registers views and deploys a View contract per registration.
-///         Each view is its own contract with injectable pricing logic.
+/// @notice Registers Shinzo views by a deterministic 20-byte address derived
+///         from `(caller, bundle)`. No contract bytecode is ever deployed at
+///         the view address — it is a pure identifier the registry owns. All
+///         view metadata lives in the Cosmos x/view module and is exposed
+///         back to the EVM through this precompile.
 /// @custom:address 0x0000000000000000000000000000000000000210
 interface ViewRegistryI {
+    /// @notice Snapshot of a registered view.
+    /// @param viewAddress Deterministic 20-byte view address.
+    /// @param name        Resource name parsed from the SDL `type` declaration.
+    /// @param creator     EVM hex address of the EOA that called `register()`.
+    /// @param height      Cosmos block height at which `register()` ran.
+    struct View {
+        address viewAddress;
+        string name;
+        string creator;
+        uint64 height;
+    }
 
-    /// @param data The raw view bundle data.
-    /// @return viewAddress The address of the deployed View contract.
-    function register(bytes calldata data)
-        external
-        returns (address viewAddress);
+    /// @notice Register a new view from a viewbundle.
+    /// @param data The opaque viewbundle bytes (see `viewbundle-go`).
+    /// @return viewAddress Deterministic 20-byte address now associated with this view.
+    /// @return name        Resource name extracted from the SDL.
+    function register(bytes calldata data) external returns (address viewAddress, string memory name);
 
-    /// @param data    The raw view bundle data.
-    /// @param pricing The address of a custom IViewPricing contract.
-    /// @return viewAddress The address of the deployed View contract.
-    function registerWithPricing(
-        bytes calldata data,
-        address pricing
-    ) external returns (address viewAddress);
+    /// @notice Fetch a single view by its address.
+    function getView(address viewAddress) external view returns (View memory);
 
-    /// @param viewAddress The view contract address to look up.
-    /// @return creator The bech32 creator address (as string).
-    function getView(address viewAddress) external view returns (string memory creator);
+    /// @notice Paginate registered views.
+    function listViews(uint256 offset, uint256 limit) external view returns (View[] memory);
 
-    /// @param viewAddress The address of the deployed View contract.
-    /// @param creator     The address that registered the view.
-    /// @param name        The SDL resource name of the view.
-    event ViewCreated(
-        address indexed viewAddress,
-        address indexed creator,
-        string name
-    );
+    /// @notice Total number of registered views.
+    function viewCount() external view returns (uint256);
+
+    /// @notice Emitted when a view is registered.
+    event ViewCreated(address indexed viewAddress, address indexed creator, string name);
 }
