@@ -1,4 +1,4 @@
-package viewregistry
+package poolregistry
 
 import (
 	"embed"
@@ -12,10 +12,10 @@ import (
 	"github.com/ethereum/go-ethereum/core/tracing"
 	"github.com/ethereum/go-ethereum/core/vm"
 
-	viewkeeper "github.com/shinzonetwork/shinzohub/x/view/keeper"
+	poolkeeper "github.com/shinzonetwork/shinzohub/x/pool/keeper"
 )
 
-const PrecompileAddress = "0x0000000000000000000000000000000000000210"
+const PrecompileAddress = "0x0000000000000000000000000000000000000213"
 
 //go:embed abi.json
 var f embed.FS
@@ -25,10 +25,10 @@ var _ vm.PrecompiledContract = &Precompile{}
 type Precompile struct {
 	cmn.Precompile
 	baseGas    uint64
-	viewKeeper viewkeeper.Keeper
+	poolKeeper poolkeeper.Keeper
 }
 
-func NewPrecompile(baseGas uint64, viewKeeper viewkeeper.Keeper) (*Precompile, error) {
+func NewPrecompile(baseGas uint64, poolKeeper poolkeeper.Keeper) (*Precompile, error) {
 	newABI, err := cmn.LoadABI(f, "abi.json")
 	if err != nil {
 		return nil, err
@@ -40,7 +40,7 @@ func NewPrecompile(baseGas uint64, viewKeeper viewkeeper.Keeper) (*Precompile, e
 			TransientKVGasConfig: storetypes.GasConfig{},
 		},
 		baseGas:    baseGas,
-		viewKeeper: viewKeeper,
+		poolKeeper: poolKeeper,
 	}, nil
 }
 
@@ -53,17 +53,13 @@ func (p Precompile) RequiredGas(_ []byte) uint64 {
 }
 
 func (p Precompile) Run(evm *vm.EVM, contract *vm.Contract, readOnly bool) (bz []byte, err error) {
-	if value := contract.Value(); value.Sign() == 1 {
-		return nil, fmt.Errorf("cannot receive funds, received: %s", contract.Value().String())
-	}
-
 	ctx, stateDB, method, initialGas, args, err := p.RunSetup(evm, contract, readOnly, p.IsTransaction)
 	if err != nil {
 		return nil, err
 	}
 	defer cmn.HandleGasError(ctx, contract, initialGas, &err)()
 
-	bz, err = p.handle(ctx, contract, stateDB, method, args)
+	bz, err = p.handle(ctx, evm, contract, stateDB, method, args)
 	if err != nil {
 		return nil, err
 	}
@@ -76,27 +72,30 @@ func (p Precompile) Run(evm *vm.EVM, contract *vm.Contract, readOnly bool) (bz [
 }
 
 func (Precompile) IsTransaction(method *abi.Method) bool {
-	return method.Name == MethodRegister
+	return method.Name == MethodRegisterDemandForView
 }
 
 func (p *Precompile) handle(
 	ctx sdk.Context,
+	evm *vm.EVM,
 	contract *vm.Contract,
 	stateDB vm.StateDB,
 	method *abi.Method,
 	args []interface{},
 ) ([]byte, error) {
 	switch method.Name {
-	case MethodRegister:
-		return p.Register(ctx, contract, stateDB, method, args)
-	case MethodGetView:
-		return p.GetView(ctx, method, args)
-	case MethodListViews:
-		return p.ListViews(ctx, method, args)
-	case MethodViewCount:
-		return p.ViewCount(ctx, method)
 	case MethodRegisterDemandForView:
-		return p.RegisterDemandForView(ctx, contract, stateDB, method, args)
+		return p.RegisterDemandForView(ctx, evm, contract, stateDB, method, args)
+	case MethodPoolsOf:
+		return p.PoolsOf(ctx, method, args)
+	case MethodViewOfPool:
+		return p.ViewOfPool(ctx, method, args)
+	case MethodGetPool:
+		return p.GetPool(ctx, method, args)
+	case MethodGetPoolFor:
+		return p.GetPoolFor(ctx, method, args)
+	case MethodGetPoolDetail:
+		return p.GetPoolDetail(ctx, method, args)
 	default:
 		return nil, fmt.Errorf(cmn.ErrUnknownMethod, method.Name)
 	}
