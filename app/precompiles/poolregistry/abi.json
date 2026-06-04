@@ -1,0 +1,214 @@
+{
+  "_format": "hh-sol-artifact-1",
+  "contractName": "PoolRegistryI",
+  "sourceName": "PoolRegistry.sol",
+  "abi": [
+    {
+      "anonymous": false,
+      "inputs": [
+        { "indexed": true, "internalType": "address", "name": "poolAddress", "type": "address" },
+        { "indexed": true, "internalType": "address", "name": "viewAddress", "type": "address" },
+        {
+          "components": [
+            { "internalType": "uint64", "name": "windowSize", "type": "uint64" }
+          ],
+          "indexed": false,
+          "internalType": "struct PoolRegistryI.PoolConfig",
+          "name": "config",
+          "type": "tuple"
+        }
+      ],
+      "name": "PoolCreated",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        { "indexed": true, "internalType": "address", "name": "poolAddress", "type": "address" },
+        { "indexed": true, "internalType": "address", "name": "registrant", "type": "address" },
+        { "indexed": false, "internalType": "uint256", "name": "bond", "type": "uint256" }
+      ],
+      "name": "DemandRegistered",
+      "type": "event"
+    },
+    {
+      "inputs": [
+        { "internalType": "address", "name": "viewAddress", "type": "address" },
+        {
+          "components": [
+            { "internalType": "uint64", "name": "windowSize", "type": "uint64" }
+          ],
+          "internalType": "struct PoolRegistryI.PoolConfig",
+          "name": "config",
+          "type": "tuple"
+        }
+      ],
+      "name": "registerDemandForView",
+      "outputs": [
+        {
+          "components": [
+            { "internalType": "address", "name": "poolAddress", "type": "address" },
+            { "internalType": "address", "name": "viewAddress", "type": "address" },
+            {
+              "components": [
+                { "internalType": "uint64", "name": "windowSize", "type": "uint64" }
+              ],
+              "internalType": "struct PoolRegistryI.PoolConfig",
+              "name": "config",
+              "type": "tuple"
+            },
+            { "internalType": "bool", "name": "isActive", "type": "bool" }
+          ],
+          "internalType": "struct PoolRegistryI.Pool",
+          "name": "pool",
+          "type": "tuple"
+        }
+      ],
+      "stateMutability": "payable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        { "internalType": "address", "name": "viewAddress", "type": "address" }
+      ],
+      "name": "poolsOf",
+      "outputs": [
+        { "internalType": "address[]", "name": "", "type": "address[]" }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        { "internalType": "address", "name": "poolAddress", "type": "address" }
+      ],
+      "name": "viewOfPool",
+      "outputs": [
+        { "internalType": "address", "name": "", "type": "address" }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        { "internalType": "address", "name": "poolAddress", "type": "address" }
+      ],
+      "name": "getPool",
+      "outputs": [
+        {
+          "components": [
+            { "internalType": "address", "name": "poolAddress", "type": "address" },
+            { "internalType": "address", "name": "viewAddress", "type": "address" },
+            {
+              "components": [
+                { "internalType": "uint64", "name": "windowSize", "type": "uint64" }
+              ],
+              "internalType": "struct PoolRegistryI.PoolConfig",
+              "name": "config",
+              "type": "tuple"
+            },
+            { "internalType": "bool", "name": "isActive", "type": "bool" }
+          ],
+          "internalType": "struct PoolRegistryI.Pool",
+          "name": "",
+          "type": "tuple"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        { "internalType": "address", "name": "viewAddress", "type": "address" },
+        {
+          "components": [
+            { "internalType": "uint64", "name": "windowSize", "type": "uint64" }
+          ],
+          "internalType": "struct PoolRegistryI.PoolConfig",
+          "name": "config",
+          "type": "tuple"
+        }
+      ],
+      "name": "getPoolFor",
+      "outputs": [
+        {
+          "components": [
+            { "internalType": "address", "name": "poolAddress", "type": "address" },
+            { "internalType": "address", "name": "viewAddress", "type": "address" },
+            {
+              "components": [
+                { "internalType": "uint64", "name": "windowSize", "type": "uint64" }
+              ],
+              "internalType": "struct PoolRegistryI.PoolConfig",
+              "name": "config",
+              "type": "tuple"
+            },
+            { "internalType": "bool", "name": "isActive", "type": "bool" }
+          ],
+          "internalType": "struct PoolRegistryI.Pool",
+          "name": "",
+          "type": "tuple"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        { "internalType": "address", "name": "poolAddress", "type": "address" }
+      ],
+      "name": "getPoolDetail",
+      "outputs": [
+        {
+          "components": [
+            {
+              "components": [
+                { "internalType": "address", "name": "poolAddress", "type": "address" },
+                { "internalType": "address", "name": "viewAddress", "type": "address" },
+                {
+                  "components": [
+                    { "internalType": "uint64", "name": "windowSize", "type": "uint64" }
+                  ],
+                  "internalType": "struct PoolRegistryI.PoolConfig",
+                  "name": "config",
+                  "type": "tuple"
+                },
+                { "internalType": "bool", "name": "isActive", "type": "bool" }
+              ],
+              "internalType": "struct PoolRegistryI.Pool",
+              "name": "pool",
+              "type": "tuple"
+            },
+            {
+              "components": [
+                { "internalType": "address", "name": "hostAddress", "type": "address" },
+                { "internalType": "uint256", "name": "ask", "type": "uint256" },
+                { "internalType": "int64", "name": "joinedAt", "type": "int64" }
+              ],
+              "internalType": "struct PoolRegistryI.PoolHostEntry[]",
+              "name": "hosts",
+              "type": "tuple[]"
+            },
+            {
+              "components": [
+                { "internalType": "address", "name": "registrant", "type": "address" },
+                { "internalType": "uint256", "name": "bond", "type": "uint256" },
+                { "internalType": "uint256", "name": "pricePref", "type": "uint256" },
+                { "internalType": "bool", "name": "binding", "type": "bool" },
+                { "internalType": "int64", "name": "expiresAt", "type": "int64" }
+              ],
+              "internalType": "struct PoolRegistryI.PoolDemandEntry[]",
+              "name": "demands",
+              "type": "tuple[]"
+            }
+          ],
+          "internalType": "struct PoolRegistryI.PoolDetail",
+          "name": "",
+          "type": "tuple"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    }
+  ]
+}

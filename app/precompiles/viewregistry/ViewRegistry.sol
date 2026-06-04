@@ -91,13 +91,21 @@ interface ViewRegistryI {
     /// @param name        The SDL resource name.
     event ViewCreated(address indexed viewAddress, address indexed creator, string name);
 
-    // config for a pool, for now i only know of window_size for now, mabe more in the future
+    // config for a pool, for now i only know of windowSize for now, mabe more in the future
     struct PoolConfig {
-        uint64 window_size;
+        uint64 windowSize;
+    }
+
+    // struct to represent pool
+    struct Pool {
+        address poolAddress,
+        address viewAddress,
+        PoolConfig config,
+        bool isActive
     }
 
     // we want to create a pool demand contract here, this is what creates a pool
-    function registerDemandForView(address viewAddress, PoolConfig config) payable external returns (address poolAddress);
+    function registerDemandForView(address viewAddress, PoolConfig config) payable external returns (Pool pool);
 
     // event for pool creation, anytime an event is created we get this event
     event PoolCreated(
