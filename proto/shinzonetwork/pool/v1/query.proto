@@ -1,0 +1,58 @@
+syntax = "proto3";
+
+package shinzonetwork.pool.v1;
+
+import "google/api/annotations.proto";
+import "cosmos/base/query/v1beta1/pagination.proto";
+import "gogoproto/gogo.proto";
+import "shinzonetwork/pool/v1/pool.proto";
+
+option go_package = "github.com/shinzonetwork/shinzohub/x/pool/types";
+
+service Query {
+  rpc Pool(QueryPoolRequest) returns (QueryPoolResponse) {
+    option (google.api.http).get = "/shinzonetwork/pool/v1/pool/{pool_address}";
+  }
+  rpc Pools(QueryPoolsRequest) returns (QueryPoolsResponse) {
+    option (google.api.http).get = "/shinzonetwork/pool/v1/pools";
+  }
+  rpc Hosts(QueryHostsRequest) returns (QueryHostsResponse) {
+    option (google.api.http).get = "/shinzonetwork/pool/v1/pools/{pool_address}/hosts";
+  }
+  rpc Demands(QueryDemandsRequest) returns (QueryDemandsResponse) {
+    option (google.api.http).get = "/shinzonetwork/pool/v1/pools/{pool_address}/demands";
+  }
+}
+
+message QueryPoolRequest {
+  string pool_address = 1;
+}
+message QueryPoolResponse {
+  Pool pool = 1 [(gogoproto.nullable) = false];
+}
+
+message QueryPoolsRequest {
+  cosmos.base.query.v1beta1.PageRequest pagination = 1;
+}
+message QueryPoolsResponse {
+  repeated Pool pools = 1 [(gogoproto.nullable) = false];
+  cosmos.base.query.v1beta1.PageResponse pagination = 2;
+}
+
+message QueryHostsRequest {
+  string pool_address = 1;
+  cosmos.base.query.v1beta1.PageRequest pagination = 2;
+}
+message QueryHostsResponse {
+  repeated PoolHostEntry hosts = 1 [(gogoproto.nullable) = false];
+  cosmos.base.query.v1beta1.PageResponse pagination = 2;
+}
+
+message QueryDemandsRequest {
+  string pool_address = 1;
+  cosmos.base.query.v1beta1.PageRequest pagination = 2;
+}
+message QueryDemandsResponse {
+  repeated PoolDemandEntry demands = 1 [(gogoproto.nullable) = false];
+  cosmos.base.query.v1beta1.PageResponse pagination = 2;
+}
