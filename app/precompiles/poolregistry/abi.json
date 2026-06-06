@@ -33,6 +33,24 @@
     },
     {
       "inputs": [
+        { "internalType": "address", "name": "host", "type": "address" }
+      ],
+      "name": "joinPool",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        { "internalType": "address", "name": "host", "type": "address" }
+      ],
+      "name": "leavePool",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
         { "internalType": "address", "name": "viewAddress", "type": "address" },
         {
           "components": [
@@ -57,7 +75,8 @@
               "name": "config",
               "type": "tuple"
             },
-            { "internalType": "bool", "name": "isActive", "type": "bool" }
+            { "internalType": "bool", "name": "isActive", "type": "bool" },
+            { "internalType": "uint256", "name": "price", "type": "uint256" }
           ],
           "internalType": "struct PoolRegistryI.Pool",
           "name": "pool",
@@ -107,7 +126,8 @@
               "name": "config",
               "type": "tuple"
             },
-            { "internalType": "bool", "name": "isActive", "type": "bool" }
+            { "internalType": "bool", "name": "isActive", "type": "bool" },
+            { "internalType": "uint256", "name": "price", "type": "uint256" }
           ],
           "internalType": "struct PoolRegistryI.Pool",
           "name": "",
@@ -143,7 +163,8 @@
               "name": "config",
               "type": "tuple"
             },
-            { "internalType": "bool", "name": "isActive", "type": "bool" }
+            { "internalType": "bool", "name": "isActive", "type": "bool" },
+            { "internalType": "uint256", "name": "price", "type": "uint256" }
           ],
           "internalType": "struct PoolRegistryI.Pool",
           "name": "",
@@ -173,7 +194,8 @@
                   "name": "config",
                   "type": "tuple"
                 },
-                { "internalType": "bool", "name": "isActive", "type": "bool" }
+                { "internalType": "bool", "name": "isActive", "type": "bool" },
+                { "internalType": "uint256", "name": "price", "type": "uint256" }
               ],
               "internalType": "struct PoolRegistryI.Pool",
               "name": "pool",

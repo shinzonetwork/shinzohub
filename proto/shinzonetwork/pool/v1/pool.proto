@@ -7,8 +7,9 @@ import "gogoproto/gogo.proto";
 option go_package = "github.com/shinzonetwork/shinzohub/x/pool/types";
 
 // Pool holds the static metadata for a pool.
-// Dynamic state (hosts, indexers, demands) lives in separate KV entries
-// keyed by their respective sub-prefixes.
+// Dynamic state (hosts, demands) lives in separate KV entries keyed by
+// their respective sub-prefixes. The price is a network-wide value read
+// from module state, not stored per pool.
 message Pool {
   string pool_address = 1;
   string view_address = 2;

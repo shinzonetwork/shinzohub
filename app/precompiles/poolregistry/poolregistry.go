@@ -72,7 +72,11 @@ func (p Precompile) Run(evm *vm.EVM, contract *vm.Contract, readOnly bool) (bz [
 }
 
 func (Precompile) IsTransaction(method *abi.Method) bool {
-	return method.Name == MethodRegisterDemandForView
+	switch method.Name {
+	case MethodRegisterDemandForView, MethodJoinPool, MethodLeavePool:
+		return true
+	}
+	return false
 }
 
 func (p *Precompile) handle(
@@ -96,6 +100,10 @@ func (p *Precompile) handle(
 		return p.GetPoolFor(ctx, method, args)
 	case MethodGetPoolDetail:
 		return p.GetPoolDetail(ctx, method, args)
+	case MethodJoinPool:
+		return p.JoinPool(ctx, contract, method, args)
+	case MethodLeavePool:
+		return p.LeavePool(ctx, contract, method, args)
 	default:
 		return nil, fmt.Errorf(cmn.ErrUnknownMethod, method.Name)
 	}

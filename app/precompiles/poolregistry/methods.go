@@ -24,6 +24,8 @@ const (
 	MethodGetPool               = "getPool"
 	MethodGetPoolFor            = "getPoolFor"
 	MethodGetPoolDetail         = "getPoolDetail"
+	MethodJoinPool              = "joinPool"
+	MethodLeavePool             = "leavePool"
 )
 
 // poolConfigInput mirrors the Solidity PoolConfig struct for ABI decoding.
@@ -37,6 +39,7 @@ type poolOutput struct {
 	ViewAddress common.Address
 	Config      poolConfigInput
 	IsActive    bool
+	Price       *big.Int
 }
 
 // hostEntryOutput mirrors the Solidity PoolHostEntry struct.
@@ -190,7 +193,8 @@ func (p Precompile) RegisterDemandForView(
 		PoolAddress: poolAddr,
 		ViewAddress: viewAddress,
 		Config:      cfg,
-		IsActive:    false, // threshold logic comes later
+		IsActive:    p.poolKeeper.IsActive(ctx, poolAddrHex),
+		Price:       p.poolKeeper.GetPoolPrice(ctx, poolAddrHex).BigInt(),
 	}
 	return method.Outputs.Pack(out)
 }
@@ -259,7 +263,8 @@ func (p Precompile) GetPool(
 		PoolAddress: common.HexToAddress(pool.PoolAddress),
 		ViewAddress: common.HexToAddress(pool.ViewAddress),
 		Config:      poolConfigInput{WindowSize: pool.Config.WindowSize},
-		IsActive:    false, // threshold logic comes later
+		IsActive:    p.poolKeeper.IsActive(ctx, poolAddress.Hex()),
+		Price:       p.poolKeeper.GetPoolPrice(ctx, poolAddress.Hex()).BigInt(),
 	}
 	return method.Outputs.Pack(out)
 }
@@ -289,7 +294,8 @@ func (p Precompile) GetPoolFor(
 		PoolAddress: common.HexToAddress(pool.PoolAddress),
 		ViewAddress: common.HexToAddress(pool.ViewAddress),
 		Config:      poolConfigInput{WindowSize: pool.Config.WindowSize},
-		IsActive:    false, // threshold logic comes later
+		IsActive:    p.poolKeeper.IsActive(ctx, poolAddr.Hex()),
+		Price:       p.poolKeeper.GetPoolPrice(ctx, poolAddr.Hex()).BigInt(),
 	}
 	return method.Outputs.Pack(out)
 }
@@ -337,12 +343,62 @@ func (p Precompile) GetPoolDetail(
 			PoolAddress: common.HexToAddress(detail.Pool.PoolAddress),
 			ViewAddress: common.HexToAddress(detail.Pool.ViewAddress),
 			Config:      poolConfigInput{WindowSize: detail.Pool.Config.WindowSize},
-			IsActive:    false, // threshold logic comes later
+			IsActive:    p.poolKeeper.IsActive(ctx, poolAddress.Hex()),
+			Price:       p.poolKeeper.GetPoolPrice(ctx, poolAddress.Hex()).BigInt(),
 		},
 		Hosts:   hosts,
 		Demands: demands,
 	}
 	return method.Outputs.Pack(out)
+}
+
+// JoinPool adds the caller-supplied host to the pool identified by the EVM caller.
+// The pool address is taken from contract.Caller() (Pool.sol's address); calls
+// from anything other than a registered pool are rejected.
+func (p Precompile) JoinPool(
+	ctx sdk.Context,
+	contract *vm.Contract,
+	method *abi.Method,
+	args []interface{},
+) ([]byte, error) {
+	host, ok := args[0].(common.Address)
+	if !ok {
+		return nil, fmt.Errorf("invalid host address")
+	}
+
+	poolAddrHex := contract.Caller().Hex()
+	if !p.poolKeeper.PoolExists(ctx, poolAddrHex) {
+		return nil, fmt.Errorf("caller is not a registered pool: %s", poolAddrHex)
+	}
+
+	if err := p.poolKeeper.AddHost(ctx, poolAddrHex, host.Hex()); err != nil {
+		return nil, fmt.Errorf("add host: %w", err)
+	}
+	return nil, nil
+}
+
+// LeavePool removes the caller-supplied host from the pool identified by the
+// EVM caller. Same authorisation as JoinPool.
+func (p Precompile) LeavePool(
+	ctx sdk.Context,
+	contract *vm.Contract,
+	method *abi.Method,
+	args []interface{},
+) ([]byte, error) {
+	host, ok := args[0].(common.Address)
+	if !ok {
+		return nil, fmt.Errorf("invalid host address")
+	}
+
+	poolAddrHex := contract.Caller().Hex()
+	if !p.poolKeeper.PoolExists(ctx, poolAddrHex) {
+		return nil, fmt.Errorf("caller is not a registered pool: %s", poolAddrHex)
+	}
+
+	if err := p.poolKeeper.RemoveHost(ctx, poolAddrHex, host.Hex()); err != nil {
+		return nil, fmt.Errorf("remove host: %w", err)
+	}
+	return nil, nil
 }
 
 func emitPoolCreated(

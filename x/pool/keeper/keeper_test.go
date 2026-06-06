@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	cosmoslog "cosmossdk.io/log"
+	"cosmossdk.io/math"
 	storetypes2 "cosmossdk.io/store"
 	"cosmossdk.io/store/metrics"
 	storetypes "cosmossdk.io/store/types"
@@ -170,28 +171,6 @@ func TestAddHost_RejectsUnknownPool(t *testing.T) {
 	require.ErrorContains(t, err, "pool not found")
 }
 
-func TestSetHostAsk_UpdatesPrice(t *testing.T) {
-	f := newFixture(t)
-	f.views.registerView("0xview")
-	require.NoError(t, f.keeper.CreatePool(f.ctx, "0xpool", "0xview", cfg()))
-	require.NoError(t, f.keeper.AddHost(f.ctx, "0xpool", "0xhost"))
-
-	require.NoError(t, f.keeper.SetHostAsk(f.ctx, "0xpool", "0xhost", "1234"))
-
-	h, _, err := f.keeper.GetHost(f.ctx, "0xpool", "0xhost")
-	require.NoError(t, err)
-	require.Equal(t, "1234", h.Ask)
-}
-
-func TestSetHostAsk_RejectsUnknownHost(t *testing.T) {
-	f := newFixture(t)
-	f.views.registerView("0xview")
-	require.NoError(t, f.keeper.CreatePool(f.ctx, "0xpool", "0xview", cfg()))
-
-	err := f.keeper.SetHostAsk(f.ctx, "0xpool", "0xstranger", "100")
-	require.ErrorContains(t, err, "host not in pool")
-}
-
 func TestRemoveHost_DropsTheEntry(t *testing.T) {
 	f := newFixture(t)
 	f.views.registerView("0xview")
@@ -277,7 +256,6 @@ func TestGenesis_RoundTrip(t *testing.T) {
 	src.views.registerView("0xview")
 	require.NoError(t, src.keeper.CreatePool(src.ctx, "0xpool", "0xview", cfg()))
 	require.NoError(t, src.keeper.AddHost(src.ctx, "0xpool", "0xhost"))
-	require.NoError(t, src.keeper.SetHostAsk(src.ctx, "0xpool", "0xhost", "999"))
 	require.NoError(t, src.keeper.RegisterDemand(src.ctx, "0xpool", "0xdev",
 		types.PoolDemand{Bond: "100", ExpiresAt: 1_000}))
 
@@ -291,11 +269,108 @@ func TestGenesis_RoundTrip(t *testing.T) {
 	require.True(t, found)
 	require.Equal(t, "0xview", p.ViewAddress)
 
-	h, found, _ := dst.keeper.GetHost(dst.ctx, "0xpool", "0xhost")
+	_, found, _ = dst.keeper.GetHost(dst.ctx, "0xpool", "0xhost")
 	require.True(t, found)
-	require.Equal(t, "999", h.Ask)
 
 	d, found, _ := dst.keeper.GetDemand(dst.ctx, "0xpool", "0xdev")
 	require.True(t, found)
 	require.Equal(t, "100", d.Bond)
+}
+
+// ---------- Activation lifecycle ----------
+
+// Default price is returned whether the pool is active or not (utilization-
+// based pricing replaces this later).
+func TestGetPoolPrice_AlwaysDefault(t *testing.T) {
+	f := newFixture(t)
+	f.views.registerView("0xview")
+	require.NoError(t, f.keeper.CreatePool(f.ctx, "0xpool", "0xview", cfg()))
+
+	price := f.keeper.GetPoolPrice(f.ctx, "0xpool")
+	expected, _ := math.NewIntFromString(types.DefaultStartingPrice)
+	require.Equal(t, expected, price)
+}
+
+// Joining the third host flips activation and emits PoolActivated.
+func TestAddHost_EmitsPoolActivatedOnThreshold(t *testing.T) {
+	f := newFixture(t)
+	f.views.registerView("0xview")
+	require.NoError(t, f.keeper.CreatePool(f.ctx, "0xpool", "0xview", cfg()))
+
+	require.NoError(t, f.keeper.AddHost(f.ctx, "0xpool", "0xhost1"))
+	require.NoError(t, f.keeper.AddHost(f.ctx, "0xpool", "0xhost2"))
+	requireNoEvent(t, f.ctx, types.EventTypePoolActivated)
+
+	require.NoError(t, f.keeper.AddHost(f.ctx, "0xpool", "0xhost3"))
+	require.True(t, f.keeper.IsActive(f.ctx, "0xpool"))
+	requireEvent(t, f.ctx, types.EventTypePoolActivated)
+}
+
+// Removing a host from a 3-host pool drops below threshold and emits
+// PoolDeactivated.
+func TestRemoveHost_EmitsPoolDeactivatedBelowThreshold(t *testing.T) {
+	f := newFixture(t)
+	f.views.registerView("0xview")
+	require.NoError(t, f.keeper.CreatePool(f.ctx, "0xpool", "0xview", cfg()))
+
+	require.NoError(t, f.keeper.AddHost(f.ctx, "0xpool", "0xhost1"))
+	require.NoError(t, f.keeper.AddHost(f.ctx, "0xpool", "0xhost2"))
+	require.NoError(t, f.keeper.AddHost(f.ctx, "0xpool", "0xhost3"))
+	require.True(t, f.keeper.IsActive(f.ctx, "0xpool"))
+
+	// Clear earlier events so we can confirm the deactivation event in isolation.
+	f.ctx = f.ctx.WithEventManager(sdk.NewEventManager())
+
+	require.NoError(t, f.keeper.RemoveHost(f.ctx, "0xpool", "0xhost3"))
+	require.False(t, f.keeper.IsActive(f.ctx, "0xpool"))
+	requireEvent(t, f.ctx, types.EventTypePoolDeactivated)
+}
+
+// End-to-end: developer registers demand, hosts come and go, activation flips.
+func TestEndToEnd_PoolLifecycle(t *testing.T) {
+	f := newFixture(t)
+	f.views.registerView("0xview")
+	require.NoError(t, f.keeper.CreatePool(f.ctx, "0xpool", "0xview", cfg()))
+
+	require.False(t, f.keeper.IsActive(f.ctx, "0xpool"))
+
+	require.NoError(t, f.keeper.RegisterDemand(f.ctx, "0xpool", "0xdev",
+		types.PoolDemand{Bond: "1000000000000000000", ExpiresAt: 100}))
+
+	require.NoError(t, f.keeper.AddHost(f.ctx, "0xpool", "0xhost1"))
+	require.False(t, f.keeper.IsActive(f.ctx, "0xpool"))
+	require.NoError(t, f.keeper.AddHost(f.ctx, "0xpool", "0xhost2"))
+	require.False(t, f.keeper.IsActive(f.ctx, "0xpool"))
+	require.NoError(t, f.keeper.AddHost(f.ctx, "0xpool", "0xhost3"))
+	require.True(t, f.keeper.IsActive(f.ctx, "0xpool"))
+
+	// A host leaves — pool deactivates.
+	require.NoError(t, f.keeper.RemoveHost(f.ctx, "0xpool", "0xhost1"))
+	require.False(t, f.keeper.IsActive(f.ctx, "0xpool"))
+
+	detail, found, err := f.keeper.GetPoolDetail(f.ctx, "0xpool")
+	require.NoError(t, err)
+	require.True(t, found)
+	require.Len(t, detail.Hosts, 2)
+	require.Len(t, detail.Demands, 1)
+}
+
+// Walks the context's recorded events looking for a matching type.
+func requireEvent(t *testing.T, ctx sdk.Context, eventType string) {
+	t.Helper()
+	for _, e := range ctx.EventManager().Events() {
+		if e.Type == eventType {
+			return
+		}
+	}
+	t.Fatalf("expected event %q to have been emitted", eventType)
+}
+
+func requireNoEvent(t *testing.T, ctx sdk.Context, eventType string) {
+	t.Helper()
+	for _, e := range ctx.EventManager().Events() {
+		if e.Type == eventType {
+			t.Fatalf("did not expect event %q yet", eventType)
+		}
+	}
 }

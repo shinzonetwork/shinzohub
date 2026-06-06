@@ -27,11 +27,15 @@ interface PoolRegistryI {
     /// @param viewAddress  The view this pool serves.
     /// @param config       The PoolConfig that produced `poolAddress`.
     /// @param isActive     Whether the pool currently meets its liveness threshold.
+    /// @param price        Current effective price per unit of data, in NZO wei.
+    ///                     Sourced from this pool's host asks if available; falls
+    ///                     back to the network market median, then to the default.
     struct Pool {
         address poolAddress;
         address viewAddress;
         PoolConfig config;
         bool isActive;
+        uint256 price;
     }
 
     /// @notice One host's membership entry in a pool.
@@ -109,6 +113,18 @@ interface PoolRegistryI {
     /// @return The denormalised pool snapshot. Returns a zero-valued PoolDetail
     ///         (with empty arrays) if the pool doesn't exist.
     function getPoolDetail(address poolAddress) external view returns (PoolDetail memory);
+
+    /// @notice Record a new host membership against the calling pool.
+    /// @dev    The pool the host joins is `msg.sender`. The precompile rejects
+    ///         calls whose caller isn't a registered pool, so this can only be
+    ///         invoked indirectly through a deployed Pool.sol's `join()`.
+    /// @param host The address being added as a host of the calling pool.
+    function joinPool(address host) external;
+
+    /// @notice Remove a host membership from the calling pool.
+    /// @dev    Same authorisation model as {joinPool}.
+    /// @param host The host being removed.
+    function leavePool(address host) external;
 
     /// @notice Emitted by {registerDemandForView} when the pool is first created.
     /// @param poolAddress The newly materialised pool address.

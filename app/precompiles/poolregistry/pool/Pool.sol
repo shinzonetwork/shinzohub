@@ -35,4 +35,19 @@ contract Pool {
     function snapshot() external view returns (PoolRegistryI.PoolDetail memory) {
         return PoolRegistryI(registry).getPoolDetail(address(this));
     }
+
+    /// @notice Join this pool as a host.
+    /// @dev    Forwards msg.sender to the registry, which records the new host
+    ///         entry against this pool's address.
+    function join() external {
+        PoolRegistryI(registry).joinPool(msg.sender);
+    }
+
+    /// @notice Exit this pool as a host.
+    /// @dev    Forwards msg.sender to the registry, which removes the host
+    ///         entry. Emits PoolDeactivated if this exit drops the pool
+    ///         below the activation threshold.
+    function exit() external {
+        PoolRegistryI(registry).leavePool(msg.sender);
+    }
 }

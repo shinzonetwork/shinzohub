@@ -30,6 +30,20 @@
     },
     {
       "inputs": [],
+      "name": "join",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "exit",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [],
       "name": "snapshot",
       "outputs": [
         {
@@ -46,7 +60,8 @@
                   "name": "config",
                   "type": "tuple"
                 },
-                { "internalType": "bool", "name": "isActive", "type": "bool" }
+                { "internalType": "bool", "name": "isActive", "type": "bool" },
+                { "internalType": "uint256", "name": "price", "type": "uint256" }
               ],
               "internalType": "struct PoolRegistryI.Pool",
               "name": "pool",

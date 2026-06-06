@@ -7,6 +7,7 @@ import (
 
 	storetypes "cosmossdk.io/core/store"
 	"cosmossdk.io/log"
+	"cosmossdk.io/math"
 	"cosmossdk.io/store/prefix"
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/runtime"
@@ -184,6 +185,55 @@ func (k Keeper) PoolExists(ctx sdk.Context, poolAddress string) bool {
 	return len(store.Get(poolKey(poolAddress))) > 0
 }
 
+// IsActive returns whether the pool has enough hosts to be considered active.
+// Counts via prefix iteration and stops early once the threshold is hit.
+func (k Keeper) IsActive(ctx sdk.Context, poolAddress string) bool {
+	store := runtime.KVStoreAdapter(k.storeService.OpenKVStore(ctx))
+	hostStore := prefix.NewStore(store, []byte(types.PoolHostPrefix+poolAddress+"/"))
+	it := hostStore.Iterator(nil, nil)
+	defer it.Close()
+
+	count := 0
+	for ; it.Valid(); it.Next() {
+		count++
+		if count >= types.MinHostsForActive {
+			return true
+		}
+	}
+	return false
+}
+
+// GetGlobalPrice returns the network-wide price-per-unit-of-data shared by
+// every pool. Falls back to DefaultStartingPrice if the slot is unset (e.g.
+// the chain just started and nobody has called SetGlobalPrice yet).
+func (k Keeper) GetGlobalPrice(ctx sdk.Context) math.Int {
+	store := runtime.KVStoreAdapter(k.storeService.OpenKVStore(ctx))
+	bz := store.Get([]byte(types.GlobalPriceKey))
+	if len(bz) == 0 {
+		def, _ := math.NewIntFromString(types.DefaultStartingPrice)
+		return def
+	}
+	price, ok := math.NewIntFromString(string(bz))
+	if !ok {
+		def, _ := math.NewIntFromString(types.DefaultStartingPrice)
+		return def
+	}
+	return price
+}
+
+// SetGlobalPrice updates the network-wide price. Used by the utilization-based
+// adjustment mechanism when it lands.
+func (k Keeper) SetGlobalPrice(ctx sdk.Context, price math.Int) {
+	store := runtime.KVStoreAdapter(k.storeService.OpenKVStore(ctx))
+	store.Set([]byte(types.GlobalPriceKey), []byte(price.String()))
+}
+
+// GetPoolPrice is a thin wrapper around GetGlobalPrice — kept for callers that
+// have a pool address handy. Every pool in the network reports the same price.
+func (k Keeper) GetPoolPrice(ctx sdk.Context, _ string) math.Int {
+	return k.GetGlobalPrice(ctx)
+}
+
 func (k Keeper) GetAllPools(ctx sdk.Context, pageReq *query.PageRequest) ([]types.Pool, *query.PageResponse, error) {
 	store := runtime.KVStoreAdapter(k.storeService.OpenKVStore(ctx))
 	poolStore := prefix.NewStore(store, []byte(types.PoolPrefix))
@@ -220,8 +270,8 @@ func (k Keeper) incrementCount(ctx sdk.Context) {
 	store.Set([]byte(types.PoolCountKey), bz)
 }
 
-// AddHost adds a host as a member of the pool. The ask starts at "0" until
-// the host submits one via SetHostAsk. Reverts if the host is already a member.
+// AddHost adds a host as a member of the pool. Emits HostJoined, and
+// PoolActivated if this addition flipped the pool's active state.
 func (k Keeper) AddHost(ctx sdk.Context, poolAddress, hostAddress string) error {
 	if !k.PoolExists(ctx, poolAddress) {
 		return fmt.Errorf("pool not found: %s", poolAddress)
@@ -233,6 +283,8 @@ func (k Keeper) AddHost(ctx sdk.Context, poolAddress, hostAddress string) error 
 	if len(store.Get(key)) > 0 {
 		return fmt.Errorf("host already in pool: %s", hostAddress)
 	}
+
+	wasActive := k.IsActive(ctx, poolAddress)
 
 	h := types.PoolHost{
 		Ask:      "0",
@@ -250,37 +302,12 @@ func (k Keeper) AddHost(ctx sdk.Context, poolAddress, hostAddress string) error 
 		sdk.NewAttribute(types.AttrKeyHostAddress, hostAddress),
 	))
 
-	return nil
-}
-
-// SetHostAsk updates the host's ask price. Host must already be a member.
-func (k Keeper) SetHostAsk(ctx sdk.Context, poolAddress, hostAddress, ask string) error {
-	store := runtime.KVStoreAdapter(k.storeService.OpenKVStore(ctx))
-	key := hostKey(poolAddress, hostAddress)
-
-	bz := store.Get(key)
-	if len(bz) == 0 {
-		return fmt.Errorf("host not in pool: %s", hostAddress)
+	if !wasActive && k.IsActive(ctx, poolAddress) {
+		ctx.EventManager().EmitEvent(sdk.NewEvent(
+			types.EventTypePoolActivated,
+			sdk.NewAttribute(types.AttrKeyPoolAddress, poolAddress),
+		))
 	}
-
-	var h types.PoolHost
-	if err := k.cdc.Unmarshal(bz, &h); err != nil {
-		return err
-	}
-	h.Ask = ask
-
-	bz, err := k.cdc.Marshal(&h)
-	if err != nil {
-		return err
-	}
-	store.Set(key, bz)
-
-	ctx.EventManager().EmitEvent(sdk.NewEvent(
-		types.EventTypeAskSubmitted,
-		sdk.NewAttribute(types.AttrKeyPoolAddress, poolAddress),
-		sdk.NewAttribute(types.AttrKeyHostAddress, hostAddress),
-		sdk.NewAttribute(types.AttrKeyAsk, ask),
-	))
 
 	return nil
 }
@@ -298,12 +325,16 @@ func (k Keeper) GetHost(ctx sdk.Context, poolAddress, hostAddress string) (types
 	return h, true, nil
 }
 
+// RemoveHost removes a host. Emits HostLeft, and PoolDeactivated if this
+// removal flipped the pool's active state.
 func (k Keeper) RemoveHost(ctx sdk.Context, poolAddress, hostAddress string) error {
 	store := runtime.KVStoreAdapter(k.storeService.OpenKVStore(ctx))
 	key := hostKey(poolAddress, hostAddress)
 	if len(store.Get(key)) == 0 {
 		return fmt.Errorf("host not in pool: %s", hostAddress)
 	}
+
+	wasActive := k.IsActive(ctx, poolAddress)
 	store.Delete(key)
 
 	ctx.EventManager().EmitEvent(sdk.NewEvent(
@@ -311,6 +342,13 @@ func (k Keeper) RemoveHost(ctx sdk.Context, poolAddress, hostAddress string) err
 		sdk.NewAttribute(types.AttrKeyPoolAddress, poolAddress),
 		sdk.NewAttribute(types.AttrKeyHostAddress, hostAddress),
 	))
+
+	if wasActive && !k.IsActive(ctx, poolAddress) {
+		ctx.EventManager().EmitEvent(sdk.NewEvent(
+			types.EventTypePoolDeactivated,
+			sdk.NewAttribute(types.AttrKeyPoolAddress, poolAddress),
+		))
+	}
 
 	return nil
 }
