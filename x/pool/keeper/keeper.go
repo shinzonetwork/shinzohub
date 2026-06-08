@@ -48,8 +48,7 @@ func (k Keeper) Logger(ctx sdk.Context) log.Logger {
 func (k Keeper) ViewKeeper() types.ViewKeeper { return k.viewKeeper }
 func (k Keeper) BankKeeper() types.BankKeeper { return k.bankKeeper }
 
-// CreatePool persists a new pool entry. Reverts if a pool with the same address
-// already exists.
+// CreatePool persists a new pool entry. Reverts if a pool with the same address already exists.
 func (k Keeper) CreatePool(
 	ctx sdk.Context,
 	poolAddress, viewAddress string,
@@ -96,7 +95,6 @@ func (k Keeper) CreatePool(
 }
 
 // GetPoolDetail returns a pool together with all its hosts and demands.
-// Returns (PoolDetail{}, false, nil) if the pool doesn't exist.
 func (k Keeper) GetPoolDetail(ctx sdk.Context, poolAddress string) (types.PoolDetail, bool, error) {
 	pool, found, err := k.GetPool(ctx, poolAddress)
 	if err != nil || !found {
