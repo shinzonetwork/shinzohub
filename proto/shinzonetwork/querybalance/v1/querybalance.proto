@@ -1,0 +1,21 @@
+syntax = "proto3";
+
+package shinzonetwork.querybalance.v1;
+
+option go_package = "github.com/shinzonetwork/shinzohub/x/querybalance/types";
+
+// QueryBalance is a DID's spendable balance for serving queries.
+// Funded by anyone, debited internally by the pool module's batch handler.
+// Optionally claimed by the holder of the DID's underlying key — only the
+// claimer can withdraw the remaining balance.
+message QueryBalance {
+  // The decentralized identifier this balance belongs to.
+  string did = 1;
+  // Current balance, expressed as a base-10 string of sdk.Int (in chain base units).
+  string amount = 2;
+  // The bech32 address that has proven control of the DID's key. Empty
+  // until claimed. Once set, this address can call Withdraw.
+  string owner = 3;
+  // Block height at which the DID was claimed. 0 if unclaimed.
+  int64 claimed_at = 4;
+}
