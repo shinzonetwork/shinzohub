@@ -32,13 +32,8 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-go-
 
-    - name: Download test WASM file
-      run: |
-        curl -o /tmp/filter_transaction.wasm \
-          https://github.com/shinzonetwork/wasm-bucket/raw/refs/heads/main/bucket/filter_transaction/filter_transaction.wasm
-
     - name: Run tests
-      run: go test -count=1 -timeout=5m -coverprofile=coverage.out -covermode=atomic -failfast ./pkg/...
+      run:  go test -count=1 -timeout=3m -coverprofile=coverage.out -covermode=atomic ./x/... ./app/...
 
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v4
