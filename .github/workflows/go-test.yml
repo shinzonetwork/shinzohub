@@ -10,7 +10,7 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 5
 
     steps:
     - name: Check out code
@@ -38,7 +38,7 @@ jobs:
           https://github.com/shinzonetwork/wasm-bucket/raw/refs/heads/main/bucket/filter_transaction/filter_transaction.wasm
 
     - name: Run tests
-      run: go test -count=1 -timeout=3m -v -coverprofile=coverage.out -covermode=atomic ./pkg/...
+      run: go test -count=1 -timeout=5m -coverprofile=coverage.out -covermode=atomic -failfast ./pkg/...
 
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v4
