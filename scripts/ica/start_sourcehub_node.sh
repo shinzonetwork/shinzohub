@@ -35,11 +35,11 @@ $SOURCEHUB_BIN genesis validate-genesis --home "$SOURCEHUB_HOME_DIR"
 jq '.app_state.transfer.port_id = "transfer"' "$SOURCEHUB_HOME_DIR/config/genesis.json" > tmp.json && mv tmp.json "$SOURCEHUB_HOME_DIR/config/genesis.json"
 jq '.app_state.transfer += {"params": {"send_enabled": true, "receive_enabled": true}}' "$SOURCEHUB_HOME_DIR/config/genesis.json" > tmp.json && mv tmp.json "$SOURCEHUB_HOME_DIR/config/genesis.json"
 
-sed -i '' 's/minimum-gas-prices = ""/minimum-gas-prices = "0.001uopen,0.001ucredit"/' "$SOURCEHUB_HOME_DIR/config/app.toml"
-sed -i '' 's/^timeout_propose = .*/timeout_propose = "500ms"/' "$SOURCEHUB_HOME_DIR/config/config.toml"
-sed -i '' 's/^timeout_prevote = .*/timeout_prevote = "500ms"/' "$SOURCEHUB_HOME_DIR/config/config.toml"
-sed -i '' 's/^timeout_precommit = .*/timeout_precommit = "500ms"/' "$SOURCEHUB_HOME_DIR/config/config.toml"
-sed -i '' 's/^timeout_commit = .*/timeout_commit = "1s"/' "$SOURCEHUB_HOME_DIR/config/config.toml"
+sed -i.bak 's/minimum-gas-prices = ""/minimum-gas-prices = "0.001uopen,0.001ucredit"/' "$SOURCEHUB_HOME_DIR/config/app.toml"
+sed -i.bak 's/^timeout_propose = .*/timeout_propose = "500ms"/' "$SOURCEHUB_HOME_DIR/config/config.toml"
+sed -i.bak 's/^timeout_prevote = .*/timeout_prevote = "500ms"/' "$SOURCEHUB_HOME_DIR/config/config.toml"
+sed -i.bak 's/^timeout_precommit = .*/timeout_precommit = "500ms"/' "$SOURCEHUB_HOME_DIR/config/config.toml"
+sed -i.bak 's/^timeout_commit = .*/timeout_commit = "1s"/' "$SOURCEHUB_HOME_DIR/config/config.toml"
 
 echo "==> Starting Sourcehub..."
 $SOURCEHUB_BIN start --home $SOURCEHUB_HOME_DIR --rpc.laddr $SOURCEHUB_RPC --rpc.pprof_laddr $SOURCEHUB_PPROF --p2p.laddr $SOURCEHUB_P2P --grpc.address $SOURCEHUB_GRPC --address $SOURCEHUB_ADDR
