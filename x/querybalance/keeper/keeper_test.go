@@ -1,8 +1,6 @@
 package keeper_test
 
 import (
-	"context"
-	"crypto/sha256"
 	"testing"
 
 	cosmoslog "cosmossdk.io/log"
@@ -16,11 +14,8 @@ import (
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	"github.com/cosmos/cosmos-sdk/runtime"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/decred/dcrd/dcrec/secp256k1/v4"
-	"github.com/decred/dcrd/dcrec/secp256k1/v4/ecdsa"
 	"github.com/stretchr/testify/require"
 
-	commoncrypto "github.com/shinzonetwork/shinzohub/x/common/crypto"
 	qbkeeper "github.com/shinzonetwork/shinzohub/x/querybalance/keeper"
 	"github.com/shinzonetwork/shinzohub/x/querybalance/types"
 )
@@ -64,12 +59,6 @@ type mockErr struct{ msg string }
 
 func (e *mockErr) Error() string { return e.msg }
 
-type mockStakingKeeper struct{ denom string }
-
-func (m *mockStakingKeeper) BondDenom(_ context.Context) (string, error) {
-	return m.denom, nil
-}
-
 type fixture struct {
 	t      *testing.T
 	ctx    sdk.Context
@@ -88,13 +77,11 @@ func newFixture(t *testing.T) *fixture {
 
 	cdc := codec.NewProtoCodec(codectypes.NewInterfaceRegistry())
 	bank := &mockBankKeeper{}
-	stk := &mockStakingKeeper{denom: testDenom}
 
 	k := qbkeeper.NewKeeper(
 		cdc,
 		runtime.NewKVStoreService(storeKey),
 		bank,
-		stk,
 		"authority",
 	)
 
@@ -113,14 +100,6 @@ func addr(b byte) sdk.AccAddress {
 		out[i] = b
 	}
 	return out
-}
-
-func signedKey(t *testing.T, message []byte) (pubkey, signature []byte) {
-	t.Helper()
-	priv, err := secp256k1.GeneratePrivateKey()
-	require.NoError(t, err)
-	h := sha256.Sum256(message)
-	return priv.PubKey().SerializeUncompressed(), ecdsa.Sign(priv, h[:]).Serialize()
 }
 
 func TestFund_CreditsAndMovesCoins(t *testing.T) {
@@ -179,148 +158,12 @@ func TestFund_BankFailureBubbles(t *testing.T) {
 	require.Equal(t, math.ZeroInt(), f.keeper.GetBalance(f.ctx, "did:x"))
 }
 
-func TestClaim_SetsOwner(t *testing.T) {
+func TestDebit_DeductsFromBalance(t *testing.T) {
 	f := newFixture(t)
-	claimer := addr(9)
-	message := []byte("claim-nonce-1")
-	pub, sig := signedKey(t, message)
+	require.NoError(t, f.keeper.Fund(f.ctx, addr(1), "did:x", nzo(500)))
 
-	did, err := f.keeper.Claim(f.ctx, claimer, pub, sig, message)
-	require.NoError(t, err)
-	require.NotEmpty(t, did)
-
-	entry, found := f.keeper.GetEntry(f.ctx, did)
-	require.True(t, found)
-	require.Equal(t, claimer.String(), entry.Owner)
-	require.Equal(t, int64(1), entry.ClaimedAt)
-}
-
-func TestClaim_PreservesExistingBalance(t *testing.T) {
-	f := newFixture(t)
-	message := []byte("claim-nonce-2")
-	pub, sig := signedKey(t, message)
-	did := mustDeriveDID(t, pub)
-
-	require.NoError(t, f.keeper.Fund(f.ctx, addr(1), did, nzo(500)))
-
-	gotDid, err := f.keeper.Claim(f.ctx, addr(9), pub, sig, message)
-	require.NoError(t, err)
-	require.Equal(t, did, gotDid)
-
-	require.Equal(t, math.NewInt(500), f.keeper.GetBalance(f.ctx, did))
-	entry, _ := f.keeper.GetEntry(f.ctx, did)
-	require.Equal(t, addr(9).String(), entry.Owner)
-}
-
-func TestClaim_IdempotentForSameOwner(t *testing.T) {
-	f := newFixture(t)
-	message := []byte("claim-nonce-3")
-	pub, sig := signedKey(t, message)
-
-	owner := addr(9)
-	did1, err := f.keeper.Claim(f.ctx, owner, pub, sig, message)
-	require.NoError(t, err)
-
-	did2, err := f.keeper.Claim(f.ctx, owner, pub, sig, message)
-	require.NoError(t, err)
-	require.Equal(t, did1, did2)
-}
-
-func TestClaim_RejectsDifferentOwner(t *testing.T) {
-	f := newFixture(t)
-	message := []byte("claim-nonce-4")
-	pub, sig := signedKey(t, message)
-
-	_, err := f.keeper.Claim(f.ctx, addr(9), pub, sig, message)
-	require.NoError(t, err)
-
-	_, err = f.keeper.Claim(f.ctx, addr(10), pub, sig, message)
-	require.ErrorContains(t, err, "already claimed")
-}
-
-func TestClaim_RejectsBadSignature(t *testing.T) {
-	f := newFixture(t)
-	message := []byte("genuine-message")
-	pub, _ := signedKey(t, message)
-
-	_, otherSig := signedKey(t, message)
-
-	_, err := f.keeper.Claim(f.ctx, addr(9), pub, otherSig, message)
-	require.ErrorContains(t, err, "signature verification")
-}
-
-func TestWithdraw_HappyPath(t *testing.T) {
-	f := newFixture(t)
-	message := []byte("withdraw-nonce")
-	pub, sig := signedKey(t, message)
-	did := mustDeriveDID(t, pub)
-
-	require.NoError(t, f.keeper.Fund(f.ctx, addr(1), did, nzo(500)))
-	_, err := f.keeper.Claim(f.ctx, addr(9), pub, sig, message)
-	require.NoError(t, err)
-
-	require.NoError(t, f.keeper.Withdraw(f.ctx, addr(9), did, math.NewInt(200)))
-
-	require.Equal(t, math.NewInt(300), f.keeper.GetBalance(f.ctx, did))
-
-	outMove := f.bank.moves[len(f.bank.moves)-1]
-	require.Equal(t, "out", outMove.kind)
-	require.Equal(t, addr(9).String(), outMove.to)
-	require.Equal(t, math.NewInt(200), outMove.coins[0].Amount)
-}
-
-func TestWithdraw_RejectsNonOwner(t *testing.T) {
-	f := newFixture(t)
-	message := []byte("withdraw-nonowner")
-	pub, sig := signedKey(t, message)
-	did := mustDeriveDID(t, pub)
-
-	require.NoError(t, f.keeper.Fund(f.ctx, addr(1), did, nzo(500)))
-	_, err := f.keeper.Claim(f.ctx, addr(9), pub, sig, message)
-	require.NoError(t, err)
-
-	err = f.keeper.Withdraw(f.ctx, addr(10), did, math.NewInt(100))
-	require.ErrorContains(t, err, "not the owner")
-}
-
-func TestWithdraw_RejectsUnclaimed(t *testing.T) {
-	f := newFixture(t)
-	did := "did:test:unclaimed"
-	require.NoError(t, f.keeper.Fund(f.ctx, addr(1), did, nzo(500)))
-
-	err := f.keeper.Withdraw(f.ctx, addr(9), did, math.NewInt(100))
-	require.ErrorContains(t, err, "not claimed")
-}
-
-func TestWithdraw_RejectsInsufficientBalance(t *testing.T) {
-	f := newFixture(t)
-	message := []byte("withdraw-broke")
-	pub, sig := signedKey(t, message)
-	did := mustDeriveDID(t, pub)
-
-	require.NoError(t, f.keeper.Fund(f.ctx, addr(1), did, nzo(50)))
-	_, err := f.keeper.Claim(f.ctx, addr(9), pub, sig, message)
-	require.NoError(t, err)
-
-	err = f.keeper.Withdraw(f.ctx, addr(9), did, math.NewInt(100))
-	require.ErrorContains(t, err, "insufficient balance")
-}
-
-func TestDebit_DeductsAndPreservesOwner(t *testing.T) {
-	f := newFixture(t)
-	message := []byte("debit-nonce")
-	pub, sig := signedKey(t, message)
-	did := mustDeriveDID(t, pub)
-
-	require.NoError(t, f.keeper.Fund(f.ctx, addr(1), did, nzo(500)))
-	_, err := f.keeper.Claim(f.ctx, addr(9), pub, sig, message)
-	require.NoError(t, err)
-
-	require.NoError(t, f.keeper.Debit(f.ctx, did, math.NewInt(200)))
-
-	require.Equal(t, math.NewInt(300), f.keeper.GetBalance(f.ctx, did))
-	entry, _ := f.keeper.GetEntry(f.ctx, did)
-	require.Equal(t, addr(9).String(), entry.Owner)
+	require.NoError(t, f.keeper.Debit(f.ctx, "did:x", math.NewInt(200)))
+	require.Equal(t, math.NewInt(300), f.keeper.GetBalance(f.ctx, "did:x"))
 }
 
 func TestDebit_RejectsInsufficient(t *testing.T) {
@@ -355,11 +198,4 @@ func TestGenesis_RoundTrip(t *testing.T) {
 
 	require.Equal(t, math.NewInt(100), dst.keeper.GetBalance(dst.ctx, "did:a"))
 	require.Equal(t, math.NewInt(250), dst.keeper.GetBalance(dst.ctx, "did:b"))
-}
-
-func mustDeriveDID(t *testing.T, pubkey []byte) string {
-	t.Helper()
-	did, err := commoncrypto.DeriveDID(pubkey)
-	require.NoError(t, err)
-	return did
 }

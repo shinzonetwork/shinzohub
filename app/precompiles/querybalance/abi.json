@@ -1,0 +1,37 @@
+{
+  "_format": "hh-sol-artifact-1",
+  "contractName": "QueryBalanceI",
+  "sourceName": "QueryBalance.sol",
+  "abi": [
+    {
+      "anonymous": false,
+      "inputs": [
+        { "indexed": false, "internalType": "string", "name": "did", "type": "string" },
+        { "indexed": true, "internalType": "address", "name": "funder", "type": "address" },
+        { "indexed": false, "internalType": "uint256", "name": "amount", "type": "uint256" }
+      ],
+      "name": "Funded",
+      "type": "event"
+    },
+    {
+      "inputs": [
+        { "internalType": "string", "name": "did", "type": "string" }
+      ],
+      "name": "fund",
+      "outputs": [],
+      "stateMutability": "payable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        { "internalType": "string", "name": "did", "type": "string" }
+      ],
+      "name": "balanceOf",
+      "outputs": [
+        { "internalType": "uint256", "name": "", "type": "uint256" }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    }
+  ]
+}
