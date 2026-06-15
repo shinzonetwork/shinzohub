@@ -9,14 +9,10 @@ const (
 )
 
 const (
-	EventTypeFunded    = "querybalance.funded"
-	EventTypeDebited   = "querybalance.debited"
-	EventTypeClaimed   = "querybalance.claimed"
-	EventTypeWithdrawn = "querybalance.withdrawn"
+	EventTypeFunded  = "querybalance.funded"
+	EventTypeDebited = "querybalance.debited"
 
-	AttrKeyDID     = "did"
-	AttrKeyFunder  = "funder"
-	AttrKeyAmount  = "amount"
-	AttrKeyOwner   = "owner"
-	AttrKeyClaimer = "claimer"
+	AttrKeyDID    = "did"
+	AttrKeyFunder = "funder"
+	AttrKeyAmount = "amount"
 )
