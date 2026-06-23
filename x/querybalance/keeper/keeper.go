@@ -10,6 +10,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/runtime"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/cosmos/cosmos-sdk/types/query"
 
 	"github.com/shinzonetwork/shinzohub/x/querybalance/types"
 )
@@ -165,6 +166,28 @@ func parseAmount(s string) math.Int {
 		return math.ZeroInt()
 	}
 	return v
+}
+
+func (k Keeper) GetAllBalances(
+	ctx sdk.Context,
+	pageReq *query.PageRequest,
+) ([]types.QueryBalance, *query.PageResponse, error) {
+	store := runtime.KVStoreAdapter(k.storeService.OpenKVStore(ctx))
+	balanceStore := prefix.NewStore(store, []byte(types.BalancePrefix))
+
+	var balances []types.QueryBalance
+	pageRes, err := query.Paginate(balanceStore, pageReq, func(_, value []byte) error {
+		var qb types.QueryBalance
+		if err := k.cdc.Unmarshal(value, &qb); err != nil {
+			return err
+		}
+		balances = append(balances, qb)
+		return nil
+	})
+	if err != nil {
+		return nil, nil, err
+	}
+	return balances, pageRes, nil
 }
 
 func (k Keeper) InitGenesis(ctx sdk.Context, gs types.GenesisState) {
