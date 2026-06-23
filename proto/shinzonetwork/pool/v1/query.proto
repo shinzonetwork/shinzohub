@@ -16,6 +16,12 @@ service Query {
   rpc Pools(QueryPoolsRequest) returns (QueryPoolsResponse) {
     option (google.api.http).get = "/shinzonetwork/pool/v1/pools";
   }
+  rpc Detail(QueryDetailRequest) returns (QueryDetailResponse) {
+    option (google.api.http).get = "/shinzonetwork/pool/v1/pool/{pool_address}/detail";
+  }
+  rpc Details(QueryDetailsRequest) returns (QueryDetailsResponse) {
+    option (google.api.http).get = "/shinzonetwork/pool/v1/details";
+  }
   rpc Hosts(QueryHostsRequest) returns (QueryHostsResponse) {
     option (google.api.http).get = "/shinzonetwork/pool/v1/pools/{pool_address}/hosts";
   }
@@ -36,6 +42,21 @@ message QueryPoolsRequest {
 }
 message QueryPoolsResponse {
   repeated Pool pools = 1 [(gogoproto.nullable) = false];
+  cosmos.base.query.v1beta1.PageResponse pagination = 2;
+}
+
+message QueryDetailRequest {
+  string pool_address = 1;
+}
+message QueryDetailResponse {
+  PoolDetail detail = 1 [(gogoproto.nullable) = false];
+}
+
+message QueryDetailsRequest {
+  cosmos.base.query.v1beta1.PageRequest pagination = 1;
+}
+message QueryDetailsResponse {
+  repeated PoolDetail details = 1 [(gogoproto.nullable) = false];
   cosmos.base.query.v1beta1.PageResponse pagination = 2;
 }
 

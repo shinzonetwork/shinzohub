@@ -21,6 +21,8 @@ const _ = grpc.SupportPackageIsVersion9
 const (
 	Query_Pool_FullMethodName    = "/shinzonetwork.pool.v1.Query/Pool"
 	Query_Pools_FullMethodName   = "/shinzonetwork.pool.v1.Query/Pools"
+	Query_Detail_FullMethodName  = "/shinzonetwork.pool.v1.Query/Detail"
+	Query_Details_FullMethodName = "/shinzonetwork.pool.v1.Query/Details"
 	Query_Hosts_FullMethodName   = "/shinzonetwork.pool.v1.Query/Hosts"
 	Query_Demands_FullMethodName = "/shinzonetwork.pool.v1.Query/Demands"
 )
@@ -31,6 +33,8 @@ const (
 type QueryClient interface {
 	Pool(ctx context.Context, in *QueryPoolRequest, opts ...grpc.CallOption) (*QueryPoolResponse, error)
 	Pools(ctx context.Context, in *QueryPoolsRequest, opts ...grpc.CallOption) (*QueryPoolsResponse, error)
+	Detail(ctx context.Context, in *QueryDetailRequest, opts ...grpc.CallOption) (*QueryDetailResponse, error)
+	Details(ctx context.Context, in *QueryDetailsRequest, opts ...grpc.CallOption) (*QueryDetailsResponse, error)
 	Hosts(ctx context.Context, in *QueryHostsRequest, opts ...grpc.CallOption) (*QueryHostsResponse, error)
 	Demands(ctx context.Context, in *QueryDemandsRequest, opts ...grpc.CallOption) (*QueryDemandsResponse, error)
 }
@@ -63,6 +67,26 @@ func (c *queryClient) Pools(ctx context.Context, in *QueryPoolsRequest, opts ...
 	return out, nil
 }
 
+func (c *queryClient) Detail(ctx context.Context, in *QueryDetailRequest, opts ...grpc.CallOption) (*QueryDetailResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(QueryDetailResponse)
+	err := c.cc.Invoke(ctx, Query_Detail_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *queryClient) Details(ctx context.Context, in *QueryDetailsRequest, opts ...grpc.CallOption) (*QueryDetailsResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(QueryDetailsResponse)
+	err := c.cc.Invoke(ctx, Query_Details_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *queryClient) Hosts(ctx context.Context, in *QueryHostsRequest, opts ...grpc.CallOption) (*QueryHostsResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(QueryHostsResponse)
@@ -89,6 +113,8 @@ func (c *queryClient) Demands(ctx context.Context, in *QueryDemandsRequest, opts
 type QueryServer interface {
 	Pool(context.Context, *QueryPoolRequest) (*QueryPoolResponse, error)
 	Pools(context.Context, *QueryPoolsRequest) (*QueryPoolsResponse, error)
+	Detail(context.Context, *QueryDetailRequest) (*QueryDetailResponse, error)
+	Details(context.Context, *QueryDetailsRequest) (*QueryDetailsResponse, error)
 	Hosts(context.Context, *QueryHostsRequest) (*QueryHostsResponse, error)
 	Demands(context.Context, *QueryDemandsRequest) (*QueryDemandsResponse, error)
 	mustEmbedUnimplementedQueryServer()
@@ -106,6 +132,12 @@ func (UnimplementedQueryServer) Pool(context.Context, *QueryPoolRequest) (*Query
 }
 func (UnimplementedQueryServer) Pools(context.Context, *QueryPoolsRequest) (*QueryPoolsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Pools not implemented")
+}
+func (UnimplementedQueryServer) Detail(context.Context, *QueryDetailRequest) (*QueryDetailResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Detail not implemented")
+}
+func (UnimplementedQueryServer) Details(context.Context, *QueryDetailsRequest) (*QueryDetailsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Details not implemented")
 }
 func (UnimplementedQueryServer) Hosts(context.Context, *QueryHostsRequest) (*QueryHostsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Hosts not implemented")
@@ -170,6 +202,42 @@ func _Query_Pools_Handler(srv interface{}, ctx context.Context, dec func(interfa
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Query_Detail_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(QueryDetailRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(QueryServer).Detail(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Query_Detail_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(QueryServer).Detail(ctx, req.(*QueryDetailRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Query_Details_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(QueryDetailsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(QueryServer).Details(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Query_Details_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(QueryServer).Details(ctx, req.(*QueryDetailsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _Query_Hosts_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(QueryHostsRequest)
 	if err := dec(in); err != nil {
@@ -220,6 +288,14 @@ var Query_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "Pools",
 			Handler:    _Query_Pools_Handler,
+		},
+		{
+			MethodName: "Detail",
+			Handler:    _Query_Detail_Handler,
+		},
+		{
+			MethodName: "Details",
+			Handler:    _Query_Details_Handler,
 		},
 		{
 			MethodName: "Hosts",

@@ -373,6 +373,34 @@ func (k Keeper) IterateHosts(
 	return nil
 }
 
+// GetAllHosts paginates host entries for a pool.
+func (k Keeper) GetAllHosts(
+	ctx sdk.Context,
+	poolAddress string,
+	pageReq *query.PageRequest,
+) ([]types.PoolHostEntry, *query.PageResponse, error) {
+	store := runtime.KVStoreAdapter(k.storeService.OpenKVStore(ctx))
+	hostStore := prefix.NewStore(store, []byte(types.PoolHostPrefix+poolAddress+"/"))
+
+	var hosts []types.PoolHostEntry
+	pageRes, err := query.Paginate(hostStore, pageReq, func(key, value []byte) error {
+		var h types.PoolHost
+		if err := k.cdc.Unmarshal(value, &h); err != nil {
+			return err
+		}
+		hosts = append(hosts, types.PoolHostEntry{
+			PoolAddress: poolAddress,
+			HostAddress: string(key),
+			Host:        h,
+		})
+		return nil
+	})
+	if err != nil {
+		return nil, nil, err
+	}
+	return hosts, pageRes, nil
+}
+
 // RegisterDemand persists a demand entry. The caller (precompile) is responsible
 // for moving the bond into the pool module account before calling this.
 // Reverts if the registrant already has an open demand on this pool.
@@ -442,6 +470,34 @@ func (k Keeper) IterateDemands(
 		}
 	}
 	return nil
+}
+
+// GetAllDemands paginates demand entries for a pool.
+func (k Keeper) GetAllDemands(
+	ctx sdk.Context,
+	poolAddress string,
+	pageReq *query.PageRequest,
+) ([]types.PoolDemandEntry, *query.PageResponse, error) {
+	store := runtime.KVStoreAdapter(k.storeService.OpenKVStore(ctx))
+	dmdStore := prefix.NewStore(store, []byte(types.PoolDemandPrefix+poolAddress+"/"))
+
+	var demands []types.PoolDemandEntry
+	pageRes, err := query.Paginate(dmdStore, pageReq, func(key, value []byte) error {
+		var d types.PoolDemand
+		if err := k.cdc.Unmarshal(value, &d); err != nil {
+			return err
+		}
+		demands = append(demands, types.PoolDemandEntry{
+			PoolAddress:       poolAddress,
+			RegistrantAddress: string(key),
+			Demand:            d,
+		})
+		return nil
+	})
+	if err != nil {
+		return nil, nil, err
+	}
+	return demands, pageRes, nil
 }
 
 func (k Keeper) InitGenesis(ctx sdk.Context, gs types.GenesisState) {
