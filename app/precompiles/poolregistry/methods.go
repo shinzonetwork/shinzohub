@@ -45,7 +45,6 @@ type poolOutput struct {
 // hostEntryOutput mirrors the Solidity PoolHostEntry struct.
 type hostEntryOutput struct {
 	HostAddress common.Address
-	Ask         *big.Int
 	JoinedAt    int64
 }
 
@@ -322,7 +321,6 @@ func (p Precompile) GetPoolDetail(
 	for _, h := range detail.Hosts {
 		hosts = append(hosts, hostEntryOutput{
 			HostAddress: common.HexToAddress(h.HostAddress),
-			Ask:         parseInt(h.Host.Ask),
 			JoinedAt:    h.Host.JoinedAt,
 		})
 	}

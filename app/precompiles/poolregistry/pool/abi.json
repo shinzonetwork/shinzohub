@@ -70,7 +70,6 @@
             {
               "components": [
                 { "internalType": "address", "name": "hostAddress", "type": "address" },
-                { "internalType": "uint256", "name": "ask", "type": "uint256" },
                 { "internalType": "int64", "name": "joinedAt", "type": "int64" }
               ],
               "internalType": "struct PoolRegistryI.PoolHostEntry[]",

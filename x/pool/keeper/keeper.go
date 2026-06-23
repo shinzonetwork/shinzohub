@@ -285,7 +285,6 @@ func (k Keeper) AddHost(ctx sdk.Context, poolAddress, hostAddress string) error 
 	wasActive := k.IsActive(ctx, poolAddress)
 
 	h := types.PoolHost{
-		Ask:      "0",
 		JoinedAt: ctx.BlockHeight(),
 	}
 	bz, err := k.cdc.Marshal(&h)

@@ -33,11 +33,9 @@ message PoolConfig {
   uint64 window_size = 1;
 }
 
-// PoolHost represents a host's membership in a pool, including their submitted ask.
+// PoolHost represents a host's membership in a pool.
 message PoolHost {
-  // sdk.Int as base-10 string. "0" or empty means no ask submitted yet.
-  string ask = 1;
-  int64 joined_at = 2;
+  int64 joined_at = 1;
 }
 
 // PoolDemand represents a single developer's demand registration on a pool.

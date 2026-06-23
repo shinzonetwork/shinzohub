@@ -118,7 +118,7 @@ func (x *_GenesisState_2_list) IsValid() bool {
 var _ protoreflect.List = (*_GenesisState_3_list)(nil)
 
 type _GenesisState_3_list struct {
-	list *[]*PoolIndexerEntry
+	list *[]*PoolDemandEntry
 }
 
 func (x *_GenesisState_3_list) Len() int {
@@ -134,18 +134,18 @@ func (x *_GenesisState_3_list) Get(i int) protoreflect.Value {
 
 func (x *_GenesisState_3_list) Set(i int, value protoreflect.Value) {
 	valueUnwrapped := value.Message()
-	concreteValue := valueUnwrapped.Interface().(*PoolIndexerEntry)
+	concreteValue := valueUnwrapped.Interface().(*PoolDemandEntry)
 	(*x.list)[i] = concreteValue
 }
 
 func (x *_GenesisState_3_list) Append(value protoreflect.Value) {
 	valueUnwrapped := value.Message()
-	concreteValue := valueUnwrapped.Interface().(*PoolIndexerEntry)
+	concreteValue := valueUnwrapped.Interface().(*PoolDemandEntry)
 	*x.list = append(*x.list, concreteValue)
 }
 
 func (x *_GenesisState_3_list) AppendMutable() protoreflect.Value {
-	v := new(PoolIndexerEntry)
+	v := new(PoolDemandEntry)
 	*x.list = append(*x.list, v)
 	return protoreflect.ValueOfMessage(v.ProtoReflect())
 }
@@ -158,7 +158,7 @@ func (x *_GenesisState_3_list) Truncate(n int) {
 }
 
 func (x *_GenesisState_3_list) NewElement() protoreflect.Value {
-	v := new(PoolIndexerEntry)
+	v := new(PoolDemandEntry)
 	return protoreflect.ValueOfMessage(v.ProtoReflect())
 }
 
@@ -166,63 +166,11 @@ func (x *_GenesisState_3_list) IsValid() bool {
 	return x.list != nil
 }
 
-var _ protoreflect.List = (*_GenesisState_4_list)(nil)
-
-type _GenesisState_4_list struct {
-	list *[]*PoolDemandEntry
-}
-
-func (x *_GenesisState_4_list) Len() int {
-	if x.list == nil {
-		return 0
-	}
-	return len(*x.list)
-}
-
-func (x *_GenesisState_4_list) Get(i int) protoreflect.Value {
-	return protoreflect.ValueOfMessage((*x.list)[i].ProtoReflect())
-}
-
-func (x *_GenesisState_4_list) Set(i int, value protoreflect.Value) {
-	valueUnwrapped := value.Message()
-	concreteValue := valueUnwrapped.Interface().(*PoolDemandEntry)
-	(*x.list)[i] = concreteValue
-}
-
-func (x *_GenesisState_4_list) Append(value protoreflect.Value) {
-	valueUnwrapped := value.Message()
-	concreteValue := valueUnwrapped.Interface().(*PoolDemandEntry)
-	*x.list = append(*x.list, concreteValue)
-}
-
-func (x *_GenesisState_4_list) AppendMutable() protoreflect.Value {
-	v := new(PoolDemandEntry)
-	*x.list = append(*x.list, v)
-	return protoreflect.ValueOfMessage(v.ProtoReflect())
-}
-
-func (x *_GenesisState_4_list) Truncate(n int) {
-	for i := n; i < len(*x.list); i++ {
-		(*x.list)[i] = nil
-	}
-	*x.list = (*x.list)[:n]
-}
-
-func (x *_GenesisState_4_list) NewElement() protoreflect.Value {
-	v := new(PoolDemandEntry)
-	return protoreflect.ValueOfMessage(v.ProtoReflect())
-}
-
-func (x *_GenesisState_4_list) IsValid() bool {
-	return x.list != nil
-}
-
 var (
-	md_GenesisState          protoreflect.MessageDescriptor
-	fd_GenesisState_pools    protoreflect.FieldDescriptor
-	fd_GenesisState_hosts    protoreflect.FieldDescriptor
-	fd_GenesisState_indexers protoreflect.FieldDescriptor
-	fd_GenesisState_demands  protoreflect.FieldDescriptor
+	md_GenesisState         protoreflect.MessageDescriptor
+	fd_GenesisState_pools   protoreflect.FieldDescriptor
+	fd_GenesisState_hosts   protoreflect.FieldDescriptor
+	fd_GenesisState_demands protoreflect.FieldDescriptor
 )
 
 func init() {
@@ -230,7 +178,6 @@ func init() {
 	md_GenesisState = File_shinzonetwork_pool_v1_genesis_proto.Messages().ByName("GenesisState")
 	fd_GenesisState_pools = md_GenesisState.Fields().ByName("pools")
 	fd_GenesisState_hosts = md_GenesisState.Fields().ByName("hosts")
-	fd_GenesisState_indexers = md_GenesisState.Fields().ByName("indexers")
 	fd_GenesisState_demands = md_GenesisState.Fields().ByName("demands")
 }
 
@@ -311,14 +258,8 @@ func (x *fastReflection_GenesisState) Range(f func(protoreflect.FieldDescriptor,
 			return
 		}
 	}
-	if len(x.Indexers) != 0 {
-		value := protoreflect.ValueOfList(&_GenesisState_3_list{list: &x.Indexers})
-		if !f(fd_GenesisState_indexers, value) {
-			return
-		}
-	}
 	if len(x.Demands) != 0 {
-		value := protoreflect.ValueOfList(&_GenesisState_4_list{list: &x.Demands})
+		value := protoreflect.ValueOfList(&_GenesisState_3_list{list: &x.Demands})
 		if !f(fd_GenesisState_demands, value) {
 			return
 		}
@@ -342,8 +283,6 @@ func (x *fastReflection_GenesisState) Has(fd protoreflect.FieldDescriptor) bool 
 		return len(x.Pools) != 0
 	case "shinzonetwork.pool.v1.GenesisState.hosts":
 		return len(x.Hosts) != 0
-	case "shinzonetwork.pool.v1.GenesisState.indexers":
-		return len(x.Indexers) != 0
 	case "shinzonetwork.pool.v1.GenesisState.demands":
 		return len(x.Demands) != 0
 	default:
@@ -366,8 +305,6 @@ func (x *fastReflection_GenesisState) Clear(fd protoreflect.FieldDescriptor) {
 		x.Pools = nil
 	case "shinzonetwork.pool.v1.GenesisState.hosts":
 		x.Hosts = nil
-	case "shinzonetwork.pool.v1.GenesisState.indexers":
-		x.Indexers = nil
 	case "shinzonetwork.pool.v1.GenesisState.demands":
 		x.Demands = nil
 	default:
@@ -398,17 +335,11 @@ func (x *fastReflection_GenesisState) Get(descriptor protoreflect.FieldDescripto
 		}
 		listValue := &_GenesisState_2_list{list: &x.Hosts}
 		return protoreflect.ValueOfList(listValue)
-	case "shinzonetwork.pool.v1.GenesisState.indexers":
-		if len(x.Indexers) == 0 {
-			return protoreflect.ValueOfList(&_GenesisState_3_list{})
-		}
-		listValue := &_GenesisState_3_list{list: &x.Indexers}
-		return protoreflect.ValueOfList(listValue)
 	case "shinzonetwork.pool.v1.GenesisState.demands":
 		if len(x.Demands) == 0 {
-			return protoreflect.ValueOfList(&_GenesisState_4_list{})
+			return protoreflect.ValueOfList(&_GenesisState_3_list{})
 		}
-		listValue := &_GenesisState_4_list{list: &x.Demands}
+		listValue := &_GenesisState_3_list{list: &x.Demands}
 		return protoreflect.ValueOfList(listValue)
 	default:
 		if descriptor.IsExtension() {
@@ -438,13 +369,9 @@ func (x *fastReflection_GenesisState) Set(fd protoreflect.FieldDescriptor, value
 		lv := value.List()
 		clv := lv.(*_GenesisState_2_list)
 		x.Hosts = *clv.list
-	case "shinzonetwork.pool.v1.GenesisState.indexers":
-		lv := value.List()
-		clv := lv.(*_GenesisState_3_list)
-		x.Indexers = *clv.list
 	case "shinzonetwork.pool.v1.GenesisState.demands":
 		lv := value.List()
-		clv := lv.(*_GenesisState_4_list)
+		clv := lv.(*_GenesisState_3_list)
 		x.Demands = *clv.list
 	default:
 		if fd.IsExtension() {
@@ -478,17 +405,11 @@ func (x *fastReflection_GenesisState) Mutable(fd protoreflect.FieldDescriptor) p
 		}
 		value := &_GenesisState_2_list{list: &x.Hosts}
 		return protoreflect.ValueOfList(value)
-	case "shinzonetwork.pool.v1.GenesisState.indexers":
-		if x.Indexers == nil {
-			x.Indexers = []*PoolIndexerEntry{}
-		}
-		value := &_GenesisState_3_list{list: &x.Indexers}
-		return protoreflect.ValueOfList(value)
 	case "shinzonetwork.pool.v1.GenesisState.demands":
 		if x.Demands == nil {
 			x.Demands = []*PoolDemandEntry{}
 		}
-		value := &_GenesisState_4_list{list: &x.Demands}
+		value := &_GenesisState_3_list{list: &x.Demands}
 		return protoreflect.ValueOfList(value)
 	default:
 		if fd.IsExtension() {
@@ -509,12 +430,9 @@ func (x *fastReflection_GenesisState) NewField(fd protoreflect.FieldDescriptor) 
 	case "shinzonetwork.pool.v1.GenesisState.hosts":
 		list := []*PoolHostEntry{}
 		return protoreflect.ValueOfList(&_GenesisState_2_list{list: &list})
-	case "shinzonetwork.pool.v1.GenesisState.indexers":
-		list := []*PoolIndexerEntry{}
-		return protoreflect.ValueOfList(&_GenesisState_3_list{list: &list})
 	case "shinzonetwork.pool.v1.GenesisState.demands":
 		list := []*PoolDemandEntry{}
-		return protoreflect.ValueOfList(&_GenesisState_4_list{list: &list})
+		return protoreflect.ValueOfList(&_GenesisState_3_list{list: &list})
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: shinzonetwork.pool.v1.GenesisState"))
@@ -596,12 +514,6 @@ func (x *fastReflection_GenesisState) ProtoMethods() *protoiface.Methods {
 				n += 1 + l + runtime.Sov(uint64(l))
 			}
 		}
-		if len(x.Indexers) > 0 {
-			for _, e := range x.Indexers {
-				l = options.Size(e)
-				n += 1 + l + runtime.Sov(uint64(l))
-			}
-		}
 		if len(x.Demands) > 0 {
 			for _, e := range x.Demands {
 				l = options.Size(e)
@@ -640,22 +552,6 @@ func (x *fastReflection_GenesisState) ProtoMethods() *protoiface.Methods {
 		if len(x.Demands) > 0 {
 			for iNdEx := len(x.Demands) - 1; iNdEx >= 0; iNdEx-- {
 				encoded, err := options.Marshal(x.Demands[iNdEx])
-				if err != nil {
-					return protoiface.MarshalOutput{
-						NoUnkeyedLiterals: input.NoUnkeyedLiterals,
-						Buf:               input.Buf,
-					}, err
-				}
-				i -= len(encoded)
-				copy(dAtA[i:], encoded)
-				i = runtime.EncodeVarint(dAtA, i, uint64(len(encoded)))
-				i--
-				dAtA[i] = 0x22
-			}
-		}
-		if len(x.Indexers) > 0 {
-			for iNdEx := len(x.Indexers) - 1; iNdEx >= 0; iNdEx-- {
-				encoded, err := options.Marshal(x.Indexers[iNdEx])
 				if err != nil {
 					return protoiface.MarshalOutput{
 						NoUnkeyedLiterals: input.NoUnkeyedLiterals,
@@ -820,40 +716,6 @@ func (x *fastReflection_GenesisState) ProtoMethods() *protoiface.Methods {
 				iNdEx = postIndex
 			case 3:
 				if wireType != 2 {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field Indexers", wireType)
-				}
-				var msglen int
-				for shift := uint(0); ; shift += 7 {
-					if shift >= 64 {
-						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
-					}
-					if iNdEx >= l {
-						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
-					}
-					b := dAtA[iNdEx]
-					iNdEx++
-					msglen |= int(b&0x7F) << shift
-					if b < 0x80 {
-						break
-					}
-				}
-				if msglen < 0 {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
-				}
-				postIndex := iNdEx + msglen
-				if postIndex < 0 {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
-				}
-				if postIndex > l {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
-				}
-				x.Indexers = append(x.Indexers, &PoolIndexerEntry{})
-				if err := options.Unmarshal(dAtA[iNdEx:postIndex], x.Indexers[len(x.Indexers)-1]); err != nil {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, err
-				}
-				iNdEx = postIndex
-			case 4:
-				if wireType != 2 {
 					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field Demands", wireType)
 				}
 				var msglen int
@@ -940,10 +802,9 @@ type GenesisState struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Pools    []*Pool             `protobuf:"bytes,1,rep,name=pools,proto3" json:"pools,omitempty"`
-	Hosts    []*PoolHostEntry    `protobuf:"bytes,2,rep,name=hosts,proto3" json:"hosts,omitempty"`
-	Indexers []*PoolIndexerEntry `protobuf:"bytes,3,rep,name=indexers,proto3" json:"indexers,omitempty"`
-	Demands  []*PoolDemandEntry  `protobuf:"bytes,4,rep,name=demands,proto3" json:"demands,omitempty"`
+	Pools   []*Pool            `protobuf:"bytes,1,rep,name=pools,proto3" json:"pools,omitempty"`
+	Hosts   []*PoolHostEntry   `protobuf:"bytes,2,rep,name=hosts,proto3" json:"hosts,omitempty"`
+	Demands []*PoolDemandEntry `protobuf:"bytes,3,rep,name=demands,proto3" json:"demands,omitempty"`
 }
 
 func (x *GenesisState) Reset() {
@@ -980,13 +841,6 @@ func (x *GenesisState) GetHosts() []*PoolHostEntry {
 	return nil
 }
 
-func (x *GenesisState) GetIndexers() []*PoolIndexerEntry {
-	if x != nil {
-		return x.Indexers
-	}
-	return nil
-}
-
 func (x *GenesisState) GetDemands() []*PoolDemandEntry {
 	if x != nil {
 		return x.Demands
@@ -1004,7 +858,7 @@ var file_shinzonetwork_pool_v1_genesis_proto_rawDesc = []byte{
 	0x67, 0x6f, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2f, 0x67, 0x6f, 0x67, 0x6f, 0x2e, 0x70, 0x72, 0x6f,
 	0x74, 0x6f, 0x1a, 0x20, 0x73, 0x68, 0x69, 0x6e, 0x7a, 0x6f, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72,
 	0x6b, 0x2f, 0x70, 0x6f, 0x6f, 0x6c, 0x2f, 0x76, 0x31, 0x2f, 0x70, 0x6f, 0x6f, 0x6c, 0x2e, 0x70,
-	0x72, 0x6f, 0x74, 0x6f, 0x22, 0x9c, 0x02, 0x0a, 0x0c, 0x47, 0x65, 0x6e, 0x65, 0x73, 0x69, 0x73,
+	0x72, 0x6f, 0x74, 0x6f, 0x22, 0xd1, 0x01, 0x0a, 0x0c, 0x47, 0x65, 0x6e, 0x65, 0x73, 0x69, 0x73,
 	0x53, 0x74, 0x61, 0x74, 0x65, 0x12, 0x37, 0x0a, 0x05, 0x70, 0x6f, 0x6f, 0x6c, 0x73, 0x18, 0x01,
 	0x20, 0x03, 0x28, 0x0b, 0x32, 0x1b, 0x2e, 0x73, 0x68, 0x69, 0x6e, 0x7a, 0x6f, 0x6e, 0x65, 0x74,
 	0x77, 0x6f, 0x72, 0x6b, 0x2e, 0x70, 0x6f, 0x6f, 0x6c, 0x2e, 0x76, 0x31, 0x2e, 0x50, 0x6f, 0x6f,
@@ -1013,31 +867,26 @@ var file_shinzonetwork_pool_v1_genesis_proto_rawDesc = []byte{
 	0x73, 0x68, 0x69, 0x6e, 0x7a, 0x6f, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x2e, 0x70, 0x6f,
 	0x6f, 0x6c, 0x2e, 0x76, 0x31, 0x2e, 0x50, 0x6f, 0x6f, 0x6c, 0x48, 0x6f, 0x73, 0x74, 0x45, 0x6e,
 	0x74, 0x72, 0x79, 0x42, 0x04, 0xc8, 0xde, 0x1f, 0x00, 0x52, 0x05, 0x68, 0x6f, 0x73, 0x74, 0x73,
-	0x12, 0x49, 0x0a, 0x08, 0x69, 0x6e, 0x64, 0x65, 0x78, 0x65, 0x72, 0x73, 0x18, 0x03, 0x20, 0x03,
-	0x28, 0x0b, 0x32, 0x27, 0x2e, 0x73, 0x68, 0x69, 0x6e, 0x7a, 0x6f, 0x6e, 0x65, 0x74, 0x77, 0x6f,
-	0x72, 0x6b, 0x2e, 0x70, 0x6f, 0x6f, 0x6c, 0x2e, 0x76, 0x31, 0x2e, 0x50, 0x6f, 0x6f, 0x6c, 0x49,
-	0x6e, 0x64, 0x65, 0x78, 0x65, 0x72, 0x45, 0x6e, 0x74, 0x72, 0x79, 0x42, 0x04, 0xc8, 0xde, 0x1f,
-	0x00, 0x52, 0x08, 0x69, 0x6e, 0x64, 0x65, 0x78, 0x65, 0x72, 0x73, 0x12, 0x46, 0x0a, 0x07, 0x64,
-	0x65, 0x6d, 0x61, 0x6e, 0x64, 0x73, 0x18, 0x04, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x26, 0x2e, 0x73,
-	0x68, 0x69, 0x6e, 0x7a, 0x6f, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x2e, 0x70, 0x6f, 0x6f,
-	0x6c, 0x2e, 0x76, 0x31, 0x2e, 0x50, 0x6f, 0x6f, 0x6c, 0x44, 0x65, 0x6d, 0x61, 0x6e, 0x64, 0x45,
-	0x6e, 0x74, 0x72, 0x79, 0x42, 0x04, 0xc8, 0xde, 0x1f, 0x00, 0x52, 0x07, 0x64, 0x65, 0x6d, 0x61,
-	0x6e, 0x64, 0x73, 0x42, 0xe4, 0x01, 0x0a, 0x19, 0x63, 0x6f, 0x6d, 0x2e, 0x73, 0x68, 0x69, 0x6e,
-	0x7a, 0x6f, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x2e, 0x70, 0x6f, 0x6f, 0x6c, 0x2e, 0x76,
-	0x31, 0x42, 0x0c, 0x47, 0x65, 0x6e, 0x65, 0x73, 0x69, 0x73, 0x50, 0x72, 0x6f, 0x74, 0x6f, 0x50,
-	0x01, 0x5a, 0x43, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x73, 0x68,
-	0x69, 0x6e, 0x7a, 0x6f, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x2f, 0x73, 0x68, 0x69, 0x6e,
-	0x7a, 0x6f, 0x68, 0x75, 0x62, 0x2f, 0x61, 0x70, 0x69, 0x2f, 0x73, 0x68, 0x69, 0x6e, 0x7a, 0x6f,
-	0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x2f, 0x70, 0x6f, 0x6f, 0x6c, 0x2f, 0x76, 0x31, 0x3b,
-	0x70, 0x6f, 0x6f, 0x6c, 0x76, 0x31, 0xa2, 0x02, 0x03, 0x53, 0x50, 0x58, 0xaa, 0x02, 0x15, 0x53,
-	0x68, 0x69, 0x6e, 0x7a, 0x6f, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x2e, 0x50, 0x6f, 0x6f,
-	0x6c, 0x2e, 0x56, 0x31, 0xca, 0x02, 0x15, 0x53, 0x68, 0x69, 0x6e, 0x7a, 0x6f, 0x6e, 0x65, 0x74,
-	0x77, 0x6f, 0x72, 0x6b, 0x5c, 0x50, 0x6f, 0x6f, 0x6c, 0x5c, 0x56, 0x31, 0xe2, 0x02, 0x21, 0x53,
-	0x68, 0x69, 0x6e, 0x7a, 0x6f, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x5c, 0x50, 0x6f, 0x6f,
-	0x6c, 0x5c, 0x56, 0x31, 0x5c, 0x47, 0x50, 0x42, 0x4d, 0x65, 0x74, 0x61, 0x64, 0x61, 0x74, 0x61,
-	0xea, 0x02, 0x17, 0x53, 0x68, 0x69, 0x6e, 0x7a, 0x6f, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b,
-	0x3a, 0x3a, 0x50, 0x6f, 0x6f, 0x6c, 0x3a, 0x3a, 0x56, 0x31, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74,
-	0x6f, 0x33,
+	0x12, 0x46, 0x0a, 0x07, 0x64, 0x65, 0x6d, 0x61, 0x6e, 0x64, 0x73, 0x18, 0x03, 0x20, 0x03, 0x28,
+	0x0b, 0x32, 0x26, 0x2e, 0x73, 0x68, 0x69, 0x6e, 0x7a, 0x6f, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72,
+	0x6b, 0x2e, 0x70, 0x6f, 0x6f, 0x6c, 0x2e, 0x76, 0x31, 0x2e, 0x50, 0x6f, 0x6f, 0x6c, 0x44, 0x65,
+	0x6d, 0x61, 0x6e, 0x64, 0x45, 0x6e, 0x74, 0x72, 0x79, 0x42, 0x04, 0xc8, 0xde, 0x1f, 0x00, 0x52,
+	0x07, 0x64, 0x65, 0x6d, 0x61, 0x6e, 0x64, 0x73, 0x42, 0xe4, 0x01, 0x0a, 0x19, 0x63, 0x6f, 0x6d,
+	0x2e, 0x73, 0x68, 0x69, 0x6e, 0x7a, 0x6f, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x2e, 0x70,
+	0x6f, 0x6f, 0x6c, 0x2e, 0x76, 0x31, 0x42, 0x0c, 0x47, 0x65, 0x6e, 0x65, 0x73, 0x69, 0x73, 0x50,
+	0x72, 0x6f, 0x74, 0x6f, 0x50, 0x01, 0x5a, 0x43, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63,
+	0x6f, 0x6d, 0x2f, 0x73, 0x68, 0x69, 0x6e, 0x7a, 0x6f, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b,
+	0x2f, 0x73, 0x68, 0x69, 0x6e, 0x7a, 0x6f, 0x68, 0x75, 0x62, 0x2f, 0x61, 0x70, 0x69, 0x2f, 0x73,
+	0x68, 0x69, 0x6e, 0x7a, 0x6f, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x2f, 0x70, 0x6f, 0x6f,
+	0x6c, 0x2f, 0x76, 0x31, 0x3b, 0x70, 0x6f, 0x6f, 0x6c, 0x76, 0x31, 0xa2, 0x02, 0x03, 0x53, 0x50,
+	0x58, 0xaa, 0x02, 0x15, 0x53, 0x68, 0x69, 0x6e, 0x7a, 0x6f, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72,
+	0x6b, 0x2e, 0x50, 0x6f, 0x6f, 0x6c, 0x2e, 0x56, 0x31, 0xca, 0x02, 0x15, 0x53, 0x68, 0x69, 0x6e,
+	0x7a, 0x6f, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x5c, 0x50, 0x6f, 0x6f, 0x6c, 0x5c, 0x56,
+	0x31, 0xe2, 0x02, 0x21, 0x53, 0x68, 0x69, 0x6e, 0x7a, 0x6f, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72,
+	0x6b, 0x5c, 0x50, 0x6f, 0x6f, 0x6c, 0x5c, 0x56, 0x31, 0x5c, 0x47, 0x50, 0x42, 0x4d, 0x65, 0x74,
+	0x61, 0x64, 0x61, 0x74, 0x61, 0xea, 0x02, 0x17, 0x53, 0x68, 0x69, 0x6e, 0x7a, 0x6f, 0x6e, 0x65,
+	0x74, 0x77, 0x6f, 0x72, 0x6b, 0x3a, 0x3a, 0x50, 0x6f, 0x6f, 0x6c, 0x3a, 0x3a, 0x56, 0x31, 0x62,
+	0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
 }
 
 var (
@@ -1054,22 +903,20 @@ func file_shinzonetwork_pool_v1_genesis_proto_rawDescGZIP() []byte {
 
 var file_shinzonetwork_pool_v1_genesis_proto_msgTypes = make([]protoimpl.MessageInfo, 1)
 var file_shinzonetwork_pool_v1_genesis_proto_goTypes = []interface{}{
-	(*GenesisState)(nil),     // 0: shinzonetwork.pool.v1.GenesisState
-	(*Pool)(nil),             // 1: shinzonetwork.pool.v1.Pool
-	(*PoolHostEntry)(nil),    // 2: shinzonetwork.pool.v1.PoolHostEntry
-	(*PoolIndexerEntry)(nil), // 3: shinzonetwork.pool.v1.PoolIndexerEntry
-	(*PoolDemandEntry)(nil),  // 4: shinzonetwork.pool.v1.PoolDemandEntry
+	(*GenesisState)(nil),    // 0: shinzonetwork.pool.v1.GenesisState
+	(*Pool)(nil),            // 1: shinzonetwork.pool.v1.Pool
+	(*PoolHostEntry)(nil),   // 2: shinzonetwork.pool.v1.PoolHostEntry
+	(*PoolDemandEntry)(nil), // 3: shinzonetwork.pool.v1.PoolDemandEntry
 }
 var file_shinzonetwork_pool_v1_genesis_proto_depIdxs = []int32{
 	1, // 0: shinzonetwork.pool.v1.GenesisState.pools:type_name -> shinzonetwork.pool.v1.Pool
 	2, // 1: shinzonetwork.pool.v1.GenesisState.hosts:type_name -> shinzonetwork.pool.v1.PoolHostEntry
-	3, // 2: shinzonetwork.pool.v1.GenesisState.indexers:type_name -> shinzonetwork.pool.v1.PoolIndexerEntry
-	4, // 3: shinzonetwork.pool.v1.GenesisState.demands:type_name -> shinzonetwork.pool.v1.PoolDemandEntry
-	4, // [4:4] is the sub-list for method output_type
-	4, // [4:4] is the sub-list for method input_type
-	4, // [4:4] is the sub-list for extension type_name
-	4, // [4:4] is the sub-list for extension extendee
-	0, // [0:4] is the sub-list for field type_name
+	3, // 2: shinzonetwork.pool.v1.GenesisState.demands:type_name -> shinzonetwork.pool.v1.PoolDemandEntry
+	3, // [3:3] is the sub-list for method output_type
+	3, // [3:3] is the sub-list for method input_type
+	3, // [3:3] is the sub-list for extension type_name
+	3, // [3:3] is the sub-list for extension extendee
+	0, // [0:3] is the sub-list for field type_name
 }
 
 func init() { file_shinzonetwork_pool_v1_genesis_proto_init() }

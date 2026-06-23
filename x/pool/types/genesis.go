@@ -2,10 +2,9 @@ package types
 
 func DefaultGenesis() *GenesisState {
 	return &GenesisState{
-		Pools:    []Pool{},
-		Hosts:    []PoolHostEntry{},
-		Indexers: []PoolIndexerEntry{},
-		Demands:  []PoolDemandEntry{},
+		Pools:   []Pool{},
+		Hosts:   []PoolHostEntry{},
+		Demands: []PoolDemandEntry{},
 	}
 }
 

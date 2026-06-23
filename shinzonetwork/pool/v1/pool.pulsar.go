@@ -678,7 +678,7 @@ func (x *_PoolDetail_2_list) IsValid() bool {
 var _ protoreflect.List = (*_PoolDetail_3_list)(nil)
 
 type _PoolDetail_3_list struct {
-	list *[]*PoolIndexerEntry
+	list *[]*PoolDemandEntry
 }
 
 func (x *_PoolDetail_3_list) Len() int {
@@ -694,18 +694,18 @@ func (x *_PoolDetail_3_list) Get(i int) protoreflect.Value {
 
 func (x *_PoolDetail_3_list) Set(i int, value protoreflect.Value) {
 	valueUnwrapped := value.Message()
-	concreteValue := valueUnwrapped.Interface().(*PoolIndexerEntry)
+	concreteValue := valueUnwrapped.Interface().(*PoolDemandEntry)
 	(*x.list)[i] = concreteValue
 }
 
 func (x *_PoolDetail_3_list) Append(value protoreflect.Value) {
 	valueUnwrapped := value.Message()
-	concreteValue := valueUnwrapped.Interface().(*PoolIndexerEntry)
+	concreteValue := valueUnwrapped.Interface().(*PoolDemandEntry)
 	*x.list = append(*x.list, concreteValue)
 }
 
 func (x *_PoolDetail_3_list) AppendMutable() protoreflect.Value {
-	v := new(PoolIndexerEntry)
+	v := new(PoolDemandEntry)
 	*x.list = append(*x.list, v)
 	return protoreflect.ValueOfMessage(v.ProtoReflect())
 }
@@ -718,7 +718,7 @@ func (x *_PoolDetail_3_list) Truncate(n int) {
 }
 
 func (x *_PoolDetail_3_list) NewElement() protoreflect.Value {
-	v := new(PoolIndexerEntry)
+	v := new(PoolDemandEntry)
 	return protoreflect.ValueOfMessage(v.ProtoReflect())
 }
 
@@ -726,63 +726,11 @@ func (x *_PoolDetail_3_list) IsValid() bool {
 	return x.list != nil
 }
 
-var _ protoreflect.List = (*_PoolDetail_4_list)(nil)
-
-type _PoolDetail_4_list struct {
-	list *[]*PoolDemandEntry
-}
-
-func (x *_PoolDetail_4_list) Len() int {
-	if x.list == nil {
-		return 0
-	}
-	return len(*x.list)
-}
-
-func (x *_PoolDetail_4_list) Get(i int) protoreflect.Value {
-	return protoreflect.ValueOfMessage((*x.list)[i].ProtoReflect())
-}
-
-func (x *_PoolDetail_4_list) Set(i int, value protoreflect.Value) {
-	valueUnwrapped := value.Message()
-	concreteValue := valueUnwrapped.Interface().(*PoolDemandEntry)
-	(*x.list)[i] = concreteValue
-}
-
-func (x *_PoolDetail_4_list) Append(value protoreflect.Value) {
-	valueUnwrapped := value.Message()
-	concreteValue := valueUnwrapped.Interface().(*PoolDemandEntry)
-	*x.list = append(*x.list, concreteValue)
-}
-
-func (x *_PoolDetail_4_list) AppendMutable() protoreflect.Value {
-	v := new(PoolDemandEntry)
-	*x.list = append(*x.list, v)
-	return protoreflect.ValueOfMessage(v.ProtoReflect())
-}
-
-func (x *_PoolDetail_4_list) Truncate(n int) {
-	for i := n; i < len(*x.list); i++ {
-		(*x.list)[i] = nil
-	}
-	*x.list = (*x.list)[:n]
-}
-
-func (x *_PoolDetail_4_list) NewElement() protoreflect.Value {
-	v := new(PoolDemandEntry)
-	return protoreflect.ValueOfMessage(v.ProtoReflect())
-}
-
-func (x *_PoolDetail_4_list) IsValid() bool {
-	return x.list != nil
-}
-
 var (
-	md_PoolDetail          protoreflect.MessageDescriptor
-	fd_PoolDetail_pool     protoreflect.FieldDescriptor
-	fd_PoolDetail_hosts    protoreflect.FieldDescriptor
-	fd_PoolDetail_indexers protoreflect.FieldDescriptor
-	fd_PoolDetail_demands  protoreflect.FieldDescriptor
+	md_PoolDetail         protoreflect.MessageDescriptor
+	fd_PoolDetail_pool    protoreflect.FieldDescriptor
+	fd_PoolDetail_hosts   protoreflect.FieldDescriptor
+	fd_PoolDetail_demands protoreflect.FieldDescriptor
 )
 
 func init() {
@@ -790,7 +738,6 @@ func init() {
 	md_PoolDetail = File_shinzonetwork_pool_v1_pool_proto.Messages().ByName("PoolDetail")
 	fd_PoolDetail_pool = md_PoolDetail.Fields().ByName("pool")
 	fd_PoolDetail_hosts = md_PoolDetail.Fields().ByName("hosts")
-	fd_PoolDetail_indexers = md_PoolDetail.Fields().ByName("indexers")
 	fd_PoolDetail_demands = md_PoolDetail.Fields().ByName("demands")
 }
 
@@ -871,14 +818,8 @@ func (x *fastReflection_PoolDetail) Range(f func(protoreflect.FieldDescriptor, p
 			return
 		}
 	}
-	if len(x.Indexers) != 0 {
-		value := protoreflect.ValueOfList(&_PoolDetail_3_list{list: &x.Indexers})
-		if !f(fd_PoolDetail_indexers, value) {
-			return
-		}
-	}
 	if len(x.Demands) != 0 {
-		value := protoreflect.ValueOfList(&_PoolDetail_4_list{list: &x.Demands})
+		value := protoreflect.ValueOfList(&_PoolDetail_3_list{list: &x.Demands})
 		if !f(fd_PoolDetail_demands, value) {
 			return
 		}
@@ -902,8 +843,6 @@ func (x *fastReflection_PoolDetail) Has(fd protoreflect.FieldDescriptor) bool {
 		return x.Pool != nil
 	case "shinzonetwork.pool.v1.PoolDetail.hosts":
 		return len(x.Hosts) != 0
-	case "shinzonetwork.pool.v1.PoolDetail.indexers":
-		return len(x.Indexers) != 0
 	case "shinzonetwork.pool.v1.PoolDetail.demands":
 		return len(x.Demands) != 0
 	default:
@@ -926,8 +865,6 @@ func (x *fastReflection_PoolDetail) Clear(fd protoreflect.FieldDescriptor) {
 		x.Pool = nil
 	case "shinzonetwork.pool.v1.PoolDetail.hosts":
 		x.Hosts = nil
-	case "shinzonetwork.pool.v1.PoolDetail.indexers":
-		x.Indexers = nil
 	case "shinzonetwork.pool.v1.PoolDetail.demands":
 		x.Demands = nil
 	default:
@@ -955,17 +892,11 @@ func (x *fastReflection_PoolDetail) Get(descriptor protoreflect.FieldDescriptor)
 		}
 		listValue := &_PoolDetail_2_list{list: &x.Hosts}
 		return protoreflect.ValueOfList(listValue)
-	case "shinzonetwork.pool.v1.PoolDetail.indexers":
-		if len(x.Indexers) == 0 {
-			return protoreflect.ValueOfList(&_PoolDetail_3_list{})
-		}
-		listValue := &_PoolDetail_3_list{list: &x.Indexers}
-		return protoreflect.ValueOfList(listValue)
 	case "shinzonetwork.pool.v1.PoolDetail.demands":
 		if len(x.Demands) == 0 {
-			return protoreflect.ValueOfList(&_PoolDetail_4_list{})
+			return protoreflect.ValueOfList(&_PoolDetail_3_list{})
 		}
-		listValue := &_PoolDetail_4_list{list: &x.Demands}
+		listValue := &_PoolDetail_3_list{list: &x.Demands}
 		return protoreflect.ValueOfList(listValue)
 	default:
 		if descriptor.IsExtension() {
@@ -993,13 +924,9 @@ func (x *fastReflection_PoolDetail) Set(fd protoreflect.FieldDescriptor, value p
 		lv := value.List()
 		clv := lv.(*_PoolDetail_2_list)
 		x.Hosts = *clv.list
-	case "shinzonetwork.pool.v1.PoolDetail.indexers":
-		lv := value.List()
-		clv := lv.(*_PoolDetail_3_list)
-		x.Indexers = *clv.list
 	case "shinzonetwork.pool.v1.PoolDetail.demands":
 		lv := value.List()
-		clv := lv.(*_PoolDetail_4_list)
+		clv := lv.(*_PoolDetail_3_list)
 		x.Demands = *clv.list
 	default:
 		if fd.IsExtension() {
@@ -1032,17 +959,11 @@ func (x *fastReflection_PoolDetail) Mutable(fd protoreflect.FieldDescriptor) pro
 		}
 		value := &_PoolDetail_2_list{list: &x.Hosts}
 		return protoreflect.ValueOfList(value)
-	case "shinzonetwork.pool.v1.PoolDetail.indexers":
-		if x.Indexers == nil {
-			x.Indexers = []*PoolIndexerEntry{}
-		}
-		value := &_PoolDetail_3_list{list: &x.Indexers}
-		return protoreflect.ValueOfList(value)
 	case "shinzonetwork.pool.v1.PoolDetail.demands":
 		if x.Demands == nil {
 			x.Demands = []*PoolDemandEntry{}
 		}
-		value := &_PoolDetail_4_list{list: &x.Demands}
+		value := &_PoolDetail_3_list{list: &x.Demands}
 		return protoreflect.ValueOfList(value)
 	default:
 		if fd.IsExtension() {
@@ -1063,12 +984,9 @@ func (x *fastReflection_PoolDetail) NewField(fd protoreflect.FieldDescriptor) pr
 	case "shinzonetwork.pool.v1.PoolDetail.hosts":
 		list := []*PoolHostEntry{}
 		return protoreflect.ValueOfList(&_PoolDetail_2_list{list: &list})
-	case "shinzonetwork.pool.v1.PoolDetail.indexers":
-		list := []*PoolIndexerEntry{}
-		return protoreflect.ValueOfList(&_PoolDetail_3_list{list: &list})
 	case "shinzonetwork.pool.v1.PoolDetail.demands":
 		list := []*PoolDemandEntry{}
-		return protoreflect.ValueOfList(&_PoolDetail_4_list{list: &list})
+		return protoreflect.ValueOfList(&_PoolDetail_3_list{list: &list})
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: shinzonetwork.pool.v1.PoolDetail"))
@@ -1148,12 +1066,6 @@ func (x *fastReflection_PoolDetail) ProtoMethods() *protoiface.Methods {
 				n += 1 + l + runtime.Sov(uint64(l))
 			}
 		}
-		if len(x.Indexers) > 0 {
-			for _, e := range x.Indexers {
-				l = options.Size(e)
-				n += 1 + l + runtime.Sov(uint64(l))
-			}
-		}
 		if len(x.Demands) > 0 {
 			for _, e := range x.Demands {
 				l = options.Size(e)
@@ -1192,22 +1104,6 @@ func (x *fastReflection_PoolDetail) ProtoMethods() *protoiface.Methods {
 		if len(x.Demands) > 0 {
 			for iNdEx := len(x.Demands) - 1; iNdEx >= 0; iNdEx-- {
 				encoded, err := options.Marshal(x.Demands[iNdEx])
-				if err != nil {
-					return protoiface.MarshalOutput{
-						NoUnkeyedLiterals: input.NoUnkeyedLiterals,
-						Buf:               input.Buf,
-					}, err
-				}
-				i -= len(encoded)
-				copy(dAtA[i:], encoded)
-				i = runtime.EncodeVarint(dAtA, i, uint64(len(encoded)))
-				i--
-				dAtA[i] = 0x22
-			}
-		}
-		if len(x.Indexers) > 0 {
-			for iNdEx := len(x.Indexers) - 1; iNdEx >= 0; iNdEx-- {
-				encoded, err := options.Marshal(x.Indexers[iNdEx])
 				if err != nil {
 					return protoiface.MarshalOutput{
 						NoUnkeyedLiterals: input.NoUnkeyedLiterals,
@@ -1371,40 +1267,6 @@ func (x *fastReflection_PoolDetail) ProtoMethods() *protoiface.Methods {
 				}
 				iNdEx = postIndex
 			case 3:
-				if wireType != 2 {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field Indexers", wireType)
-				}
-				var msglen int
-				for shift := uint(0); ; shift += 7 {
-					if shift >= 64 {
-						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
-					}
-					if iNdEx >= l {
-						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
-					}
-					b := dAtA[iNdEx]
-					iNdEx++
-					msglen |= int(b&0x7F) << shift
-					if b < 0x80 {
-						break
-					}
-				}
-				if msglen < 0 {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
-				}
-				postIndex := iNdEx + msglen
-				if postIndex < 0 {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
-				}
-				if postIndex > l {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
-				}
-				x.Indexers = append(x.Indexers, &PoolIndexerEntry{})
-				if err := options.Unmarshal(dAtA[iNdEx:postIndex], x.Indexers[len(x.Indexers)-1]); err != nil {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, err
-				}
-				iNdEx = postIndex
-			case 4:
 				if wireType != 2 {
 					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field Demands", wireType)
 				}
@@ -1879,14 +1741,12 @@ func (x *fastReflection_PoolConfig) ProtoMethods() *protoiface.Methods {
 
 var (
 	md_PoolHost           protoreflect.MessageDescriptor
-	fd_PoolHost_ask       protoreflect.FieldDescriptor
 	fd_PoolHost_joined_at protoreflect.FieldDescriptor
 )
 
 func init() {
 	file_shinzonetwork_pool_v1_pool_proto_init()
 	md_PoolHost = File_shinzonetwork_pool_v1_pool_proto.Messages().ByName("PoolHost")
-	fd_PoolHost_ask = md_PoolHost.Fields().ByName("ask")
 	fd_PoolHost_joined_at = md_PoolHost.Fields().ByName("joined_at")
 }
 
@@ -1955,12 +1815,6 @@ func (x *fastReflection_PoolHost) Interface() protoreflect.ProtoMessage {
 // While iterating, mutating operations may only be performed
 // on the current field descriptor.
 func (x *fastReflection_PoolHost) Range(f func(protoreflect.FieldDescriptor, protoreflect.Value) bool) {
-	if x.Ask != "" {
-		value := protoreflect.ValueOfString(x.Ask)
-		if !f(fd_PoolHost_ask, value) {
-			return
-		}
-	}
 	if x.JoinedAt != int64(0) {
 		value := protoreflect.ValueOfInt64(x.JoinedAt)
 		if !f(fd_PoolHost_joined_at, value) {
@@ -1982,8 +1836,6 @@ func (x *fastReflection_PoolHost) Range(f func(protoreflect.FieldDescriptor, pro
 // a repeated field is populated if it is non-empty.
 func (x *fastReflection_PoolHost) Has(fd protoreflect.FieldDescriptor) bool {
 	switch fd.FullName() {
-	case "shinzonetwork.pool.v1.PoolHost.ask":
-		return x.Ask != ""
 	case "shinzonetwork.pool.v1.PoolHost.joined_at":
 		return x.JoinedAt != int64(0)
 	default:
@@ -2002,8 +1854,6 @@ func (x *fastReflection_PoolHost) Has(fd protoreflect.FieldDescriptor) bool {
 // Clear is a mutating operation and unsafe for concurrent use.
 func (x *fastReflection_PoolHost) Clear(fd protoreflect.FieldDescriptor) {
 	switch fd.FullName() {
-	case "shinzonetwork.pool.v1.PoolHost.ask":
-		x.Ask = ""
 	case "shinzonetwork.pool.v1.PoolHost.joined_at":
 		x.JoinedAt = int64(0)
 	default:
@@ -2022,9 +1872,6 @@ func (x *fastReflection_PoolHost) Clear(fd protoreflect.FieldDescriptor) {
 // of the value; to obtain a mutable reference, use Mutable.
 func (x *fastReflection_PoolHost) Get(descriptor protoreflect.FieldDescriptor) protoreflect.Value {
 	switch descriptor.FullName() {
-	case "shinzonetwork.pool.v1.PoolHost.ask":
-		value := x.Ask
-		return protoreflect.ValueOfString(value)
 	case "shinzonetwork.pool.v1.PoolHost.joined_at":
 		value := x.JoinedAt
 		return protoreflect.ValueOfInt64(value)
@@ -2048,8 +1895,6 @@ func (x *fastReflection_PoolHost) Get(descriptor protoreflect.FieldDescriptor) p
 // Set is a mutating operation and unsafe for concurrent use.
 func (x *fastReflection_PoolHost) Set(fd protoreflect.FieldDescriptor, value protoreflect.Value) {
 	switch fd.FullName() {
-	case "shinzonetwork.pool.v1.PoolHost.ask":
-		x.Ask = value.Interface().(string)
 	case "shinzonetwork.pool.v1.PoolHost.joined_at":
 		x.JoinedAt = value.Int()
 	default:
@@ -2072,8 +1917,6 @@ func (x *fastReflection_PoolHost) Set(fd protoreflect.FieldDescriptor, value pro
 // Mutable is a mutating operation and unsafe for concurrent use.
 func (x *fastReflection_PoolHost) Mutable(fd protoreflect.FieldDescriptor) protoreflect.Value {
 	switch fd.FullName() {
-	case "shinzonetwork.pool.v1.PoolHost.ask":
-		panic(fmt.Errorf("field ask of message shinzonetwork.pool.v1.PoolHost is not mutable"))
 	case "shinzonetwork.pool.v1.PoolHost.joined_at":
 		panic(fmt.Errorf("field joined_at of message shinzonetwork.pool.v1.PoolHost is not mutable"))
 	default:
@@ -2089,8 +1932,6 @@ func (x *fastReflection_PoolHost) Mutable(fd protoreflect.FieldDescriptor) proto
 // For lists, maps, and messages, this returns a new, empty, mutable value.
 func (x *fastReflection_PoolHost) NewField(fd protoreflect.FieldDescriptor) protoreflect.Value {
 	switch fd.FullName() {
-	case "shinzonetwork.pool.v1.PoolHost.ask":
-		return protoreflect.ValueOfString("")
 	case "shinzonetwork.pool.v1.PoolHost.joined_at":
 		return protoreflect.ValueOfInt64(int64(0))
 	default:
@@ -2162,10 +2003,6 @@ func (x *fastReflection_PoolHost) ProtoMethods() *protoiface.Methods {
 		var n int
 		var l int
 		_ = l
-		l = len(x.Ask)
-		if l > 0 {
-			n += 1 + l + runtime.Sov(uint64(l))
-		}
 		if x.JoinedAt != 0 {
 			n += 1 + runtime.Sov(uint64(x.JoinedAt))
 		}
@@ -2201,14 +2038,7 @@ func (x *fastReflection_PoolHost) ProtoMethods() *protoiface.Methods {
 		if x.JoinedAt != 0 {
 			i = runtime.EncodeVarint(dAtA, i, uint64(x.JoinedAt))
 			i--
-			dAtA[i] = 0x10
-		}
-		if len(x.Ask) > 0 {
-			i -= len(x.Ask)
-			copy(dAtA[i:], x.Ask)
-			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.Ask)))
-			i--
-			dAtA[i] = 0xa
+			dAtA[i] = 0x8
 		}
 		if input.Buf != nil {
 			input.Buf = append(input.Buf, dAtA...)
@@ -2257,442 +2087,6 @@ func (x *fastReflection_PoolHost) ProtoMethods() *protoiface.Methods {
 			}
 			if fieldNum <= 0 {
 				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: PoolHost: illegal tag %d (wire type %d)", fieldNum, wire)
-			}
-			switch fieldNum {
-			case 1:
-				if wireType != 2 {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field Ask", wireType)
-				}
-				var stringLen uint64
-				for shift := uint(0); ; shift += 7 {
-					if shift >= 64 {
-						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
-					}
-					if iNdEx >= l {
-						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
-					}
-					b := dAtA[iNdEx]
-					iNdEx++
-					stringLen |= uint64(b&0x7F) << shift
-					if b < 0x80 {
-						break
-					}
-				}
-				intStringLen := int(stringLen)
-				if intStringLen < 0 {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
-				}
-				postIndex := iNdEx + intStringLen
-				if postIndex < 0 {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
-				}
-				if postIndex > l {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
-				}
-				x.Ask = string(dAtA[iNdEx:postIndex])
-				iNdEx = postIndex
-			case 2:
-				if wireType != 0 {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field JoinedAt", wireType)
-				}
-				x.JoinedAt = 0
-				for shift := uint(0); ; shift += 7 {
-					if shift >= 64 {
-						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
-					}
-					if iNdEx >= l {
-						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
-					}
-					b := dAtA[iNdEx]
-					iNdEx++
-					x.JoinedAt |= int64(b&0x7F) << shift
-					if b < 0x80 {
-						break
-					}
-				}
-			default:
-				iNdEx = preIndex
-				skippy, err := runtime.Skip(dAtA[iNdEx:])
-				if err != nil {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, err
-				}
-				if (skippy < 0) || (iNdEx+skippy) < 0 {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
-				}
-				if (iNdEx + skippy) > l {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
-				}
-				if !options.DiscardUnknown {
-					x.unknownFields = append(x.unknownFields, dAtA[iNdEx:iNdEx+skippy]...)
-				}
-				iNdEx += skippy
-			}
-		}
-
-		if iNdEx > l {
-			return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
-		}
-		return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, nil
-	}
-	return &protoiface.Methods{
-		NoUnkeyedLiterals: struct{}{},
-		Flags:             protoiface.SupportMarshalDeterministic | protoiface.SupportUnmarshalDiscardUnknown,
-		Size:              size,
-		Marshal:           marshal,
-		Unmarshal:         unmarshal,
-		Merge:             nil,
-		CheckInitialized:  nil,
-	}
-}
-
-var (
-	md_PoolIndexer           protoreflect.MessageDescriptor
-	fd_PoolIndexer_joined_at protoreflect.FieldDescriptor
-)
-
-func init() {
-	file_shinzonetwork_pool_v1_pool_proto_init()
-	md_PoolIndexer = File_shinzonetwork_pool_v1_pool_proto.Messages().ByName("PoolIndexer")
-	fd_PoolIndexer_joined_at = md_PoolIndexer.Fields().ByName("joined_at")
-}
-
-var _ protoreflect.Message = (*fastReflection_PoolIndexer)(nil)
-
-type fastReflection_PoolIndexer PoolIndexer
-
-func (x *PoolIndexer) ProtoReflect() protoreflect.Message {
-	return (*fastReflection_PoolIndexer)(x)
-}
-
-func (x *PoolIndexer) slowProtoReflect() protoreflect.Message {
-	mi := &file_shinzonetwork_pool_v1_pool_proto_msgTypes[4]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-var _fastReflection_PoolIndexer_messageType fastReflection_PoolIndexer_messageType
-var _ protoreflect.MessageType = fastReflection_PoolIndexer_messageType{}
-
-type fastReflection_PoolIndexer_messageType struct{}
-
-func (x fastReflection_PoolIndexer_messageType) Zero() protoreflect.Message {
-	return (*fastReflection_PoolIndexer)(nil)
-}
-func (x fastReflection_PoolIndexer_messageType) New() protoreflect.Message {
-	return new(fastReflection_PoolIndexer)
-}
-func (x fastReflection_PoolIndexer_messageType) Descriptor() protoreflect.MessageDescriptor {
-	return md_PoolIndexer
-}
-
-// Descriptor returns message descriptor, which contains only the protobuf
-// type information for the message.
-func (x *fastReflection_PoolIndexer) Descriptor() protoreflect.MessageDescriptor {
-	return md_PoolIndexer
-}
-
-// Type returns the message type, which encapsulates both Go and protobuf
-// type information. If the Go type information is not needed,
-// it is recommended that the message descriptor be used instead.
-func (x *fastReflection_PoolIndexer) Type() protoreflect.MessageType {
-	return _fastReflection_PoolIndexer_messageType
-}
-
-// New returns a newly allocated and mutable empty message.
-func (x *fastReflection_PoolIndexer) New() protoreflect.Message {
-	return new(fastReflection_PoolIndexer)
-}
-
-// Interface unwraps the message reflection interface and
-// returns the underlying ProtoMessage interface.
-func (x *fastReflection_PoolIndexer) Interface() protoreflect.ProtoMessage {
-	return (*PoolIndexer)(x)
-}
-
-// Range iterates over every populated field in an undefined order,
-// calling f for each field descriptor and value encountered.
-// Range returns immediately if f returns false.
-// While iterating, mutating operations may only be performed
-// on the current field descriptor.
-func (x *fastReflection_PoolIndexer) Range(f func(protoreflect.FieldDescriptor, protoreflect.Value) bool) {
-	if x.JoinedAt != int64(0) {
-		value := protoreflect.ValueOfInt64(x.JoinedAt)
-		if !f(fd_PoolIndexer_joined_at, value) {
-			return
-		}
-	}
-}
-
-// Has reports whether a field is populated.
-//
-// Some fields have the property of nullability where it is possible to
-// distinguish between the default value of a field and whether the field
-// was explicitly populated with the default value. Singular message fields,
-// member fields of a oneof, and proto2 scalar fields are nullable. Such
-// fields are populated only if explicitly set.
-//
-// In other cases (aside from the nullable cases above),
-// a proto3 scalar field is populated if it contains a non-zero value, and
-// a repeated field is populated if it is non-empty.
-func (x *fastReflection_PoolIndexer) Has(fd protoreflect.FieldDescriptor) bool {
-	switch fd.FullName() {
-	case "shinzonetwork.pool.v1.PoolIndexer.joined_at":
-		return x.JoinedAt != int64(0)
-	default:
-		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: shinzonetwork.pool.v1.PoolIndexer"))
-		}
-		panic(fmt.Errorf("message shinzonetwork.pool.v1.PoolIndexer does not contain field %s", fd.FullName()))
-	}
-}
-
-// Clear clears the field such that a subsequent Has call reports false.
-//
-// Clearing an extension field clears both the extension type and value
-// associated with the given field number.
-//
-// Clear is a mutating operation and unsafe for concurrent use.
-func (x *fastReflection_PoolIndexer) Clear(fd protoreflect.FieldDescriptor) {
-	switch fd.FullName() {
-	case "shinzonetwork.pool.v1.PoolIndexer.joined_at":
-		x.JoinedAt = int64(0)
-	default:
-		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: shinzonetwork.pool.v1.PoolIndexer"))
-		}
-		panic(fmt.Errorf("message shinzonetwork.pool.v1.PoolIndexer does not contain field %s", fd.FullName()))
-	}
-}
-
-// Get retrieves the value for a field.
-//
-// For unpopulated scalars, it returns the default value, where
-// the default value of a bytes scalar is guaranteed to be a copy.
-// For unpopulated composite types, it returns an empty, read-only view
-// of the value; to obtain a mutable reference, use Mutable.
-func (x *fastReflection_PoolIndexer) Get(descriptor protoreflect.FieldDescriptor) protoreflect.Value {
-	switch descriptor.FullName() {
-	case "shinzonetwork.pool.v1.PoolIndexer.joined_at":
-		value := x.JoinedAt
-		return protoreflect.ValueOfInt64(value)
-	default:
-		if descriptor.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: shinzonetwork.pool.v1.PoolIndexer"))
-		}
-		panic(fmt.Errorf("message shinzonetwork.pool.v1.PoolIndexer does not contain field %s", descriptor.FullName()))
-	}
-}
-
-// Set stores the value for a field.
-//
-// For a field belonging to a oneof, it implicitly clears any other field
-// that may be currently set within the same oneof.
-// For extension fields, it implicitly stores the provided ExtensionType.
-// When setting a composite type, it is unspecified whether the stored value
-// aliases the source's memory in any way. If the composite value is an
-// empty, read-only value, then it panics.
-//
-// Set is a mutating operation and unsafe for concurrent use.
-func (x *fastReflection_PoolIndexer) Set(fd protoreflect.FieldDescriptor, value protoreflect.Value) {
-	switch fd.FullName() {
-	case "shinzonetwork.pool.v1.PoolIndexer.joined_at":
-		x.JoinedAt = value.Int()
-	default:
-		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: shinzonetwork.pool.v1.PoolIndexer"))
-		}
-		panic(fmt.Errorf("message shinzonetwork.pool.v1.PoolIndexer does not contain field %s", fd.FullName()))
-	}
-}
-
-// Mutable returns a mutable reference to a composite type.
-//
-// If the field is unpopulated, it may allocate a composite value.
-// For a field belonging to a oneof, it implicitly clears any other field
-// that may be currently set within the same oneof.
-// For extension fields, it implicitly stores the provided ExtensionType
-// if not already stored.
-// It panics if the field does not contain a composite type.
-//
-// Mutable is a mutating operation and unsafe for concurrent use.
-func (x *fastReflection_PoolIndexer) Mutable(fd protoreflect.FieldDescriptor) protoreflect.Value {
-	switch fd.FullName() {
-	case "shinzonetwork.pool.v1.PoolIndexer.joined_at":
-		panic(fmt.Errorf("field joined_at of message shinzonetwork.pool.v1.PoolIndexer is not mutable"))
-	default:
-		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: shinzonetwork.pool.v1.PoolIndexer"))
-		}
-		panic(fmt.Errorf("message shinzonetwork.pool.v1.PoolIndexer does not contain field %s", fd.FullName()))
-	}
-}
-
-// NewField returns a new value that is assignable to the field
-// for the given descriptor. For scalars, this returns the default value.
-// For lists, maps, and messages, this returns a new, empty, mutable value.
-func (x *fastReflection_PoolIndexer) NewField(fd protoreflect.FieldDescriptor) protoreflect.Value {
-	switch fd.FullName() {
-	case "shinzonetwork.pool.v1.PoolIndexer.joined_at":
-		return protoreflect.ValueOfInt64(int64(0))
-	default:
-		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: shinzonetwork.pool.v1.PoolIndexer"))
-		}
-		panic(fmt.Errorf("message shinzonetwork.pool.v1.PoolIndexer does not contain field %s", fd.FullName()))
-	}
-}
-
-// WhichOneof reports which field within the oneof is populated,
-// returning nil if none are populated.
-// It panics if the oneof descriptor does not belong to this message.
-func (x *fastReflection_PoolIndexer) WhichOneof(d protoreflect.OneofDescriptor) protoreflect.FieldDescriptor {
-	switch d.FullName() {
-	default:
-		panic(fmt.Errorf("%s is not a oneof field in shinzonetwork.pool.v1.PoolIndexer", d.FullName()))
-	}
-	panic("unreachable")
-}
-
-// GetUnknown retrieves the entire list of unknown fields.
-// The caller may only mutate the contents of the RawFields
-// if the mutated bytes are stored back into the message with SetUnknown.
-func (x *fastReflection_PoolIndexer) GetUnknown() protoreflect.RawFields {
-	return x.unknownFields
-}
-
-// SetUnknown stores an entire list of unknown fields.
-// The raw fields must be syntactically valid according to the wire format.
-// An implementation may panic if this is not the case.
-// Once stored, the caller must not mutate the content of the RawFields.
-// An empty RawFields may be passed to clear the fields.
-//
-// SetUnknown is a mutating operation and unsafe for concurrent use.
-func (x *fastReflection_PoolIndexer) SetUnknown(fields protoreflect.RawFields) {
-	x.unknownFields = fields
-}
-
-// IsValid reports whether the message is valid.
-//
-// An invalid message is an empty, read-only value.
-//
-// An invalid message often corresponds to a nil pointer of the concrete
-// message type, but the details are implementation dependent.
-// Validity is not part of the protobuf data model, and may not
-// be preserved in marshaling or other operations.
-func (x *fastReflection_PoolIndexer) IsValid() bool {
-	return x != nil
-}
-
-// ProtoMethods returns optional fastReflectionFeature-path implementations of various operations.
-// This method may return nil.
-//
-// The returned methods type is identical to
-// "google.golang.org/protobuf/runtime/protoiface".Methods.
-// Consult the protoiface package documentation for details.
-func (x *fastReflection_PoolIndexer) ProtoMethods() *protoiface.Methods {
-	size := func(input protoiface.SizeInput) protoiface.SizeOutput {
-		x := input.Message.Interface().(*PoolIndexer)
-		if x == nil {
-			return protoiface.SizeOutput{
-				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
-				Size:              0,
-			}
-		}
-		options := runtime.SizeInputToOptions(input)
-		_ = options
-		var n int
-		var l int
-		_ = l
-		if x.JoinedAt != 0 {
-			n += 1 + runtime.Sov(uint64(x.JoinedAt))
-		}
-		if x.unknownFields != nil {
-			n += len(x.unknownFields)
-		}
-		return protoiface.SizeOutput{
-			NoUnkeyedLiterals: input.NoUnkeyedLiterals,
-			Size:              n,
-		}
-	}
-
-	marshal := func(input protoiface.MarshalInput) (protoiface.MarshalOutput, error) {
-		x := input.Message.Interface().(*PoolIndexer)
-		if x == nil {
-			return protoiface.MarshalOutput{
-				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
-				Buf:               input.Buf,
-			}, nil
-		}
-		options := runtime.MarshalInputToOptions(input)
-		_ = options
-		size := options.Size(x)
-		dAtA := make([]byte, size)
-		i := len(dAtA)
-		_ = i
-		var l int
-		_ = l
-		if x.unknownFields != nil {
-			i -= len(x.unknownFields)
-			copy(dAtA[i:], x.unknownFields)
-		}
-		if x.JoinedAt != 0 {
-			i = runtime.EncodeVarint(dAtA, i, uint64(x.JoinedAt))
-			i--
-			dAtA[i] = 0x8
-		}
-		if input.Buf != nil {
-			input.Buf = append(input.Buf, dAtA...)
-		} else {
-			input.Buf = dAtA
-		}
-		return protoiface.MarshalOutput{
-			NoUnkeyedLiterals: input.NoUnkeyedLiterals,
-			Buf:               input.Buf,
-		}, nil
-	}
-	unmarshal := func(input protoiface.UnmarshalInput) (protoiface.UnmarshalOutput, error) {
-		x := input.Message.Interface().(*PoolIndexer)
-		if x == nil {
-			return protoiface.UnmarshalOutput{
-				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
-				Flags:             input.Flags,
-			}, nil
-		}
-		options := runtime.UnmarshalInputToOptions(input)
-		_ = options
-		dAtA := input.Buf
-		l := len(dAtA)
-		iNdEx := 0
-		for iNdEx < l {
-			preIndex := iNdEx
-			var wire uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
-				}
-				if iNdEx >= l {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				wire |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			fieldNum := int32(wire >> 3)
-			wireType := int(wire & 0x7)
-			if wireType == 4 {
-				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: PoolIndexer: wiretype end group for non-group")
-			}
-			if fieldNum <= 0 {
-				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: PoolIndexer: illegal tag %d (wire type %d)", fieldNum, wire)
 			}
 			switch fieldNum {
 			case 1:
@@ -2775,7 +2169,7 @@ func (x *PoolDemand) ProtoReflect() protoreflect.Message {
 }
 
 func (x *PoolDemand) slowProtoReflect() protoreflect.Message {
-	mi := &file_shinzonetwork_pool_v1_pool_proto_msgTypes[5]
+	mi := &file_shinzonetwork_pool_v1_pool_proto_msgTypes[4]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3359,7 +2753,7 @@ func (x *PoolHostEntry) ProtoReflect() protoreflect.Message {
 }
 
 func (x *PoolHostEntry) slowProtoReflect() protoreflect.Message {
-	mi := &file_shinzonetwork_pool_v1_pool_proto_msgTypes[6]
+	mi := &file_shinzonetwork_pool_v1_pool_proto_msgTypes[5]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3899,569 +3293,6 @@ func (x *fastReflection_PoolHostEntry) ProtoMethods() *protoiface.Methods {
 }
 
 var (
-	md_PoolIndexerEntry                 protoreflect.MessageDescriptor
-	fd_PoolIndexerEntry_pool_address    protoreflect.FieldDescriptor
-	fd_PoolIndexerEntry_indexer_address protoreflect.FieldDescriptor
-	fd_PoolIndexerEntry_indexer         protoreflect.FieldDescriptor
-)
-
-func init() {
-	file_shinzonetwork_pool_v1_pool_proto_init()
-	md_PoolIndexerEntry = File_shinzonetwork_pool_v1_pool_proto.Messages().ByName("PoolIndexerEntry")
-	fd_PoolIndexerEntry_pool_address = md_PoolIndexerEntry.Fields().ByName("pool_address")
-	fd_PoolIndexerEntry_indexer_address = md_PoolIndexerEntry.Fields().ByName("indexer_address")
-	fd_PoolIndexerEntry_indexer = md_PoolIndexerEntry.Fields().ByName("indexer")
-}
-
-var _ protoreflect.Message = (*fastReflection_PoolIndexerEntry)(nil)
-
-type fastReflection_PoolIndexerEntry PoolIndexerEntry
-
-func (x *PoolIndexerEntry) ProtoReflect() protoreflect.Message {
-	return (*fastReflection_PoolIndexerEntry)(x)
-}
-
-func (x *PoolIndexerEntry) slowProtoReflect() protoreflect.Message {
-	mi := &file_shinzonetwork_pool_v1_pool_proto_msgTypes[7]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-var _fastReflection_PoolIndexerEntry_messageType fastReflection_PoolIndexerEntry_messageType
-var _ protoreflect.MessageType = fastReflection_PoolIndexerEntry_messageType{}
-
-type fastReflection_PoolIndexerEntry_messageType struct{}
-
-func (x fastReflection_PoolIndexerEntry_messageType) Zero() protoreflect.Message {
-	return (*fastReflection_PoolIndexerEntry)(nil)
-}
-func (x fastReflection_PoolIndexerEntry_messageType) New() protoreflect.Message {
-	return new(fastReflection_PoolIndexerEntry)
-}
-func (x fastReflection_PoolIndexerEntry_messageType) Descriptor() protoreflect.MessageDescriptor {
-	return md_PoolIndexerEntry
-}
-
-// Descriptor returns message descriptor, which contains only the protobuf
-// type information for the message.
-func (x *fastReflection_PoolIndexerEntry) Descriptor() protoreflect.MessageDescriptor {
-	return md_PoolIndexerEntry
-}
-
-// Type returns the message type, which encapsulates both Go and protobuf
-// type information. If the Go type information is not needed,
-// it is recommended that the message descriptor be used instead.
-func (x *fastReflection_PoolIndexerEntry) Type() protoreflect.MessageType {
-	return _fastReflection_PoolIndexerEntry_messageType
-}
-
-// New returns a newly allocated and mutable empty message.
-func (x *fastReflection_PoolIndexerEntry) New() protoreflect.Message {
-	return new(fastReflection_PoolIndexerEntry)
-}
-
-// Interface unwraps the message reflection interface and
-// returns the underlying ProtoMessage interface.
-func (x *fastReflection_PoolIndexerEntry) Interface() protoreflect.ProtoMessage {
-	return (*PoolIndexerEntry)(x)
-}
-
-// Range iterates over every populated field in an undefined order,
-// calling f for each field descriptor and value encountered.
-// Range returns immediately if f returns false.
-// While iterating, mutating operations may only be performed
-// on the current field descriptor.
-func (x *fastReflection_PoolIndexerEntry) Range(f func(protoreflect.FieldDescriptor, protoreflect.Value) bool) {
-	if x.PoolAddress != "" {
-		value := protoreflect.ValueOfString(x.PoolAddress)
-		if !f(fd_PoolIndexerEntry_pool_address, value) {
-			return
-		}
-	}
-	if x.IndexerAddress != "" {
-		value := protoreflect.ValueOfString(x.IndexerAddress)
-		if !f(fd_PoolIndexerEntry_indexer_address, value) {
-			return
-		}
-	}
-	if x.Indexer != nil {
-		value := protoreflect.ValueOfMessage(x.Indexer.ProtoReflect())
-		if !f(fd_PoolIndexerEntry_indexer, value) {
-			return
-		}
-	}
-}
-
-// Has reports whether a field is populated.
-//
-// Some fields have the property of nullability where it is possible to
-// distinguish between the default value of a field and whether the field
-// was explicitly populated with the default value. Singular message fields,
-// member fields of a oneof, and proto2 scalar fields are nullable. Such
-// fields are populated only if explicitly set.
-//
-// In other cases (aside from the nullable cases above),
-// a proto3 scalar field is populated if it contains a non-zero value, and
-// a repeated field is populated if it is non-empty.
-func (x *fastReflection_PoolIndexerEntry) Has(fd protoreflect.FieldDescriptor) bool {
-	switch fd.FullName() {
-	case "shinzonetwork.pool.v1.PoolIndexerEntry.pool_address":
-		return x.PoolAddress != ""
-	case "shinzonetwork.pool.v1.PoolIndexerEntry.indexer_address":
-		return x.IndexerAddress != ""
-	case "shinzonetwork.pool.v1.PoolIndexerEntry.indexer":
-		return x.Indexer != nil
-	default:
-		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: shinzonetwork.pool.v1.PoolIndexerEntry"))
-		}
-		panic(fmt.Errorf("message shinzonetwork.pool.v1.PoolIndexerEntry does not contain field %s", fd.FullName()))
-	}
-}
-
-// Clear clears the field such that a subsequent Has call reports false.
-//
-// Clearing an extension field clears both the extension type and value
-// associated with the given field number.
-//
-// Clear is a mutating operation and unsafe for concurrent use.
-func (x *fastReflection_PoolIndexerEntry) Clear(fd protoreflect.FieldDescriptor) {
-	switch fd.FullName() {
-	case "shinzonetwork.pool.v1.PoolIndexerEntry.pool_address":
-		x.PoolAddress = ""
-	case "shinzonetwork.pool.v1.PoolIndexerEntry.indexer_address":
-		x.IndexerAddress = ""
-	case "shinzonetwork.pool.v1.PoolIndexerEntry.indexer":
-		x.Indexer = nil
-	default:
-		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: shinzonetwork.pool.v1.PoolIndexerEntry"))
-		}
-		panic(fmt.Errorf("message shinzonetwork.pool.v1.PoolIndexerEntry does not contain field %s", fd.FullName()))
-	}
-}
-
-// Get retrieves the value for a field.
-//
-// For unpopulated scalars, it returns the default value, where
-// the default value of a bytes scalar is guaranteed to be a copy.
-// For unpopulated composite types, it returns an empty, read-only view
-// of the value; to obtain a mutable reference, use Mutable.
-func (x *fastReflection_PoolIndexerEntry) Get(descriptor protoreflect.FieldDescriptor) protoreflect.Value {
-	switch descriptor.FullName() {
-	case "shinzonetwork.pool.v1.PoolIndexerEntry.pool_address":
-		value := x.PoolAddress
-		return protoreflect.ValueOfString(value)
-	case "shinzonetwork.pool.v1.PoolIndexerEntry.indexer_address":
-		value := x.IndexerAddress
-		return protoreflect.ValueOfString(value)
-	case "shinzonetwork.pool.v1.PoolIndexerEntry.indexer":
-		value := x.Indexer
-		return protoreflect.ValueOfMessage(value.ProtoReflect())
-	default:
-		if descriptor.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: shinzonetwork.pool.v1.PoolIndexerEntry"))
-		}
-		panic(fmt.Errorf("message shinzonetwork.pool.v1.PoolIndexerEntry does not contain field %s", descriptor.FullName()))
-	}
-}
-
-// Set stores the value for a field.
-//
-// For a field belonging to a oneof, it implicitly clears any other field
-// that may be currently set within the same oneof.
-// For extension fields, it implicitly stores the provided ExtensionType.
-// When setting a composite type, it is unspecified whether the stored value
-// aliases the source's memory in any way. If the composite value is an
-// empty, read-only value, then it panics.
-//
-// Set is a mutating operation and unsafe for concurrent use.
-func (x *fastReflection_PoolIndexerEntry) Set(fd protoreflect.FieldDescriptor, value protoreflect.Value) {
-	switch fd.FullName() {
-	case "shinzonetwork.pool.v1.PoolIndexerEntry.pool_address":
-		x.PoolAddress = value.Interface().(string)
-	case "shinzonetwork.pool.v1.PoolIndexerEntry.indexer_address":
-		x.IndexerAddress = value.Interface().(string)
-	case "shinzonetwork.pool.v1.PoolIndexerEntry.indexer":
-		x.Indexer = value.Message().Interface().(*PoolIndexer)
-	default:
-		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: shinzonetwork.pool.v1.PoolIndexerEntry"))
-		}
-		panic(fmt.Errorf("message shinzonetwork.pool.v1.PoolIndexerEntry does not contain field %s", fd.FullName()))
-	}
-}
-
-// Mutable returns a mutable reference to a composite type.
-//
-// If the field is unpopulated, it may allocate a composite value.
-// For a field belonging to a oneof, it implicitly clears any other field
-// that may be currently set within the same oneof.
-// For extension fields, it implicitly stores the provided ExtensionType
-// if not already stored.
-// It panics if the field does not contain a composite type.
-//
-// Mutable is a mutating operation and unsafe for concurrent use.
-func (x *fastReflection_PoolIndexerEntry) Mutable(fd protoreflect.FieldDescriptor) protoreflect.Value {
-	switch fd.FullName() {
-	case "shinzonetwork.pool.v1.PoolIndexerEntry.indexer":
-		if x.Indexer == nil {
-			x.Indexer = new(PoolIndexer)
-		}
-		return protoreflect.ValueOfMessage(x.Indexer.ProtoReflect())
-	case "shinzonetwork.pool.v1.PoolIndexerEntry.pool_address":
-		panic(fmt.Errorf("field pool_address of message shinzonetwork.pool.v1.PoolIndexerEntry is not mutable"))
-	case "shinzonetwork.pool.v1.PoolIndexerEntry.indexer_address":
-		panic(fmt.Errorf("field indexer_address of message shinzonetwork.pool.v1.PoolIndexerEntry is not mutable"))
-	default:
-		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: shinzonetwork.pool.v1.PoolIndexerEntry"))
-		}
-		panic(fmt.Errorf("message shinzonetwork.pool.v1.PoolIndexerEntry does not contain field %s", fd.FullName()))
-	}
-}
-
-// NewField returns a new value that is assignable to the field
-// for the given descriptor. For scalars, this returns the default value.
-// For lists, maps, and messages, this returns a new, empty, mutable value.
-func (x *fastReflection_PoolIndexerEntry) NewField(fd protoreflect.FieldDescriptor) protoreflect.Value {
-	switch fd.FullName() {
-	case "shinzonetwork.pool.v1.PoolIndexerEntry.pool_address":
-		return protoreflect.ValueOfString("")
-	case "shinzonetwork.pool.v1.PoolIndexerEntry.indexer_address":
-		return protoreflect.ValueOfString("")
-	case "shinzonetwork.pool.v1.PoolIndexerEntry.indexer":
-		m := new(PoolIndexer)
-		return protoreflect.ValueOfMessage(m.ProtoReflect())
-	default:
-		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: shinzonetwork.pool.v1.PoolIndexerEntry"))
-		}
-		panic(fmt.Errorf("message shinzonetwork.pool.v1.PoolIndexerEntry does not contain field %s", fd.FullName()))
-	}
-}
-
-// WhichOneof reports which field within the oneof is populated,
-// returning nil if none are populated.
-// It panics if the oneof descriptor does not belong to this message.
-func (x *fastReflection_PoolIndexerEntry) WhichOneof(d protoreflect.OneofDescriptor) protoreflect.FieldDescriptor {
-	switch d.FullName() {
-	default:
-		panic(fmt.Errorf("%s is not a oneof field in shinzonetwork.pool.v1.PoolIndexerEntry", d.FullName()))
-	}
-	panic("unreachable")
-}
-
-// GetUnknown retrieves the entire list of unknown fields.
-// The caller may only mutate the contents of the RawFields
-// if the mutated bytes are stored back into the message with SetUnknown.
-func (x *fastReflection_PoolIndexerEntry) GetUnknown() protoreflect.RawFields {
-	return x.unknownFields
-}
-
-// SetUnknown stores an entire list of unknown fields.
-// The raw fields must be syntactically valid according to the wire format.
-// An implementation may panic if this is not the case.
-// Once stored, the caller must not mutate the content of the RawFields.
-// An empty RawFields may be passed to clear the fields.
-//
-// SetUnknown is a mutating operation and unsafe for concurrent use.
-func (x *fastReflection_PoolIndexerEntry) SetUnknown(fields protoreflect.RawFields) {
-	x.unknownFields = fields
-}
-
-// IsValid reports whether the message is valid.
-//
-// An invalid message is an empty, read-only value.
-//
-// An invalid message often corresponds to a nil pointer of the concrete
-// message type, but the details are implementation dependent.
-// Validity is not part of the protobuf data model, and may not
-// be preserved in marshaling or other operations.
-func (x *fastReflection_PoolIndexerEntry) IsValid() bool {
-	return x != nil
-}
-
-// ProtoMethods returns optional fastReflectionFeature-path implementations of various operations.
-// This method may return nil.
-//
-// The returned methods type is identical to
-// "google.golang.org/protobuf/runtime/protoiface".Methods.
-// Consult the protoiface package documentation for details.
-func (x *fastReflection_PoolIndexerEntry) ProtoMethods() *protoiface.Methods {
-	size := func(input protoiface.SizeInput) protoiface.SizeOutput {
-		x := input.Message.Interface().(*PoolIndexerEntry)
-		if x == nil {
-			return protoiface.SizeOutput{
-				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
-				Size:              0,
-			}
-		}
-		options := runtime.SizeInputToOptions(input)
-		_ = options
-		var n int
-		var l int
-		_ = l
-		l = len(x.PoolAddress)
-		if l > 0 {
-			n += 1 + l + runtime.Sov(uint64(l))
-		}
-		l = len(x.IndexerAddress)
-		if l > 0 {
-			n += 1 + l + runtime.Sov(uint64(l))
-		}
-		if x.Indexer != nil {
-			l = options.Size(x.Indexer)
-			n += 1 + l + runtime.Sov(uint64(l))
-		}
-		if x.unknownFields != nil {
-			n += len(x.unknownFields)
-		}
-		return protoiface.SizeOutput{
-			NoUnkeyedLiterals: input.NoUnkeyedLiterals,
-			Size:              n,
-		}
-	}
-
-	marshal := func(input protoiface.MarshalInput) (protoiface.MarshalOutput, error) {
-		x := input.Message.Interface().(*PoolIndexerEntry)
-		if x == nil {
-			return protoiface.MarshalOutput{
-				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
-				Buf:               input.Buf,
-			}, nil
-		}
-		options := runtime.MarshalInputToOptions(input)
-		_ = options
-		size := options.Size(x)
-		dAtA := make([]byte, size)
-		i := len(dAtA)
-		_ = i
-		var l int
-		_ = l
-		if x.unknownFields != nil {
-			i -= len(x.unknownFields)
-			copy(dAtA[i:], x.unknownFields)
-		}
-		if x.Indexer != nil {
-			encoded, err := options.Marshal(x.Indexer)
-			if err != nil {
-				return protoiface.MarshalOutput{
-					NoUnkeyedLiterals: input.NoUnkeyedLiterals,
-					Buf:               input.Buf,
-				}, err
-			}
-			i -= len(encoded)
-			copy(dAtA[i:], encoded)
-			i = runtime.EncodeVarint(dAtA, i, uint64(len(encoded)))
-			i--
-			dAtA[i] = 0x1a
-		}
-		if len(x.IndexerAddress) > 0 {
-			i -= len(x.IndexerAddress)
-			copy(dAtA[i:], x.IndexerAddress)
-			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.IndexerAddress)))
-			i--
-			dAtA[i] = 0x12
-		}
-		if len(x.PoolAddress) > 0 {
-			i -= len(x.PoolAddress)
-			copy(dAtA[i:], x.PoolAddress)
-			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.PoolAddress)))
-			i--
-			dAtA[i] = 0xa
-		}
-		if input.Buf != nil {
-			input.Buf = append(input.Buf, dAtA...)
-		} else {
-			input.Buf = dAtA
-		}
-		return protoiface.MarshalOutput{
-			NoUnkeyedLiterals: input.NoUnkeyedLiterals,
-			Buf:               input.Buf,
-		}, nil
-	}
-	unmarshal := func(input protoiface.UnmarshalInput) (protoiface.UnmarshalOutput, error) {
-		x := input.Message.Interface().(*PoolIndexerEntry)
-		if x == nil {
-			return protoiface.UnmarshalOutput{
-				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
-				Flags:             input.Flags,
-			}, nil
-		}
-		options := runtime.UnmarshalInputToOptions(input)
-		_ = options
-		dAtA := input.Buf
-		l := len(dAtA)
-		iNdEx := 0
-		for iNdEx < l {
-			preIndex := iNdEx
-			var wire uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
-				}
-				if iNdEx >= l {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				wire |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			fieldNum := int32(wire >> 3)
-			wireType := int(wire & 0x7)
-			if wireType == 4 {
-				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: PoolIndexerEntry: wiretype end group for non-group")
-			}
-			if fieldNum <= 0 {
-				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: PoolIndexerEntry: illegal tag %d (wire type %d)", fieldNum, wire)
-			}
-			switch fieldNum {
-			case 1:
-				if wireType != 2 {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field PoolAddress", wireType)
-				}
-				var stringLen uint64
-				for shift := uint(0); ; shift += 7 {
-					if shift >= 64 {
-						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
-					}
-					if iNdEx >= l {
-						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
-					}
-					b := dAtA[iNdEx]
-					iNdEx++
-					stringLen |= uint64(b&0x7F) << shift
-					if b < 0x80 {
-						break
-					}
-				}
-				intStringLen := int(stringLen)
-				if intStringLen < 0 {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
-				}
-				postIndex := iNdEx + intStringLen
-				if postIndex < 0 {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
-				}
-				if postIndex > l {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
-				}
-				x.PoolAddress = string(dAtA[iNdEx:postIndex])
-				iNdEx = postIndex
-			case 2:
-				if wireType != 2 {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field IndexerAddress", wireType)
-				}
-				var stringLen uint64
-				for shift := uint(0); ; shift += 7 {
-					if shift >= 64 {
-						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
-					}
-					if iNdEx >= l {
-						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
-					}
-					b := dAtA[iNdEx]
-					iNdEx++
-					stringLen |= uint64(b&0x7F) << shift
-					if b < 0x80 {
-						break
-					}
-				}
-				intStringLen := int(stringLen)
-				if intStringLen < 0 {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
-				}
-				postIndex := iNdEx + intStringLen
-				if postIndex < 0 {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
-				}
-				if postIndex > l {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
-				}
-				x.IndexerAddress = string(dAtA[iNdEx:postIndex])
-				iNdEx = postIndex
-			case 3:
-				if wireType != 2 {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field Indexer", wireType)
-				}
-				var msglen int
-				for shift := uint(0); ; shift += 7 {
-					if shift >= 64 {
-						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
-					}
-					if iNdEx >= l {
-						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
-					}
-					b := dAtA[iNdEx]
-					iNdEx++
-					msglen |= int(b&0x7F) << shift
-					if b < 0x80 {
-						break
-					}
-				}
-				if msglen < 0 {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
-				}
-				postIndex := iNdEx + msglen
-				if postIndex < 0 {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
-				}
-				if postIndex > l {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
-				}
-				if x.Indexer == nil {
-					x.Indexer = &PoolIndexer{}
-				}
-				if err := options.Unmarshal(dAtA[iNdEx:postIndex], x.Indexer); err != nil {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, err
-				}
-				iNdEx = postIndex
-			default:
-				iNdEx = preIndex
-				skippy, err := runtime.Skip(dAtA[iNdEx:])
-				if err != nil {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, err
-				}
-				if (skippy < 0) || (iNdEx+skippy) < 0 {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
-				}
-				if (iNdEx + skippy) > l {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
-				}
-				if !options.DiscardUnknown {
-					x.unknownFields = append(x.unknownFields, dAtA[iNdEx:iNdEx+skippy]...)
-				}
-				iNdEx += skippy
-			}
-		}
-
-		if iNdEx > l {
-			return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
-		}
-		return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, nil
-	}
-	return &protoiface.Methods{
-		NoUnkeyedLiterals: struct{}{},
-		Flags:             protoiface.SupportMarshalDeterministic | protoiface.SupportUnmarshalDiscardUnknown,
-		Size:              size,
-		Marshal:           marshal,
-		Unmarshal:         unmarshal,
-		Merge:             nil,
-		CheckInitialized:  nil,
-	}
-}
-
-var (
 	md_PoolDemandEntry                    protoreflect.MessageDescriptor
 	fd_PoolDemandEntry_pool_address       protoreflect.FieldDescriptor
 	fd_PoolDemandEntry_registrant_address protoreflect.FieldDescriptor
@@ -4485,7 +3316,7 @@ func (x *PoolDemandEntry) ProtoReflect() protoreflect.Message {
 }
 
 func (x *PoolDemandEntry) slowProtoReflect() protoreflect.Message {
-	mi := &file_shinzonetwork_pool_v1_pool_proto_msgTypes[8]
+	mi := &file_shinzonetwork_pool_v1_pool_proto_msgTypes[6]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -5038,8 +3869,9 @@ const (
 )
 
 // Pool holds the static metadata for a pool.
-// Dynamic state (hosts, indexers, demands) lives in separate KV entries
-// keyed by their respective sub-prefixes.
+// Dynamic state (hosts, demands) lives in separate KV entries keyed by
+// their respective sub-prefixes. The price is a network-wide value read
+// from module state, not stored per pool.
 type Pool struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -5099,19 +3931,18 @@ func (x *Pool) GetCreatedAt() int64 {
 	return 0
 }
 
-// PoolDetail is a denormalized view of a pool: metadata plus every host,
-// indexer, and demand currently in it. Useful for "show me this pool" queries
-// and for downstream modules (settlement, querybalance) that need everything
-// in one read.
+// PoolDetail is a denormalized view of a pool: metadata plus every host and
+// demand currently in it. Useful for "show me this pool" queries and for
+// downstream modules (settlement, querybalance) that need everything in
+// one read.
 type PoolDetail struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Pool     *Pool               `protobuf:"bytes,1,opt,name=pool,proto3" json:"pool,omitempty"`
-	Hosts    []*PoolHostEntry    `protobuf:"bytes,2,rep,name=hosts,proto3" json:"hosts,omitempty"`
-	Indexers []*PoolIndexerEntry `protobuf:"bytes,3,rep,name=indexers,proto3" json:"indexers,omitempty"`
-	Demands  []*PoolDemandEntry  `protobuf:"bytes,4,rep,name=demands,proto3" json:"demands,omitempty"`
+	Pool    *Pool              `protobuf:"bytes,1,opt,name=pool,proto3" json:"pool,omitempty"`
+	Hosts   []*PoolHostEntry   `protobuf:"bytes,2,rep,name=hosts,proto3" json:"hosts,omitempty"`
+	Demands []*PoolDemandEntry `protobuf:"bytes,3,rep,name=demands,proto3" json:"demands,omitempty"`
 }
 
 func (x *PoolDetail) Reset() {
@@ -5144,13 +3975,6 @@ func (x *PoolDetail) GetPool() *Pool {
 func (x *PoolDetail) GetHosts() []*PoolHostEntry {
 	if x != nil {
 		return x.Hosts
-	}
-	return nil
-}
-
-func (x *PoolDetail) GetIndexers() []*PoolIndexerEntry {
-	if x != nil {
-		return x.Indexers
 	}
 	return nil
 }
@@ -5199,15 +4023,13 @@ func (x *PoolConfig) GetWindowSize() uint64 {
 	return 0
 }
 
-// PoolHost represents a host's membership in a pool, including their submitted ask.
+// PoolHost represents a host's membership in a pool.
 type PoolHost struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	// sdk.Int as base-10 string. "0" or empty means no ask submitted yet.
-	Ask      string `protobuf:"bytes,1,opt,name=ask,proto3" json:"ask,omitempty"`
-	JoinedAt int64  `protobuf:"varint,2,opt,name=joined_at,json=joinedAt,proto3" json:"joined_at,omitempty"`
+	JoinedAt int64 `protobuf:"varint,1,opt,name=joined_at,json=joinedAt,proto3" json:"joined_at,omitempty"`
 }
 
 func (x *PoolHost) Reset() {
@@ -5230,51 +4052,7 @@ func (*PoolHost) Descriptor() ([]byte, []int) {
 	return file_shinzonetwork_pool_v1_pool_proto_rawDescGZIP(), []int{3}
 }
 
-func (x *PoolHost) GetAsk() string {
-	if x != nil {
-		return x.Ask
-	}
-	return ""
-}
-
 func (x *PoolHost) GetJoinedAt() int64 {
-	if x != nil {
-		return x.JoinedAt
-	}
-	return 0
-}
-
-// PoolIndexer represents an indexer's membership in a pool.
-// Indexers don't submit asks; they take commission per the pool's tier.
-type PoolIndexer struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-
-	JoinedAt int64 `protobuf:"varint,1,opt,name=joined_at,json=joinedAt,proto3" json:"joined_at,omitempty"`
-}
-
-func (x *PoolIndexer) Reset() {
-	*x = PoolIndexer{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_shinzonetwork_pool_v1_pool_proto_msgTypes[4]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *PoolIndexer) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*PoolIndexer) ProtoMessage() {}
-
-// Deprecated: Use PoolIndexer.ProtoReflect.Descriptor instead.
-func (*PoolIndexer) Descriptor() ([]byte, []int) {
-	return file_shinzonetwork_pool_v1_pool_proto_rawDescGZIP(), []int{4}
-}
-
-func (x *PoolIndexer) GetJoinedAt() int64 {
 	if x != nil {
 		return x.JoinedAt
 	}
@@ -5298,7 +4076,7 @@ type PoolDemand struct {
 func (x *PoolDemand) Reset() {
 	*x = PoolDemand{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_shinzonetwork_pool_v1_pool_proto_msgTypes[5]
+		mi := &file_shinzonetwork_pool_v1_pool_proto_msgTypes[4]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -5312,7 +4090,7 @@ func (*PoolDemand) ProtoMessage() {}
 
 // Deprecated: Use PoolDemand.ProtoReflect.Descriptor instead.
 func (*PoolDemand) Descriptor() ([]byte, []int) {
-	return file_shinzonetwork_pool_v1_pool_proto_rawDescGZIP(), []int{5}
+	return file_shinzonetwork_pool_v1_pool_proto_rawDescGZIP(), []int{4}
 }
 
 func (x *PoolDemand) GetBond() string {
@@ -5358,7 +4136,7 @@ type PoolHostEntry struct {
 func (x *PoolHostEntry) Reset() {
 	*x = PoolHostEntry{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_shinzonetwork_pool_v1_pool_proto_msgTypes[6]
+		mi := &file_shinzonetwork_pool_v1_pool_proto_msgTypes[5]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -5372,7 +4150,7 @@ func (*PoolHostEntry) ProtoMessage() {}
 
 // Deprecated: Use PoolHostEntry.ProtoReflect.Descriptor instead.
 func (*PoolHostEntry) Descriptor() ([]byte, []int) {
-	return file_shinzonetwork_pool_v1_pool_proto_rawDescGZIP(), []int{6}
+	return file_shinzonetwork_pool_v1_pool_proto_rawDescGZIP(), []int{5}
 }
 
 func (x *PoolHostEntry) GetPoolAddress() string {
@@ -5396,57 +4174,6 @@ func (x *PoolHostEntry) GetHost() *PoolHost {
 	return nil
 }
 
-type PoolIndexerEntry struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-
-	PoolAddress    string       `protobuf:"bytes,1,opt,name=pool_address,json=poolAddress,proto3" json:"pool_address,omitempty"`
-	IndexerAddress string       `protobuf:"bytes,2,opt,name=indexer_address,json=indexerAddress,proto3" json:"indexer_address,omitempty"`
-	Indexer        *PoolIndexer `protobuf:"bytes,3,opt,name=indexer,proto3" json:"indexer,omitempty"`
-}
-
-func (x *PoolIndexerEntry) Reset() {
-	*x = PoolIndexerEntry{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_shinzonetwork_pool_v1_pool_proto_msgTypes[7]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *PoolIndexerEntry) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*PoolIndexerEntry) ProtoMessage() {}
-
-// Deprecated: Use PoolIndexerEntry.ProtoReflect.Descriptor instead.
-func (*PoolIndexerEntry) Descriptor() ([]byte, []int) {
-	return file_shinzonetwork_pool_v1_pool_proto_rawDescGZIP(), []int{7}
-}
-
-func (x *PoolIndexerEntry) GetPoolAddress() string {
-	if x != nil {
-		return x.PoolAddress
-	}
-	return ""
-}
-
-func (x *PoolIndexerEntry) GetIndexerAddress() string {
-	if x != nil {
-		return x.IndexerAddress
-	}
-	return ""
-}
-
-func (x *PoolIndexerEntry) GetIndexer() *PoolIndexer {
-	if x != nil {
-		return x.Indexer
-	}
-	return nil
-}
-
 type PoolDemandEntry struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -5460,7 +4187,7 @@ type PoolDemandEntry struct {
 func (x *PoolDemandEntry) Reset() {
 	*x = PoolDemandEntry{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_shinzonetwork_pool_v1_pool_proto_msgTypes[8]
+		mi := &file_shinzonetwork_pool_v1_pool_proto_msgTypes[6]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -5474,7 +4201,7 @@ func (*PoolDemandEntry) ProtoMessage() {}
 
 // Deprecated: Use PoolDemandEntry.ProtoReflect.Descriptor instead.
 func (*PoolDemandEntry) Descriptor() ([]byte, []int) {
-	return file_shinzonetwork_pool_v1_pool_proto_rawDescGZIP(), []int{8}
+	return file_shinzonetwork_pool_v1_pool_proto_rawDescGZIP(), []int{6}
 }
 
 func (x *PoolDemandEntry) GetPoolAddress() string {
@@ -5516,8 +4243,8 @@ var file_shinzonetwork_pool_v1_pool_proto_rawDesc = []byte{
 	0x6f, 0x6f, 0x6c, 0x2e, 0x76, 0x31, 0x2e, 0x50, 0x6f, 0x6f, 0x6c, 0x43, 0x6f, 0x6e, 0x66, 0x69,
 	0x67, 0x42, 0x04, 0xc8, 0xde, 0x1f, 0x00, 0x52, 0x06, 0x63, 0x6f, 0x6e, 0x66, 0x69, 0x67, 0x12,
 	0x1d, 0x0a, 0x0a, 0x63, 0x72, 0x65, 0x61, 0x74, 0x65, 0x64, 0x5f, 0x61, 0x74, 0x18, 0x04, 0x20,
-	0x01, 0x28, 0x03, 0x52, 0x09, 0x63, 0x72, 0x65, 0x61, 0x74, 0x65, 0x64, 0x41, 0x74, 0x22, 0x98,
-	0x02, 0x0a, 0x0a, 0x50, 0x6f, 0x6f, 0x6c, 0x44, 0x65, 0x74, 0x61, 0x69, 0x6c, 0x12, 0x35, 0x0a,
+	0x01, 0x28, 0x03, 0x52, 0x09, 0x63, 0x72, 0x65, 0x61, 0x74, 0x65, 0x64, 0x41, 0x74, 0x22, 0xcd,
+	0x01, 0x0a, 0x0a, 0x50, 0x6f, 0x6f, 0x6c, 0x44, 0x65, 0x74, 0x61, 0x69, 0x6c, 0x12, 0x35, 0x0a,
 	0x04, 0x70, 0x6f, 0x6f, 0x6c, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x1b, 0x2e, 0x73, 0x68,
 	0x69, 0x6e, 0x7a, 0x6f, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x2e, 0x70, 0x6f, 0x6f, 0x6c,
 	0x2e, 0x76, 0x31, 0x2e, 0x50, 0x6f, 0x6f, 0x6c, 0x42, 0x04, 0xc8, 0xde, 0x1f, 0x00, 0x52, 0x04,
@@ -5525,78 +4252,59 @@ var file_shinzonetwork_pool_v1_pool_proto_rawDesc = []byte{
 	0x03, 0x28, 0x0b, 0x32, 0x24, 0x2e, 0x73, 0x68, 0x69, 0x6e, 0x7a, 0x6f, 0x6e, 0x65, 0x74, 0x77,
 	0x6f, 0x72, 0x6b, 0x2e, 0x70, 0x6f, 0x6f, 0x6c, 0x2e, 0x76, 0x31, 0x2e, 0x50, 0x6f, 0x6f, 0x6c,
 	0x48, 0x6f, 0x73, 0x74, 0x45, 0x6e, 0x74, 0x72, 0x79, 0x42, 0x04, 0xc8, 0xde, 0x1f, 0x00, 0x52,
-	0x05, 0x68, 0x6f, 0x73, 0x74, 0x73, 0x12, 0x49, 0x0a, 0x08, 0x69, 0x6e, 0x64, 0x65, 0x78, 0x65,
-	0x72, 0x73, 0x18, 0x03, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x27, 0x2e, 0x73, 0x68, 0x69, 0x6e, 0x7a,
-	0x6f, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x2e, 0x70, 0x6f, 0x6f, 0x6c, 0x2e, 0x76, 0x31,
-	0x2e, 0x50, 0x6f, 0x6f, 0x6c, 0x49, 0x6e, 0x64, 0x65, 0x78, 0x65, 0x72, 0x45, 0x6e, 0x74, 0x72,
-	0x79, 0x42, 0x04, 0xc8, 0xde, 0x1f, 0x00, 0x52, 0x08, 0x69, 0x6e, 0x64, 0x65, 0x78, 0x65, 0x72,
-	0x73, 0x12, 0x46, 0x0a, 0x07, 0x64, 0x65, 0x6d, 0x61, 0x6e, 0x64, 0x73, 0x18, 0x04, 0x20, 0x03,
-	0x28, 0x0b, 0x32, 0x26, 0x2e, 0x73, 0x68, 0x69, 0x6e, 0x7a, 0x6f, 0x6e, 0x65, 0x74, 0x77, 0x6f,
-	0x72, 0x6b, 0x2e, 0x70, 0x6f, 0x6f, 0x6c, 0x2e, 0x76, 0x31, 0x2e, 0x50, 0x6f, 0x6f, 0x6c, 0x44,
-	0x65, 0x6d, 0x61, 0x6e, 0x64, 0x45, 0x6e, 0x74, 0x72, 0x79, 0x42, 0x04, 0xc8, 0xde, 0x1f, 0x00,
-	0x52, 0x07, 0x64, 0x65, 0x6d, 0x61, 0x6e, 0x64, 0x73, 0x22, 0x2d, 0x0a, 0x0a, 0x50, 0x6f, 0x6f,
-	0x6c, 0x43, 0x6f, 0x6e, 0x66, 0x69, 0x67, 0x12, 0x1f, 0x0a, 0x0b, 0x77, 0x69, 0x6e, 0x64, 0x6f,
-	0x77, 0x5f, 0x73, 0x69, 0x7a, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x04, 0x52, 0x0a, 0x77, 0x69,
-	0x6e, 0x64, 0x6f, 0x77, 0x53, 0x69, 0x7a, 0x65, 0x22, 0x39, 0x0a, 0x08, 0x50, 0x6f, 0x6f, 0x6c,
-	0x48, 0x6f, 0x73, 0x74, 0x12, 0x10, 0x0a, 0x03, 0x61, 0x73, 0x6b, 0x18, 0x01, 0x20, 0x01, 0x28,
-	0x09, 0x52, 0x03, 0x61, 0x73, 0x6b, 0x12, 0x1b, 0x0a, 0x09, 0x6a, 0x6f, 0x69, 0x6e, 0x65, 0x64,
-	0x5f, 0x61, 0x74, 0x18, 0x02, 0x20, 0x01, 0x28, 0x03, 0x52, 0x08, 0x6a, 0x6f, 0x69, 0x6e, 0x65,
-	0x64, 0x41, 0x74, 0x22, 0x2a, 0x0a, 0x0b, 0x50, 0x6f, 0x6f, 0x6c, 0x49, 0x6e, 0x64, 0x65, 0x78,
-	0x65, 0x72, 0x12, 0x1b, 0x0a, 0x09, 0x6a, 0x6f, 0x69, 0x6e, 0x65, 0x64, 0x5f, 0x61, 0x74, 0x18,
-	0x01, 0x20, 0x01, 0x28, 0x03, 0x52, 0x08, 0x6a, 0x6f, 0x69, 0x6e, 0x65, 0x64, 0x41, 0x74, 0x22,
-	0x78, 0x0a, 0x0a, 0x50, 0x6f, 0x6f, 0x6c, 0x44, 0x65, 0x6d, 0x61, 0x6e, 0x64, 0x12, 0x12, 0x0a,
-	0x04, 0x62, 0x6f, 0x6e, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x04, 0x62, 0x6f, 0x6e,
-	0x64, 0x12, 0x1d, 0x0a, 0x0a, 0x70, 0x72, 0x69, 0x63, 0x65, 0x5f, 0x70, 0x72, 0x65, 0x66, 0x18,
-	0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x09, 0x70, 0x72, 0x69, 0x63, 0x65, 0x50, 0x72, 0x65, 0x66,
-	0x12, 0x18, 0x0a, 0x07, 0x62, 0x69, 0x6e, 0x64, 0x69, 0x6e, 0x67, 0x18, 0x03, 0x20, 0x01, 0x28,
-	0x08, 0x52, 0x07, 0x62, 0x69, 0x6e, 0x64, 0x69, 0x6e, 0x67, 0x12, 0x1d, 0x0a, 0x0a, 0x65, 0x78,
-	0x70, 0x69, 0x72, 0x65, 0x73, 0x5f, 0x61, 0x74, 0x18, 0x04, 0x20, 0x01, 0x28, 0x03, 0x52, 0x09,
-	0x65, 0x78, 0x70, 0x69, 0x72, 0x65, 0x73, 0x41, 0x74, 0x22, 0x90, 0x01, 0x0a, 0x0d, 0x50, 0x6f,
-	0x6f, 0x6c, 0x48, 0x6f, 0x73, 0x74, 0x45, 0x6e, 0x74, 0x72, 0x79, 0x12, 0x21, 0x0a, 0x0c, 0x70,
-	0x6f, 0x6f, 0x6c, 0x5f, 0x61, 0x64, 0x64, 0x72, 0x65, 0x73, 0x73, 0x18, 0x01, 0x20, 0x01, 0x28,
-	0x09, 0x52, 0x0b, 0x70, 0x6f, 0x6f, 0x6c, 0x41, 0x64, 0x64, 0x72, 0x65, 0x73, 0x73, 0x12, 0x21,
-	0x0a, 0x0c, 0x68, 0x6f, 0x73, 0x74, 0x5f, 0x61, 0x64, 0x64, 0x72, 0x65, 0x73, 0x73, 0x18, 0x02,
-	0x20, 0x01, 0x28, 0x09, 0x52, 0x0b, 0x68, 0x6f, 0x73, 0x74, 0x41, 0x64, 0x64, 0x72, 0x65, 0x73,
-	0x73, 0x12, 0x39, 0x0a, 0x04, 0x68, 0x6f, 0x73, 0x74, 0x18, 0x03, 0x20, 0x01, 0x28, 0x0b, 0x32,
-	0x1f, 0x2e, 0x73, 0x68, 0x69, 0x6e, 0x7a, 0x6f, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x2e,
-	0x70, 0x6f, 0x6f, 0x6c, 0x2e, 0x76, 0x31, 0x2e, 0x50, 0x6f, 0x6f, 0x6c, 0x48, 0x6f, 0x73, 0x74,
-	0x42, 0x04, 0xc8, 0xde, 0x1f, 0x00, 0x52, 0x04, 0x68, 0x6f, 0x73, 0x74, 0x22, 0xa2, 0x01, 0x0a,
-	0x10, 0x50, 0x6f, 0x6f, 0x6c, 0x49, 0x6e, 0x64, 0x65, 0x78, 0x65, 0x72, 0x45, 0x6e, 0x74, 0x72,
-	0x79, 0x12, 0x21, 0x0a, 0x0c, 0x70, 0x6f, 0x6f, 0x6c, 0x5f, 0x61, 0x64, 0x64, 0x72, 0x65, 0x73,
-	0x73, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x0b, 0x70, 0x6f, 0x6f, 0x6c, 0x41, 0x64, 0x64,
-	0x72, 0x65, 0x73, 0x73, 0x12, 0x27, 0x0a, 0x0f, 0x69, 0x6e, 0x64, 0x65, 0x78, 0x65, 0x72, 0x5f,
-	0x61, 0x64, 0x64, 0x72, 0x65, 0x73, 0x73, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x0e, 0x69,
-	0x6e, 0x64, 0x65, 0x78, 0x65, 0x72, 0x41, 0x64, 0x64, 0x72, 0x65, 0x73, 0x73, 0x12, 0x42, 0x0a,
-	0x07, 0x69, 0x6e, 0x64, 0x65, 0x78, 0x65, 0x72, 0x18, 0x03, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x22,
-	0x2e, 0x73, 0x68, 0x69, 0x6e, 0x7a, 0x6f, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x2e, 0x70,
-	0x6f, 0x6f, 0x6c, 0x2e, 0x76, 0x31, 0x2e, 0x50, 0x6f, 0x6f, 0x6c, 0x49, 0x6e, 0x64, 0x65, 0x78,
-	0x65, 0x72, 0x42, 0x04, 0xc8, 0xde, 0x1f, 0x00, 0x52, 0x07, 0x69, 0x6e, 0x64, 0x65, 0x78, 0x65,
-	0x72, 0x22, 0xa4, 0x01, 0x0a, 0x0f, 0x50, 0x6f, 0x6f, 0x6c, 0x44, 0x65, 0x6d, 0x61, 0x6e, 0x64,
-	0x45, 0x6e, 0x74, 0x72, 0x79, 0x12, 0x21, 0x0a, 0x0c, 0x70, 0x6f, 0x6f, 0x6c, 0x5f, 0x61, 0x64,
-	0x64, 0x72, 0x65, 0x73, 0x73, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x0b, 0x70, 0x6f, 0x6f,
-	0x6c, 0x41, 0x64, 0x64, 0x72, 0x65, 0x73, 0x73, 0x12, 0x2d, 0x0a, 0x12, 0x72, 0x65, 0x67, 0x69,
-	0x73, 0x74, 0x72, 0x61, 0x6e, 0x74, 0x5f, 0x61, 0x64, 0x64, 0x72, 0x65, 0x73, 0x73, 0x18, 0x02,
-	0x20, 0x01, 0x28, 0x09, 0x52, 0x11, 0x72, 0x65, 0x67, 0x69, 0x73, 0x74, 0x72, 0x61, 0x6e, 0x74,
-	0x41, 0x64, 0x64, 0x72, 0x65, 0x73, 0x73, 0x12, 0x3f, 0x0a, 0x06, 0x64, 0x65, 0x6d, 0x61, 0x6e,
-	0x64, 0x18, 0x03, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x21, 0x2e, 0x73, 0x68, 0x69, 0x6e, 0x7a, 0x6f,
+	0x05, 0x68, 0x6f, 0x73, 0x74, 0x73, 0x12, 0x46, 0x0a, 0x07, 0x64, 0x65, 0x6d, 0x61, 0x6e, 0x64,
+	0x73, 0x18, 0x03, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x26, 0x2e, 0x73, 0x68, 0x69, 0x6e, 0x7a, 0x6f,
 	0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x2e, 0x70, 0x6f, 0x6f, 0x6c, 0x2e, 0x76, 0x31, 0x2e,
-	0x50, 0x6f, 0x6f, 0x6c, 0x44, 0x65, 0x6d, 0x61, 0x6e, 0x64, 0x42, 0x04, 0xc8, 0xde, 0x1f, 0x00,
-	0x52, 0x06, 0x64, 0x65, 0x6d, 0x61, 0x6e, 0x64, 0x42, 0xe1, 0x01, 0x0a, 0x19, 0x63, 0x6f, 0x6d,
-	0x2e, 0x73, 0x68, 0x69, 0x6e, 0x7a, 0x6f, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x2e, 0x70,
-	0x6f, 0x6f, 0x6c, 0x2e, 0x76, 0x31, 0x42, 0x09, 0x50, 0x6f, 0x6f, 0x6c, 0x50, 0x72, 0x6f, 0x74,
-	0x6f, 0x50, 0x01, 0x5a, 0x43, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f,
-	0x73, 0x68, 0x69, 0x6e, 0x7a, 0x6f, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x2f, 0x73, 0x68,
-	0x69, 0x6e, 0x7a, 0x6f, 0x68, 0x75, 0x62, 0x2f, 0x61, 0x70, 0x69, 0x2f, 0x73, 0x68, 0x69, 0x6e,
-	0x7a, 0x6f, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x2f, 0x70, 0x6f, 0x6f, 0x6c, 0x2f, 0x76,
-	0x31, 0x3b, 0x70, 0x6f, 0x6f, 0x6c, 0x76, 0x31, 0xa2, 0x02, 0x03, 0x53, 0x50, 0x58, 0xaa, 0x02,
-	0x15, 0x53, 0x68, 0x69, 0x6e, 0x7a, 0x6f, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x2e, 0x50,
-	0x6f, 0x6f, 0x6c, 0x2e, 0x56, 0x31, 0xca, 0x02, 0x15, 0x53, 0x68, 0x69, 0x6e, 0x7a, 0x6f, 0x6e,
-	0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x5c, 0x50, 0x6f, 0x6f, 0x6c, 0x5c, 0x56, 0x31, 0xe2, 0x02,
-	0x21, 0x53, 0x68, 0x69, 0x6e, 0x7a, 0x6f, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x5c, 0x50,
-	0x6f, 0x6f, 0x6c, 0x5c, 0x56, 0x31, 0x5c, 0x47, 0x50, 0x42, 0x4d, 0x65, 0x74, 0x61, 0x64, 0x61,
-	0x74, 0x61, 0xea, 0x02, 0x17, 0x53, 0x68, 0x69, 0x6e, 0x7a, 0x6f, 0x6e, 0x65, 0x74, 0x77, 0x6f,
-	0x72, 0x6b, 0x3a, 0x3a, 0x50, 0x6f, 0x6f, 0x6c, 0x3a, 0x3a, 0x56, 0x31, 0x62, 0x06, 0x70, 0x72,
-	0x6f, 0x74, 0x6f, 0x33,
+	0x50, 0x6f, 0x6f, 0x6c, 0x44, 0x65, 0x6d, 0x61, 0x6e, 0x64, 0x45, 0x6e, 0x74, 0x72, 0x79, 0x42,
+	0x04, 0xc8, 0xde, 0x1f, 0x00, 0x52, 0x07, 0x64, 0x65, 0x6d, 0x61, 0x6e, 0x64, 0x73, 0x22, 0x2d,
+	0x0a, 0x0a, 0x50, 0x6f, 0x6f, 0x6c, 0x43, 0x6f, 0x6e, 0x66, 0x69, 0x67, 0x12, 0x1f, 0x0a, 0x0b,
+	0x77, 0x69, 0x6e, 0x64, 0x6f, 0x77, 0x5f, 0x73, 0x69, 0x7a, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28,
+	0x04, 0x52, 0x0a, 0x77, 0x69, 0x6e, 0x64, 0x6f, 0x77, 0x53, 0x69, 0x7a, 0x65, 0x22, 0x27, 0x0a,
+	0x08, 0x50, 0x6f, 0x6f, 0x6c, 0x48, 0x6f, 0x73, 0x74, 0x12, 0x1b, 0x0a, 0x09, 0x6a, 0x6f, 0x69,
+	0x6e, 0x65, 0x64, 0x5f, 0x61, 0x74, 0x18, 0x01, 0x20, 0x01, 0x28, 0x03, 0x52, 0x08, 0x6a, 0x6f,
+	0x69, 0x6e, 0x65, 0x64, 0x41, 0x74, 0x22, 0x78, 0x0a, 0x0a, 0x50, 0x6f, 0x6f, 0x6c, 0x44, 0x65,
+	0x6d, 0x61, 0x6e, 0x64, 0x12, 0x12, 0x0a, 0x04, 0x62, 0x6f, 0x6e, 0x64, 0x18, 0x01, 0x20, 0x01,
+	0x28, 0x09, 0x52, 0x04, 0x62, 0x6f, 0x6e, 0x64, 0x12, 0x1d, 0x0a, 0x0a, 0x70, 0x72, 0x69, 0x63,
+	0x65, 0x5f, 0x70, 0x72, 0x65, 0x66, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x09, 0x70, 0x72,
+	0x69, 0x63, 0x65, 0x50, 0x72, 0x65, 0x66, 0x12, 0x18, 0x0a, 0x07, 0x62, 0x69, 0x6e, 0x64, 0x69,
+	0x6e, 0x67, 0x18, 0x03, 0x20, 0x01, 0x28, 0x08, 0x52, 0x07, 0x62, 0x69, 0x6e, 0x64, 0x69, 0x6e,
+	0x67, 0x12, 0x1d, 0x0a, 0x0a, 0x65, 0x78, 0x70, 0x69, 0x72, 0x65, 0x73, 0x5f, 0x61, 0x74, 0x18,
+	0x04, 0x20, 0x01, 0x28, 0x03, 0x52, 0x09, 0x65, 0x78, 0x70, 0x69, 0x72, 0x65, 0x73, 0x41, 0x74,
+	0x22, 0x90, 0x01, 0x0a, 0x0d, 0x50, 0x6f, 0x6f, 0x6c, 0x48, 0x6f, 0x73, 0x74, 0x45, 0x6e, 0x74,
+	0x72, 0x79, 0x12, 0x21, 0x0a, 0x0c, 0x70, 0x6f, 0x6f, 0x6c, 0x5f, 0x61, 0x64, 0x64, 0x72, 0x65,
+	0x73, 0x73, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x0b, 0x70, 0x6f, 0x6f, 0x6c, 0x41, 0x64,
+	0x64, 0x72, 0x65, 0x73, 0x73, 0x12, 0x21, 0x0a, 0x0c, 0x68, 0x6f, 0x73, 0x74, 0x5f, 0x61, 0x64,
+	0x64, 0x72, 0x65, 0x73, 0x73, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x0b, 0x68, 0x6f, 0x73,
+	0x74, 0x41, 0x64, 0x64, 0x72, 0x65, 0x73, 0x73, 0x12, 0x39, 0x0a, 0x04, 0x68, 0x6f, 0x73, 0x74,
+	0x18, 0x03, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x1f, 0x2e, 0x73, 0x68, 0x69, 0x6e, 0x7a, 0x6f, 0x6e,
+	0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x2e, 0x70, 0x6f, 0x6f, 0x6c, 0x2e, 0x76, 0x31, 0x2e, 0x50,
+	0x6f, 0x6f, 0x6c, 0x48, 0x6f, 0x73, 0x74, 0x42, 0x04, 0xc8, 0xde, 0x1f, 0x00, 0x52, 0x04, 0x68,
+	0x6f, 0x73, 0x74, 0x22, 0xa4, 0x01, 0x0a, 0x0f, 0x50, 0x6f, 0x6f, 0x6c, 0x44, 0x65, 0x6d, 0x61,
+	0x6e, 0x64, 0x45, 0x6e, 0x74, 0x72, 0x79, 0x12, 0x21, 0x0a, 0x0c, 0x70, 0x6f, 0x6f, 0x6c, 0x5f,
+	0x61, 0x64, 0x64, 0x72, 0x65, 0x73, 0x73, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x0b, 0x70,
+	0x6f, 0x6f, 0x6c, 0x41, 0x64, 0x64, 0x72, 0x65, 0x73, 0x73, 0x12, 0x2d, 0x0a, 0x12, 0x72, 0x65,
+	0x67, 0x69, 0x73, 0x74, 0x72, 0x61, 0x6e, 0x74, 0x5f, 0x61, 0x64, 0x64, 0x72, 0x65, 0x73, 0x73,
+	0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x11, 0x72, 0x65, 0x67, 0x69, 0x73, 0x74, 0x72, 0x61,
+	0x6e, 0x74, 0x41, 0x64, 0x64, 0x72, 0x65, 0x73, 0x73, 0x12, 0x3f, 0x0a, 0x06, 0x64, 0x65, 0x6d,
+	0x61, 0x6e, 0x64, 0x18, 0x03, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x21, 0x2e, 0x73, 0x68, 0x69, 0x6e,
+	0x7a, 0x6f, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x2e, 0x70, 0x6f, 0x6f, 0x6c, 0x2e, 0x76,
+	0x31, 0x2e, 0x50, 0x6f, 0x6f, 0x6c, 0x44, 0x65, 0x6d, 0x61, 0x6e, 0x64, 0x42, 0x04, 0xc8, 0xde,
+	0x1f, 0x00, 0x52, 0x06, 0x64, 0x65, 0x6d, 0x61, 0x6e, 0x64, 0x42, 0xe1, 0x01, 0x0a, 0x19, 0x63,
+	0x6f, 0x6d, 0x2e, 0x73, 0x68, 0x69, 0x6e, 0x7a, 0x6f, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b,
+	0x2e, 0x70, 0x6f, 0x6f, 0x6c, 0x2e, 0x76, 0x31, 0x42, 0x09, 0x50, 0x6f, 0x6f, 0x6c, 0x50, 0x72,
+	0x6f, 0x74, 0x6f, 0x50, 0x01, 0x5a, 0x43, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f,
+	0x6d, 0x2f, 0x73, 0x68, 0x69, 0x6e, 0x7a, 0x6f, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x2f,
+	0x73, 0x68, 0x69, 0x6e, 0x7a, 0x6f, 0x68, 0x75, 0x62, 0x2f, 0x61, 0x70, 0x69, 0x2f, 0x73, 0x68,
+	0x69, 0x6e, 0x7a, 0x6f, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x2f, 0x70, 0x6f, 0x6f, 0x6c,
+	0x2f, 0x76, 0x31, 0x3b, 0x70, 0x6f, 0x6f, 0x6c, 0x76, 0x31, 0xa2, 0x02, 0x03, 0x53, 0x50, 0x58,
+	0xaa, 0x02, 0x15, 0x53, 0x68, 0x69, 0x6e, 0x7a, 0x6f, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b,
+	0x2e, 0x50, 0x6f, 0x6f, 0x6c, 0x2e, 0x56, 0x31, 0xca, 0x02, 0x15, 0x53, 0x68, 0x69, 0x6e, 0x7a,
+	0x6f, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x5c, 0x50, 0x6f, 0x6f, 0x6c, 0x5c, 0x56, 0x31,
+	0xe2, 0x02, 0x21, 0x53, 0x68, 0x69, 0x6e, 0x7a, 0x6f, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b,
+	0x5c, 0x50, 0x6f, 0x6f, 0x6c, 0x5c, 0x56, 0x31, 0x5c, 0x47, 0x50, 0x42, 0x4d, 0x65, 0x74, 0x61,
+	0x64, 0x61, 0x74, 0x61, 0xea, 0x02, 0x17, 0x53, 0x68, 0x69, 0x6e, 0x7a, 0x6f, 0x6e, 0x65, 0x74,
+	0x77, 0x6f, 0x72, 0x6b, 0x3a, 0x3a, 0x50, 0x6f, 0x6f, 0x6c, 0x3a, 0x3a, 0x56, 0x31, 0x62, 0x06,
+	0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
 }
 
 var (
@@ -5611,32 +4319,28 @@ func file_shinzonetwork_pool_v1_pool_proto_rawDescGZIP() []byte {
 	return file_shinzonetwork_pool_v1_pool_proto_rawDescData
 }
 
-var file_shinzonetwork_pool_v1_pool_proto_msgTypes = make([]protoimpl.MessageInfo, 9)
+var file_shinzonetwork_pool_v1_pool_proto_msgTypes = make([]protoimpl.MessageInfo, 7)
 var file_shinzonetwork_pool_v1_pool_proto_goTypes = []interface{}{
-	(*Pool)(nil),             // 0: shinzonetwork.pool.v1.Pool
-	(*PoolDetail)(nil),       // 1: shinzonetwork.pool.v1.PoolDetail
-	(*PoolConfig)(nil),       // 2: shinzonetwork.pool.v1.PoolConfig
-	(*PoolHost)(nil),         // 3: shinzonetwork.pool.v1.PoolHost
-	(*PoolIndexer)(nil),      // 4: shinzonetwork.pool.v1.PoolIndexer
-	(*PoolDemand)(nil),       // 5: shinzonetwork.pool.v1.PoolDemand
-	(*PoolHostEntry)(nil),    // 6: shinzonetwork.pool.v1.PoolHostEntry
-	(*PoolIndexerEntry)(nil), // 7: shinzonetwork.pool.v1.PoolIndexerEntry
-	(*PoolDemandEntry)(nil),  // 8: shinzonetwork.pool.v1.PoolDemandEntry
+	(*Pool)(nil),            // 0: shinzonetwork.pool.v1.Pool
+	(*PoolDetail)(nil),      // 1: shinzonetwork.pool.v1.PoolDetail
+	(*PoolConfig)(nil),      // 2: shinzonetwork.pool.v1.PoolConfig
+	(*PoolHost)(nil),        // 3: shinzonetwork.pool.v1.PoolHost
+	(*PoolDemand)(nil),      // 4: shinzonetwork.pool.v1.PoolDemand
+	(*PoolHostEntry)(nil),   // 5: shinzonetwork.pool.v1.PoolHostEntry
+	(*PoolDemandEntry)(nil), // 6: shinzonetwork.pool.v1.PoolDemandEntry
 }
 var file_shinzonetwork_pool_v1_pool_proto_depIdxs = []int32{
 	2, // 0: shinzonetwork.pool.v1.Pool.config:type_name -> shinzonetwork.pool.v1.PoolConfig
 	0, // 1: shinzonetwork.pool.v1.PoolDetail.pool:type_name -> shinzonetwork.pool.v1.Pool
-	6, // 2: shinzonetwork.pool.v1.PoolDetail.hosts:type_name -> shinzonetwork.pool.v1.PoolHostEntry
-	7, // 3: shinzonetwork.pool.v1.PoolDetail.indexers:type_name -> shinzonetwork.pool.v1.PoolIndexerEntry
-	8, // 4: shinzonetwork.pool.v1.PoolDetail.demands:type_name -> shinzonetwork.pool.v1.PoolDemandEntry
-	3, // 5: shinzonetwork.pool.v1.PoolHostEntry.host:type_name -> shinzonetwork.pool.v1.PoolHost
-	4, // 6: shinzonetwork.pool.v1.PoolIndexerEntry.indexer:type_name -> shinzonetwork.pool.v1.PoolIndexer
-	5, // 7: shinzonetwork.pool.v1.PoolDemandEntry.demand:type_name -> shinzonetwork.pool.v1.PoolDemand
-	8, // [8:8] is the sub-list for method output_type
-	8, // [8:8] is the sub-list for method input_type
-	8, // [8:8] is the sub-list for extension type_name
-	8, // [8:8] is the sub-list for extension extendee
-	0, // [0:8] is the sub-list for field type_name
+	5, // 2: shinzonetwork.pool.v1.PoolDetail.hosts:type_name -> shinzonetwork.pool.v1.PoolHostEntry
+	6, // 3: shinzonetwork.pool.v1.PoolDetail.demands:type_name -> shinzonetwork.pool.v1.PoolDemandEntry
+	3, // 4: shinzonetwork.pool.v1.PoolHostEntry.host:type_name -> shinzonetwork.pool.v1.PoolHost
+	4, // 5: shinzonetwork.pool.v1.PoolDemandEntry.demand:type_name -> shinzonetwork.pool.v1.PoolDemand
+	6, // [6:6] is the sub-list for method output_type
+	6, // [6:6] is the sub-list for method input_type
+	6, // [6:6] is the sub-list for extension type_name
+	6, // [6:6] is the sub-list for extension extendee
+	0, // [0:6] is the sub-list for field type_name
 }
 
 func init() { file_shinzonetwork_pool_v1_pool_proto_init() }
@@ -5694,18 +4398,6 @@ func file_shinzonetwork_pool_v1_pool_proto_init() {
 			}
 		}
 		file_shinzonetwork_pool_v1_pool_proto_msgTypes[4].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*PoolIndexer); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
-		file_shinzonetwork_pool_v1_pool_proto_msgTypes[5].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*PoolDemand); i {
 			case 0:
 				return &v.state
@@ -5717,7 +4409,7 @@ func file_shinzonetwork_pool_v1_pool_proto_init() {
 				return nil
 			}
 		}
-		file_shinzonetwork_pool_v1_pool_proto_msgTypes[6].Exporter = func(v interface{}, i int) interface{} {
+		file_shinzonetwork_pool_v1_pool_proto_msgTypes[5].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*PoolHostEntry); i {
 			case 0:
 				return &v.state
@@ -5729,19 +4421,7 @@ func file_shinzonetwork_pool_v1_pool_proto_init() {
 				return nil
 			}
 		}
-		file_shinzonetwork_pool_v1_pool_proto_msgTypes[7].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*PoolIndexerEntry); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
-		file_shinzonetwork_pool_v1_pool_proto_msgTypes[8].Exporter = func(v interface{}, i int) interface{} {
+		file_shinzonetwork_pool_v1_pool_proto_msgTypes[6].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*PoolDemandEntry); i {
 			case 0:
 				return &v.state
@@ -5760,7 +4440,7 @@ func file_shinzonetwork_pool_v1_pool_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_shinzonetwork_pool_v1_pool_proto_rawDesc,
 			NumEnums:      0,
-			NumMessages:   9,
+			NumMessages:   7,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

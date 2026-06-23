@@ -149,10 +149,9 @@ func TestAddHost_AppearsInIteration(t *testing.T) {
 
 	require.NoError(t, f.keeper.AddHost(f.ctx, "0xpool", "0xhost"))
 
-	h, found, err := f.keeper.GetHost(f.ctx, "0xpool", "0xhost")
+	_, found, err := f.keeper.GetHost(f.ctx, "0xpool", "0xhost")
 	require.NoError(t, err)
 	require.True(t, found)
-	require.Equal(t, "0", h.Ask) // default until SetHostAsk
 }
 
 func TestAddHost_RejectsDuplicate(t *testing.T) {

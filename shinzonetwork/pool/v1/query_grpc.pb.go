@@ -19,11 +19,10 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	Query_Pool_FullMethodName     = "/shinzonetwork.pool.v1.Query/Pool"
-	Query_Pools_FullMethodName    = "/shinzonetwork.pool.v1.Query/Pools"
-	Query_Hosts_FullMethodName    = "/shinzonetwork.pool.v1.Query/Hosts"
-	Query_Indexers_FullMethodName = "/shinzonetwork.pool.v1.Query/Indexers"
-	Query_Demands_FullMethodName  = "/shinzonetwork.pool.v1.Query/Demands"
+	Query_Pool_FullMethodName    = "/shinzonetwork.pool.v1.Query/Pool"
+	Query_Pools_FullMethodName   = "/shinzonetwork.pool.v1.Query/Pools"
+	Query_Hosts_FullMethodName   = "/shinzonetwork.pool.v1.Query/Hosts"
+	Query_Demands_FullMethodName = "/shinzonetwork.pool.v1.Query/Demands"
 )
 
 // QueryClient is the client API for Query service.
@@ -33,7 +32,6 @@ type QueryClient interface {
 	Pool(ctx context.Context, in *QueryPoolRequest, opts ...grpc.CallOption) (*QueryPoolResponse, error)
 	Pools(ctx context.Context, in *QueryPoolsRequest, opts ...grpc.CallOption) (*QueryPoolsResponse, error)
 	Hosts(ctx context.Context, in *QueryHostsRequest, opts ...grpc.CallOption) (*QueryHostsResponse, error)
-	Indexers(ctx context.Context, in *QueryIndexersRequest, opts ...grpc.CallOption) (*QueryIndexersResponse, error)
 	Demands(ctx context.Context, in *QueryDemandsRequest, opts ...grpc.CallOption) (*QueryDemandsResponse, error)
 }
 
@@ -75,16 +73,6 @@ func (c *queryClient) Hosts(ctx context.Context, in *QueryHostsRequest, opts ...
 	return out, nil
 }
 
-func (c *queryClient) Indexers(ctx context.Context, in *QueryIndexersRequest, opts ...grpc.CallOption) (*QueryIndexersResponse, error) {
-	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(QueryIndexersResponse)
-	err := c.cc.Invoke(ctx, Query_Indexers_FullMethodName, in, out, cOpts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
 func (c *queryClient) Demands(ctx context.Context, in *QueryDemandsRequest, opts ...grpc.CallOption) (*QueryDemandsResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(QueryDemandsResponse)
@@ -102,7 +90,6 @@ type QueryServer interface {
 	Pool(context.Context, *QueryPoolRequest) (*QueryPoolResponse, error)
 	Pools(context.Context, *QueryPoolsRequest) (*QueryPoolsResponse, error)
 	Hosts(context.Context, *QueryHostsRequest) (*QueryHostsResponse, error)
-	Indexers(context.Context, *QueryIndexersRequest) (*QueryIndexersResponse, error)
 	Demands(context.Context, *QueryDemandsRequest) (*QueryDemandsResponse, error)
 	mustEmbedUnimplementedQueryServer()
 }
@@ -122,9 +109,6 @@ func (UnimplementedQueryServer) Pools(context.Context, *QueryPoolsRequest) (*Que
 }
 func (UnimplementedQueryServer) Hosts(context.Context, *QueryHostsRequest) (*QueryHostsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Hosts not implemented")
-}
-func (UnimplementedQueryServer) Indexers(context.Context, *QueryIndexersRequest) (*QueryIndexersResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method Indexers not implemented")
 }
 func (UnimplementedQueryServer) Demands(context.Context, *QueryDemandsRequest) (*QueryDemandsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Demands not implemented")
@@ -204,24 +188,6 @@ func _Query_Hosts_Handler(srv interface{}, ctx context.Context, dec func(interfa
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Query_Indexers_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(QueryIndexersRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(QueryServer).Indexers(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: Query_Indexers_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(QueryServer).Indexers(ctx, req.(*QueryIndexersRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
 func _Query_Demands_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(QueryDemandsRequest)
 	if err := dec(in); err != nil {
@@ -258,10 +224,6 @@ var Query_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "Hosts",
 			Handler:    _Query_Hosts_Handler,
-		},
-		{
-			MethodName: "Indexers",
-			Handler:    _Query_Indexers_Handler,
 		},
 		{
 			MethodName: "Demands",

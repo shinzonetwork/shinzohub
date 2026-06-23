@@ -41,7 +41,6 @@ interface PoolRegistryI {
     /// @notice One host's membership entry in a pool.
     struct PoolHostEntry {
         address hostAddress;
-        uint256 ask;       // sdk.Int as uint256; 0 means no ask submitted yet
         int64 joinedAt;
     }
 
