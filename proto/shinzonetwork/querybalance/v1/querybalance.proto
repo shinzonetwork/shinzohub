@@ -4,9 +4,10 @@ package shinzonetwork.querybalance.v1;
 
 option go_package = "github.com/shinzonetwork/shinzohub/x/querybalance/types";
 
-// QueryBalance is a DID's spendable balance for serving queries.
-// Funded by anyone, debited internally by the pool module's batch handler.
+// QueryBalance is an address's spendable balance for serving queries.
+// Funded by anyone (self or sponsor), debited internally by the pool
+// module's batch handler.
 message QueryBalance {
-  string did = 1;
+  string address = 1;
   string amount = 2;
 }

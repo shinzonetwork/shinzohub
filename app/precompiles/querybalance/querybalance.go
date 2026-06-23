@@ -79,7 +79,11 @@ func (p Precompile) Run(evm *vm.EVM, contract *vm.Contract, readOnly bool) (bz [
 }
 
 func (Precompile) IsTransaction(method *abi.Method) bool {
-	return method.Name == MethodFund
+	switch method.Name {
+	case MethodFund, MethodFundFor:
+		return true
+	}
+	return false
 }
 
 func (p *Precompile) handle(
@@ -92,6 +96,8 @@ func (p *Precompile) handle(
 	switch method.Name {
 	case MethodFund:
 		return p.Fund(ctx, contract, stateDB, method, args)
+	case MethodFundFor:
+		return p.FundFor(ctx, contract, stateDB, method, args)
 	case MethodBalanceOf:
 		return p.BalanceOf(ctx, method, args)
 	default:

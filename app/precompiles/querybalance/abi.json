@@ -6,17 +6,15 @@
     {
       "anonymous": false,
       "inputs": [
-        { "indexed": false, "internalType": "string", "name": "did", "type": "string" },
         { "indexed": true, "internalType": "address", "name": "funder", "type": "address" },
+        { "indexed": true, "internalType": "address", "name": "recipient", "type": "address" },
         { "indexed": false, "internalType": "uint256", "name": "amount", "type": "uint256" }
       ],
       "name": "Funded",
       "type": "event"
     },
     {
-      "inputs": [
-        { "internalType": "string", "name": "did", "type": "string" }
-      ],
+      "inputs": [],
       "name": "fund",
       "outputs": [],
       "stateMutability": "payable",
@@ -24,7 +22,16 @@
     },
     {
       "inputs": [
-        { "internalType": "string", "name": "did", "type": "string" }
+        { "internalType": "address", "name": "recipient", "type": "address" }
+      ],
+      "name": "fundFor",
+      "outputs": [],
+      "stateMutability": "payable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        { "internalType": "address", "name": "holder", "type": "address" }
       ],
       "name": "balanceOf",
       "outputs": [

@@ -102,39 +102,57 @@ func addr(b byte) sdk.AccAddress {
 	return out
 }
 
-func TestFund_CreditsAndMovesCoins(t *testing.T) {
+func TestFund_Self(t *testing.T) {
 	f := newFixture(t)
-	funder := addr(1)
+	a := addr(1)
 
-	require.NoError(t, f.keeper.Fund(f.ctx, funder, "did:test:1", nzo(100)))
+	require.NoError(t, f.keeper.Fund(f.ctx, a, a, nzo(100)))
 
-	require.Equal(t, math.NewInt(100), f.keeper.GetBalance(f.ctx, "did:test:1"))
+	require.Equal(t, math.NewInt(100), f.keeper.GetBalance(f.ctx, a))
 	require.Len(t, f.bank.moves, 1)
 	require.Equal(t, "in", f.bank.moves[0].kind)
-	require.Equal(t, funder.String(), f.bank.moves[0].from)
-	require.Equal(t, types.ModuleName, f.bank.moves[0].to)
+	require.Equal(t, a.String(), f.bank.moves[0].from)
+}
+
+func TestFund_Sponsor(t *testing.T) {
+	f := newFixture(t)
+	sponsor, recipient := addr(1), addr(2)
+
+	require.NoError(t, f.keeper.Fund(f.ctx, sponsor, recipient, nzo(100)))
+
+	require.Equal(t, math.NewInt(100), f.keeper.GetBalance(f.ctx, recipient))
+	require.Equal(t, math.ZeroInt(), f.keeper.GetBalance(f.ctx, sponsor))
+	require.Equal(t, sponsor.String(), f.bank.moves[0].from)
 }
 
 func TestFund_AccumulatesAcrossCalls(t *testing.T) {
 	f := newFixture(t)
+	target := addr(9)
 
-	require.NoError(t, f.keeper.Fund(f.ctx, addr(1), "did:x", nzo(50)))
-	require.NoError(t, f.keeper.Fund(f.ctx, addr(2), "did:x", nzo(30)))
+	require.NoError(t, f.keeper.Fund(f.ctx, addr(1), target, nzo(50)))
+	require.NoError(t, f.keeper.Fund(f.ctx, addr(2), target, nzo(30)))
 
-	require.Equal(t, math.NewInt(80), f.keeper.GetBalance(f.ctx, "did:x"))
+	require.Equal(t, math.NewInt(80), f.keeper.GetBalance(f.ctx, target))
 }
 
-func TestFund_RejectsEmptyDID(t *testing.T) {
+func TestFund_RejectsEmptyFunder(t *testing.T) {
 	f := newFixture(t)
 
-	err := f.keeper.Fund(f.ctx, addr(1), "", nzo(100))
-	require.ErrorContains(t, err, "did is required")
+	err := f.keeper.Fund(f.ctx, sdk.AccAddress{}, addr(1), nzo(100))
+	require.ErrorContains(t, err, "funder is required")
+}
+
+func TestFund_RejectsEmptyRecipient(t *testing.T) {
+	f := newFixture(t)
+
+	err := f.keeper.Fund(f.ctx, addr(1), sdk.AccAddress{}, nzo(100))
+	require.ErrorContains(t, err, "recipient is required")
 }
 
 func TestFund_RejectsZeroAmount(t *testing.T) {
 	f := newFixture(t)
 
-	err := f.keeper.Fund(f.ctx, addr(1), "did:x", sdk.Coins{})
+	err := f.keeper.Fund(f.ctx, addr(1), addr(2), sdk.Coins{})
 	require.ErrorContains(t, err, "positive coin")
 }
 
@@ -145,7 +163,7 @@ func TestFund_RejectsMultipleDenoms(t *testing.T) {
 		sdk.NewCoin("other", math.NewInt(10)),
 	)
 
-	err := f.keeper.Fund(f.ctx, addr(1), "did:x", mixed)
+	err := f.keeper.Fund(f.ctx, addr(1), addr(2), mixed)
 	require.ErrorContains(t, err, "single coin denomination")
 }
 
@@ -153,49 +171,51 @@ func TestFund_BankFailureBubbles(t *testing.T) {
 	f := newFixture(t)
 	f.bank.failNextIn = true
 
-	err := f.keeper.Fund(f.ctx, addr(1), "did:x", nzo(100))
+	err := f.keeper.Fund(f.ctx, addr(1), addr(2), nzo(100))
 	require.ErrorContains(t, err, "transfer to module account")
-	require.Equal(t, math.ZeroInt(), f.keeper.GetBalance(f.ctx, "did:x"))
+	require.Equal(t, math.ZeroInt(), f.keeper.GetBalance(f.ctx, addr(2)))
 }
 
 func TestDebit_DeductsFromBalance(t *testing.T) {
 	f := newFixture(t)
-	require.NoError(t, f.keeper.Fund(f.ctx, addr(1), "did:x", nzo(500)))
+	target := addr(9)
+	require.NoError(t, f.keeper.Fund(f.ctx, addr(1), target, nzo(500)))
 
-	require.NoError(t, f.keeper.Debit(f.ctx, "did:x", math.NewInt(200)))
-	require.Equal(t, math.NewInt(300), f.keeper.GetBalance(f.ctx, "did:x"))
+	require.NoError(t, f.keeper.Debit(f.ctx, target, math.NewInt(200)))
+	require.Equal(t, math.NewInt(300), f.keeper.GetBalance(f.ctx, target))
 }
 
 func TestDebit_RejectsInsufficient(t *testing.T) {
 	f := newFixture(t)
-	require.NoError(t, f.keeper.Fund(f.ctx, addr(1), "did:x", nzo(50)))
+	target := addr(9)
+	require.NoError(t, f.keeper.Fund(f.ctx, addr(1), target, nzo(50)))
 
-	err := f.keeper.Debit(f.ctx, "did:x", math.NewInt(100))
+	err := f.keeper.Debit(f.ctx, target, math.NewInt(100))
 	require.ErrorContains(t, err, "insufficient balance")
 }
 
-func TestDebit_RejectsUnknownDID(t *testing.T) {
+func TestDebit_RejectsUnknownAddress(t *testing.T) {
 	f := newFixture(t)
 
-	err := f.keeper.Debit(f.ctx, "did:never-seen", math.NewInt(1))
+	err := f.keeper.Debit(f.ctx, addr(7), math.NewInt(1))
 	require.ErrorContains(t, err, "no balance")
 }
 
 func TestGetBalance_ZeroForUnknown(t *testing.T) {
 	f := newFixture(t)
-	require.Equal(t, math.ZeroInt(), f.keeper.GetBalance(f.ctx, "did:unknown"))
+	require.Equal(t, math.ZeroInt(), f.keeper.GetBalance(f.ctx, addr(42)))
 }
 
 func TestGenesis_RoundTrip(t *testing.T) {
 	src := newFixture(t)
-	require.NoError(t, src.keeper.Fund(src.ctx, addr(1), "did:a", nzo(100)))
-	require.NoError(t, src.keeper.Fund(src.ctx, addr(2), "did:b", nzo(250)))
+	require.NoError(t, src.keeper.Fund(src.ctx, addr(1), addr(10), nzo(100)))
+	require.NoError(t, src.keeper.Fund(src.ctx, addr(2), addr(20), nzo(250)))
 
 	exported := src.keeper.ExportGenesis(src.ctx)
 
 	dst := newFixture(t)
 	dst.keeper.InitGenesis(dst.ctx, *exported)
 
-	require.Equal(t, math.NewInt(100), dst.keeper.GetBalance(dst.ctx, "did:a"))
-	require.Equal(t, math.NewInt(250), dst.keeper.GetBalance(dst.ctx, "did:b"))
+	require.Equal(t, math.NewInt(100), dst.keeper.GetBalance(dst.ctx, addr(10)))
+	require.Equal(t, math.NewInt(250), dst.keeper.GetBalance(dst.ctx, addr(20)))
 }
