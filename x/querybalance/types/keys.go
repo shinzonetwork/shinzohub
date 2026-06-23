@@ -4,7 +4,7 @@ const (
 	ModuleName = "querybalance"
 	StoreKey   = ModuleName
 
-	// balance/<did> → QueryBalance
+	// balance/<address> → QueryBalance
 	BalancePrefix = "balance/"
 )
 
@@ -12,7 +12,8 @@ const (
 	EventTypeFunded  = "querybalance.funded"
 	EventTypeDebited = "querybalance.debited"
 
-	AttrKeyDID    = "did"
-	AttrKeyFunder = "funder"
-	AttrKeyAmount = "amount"
+	AttrKeyAddress   = "address"
+	AttrKeyFunder    = "funder"
+	AttrKeyRecipient = "recipient"
+	AttrKeyAmount    = "amount"
 )

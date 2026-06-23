@@ -42,11 +42,14 @@ func (k Keeper) Logger(ctx sdk.Context) log.Logger {
 func (k Keeper) Fund(
 	ctx sdk.Context,
 	funder sdk.AccAddress,
-	did string,
+	recipient sdk.AccAddress,
 	amount sdk.Coins,
 ) error {
-	if did == "" {
-		return fmt.Errorf("did is required")
+	if funder.Empty() {
+		return fmt.Errorf("funder is required")
+	}
+	if recipient.Empty() {
+		return fmt.Errorf("recipient is required")
 	}
 	if !amount.IsValid() || amount.IsZero() {
 		return fmt.Errorf("amount must be a positive coin")
@@ -61,38 +64,38 @@ func (k Keeper) Fund(
 		return fmt.Errorf("transfer to module account: %w", err)
 	}
 
-	qb := k.getEntry(ctx, did)
+	qb := k.getEntry(ctx, recipient)
 	prev := parseAmount(qb.Amount)
 	qb.Amount = prev.Add(amount[0].Amount).String()
 	k.setEntry(ctx, qb)
 
 	ctx.EventManager().EmitEvent(sdk.NewEvent(
 		types.EventTypeFunded,
-		sdk.NewAttribute(types.AttrKeyDID, did),
 		sdk.NewAttribute(types.AttrKeyFunder, funder.String()),
+		sdk.NewAttribute(types.AttrKeyRecipient, recipient.String()),
 		sdk.NewAttribute(types.AttrKeyAmount, amount[0].Amount.String()),
 	))
 
 	return nil
 }
 
-func (k Keeper) Debit(ctx sdk.Context, did string, amount math.Int) error {
-	if did == "" {
-		return fmt.Errorf("did is required")
+func (k Keeper) Debit(ctx sdk.Context, holder sdk.AccAddress, amount math.Int) error {
+	if holder.Empty() {
+		return fmt.Errorf("holder is required")
 	}
 	if !amount.IsPositive() {
 		return fmt.Errorf("amount must be positive")
 	}
 
-	qb, found := k.getEntryIfExists(ctx, did)
+	qb, found := k.getEntryIfExists(ctx, holder)
 	if !found {
-		return fmt.Errorf("no balance for did %s", did)
+		return fmt.Errorf("no balance for address %s", holder.String())
 	}
 
 	balance := parseAmount(qb.Amount)
 	if balance.LT(amount) {
-		return fmt.Errorf("insufficient balance for did %s: have %s, want %s",
-			did, balance.String(), amount.String())
+		return fmt.Errorf("insufficient balance for address %s: have %s, want %s",
+			holder.String(), balance.String(), amount.String())
 	}
 
 	qb.Amount = balance.Sub(amount).String()
@@ -100,36 +103,36 @@ func (k Keeper) Debit(ctx sdk.Context, did string, amount math.Int) error {
 
 	ctx.EventManager().EmitEvent(sdk.NewEvent(
 		types.EventTypeDebited,
-		sdk.NewAttribute(types.AttrKeyDID, did),
+		sdk.NewAttribute(types.AttrKeyAddress, holder.String()),
 		sdk.NewAttribute(types.AttrKeyAmount, amount.String()),
 	))
 
 	return nil
 }
 
-func (k Keeper) GetBalance(ctx sdk.Context, did string) math.Int {
-	qb, found := k.getEntryIfExists(ctx, did)
+func (k Keeper) GetBalance(ctx sdk.Context, holder sdk.AccAddress) math.Int {
+	qb, found := k.getEntryIfExists(ctx, holder)
 	if !found {
 		return math.ZeroInt()
 	}
 	return parseAmount(qb.Amount)
 }
 
-func (k Keeper) GetEntry(ctx sdk.Context, did string) (types.QueryBalance, bool) {
-	return k.getEntryIfExists(ctx, did)
+func (k Keeper) GetEntry(ctx sdk.Context, holder sdk.AccAddress) (types.QueryBalance, bool) {
+	return k.getEntryIfExists(ctx, holder)
 }
 
-func (k Keeper) getEntry(ctx sdk.Context, did string) types.QueryBalance {
-	qb, found := k.getEntryIfExists(ctx, did)
+func (k Keeper) getEntry(ctx sdk.Context, holder sdk.AccAddress) types.QueryBalance {
+	qb, found := k.getEntryIfExists(ctx, holder)
 	if !found {
-		return types.QueryBalance{Did: did, Amount: "0"}
+		return types.QueryBalance{Address: holder.String(), Amount: "0"}
 	}
 	return qb
 }
 
-func (k Keeper) getEntryIfExists(ctx sdk.Context, did string) (types.QueryBalance, bool) {
+func (k Keeper) getEntryIfExists(ctx sdk.Context, holder sdk.AccAddress) (types.QueryBalance, bool) {
 	store := runtime.KVStoreAdapter(k.storeService.OpenKVStore(ctx))
-	bz := store.Get(balanceKey(did))
+	bz := store.Get(balanceKey(holder))
 	if len(bz) == 0 {
 		return types.QueryBalance{}, false
 	}
@@ -146,11 +149,11 @@ func (k Keeper) setEntry(ctx sdk.Context, qb types.QueryBalance) {
 	if err != nil {
 		panic(err)
 	}
-	store.Set(balanceKey(qb.Did), bz)
+	store.Set([]byte(types.BalancePrefix+qb.Address), bz)
 }
 
-func balanceKey(did string) []byte {
-	return []byte(types.BalancePrefix + did)
+func balanceKey(holder sdk.AccAddress) []byte {
+	return []byte(types.BalancePrefix + holder.String())
 }
 
 func parseAmount(s string) math.Int {

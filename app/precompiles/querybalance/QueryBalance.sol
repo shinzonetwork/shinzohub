@@ -6,9 +6,11 @@ address constant QUERY_BALANCE_PRECOMPILE_ADDRESS = 0x00000000000000000000000000
 QueryBalanceI constant QUERY_BALANCE_CONTRACT = QueryBalanceI(QUERY_BALANCE_PRECOMPILE_ADDRESS);
 
 interface QueryBalanceI {
-    function fund(string calldata did) external payable;
+    function fund() external payable;
 
-    function balanceOf(string calldata did) external view returns (uint256);
+    function fundFor(address recipient) external payable;
 
-    event Funded(string did, address indexed funder, uint256 amount);
+    function balanceOf(address holder) external view returns (uint256);
+
+    event Funded(address indexed funder, address indexed recipient, uint256 amount);
 }
