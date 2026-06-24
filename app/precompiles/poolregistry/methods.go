@@ -17,6 +17,18 @@ import (
 	"github.com/shinzonetwork/shinzohub/x/pool/types"
 )
 
+func bech32From(addr common.Address) string {
+	return sdk.AccAddress(addr.Bytes()).String()
+}
+
+func evmAddrFromBech32(bech string) common.Address {
+	acc, err := sdk.AccAddressFromBech32(bech)
+	if err != nil {
+		return common.Address{}
+	}
+	return common.BytesToAddress(acc.Bytes())
+}
+
 const (
 	MethodRegisterDemandForView = "registerDemandForView"
 	MethodPoolsOf               = "poolsOf"
@@ -179,7 +191,7 @@ func (p Precompile) RegisterDemandForView(
 		Binding:   false,
 		ExpiresAt: 0,
 	}
-	if err := p.poolKeeper.RegisterDemand(ctx, poolAddrHex, registrant.Hex(), demand); err != nil {
+	if err := p.poolKeeper.RegisterDemand(ctx, poolAddrHex, bech32From(registrant), demand); err != nil {
 		return nil, fmt.Errorf("register demand: %w", err)
 	}
 
@@ -320,7 +332,7 @@ func (p Precompile) GetPoolDetail(
 	hosts := make([]hostEntryOutput, 0, len(detail.Hosts))
 	for _, h := range detail.Hosts {
 		hosts = append(hosts, hostEntryOutput{
-			HostAddress: common.HexToAddress(h.HostAddress),
+			HostAddress: evmAddrFromBech32(h.HostAddress),
 			JoinedAt:    h.Host.JoinedAt,
 		})
 	}
@@ -328,7 +340,7 @@ func (p Precompile) GetPoolDetail(
 	demands := make([]demandEntryOutput, 0, len(detail.Demands))
 	for _, d := range detail.Demands {
 		demands = append(demands, demandEntryOutput{
-			Registrant: common.HexToAddress(d.RegistrantAddress),
+			Registrant: evmAddrFromBech32(d.RegistrantAddress),
 			Bond:       parseInt(d.Demand.Bond),
 			PricePref:  parseInt(d.Demand.PricePref),
 			Binding:    d.Demand.Binding,
@@ -369,7 +381,7 @@ func (p Precompile) JoinPool(
 		return nil, fmt.Errorf("caller is not a registered pool: %s", poolAddrHex)
 	}
 
-	if err := p.poolKeeper.AddHost(ctx, poolAddrHex, host.Hex()); err != nil {
+	if err := p.poolKeeper.AddHost(ctx, poolAddrHex, bech32From(host)); err != nil {
 		return nil, fmt.Errorf("add host: %w", err)
 	}
 	return nil, nil
@@ -393,7 +405,7 @@ func (p Precompile) LeavePool(
 		return nil, fmt.Errorf("caller is not a registered pool: %s", poolAddrHex)
 	}
 
-	if err := p.poolKeeper.RemoveHost(ctx, poolAddrHex, host.Hex()); err != nil {
+	if err := p.poolKeeper.RemoveHost(ctx, poolAddrHex, bech32From(host)); err != nil {
 		return nil, fmt.Errorf("remove host: %w", err)
 	}
 	return nil, nil
