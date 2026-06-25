@@ -11,6 +11,7 @@ import (
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	"github.com/cosmos/cosmos-sdk/runtime"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/cosmos/cosmos-sdk/types/query"
 	"github.com/decred/dcrd/dcrec/secp256k1/v4"
 	"github.com/decred/dcrd/dcrec/secp256k1/v4/ecdsa"
 	"github.com/stretchr/testify/require"
@@ -251,6 +252,66 @@ func (s *KeeperTestSuite) TestQueryServer_HostCount() {
 	resp, err = qs.HostCount(s.ctx, &types.QueryHostCountRequest{})
 	s.Require().NoError(err)
 	s.Require().Equal(uint64(1), resp.Count)
+}
+
+func (s *KeeperTestSuite) TestQueryServer_HostsFilters() {
+	qs := keeper.NewQueryServerImpl(s.keeper)
+	hosts := []types.Host{
+		{Address: "shinzo1host0", Did: "did:key:z0", ConnectionString: "10.0.0.1:8080"},
+		{Address: "shinzo1host1", Did: "did:key:z1", ConnectionString: "10.0.0.2:8080"},
+		{Address: "shinzo1host2", Did: "did:key:z2", ConnectionString: "wss://example.com/host"},
+	}
+	for _, host := range hosts {
+		s.Require().NoError(s.keeper.SetHost(s.ctx, host))
+	}
+
+	resp, err := qs.Hosts(s.ctx, &types.QueryHostsRequest{Did: "did:key:z1"})
+	s.Require().NoError(err)
+	s.Require().Len(resp.Hosts, 1)
+	s.Require().Equal("shinzo1host1", resp.Hosts[0].Address)
+
+	resp, err = qs.Hosts(s.ctx, &types.QueryHostsRequest{ConnectionString: "10.0.0."})
+	s.Require().NoError(err)
+	s.Require().Len(resp.Hosts, 2)
+	s.Require().Equal("shinzo1host0", resp.Hosts[0].Address)
+	s.Require().Equal("shinzo1host1", resp.Hosts[1].Address)
+
+	resp, err = qs.Hosts(s.ctx, &types.QueryHostsRequest{
+		Did:              "did:key:z1",
+		ConnectionString: "example.com",
+	})
+	s.Require().NoError(err)
+	s.Require().Empty(resp.Hosts)
+}
+
+func (s *KeeperTestSuite) TestQueryServer_HostsFilterBeforePagination() {
+	qs := keeper.NewQueryServerImpl(s.keeper)
+	hosts := []types.Host{
+		{Address: "shinzo1a", Did: "did:key:za", ConnectionString: "alpha"},
+		{Address: "shinzo1b", Did: "did:key:zb", ConnectionString: "needle-1"},
+		{Address: "shinzo1c", Did: "did:key:zc", ConnectionString: "needle-2"},
+	}
+	for _, host := range hosts {
+		s.Require().NoError(s.keeper.SetHost(s.ctx, host))
+	}
+
+	resp, err := qs.Hosts(s.ctx, &types.QueryHostsRequest{
+		Pagination:       &query.PageRequest{Limit: 1},
+		ConnectionString: "needle",
+	})
+	s.Require().NoError(err)
+	s.Require().Len(resp.Hosts, 1)
+	s.Require().Equal("shinzo1b", resp.Hosts[0].Address)
+	s.Require().NotEmpty(resp.Pagination.NextKey)
+
+	resp, err = qs.Hosts(s.ctx, &types.QueryHostsRequest{
+		Pagination:       &query.PageRequest{Key: resp.Pagination.NextKey, Limit: 1},
+		ConnectionString: "needle",
+	})
+	s.Require().NoError(err)
+	s.Require().Len(resp.Hosts, 1)
+	s.Require().Equal("shinzo1c", resp.Hosts[0].Address)
+	s.Require().Empty(resp.Pagination.NextKey)
 }
 
 func (s *KeeperTestSuite) TestQueryServer_NilRequest() {

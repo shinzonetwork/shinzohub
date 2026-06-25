@@ -10,6 +10,7 @@ import (
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	"github.com/cosmos/cosmos-sdk/runtime"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/cosmos/cosmos-sdk/types/query"
 	"github.com/decred/dcrd/dcrec/secp256k1/v4"
 	"github.com/decred/dcrd/dcrec/secp256k1/v4/ecdsa"
 	"github.com/stretchr/testify/require"
@@ -231,6 +232,66 @@ func (s *KeeperTestSuite) TestQueryServer_IndexerCount() {
 	resp, err = qs.IndexerCount(s.ctx, &types.QueryIndexerCountRequest{})
 	s.Require().NoError(err)
 	s.Require().Equal(uint64(1), resp.Count)
+}
+
+func (s *KeeperTestSuite) TestQueryServer_IndexersFilters() {
+	qs := keeper.NewQueryServerImpl(s.keeper)
+	indexers := []types.Indexer{
+		{Address: "shinzo1idx0", Did: "did:key:z0", ConnectionString: "10.0.0.1:8080"},
+		{Address: "shinzo1idx1", Did: "did:key:z1", ConnectionString: "10.0.0.2:8080"},
+		{Address: "shinzo1idx2", Did: "did:key:z2", ConnectionString: "wss://example.com/indexer"},
+	}
+	for _, indexer := range indexers {
+		s.Require().NoError(s.keeper.SetIndexer(s.ctx, indexer))
+	}
+
+	resp, err := qs.Indexers(s.ctx, &types.QueryIndexersRequest{Did: "did:key:z1"})
+	s.Require().NoError(err)
+	s.Require().Len(resp.Indexers, 1)
+	s.Require().Equal("shinzo1idx1", resp.Indexers[0].Address)
+
+	resp, err = qs.Indexers(s.ctx, &types.QueryIndexersRequest{ConnectionString: "10.0.0."})
+	s.Require().NoError(err)
+	s.Require().Len(resp.Indexers, 2)
+	s.Require().Equal("shinzo1idx0", resp.Indexers[0].Address)
+	s.Require().Equal("shinzo1idx1", resp.Indexers[1].Address)
+
+	resp, err = qs.Indexers(s.ctx, &types.QueryIndexersRequest{
+		Did:              "did:key:z1",
+		ConnectionString: "example.com",
+	})
+	s.Require().NoError(err)
+	s.Require().Empty(resp.Indexers)
+}
+
+func (s *KeeperTestSuite) TestQueryServer_IndexersFilterBeforePagination() {
+	qs := keeper.NewQueryServerImpl(s.keeper)
+	indexers := []types.Indexer{
+		{Address: "shinzo1a", Did: "did:key:za", ConnectionString: "alpha"},
+		{Address: "shinzo1b", Did: "did:key:zb", ConnectionString: "needle-1"},
+		{Address: "shinzo1c", Did: "did:key:zc", ConnectionString: "needle-2"},
+	}
+	for _, indexer := range indexers {
+		s.Require().NoError(s.keeper.SetIndexer(s.ctx, indexer))
+	}
+
+	resp, err := qs.Indexers(s.ctx, &types.QueryIndexersRequest{
+		Pagination:       &query.PageRequest{Limit: 1},
+		ConnectionString: "needle",
+	})
+	s.Require().NoError(err)
+	s.Require().Len(resp.Indexers, 1)
+	s.Require().Equal("shinzo1b", resp.Indexers[0].Address)
+	s.Require().NotEmpty(resp.Pagination.NextKey)
+
+	resp, err = qs.Indexers(s.ctx, &types.QueryIndexersRequest{
+		Pagination:       &query.PageRequest{Key: resp.Pagination.NextKey, Limit: 1},
+		ConnectionString: "needle",
+	})
+	s.Require().NoError(err)
+	s.Require().Len(resp.Indexers, 1)
+	s.Require().Equal("shinzo1c", resp.Indexers[0].Address)
+	s.Require().Empty(resp.Pagination.NextKey)
 }
 
 func (s *KeeperTestSuite) TestQueryServer_NilRequests() {

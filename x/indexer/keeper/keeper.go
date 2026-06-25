@@ -250,6 +250,23 @@ func (k Keeper) GetAllIndexers(ctx sdk.Context, pageReq *query.PageRequest) ([]t
 	return indexers, pageRes, nil
 }
 
+func (k Keeper) FilterIndexers(
+	ctx sdk.Context,
+	pageReq *query.PageRequest,
+	onResult func(indexer types.Indexer, accumulate bool) (bool, error),
+) (*query.PageResponse, error) {
+	store := runtime.KVStoreAdapter(k.storeService.OpenKVStore(ctx))
+	indexerStore := prefix.NewStore(store, []byte(types.IndexerPrefix))
+
+	return query.FilteredPaginate(indexerStore, pageReq, func(_, value []byte, accumulate bool) (bool, error) {
+		var indexer types.Indexer
+		if err := k.cdc.Unmarshal(value, &indexer); err != nil {
+			return false, err
+		}
+		return onResult(indexer, accumulate)
+	})
+}
+
 func (k Keeper) GetIndexerCount(ctx sdk.Context) uint64 {
 	store := runtime.KVStoreAdapter(k.storeService.OpenKVStore(ctx))
 	bz := store.Get([]byte(types.IndexerCountKey))

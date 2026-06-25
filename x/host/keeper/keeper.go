@@ -238,6 +238,23 @@ func (k Keeper) GetAllHosts(ctx sdk.Context, pageReq *query.PageRequest) ([]type
 	return hosts, pageRes, nil
 }
 
+func (k Keeper) FilterHosts(
+	ctx sdk.Context,
+	pageReq *query.PageRequest,
+	onResult func(host types.Host, accumulate bool) (bool, error),
+) (*query.PageResponse, error) {
+	store := runtime.KVStoreAdapter(k.storeService.OpenKVStore(ctx))
+	hostStore := prefix.NewStore(store, []byte(types.HostPrefix))
+
+	return query.FilteredPaginate(hostStore, pageReq, func(_, value []byte, accumulate bool) (bool, error) {
+		var host types.Host
+		if err := k.cdc.Unmarshal(value, &host); err != nil {
+			return false, err
+		}
+		return onResult(host, accumulate)
+	})
+}
+
 func (k Keeper) GetHostCount(ctx sdk.Context) uint64 {
 	store := runtime.KVStoreAdapter(k.storeService.OpenKVStore(ctx))
 	bz := store.Get([]byte(types.HostCountKey))

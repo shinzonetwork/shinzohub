@@ -29,6 +29,10 @@ service Query {
 
 message QueryIndexersRequest {
   cosmos.base.query.v1beta1.PageRequest pagination = 1;
+  // Exact DID filter.
+  string did = 2;
+  // Substring filter over Indexer.connection_string.
+  string connection_string = 3;
 }
 
 message QueryIndexersResponse {
