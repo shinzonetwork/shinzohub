@@ -157,6 +157,23 @@ func (k Keeper) GetAllViews(ctx sdk.Context, pageReq *query.PageRequest) ([]type
 	return views, pageRes, nil
 }
 
+func (k Keeper) FilterViews(
+	ctx sdk.Context,
+	pageReq *query.PageRequest,
+	onResult func(view types.View, accumulate bool) (bool, error),
+) (*query.PageResponse, error) {
+	store := runtime.KVStoreAdapter(k.storeService.OpenKVStore(ctx))
+	viewStore := prefix.NewStore(store, []byte(types.ViewPrefix))
+
+	return query.FilteredPaginate(viewStore, pageReq, func(_, value []byte, accumulate bool) (bool, error) {
+		var view types.View
+		if err := k.cdc.Unmarshal(value, &view); err != nil {
+			return false, err
+		}
+		return onResult(view, accumulate)
+	})
+}
+
 func (k Keeper) GetViewCount(ctx sdk.Context) uint64 {
 	store := runtime.KVStoreAdapter(k.storeService.OpenKVStore(ctx))
 	bz := store.Get([]byte(types.ViewCountKey))

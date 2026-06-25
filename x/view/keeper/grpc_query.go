@@ -110,16 +110,21 @@ func metadataMatches(metadata *types.ViewMetadata, req *types.QueryViewsRequest)
 	return true
 }
 
+func containsFold(value, needle string) bool {
+	return strings.Contains(strings.ToLower(value), strings.ToLower(needle))
+}
+
 // Views handles the list endpoint exposed by the gRPC service and REST gateway
 // at GET /shinzonetwork/view/v1/views.
 //
 // Params:
 //   - pagination.key, pagination.offset, pagination.limit,
-//     pagination.count_total, pagination.reverse: store pagination applied
-//     before filtering.
+//     pagination.count_total, pagination.reverse: pagination applied over
+//     matching views after filters.
 //   - include_data: include raw viewbundle bytes in View.data.
-//   - since_block, name, creator: exact filters over View.height, View.name,
-//     and View.creator.
+//   - since_block: minimum View.height.
+//   - name: case-insensitive substring filter over View.name.
+//   - creator: exact filter over View.creator.
 //   - include_metadata: attach query, sdl, root_type, lenses, and parse_error.
 //   - metadata_root_type, metadata_lens_hash: exact filters over parsed
 //     metadata. Lens hashes are first 16 Keccak-256 bytes of decoded WASM.
@@ -135,36 +140,31 @@ func (q queryServer) Views(goCtx context.Context, req *types.QueryViewsRequest) 
 	}
 
 	ctx := sdk.UnwrapSDKContext(goCtx)
-	views, pageRes, err := q.Keeper.GetAllViews(ctx, req.Pagination)
-	if err != nil {
-		return nil, status.Error(codes.Internal, err.Error())
-	}
-
 	needsMetadata := req.IncludeMetadata || hasMetadataFilter(req)
-	filtered := make([]types.View, 0, len(views))
-	for _, v := range views {
+	filtered := make([]types.View, 0)
+	pageRes, err := q.Keeper.FilterViews(ctx, req.Pagination, func(v types.View, accumulate bool) (bool, error) {
 		if req.SinceBlock > 0 && v.Height < req.SinceBlock {
-			continue
+			return false, nil
 		}
-		if req.Name != "" && v.Name != req.Name {
-			continue
+		if req.Name != "" && !containsFold(v.Name, req.Name) {
+			return false, nil
 		}
 		if req.Creator != "" && v.Creator != req.Creator {
-			continue
+			return false, nil
 		}
 
 		if needsMetadata {
 			metadata, err := deriveViewMetadata(v.Data)
 			if err != nil {
 				if hasMetadataFilter(req) {
-					continue
+					return false, nil
 				}
 				if req.IncludeMetadata {
 					v.Metadata = &types.ViewMetadata{ParseError: err.Error()}
 				}
 			} else {
 				if !metadataMatches(metadata, req) {
-					continue
+					return false, nil
 				}
 				if req.IncludeMetadata {
 					v.Metadata = metadata
@@ -175,7 +175,14 @@ func (q queryServer) Views(goCtx context.Context, req *types.QueryViewsRequest) 
 		if !req.IncludeData {
 			v.Data = nil
 		}
-		filtered = append(filtered, v)
+
+		if accumulate {
+			filtered = append(filtered, v)
+		}
+		return true, nil
+	})
+	if err != nil {
+		return nil, status.Error(codes.Internal, err.Error())
 	}
 
 	return &types.QueryViewsResponse{

@@ -343,7 +343,7 @@ func (s *KeeperTestSuite) TestQueryServer_Views_FilterByNameAndCreator() {
 
 	resp, err := qs.Views(s.ctx, &types.QueryViewsRequest{
 		Pagination: &query.PageRequest{Limit: 100},
-		Name:       "V2",
+		Name:       "v2",
 	})
 	s.Require().NoError(err)
 	s.Require().Len(resp.Views, 2)
@@ -361,12 +361,38 @@ func (s *KeeperTestSuite) TestQueryServer_Views_FilterByNameAndCreator() {
 
 	resp, err = qs.Views(s.ctx, &types.QueryViewsRequest{
 		Pagination: &query.PageRequest{Limit: 100},
-		Name:       "V2",
+		Name:       "2",
 		Creator:    "c2",
 	})
 	s.Require().NoError(err)
 	s.Require().Len(resp.Views, 1)
 	s.Require().Equal("0x3", resp.Views[0].ContractAddress)
+}
+
+func (s *KeeperTestSuite) TestQueryServer_Views_FilterBeforePagination() {
+	_ = s.keeper.SetView(s.ctx, types.View{ContractAddress: "0x1", Name: "Alpha"})
+	_ = s.keeper.SetView(s.ctx, types.View{ContractAddress: "0x2", Name: "NeedleOne"})
+	_ = s.keeper.SetView(s.ctx, types.View{ContractAddress: "0x3", Name: "NeedleTwo"})
+
+	qs := keeper.NewQueryServerImpl(s.keeper)
+
+	resp, err := qs.Views(s.ctx, &types.QueryViewsRequest{
+		Pagination: &query.PageRequest{Limit: 1},
+		Name:       "needle",
+	})
+	s.Require().NoError(err)
+	s.Require().Len(resp.Views, 1)
+	s.Require().Equal("NeedleOne", resp.Views[0].Name)
+	s.Require().NotEmpty(resp.Pagination.NextKey)
+
+	resp, err = qs.Views(s.ctx, &types.QueryViewsRequest{
+		Pagination: &query.PageRequest{Key: resp.Pagination.NextKey, Limit: 1},
+		Name:       "needle",
+	})
+	s.Require().NoError(err)
+	s.Require().Len(resp.Views, 1)
+	s.Require().Equal("NeedleTwo", resp.Views[0].Name)
+	s.Require().Empty(resp.Pagination.NextKey)
 }
 
 func (s *KeeperTestSuite) TestQueryServer_Views_IncludeMetadata() {
