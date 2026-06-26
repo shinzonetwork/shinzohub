@@ -10,6 +10,8 @@ import (
 
 	circuitante "cosmossdk.io/x/circuit/ante"
 	ibcante "github.com/cosmos/ibc-go/v10/modules/core/ante"
+
+	"github.com/shinzonetwork/shinzohub/app/decorators"
 )
 
 // newCosmosAnteHandler creates the default ante handler for Cosmos transactions
@@ -39,5 +41,9 @@ func NewCosmosAnteHandler(options HandlerOptions) sdk.AnteHandler {
 		ante.NewIncrementSequenceDecorator(options.AccountKeeper),
 		ibcante.NewRedundantRelayDecorator(options.IBCKeeper),
 		evmante.NewGasWantedDecorator(options.EvmKeeper, options.FeeMarketKeeper),
+		// Last in the chain: emit participant index events only for txs that pass
+		// the ante checks (the set that lands in a block), into the finalized
+		// event manager that baseapp reads for ante events.
+		decorators.NewTxParticipantDecorator(),
 	)
 }
