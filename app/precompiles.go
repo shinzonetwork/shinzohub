@@ -34,9 +34,13 @@ import (
 	"github.com/ethereum/go-ethereum/core/vm"
 	"github.com/shinzonetwork/shinzohub/app/precompiles/hostregistry"
 	"github.com/shinzonetwork/shinzohub/app/precompiles/indexerregistry"
+	"github.com/shinzonetwork/shinzohub/app/precompiles/poolregistry"
+	"github.com/shinzonetwork/shinzohub/app/precompiles/querybalance"
 	"github.com/shinzonetwork/shinzohub/app/precompiles/viewregistry"
 	hostkeeper "github.com/shinzonetwork/shinzohub/x/host/keeper"
 	indexerkeeper "github.com/shinzonetwork/shinzohub/x/indexer/keeper"
+	poolkeeper "github.com/shinzonetwork/shinzohub/x/pool/keeper"
+	querybalancekeeper "github.com/shinzonetwork/shinzohub/x/querybalance/keeper"
 	sourcehubkeeper "github.com/shinzonetwork/shinzohub/x/sourcehub/keeper"
 	viewkeeper "github.com/shinzonetwork/shinzohub/x/view/keeper"
 )
@@ -74,6 +78,8 @@ func GetAvailableStaticPrecompiles() []string {
 		viewregistry.PrecompileAddress,
 		hostregistry.PrecompileAddress,
 		indexerregistry.PrecompileAddress,
+		poolregistry.PrecompileAddress,
+		querybalance.PrecompileAddress,
 	}
 
 	return append(evmtypes.AvailableStaticPrecompiles, customAvailableStaticPrecompiles...)
@@ -96,6 +102,8 @@ func NewAvailableStaticPrecompiles(
 	hostKeeper hostkeeper.Keeper,
 	indexerKeeper indexerkeeper.Keeper,
 	viewKeeper viewkeeper.Keeper,
+	poolKeeper poolkeeper.Keeper,
+	queryBalanceKeeper querybalancekeeper.Keeper,
 	sourcehubKeeper sourcehubkeeper.Keeper,
 	codec codec.Codec,
 	opts ...Option,
@@ -173,6 +181,16 @@ func NewAvailableStaticPrecompiles(
 		panic(fmt.Errorf("failed to instantiate indexer registry precompile: %w", err))
 	}
 
+	poolRegistryPrecompile, err := poolregistry.NewPrecompile(precompileBaseGas, poolKeeper)
+	if err != nil {
+		panic(fmt.Errorf("failed to instantiate pool registry precompile: %w", err))
+	}
+
+	queryBalancePrecompile, err := querybalance.NewPrecompile(precompileBaseGas, queryBalanceKeeper, stakingKeeper)
+	if err != nil {
+		panic(fmt.Errorf("failed to instantiate query balance precompile: %w", err))
+	}
+
 	// Stateless precompiles
 	precompiles[bech32Precompile.Address()] = bech32Precompile
 	precompiles[p256Precompile.Address()] = p256Precompile
@@ -188,6 +206,8 @@ func NewAvailableStaticPrecompiles(
 	precompiles[viewRegistryPrecompile.Address()] = viewRegistryPrecompile
 	precompiles[hostRegistryPrecompile.Address()] = hostRegistryPrecompile
 	precompiles[indexerRegistryPrecompile.Address()] = indexerRegistryPrecompile
+	precompiles[poolRegistryPrecompile.Address()] = poolRegistryPrecompile
+	precompiles[queryBalancePrecompile.Address()] = queryBalancePrecompile
 
 	return precompiles
 }

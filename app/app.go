@@ -838,6 +838,8 @@ func NewChainApp(
 		app.HostKeeper,
 		app.IndexerKeeper,
 		app.ViewKeeper,
+		app.PoolKeeper,
+		app.QueryBalanceKeeper,
 		app.SourcehubKeeper,
 		appCodec,
 	)
