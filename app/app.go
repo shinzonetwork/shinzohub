@@ -166,6 +166,9 @@ import (
 	indexermod "github.com/shinzonetwork/shinzohub/x/indexer"
 	indexerkeeper "github.com/shinzonetwork/shinzohub/x/indexer/keeper"
 	indexertypes "github.com/shinzonetwork/shinzohub/x/indexer/types"
+	poolmod "github.com/shinzonetwork/shinzohub/x/pool"
+	poolkeeper "github.com/shinzonetwork/shinzohub/x/pool/keeper"
+	pooltypes "github.com/shinzonetwork/shinzohub/x/pool/types"
 	sourcehub "github.com/shinzonetwork/shinzohub/x/sourcehub"
 	sourcehubkeeper "github.com/shinzonetwork/shinzohub/x/sourcehub/keeper"
 	sourcehubtypes "github.com/shinzonetwork/shinzohub/x/sourcehub/types"
@@ -304,6 +307,7 @@ type ChainApp struct {
 	HostKeeper      hostkeeper.Keeper
 	IndexerKeeper   indexerkeeper.Keeper
 	ViewKeeper      viewkeeper.Keeper
+	PoolKeeper      poolkeeper.Keeper
 	// the module manager
 	ModuleManager      *module.Manager
 	BasicModuleManager module.BasicManager
@@ -419,6 +423,7 @@ func NewChainApp(
 		hosttypes.StoreKey,
 		indexertypes.StoreKey,
 		viewtypes.StoreKey,
+		pooltypes.StoreKey,
 	)
 
 	tkeys := storetypes.NewTransientStoreKeys(
@@ -779,6 +784,14 @@ func NewChainApp(
 		&app.SourcehubKeeper,
 	)
 
+	app.PoolKeeper = poolkeeper.NewKeeper(
+		appCodec,
+		runtime.NewKVStoreService(keys[pooltypes.StoreKey]),
+		app.ViewKeeper,
+		app.BankKeeper,
+		authority,
+	)
+
 	app.SourcehubKeeper.RegisterAckCallback(
 		sourcehubtypes.RequestKind_REQUEST_KIND_REGISTER_OBJECT,
 		viewkeeper.NewAckCallback(app.ViewKeeper),
@@ -932,6 +945,11 @@ func NewChainApp(
 			app.ViewKeeper,
 			runtime.NewKVStoreService(keys[viewtypes.StoreKey]),
 		),
+		poolmod.NewAppModule(
+			appCodec,
+			app.PoolKeeper,
+			runtime.NewKVStoreService(keys[pooltypes.StoreKey]),
+		),
 	)
 
 	// BasicModuleManager defines the module BasicManager is in charge of setting up basic,
@@ -979,6 +997,7 @@ func NewChainApp(
 		hosttypes.ModuleName,
 		indexertypes.ModuleName,
 		viewtypes.ModuleName,
+		pooltypes.ModuleName,
 	)
 
 	app.ModuleManager.SetOrderEndBlockers(
@@ -1000,6 +1019,7 @@ func NewChainApp(
 		hosttypes.ModuleName,
 		indexertypes.ModuleName,
 		viewtypes.ModuleName,
+		pooltypes.ModuleName,
 	)
 
 	// NOTE: The genutils module must occur after staking so that pools are
@@ -1048,6 +1068,7 @@ func NewChainApp(
 		hosttypes.ModuleName,
 		indexertypes.ModuleName,
 		viewtypes.ModuleName,
+		pooltypes.ModuleName,
 	}
 	app.ModuleManager.SetOrderInitGenesis(genesisModuleOrder...)
 	app.ModuleManager.SetOrderExportGenesis(genesisModuleOrder...)
