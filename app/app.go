@@ -169,6 +169,9 @@ import (
 	poolmod "github.com/shinzonetwork/shinzohub/x/pool"
 	poolkeeper "github.com/shinzonetwork/shinzohub/x/pool/keeper"
 	pooltypes "github.com/shinzonetwork/shinzohub/x/pool/types"
+	querybalancemod "github.com/shinzonetwork/shinzohub/x/querybalance"
+	querybalancekeeper "github.com/shinzonetwork/shinzohub/x/querybalance/keeper"
+	querybalancetypes "github.com/shinzonetwork/shinzohub/x/querybalance/types"
 	sourcehub "github.com/shinzonetwork/shinzohub/x/sourcehub"
 	sourcehubkeeper "github.com/shinzonetwork/shinzohub/x/sourcehub/keeper"
 	sourcehubtypes "github.com/shinzonetwork/shinzohub/x/sourcehub/types"
@@ -241,11 +244,12 @@ var maccPerms = map[string][]string{
 	feemarkettypes.ModuleName:   nil,
 	erc20types.ModuleName:       {authtypes.Minter, authtypes.Burner},
 
-	admintypes.ModuleName:     nil,
-		sourcehubtypes.ModuleName: nil,
-		hosttypes.ModuleName:      nil,
-		indexertypes.ModuleName:   nil,
-		viewtypes.ModuleName:      nil,
+	admintypes.ModuleName:        nil,
+	sourcehubtypes.ModuleName:    nil,
+	hosttypes.ModuleName:         nil,
+	indexertypes.ModuleName:      nil,
+	viewtypes.ModuleName:         nil,
+	querybalancetypes.ModuleName: nil,
 }
 
 var (
@@ -302,12 +306,13 @@ type ChainApp struct {
 	ScopedTransferKeeper      capabilitykeeper.ScopedKeeper
 	ScopedIBCFeeKeeper        capabilitykeeper.ScopedKeeper
 
-	AdminKeeper     adminkeeper.Keeper
-	SourcehubKeeper sourcehubkeeper.Keeper
-	HostKeeper      hostkeeper.Keeper
-	IndexerKeeper   indexerkeeper.Keeper
-	ViewKeeper      viewkeeper.Keeper
-	PoolKeeper      poolkeeper.Keeper
+	AdminKeeper        adminkeeper.Keeper
+	SourcehubKeeper    sourcehubkeeper.Keeper
+	HostKeeper         hostkeeper.Keeper
+	IndexerKeeper      indexerkeeper.Keeper
+	ViewKeeper         viewkeeper.Keeper
+	PoolKeeper         poolkeeper.Keeper
+	QueryBalanceKeeper querybalancekeeper.Keeper
 	// the module manager
 	ModuleManager      *module.Manager
 	BasicModuleManager module.BasicManager
@@ -424,6 +429,7 @@ func NewChainApp(
 		indexertypes.StoreKey,
 		viewtypes.StoreKey,
 		pooltypes.StoreKey,
+		querybalancetypes.StoreKey,
 	)
 
 	tkeys := storetypes.NewTransientStoreKeys(
@@ -792,6 +798,13 @@ func NewChainApp(
 		authority,
 	)
 
+	app.QueryBalanceKeeper = querybalancekeeper.NewKeeper(
+		appCodec,
+		runtime.NewKVStoreService(keys[querybalancetypes.StoreKey]),
+		app.BankKeeper,
+		authority,
+	)
+
 	app.SourcehubKeeper.RegisterAckCallback(
 		sourcehubtypes.RequestKind_REQUEST_KIND_REGISTER_OBJECT,
 		viewkeeper.NewAckCallback(app.ViewKeeper),
@@ -950,6 +963,11 @@ func NewChainApp(
 			app.PoolKeeper,
 			runtime.NewKVStoreService(keys[pooltypes.StoreKey]),
 		),
+		querybalancemod.NewAppModule(
+			appCodec,
+			app.QueryBalanceKeeper,
+			runtime.NewKVStoreService(keys[querybalancetypes.StoreKey]),
+		),
 	)
 
 	// BasicModuleManager defines the module BasicManager is in charge of setting up basic,
@@ -997,6 +1015,7 @@ func NewChainApp(
 		hosttypes.ModuleName,
 		indexertypes.ModuleName,
 		viewtypes.ModuleName,
+		querybalancetypes.ModuleName,
 		pooltypes.ModuleName,
 	)
 
@@ -1019,6 +1038,7 @@ func NewChainApp(
 		hosttypes.ModuleName,
 		indexertypes.ModuleName,
 		viewtypes.ModuleName,
+		querybalancetypes.ModuleName,
 		pooltypes.ModuleName,
 	)
 
@@ -1068,6 +1088,7 @@ func NewChainApp(
 		hosttypes.ModuleName,
 		indexertypes.ModuleName,
 		viewtypes.ModuleName,
+		querybalancetypes.ModuleName,
 		pooltypes.ModuleName,
 	}
 	app.ModuleManager.SetOrderInitGenesis(genesisModuleOrder...)
