@@ -34,9 +34,11 @@ import (
 	"github.com/ethereum/go-ethereum/core/vm"
 	"github.com/shinzonetwork/shinzohub/app/precompiles/hostregistry"
 	"github.com/shinzonetwork/shinzohub/app/precompiles/indexerregistry"
+	"github.com/shinzonetwork/shinzohub/app/precompiles/settlement"
 	"github.com/shinzonetwork/shinzohub/app/precompiles/viewregistry"
 	hostkeeper "github.com/shinzonetwork/shinzohub/x/host/keeper"
 	indexerkeeper "github.com/shinzonetwork/shinzohub/x/indexer/keeper"
+	settlementkeeper "github.com/shinzonetwork/shinzohub/x/settlement/keeper"
 	sourcehubkeeper "github.com/shinzonetwork/shinzohub/x/sourcehub/keeper"
 	viewkeeper "github.com/shinzonetwork/shinzohub/x/view/keeper"
 )
@@ -74,6 +76,7 @@ func GetAvailableStaticPrecompiles() []string {
 		viewregistry.PrecompileAddress,
 		hostregistry.PrecompileAddress,
 		indexerregistry.PrecompileAddress,
+		settlement.PrecompileAddress,
 	}
 
 	return append(evmtypes.AvailableStaticPrecompiles, customAvailableStaticPrecompiles...)
@@ -96,6 +99,7 @@ func NewAvailableStaticPrecompiles(
 	hostKeeper hostkeeper.Keeper,
 	indexerKeeper indexerkeeper.Keeper,
 	viewKeeper viewkeeper.Keeper,
+	settlementKeeper settlementkeeper.Keeper,
 	sourcehubKeeper sourcehubkeeper.Keeper,
 	codec codec.Codec,
 	opts ...Option,
@@ -173,6 +177,11 @@ func NewAvailableStaticPrecompiles(
 		panic(fmt.Errorf("failed to instantiate indexer registry precompile: %w", err))
 	}
 
+	settlementPrecompile, err := settlement.NewPrecompile(precompileBaseGas, settlementKeeper)
+	if err != nil {
+		panic(fmt.Errorf("failed to instantiate settlement precompile: %w", err))
+	}
+
 	// Stateless precompiles
 	precompiles[bech32Precompile.Address()] = bech32Precompile
 	precompiles[p256Precompile.Address()] = p256Precompile
@@ -188,6 +197,7 @@ func NewAvailableStaticPrecompiles(
 	precompiles[viewRegistryPrecompile.Address()] = viewRegistryPrecompile
 	precompiles[hostRegistryPrecompile.Address()] = hostRegistryPrecompile
 	precompiles[indexerRegistryPrecompile.Address()] = indexerRegistryPrecompile
+	precompiles[settlementPrecompile.Address()] = settlementPrecompile
 
 	return precompiles
 }

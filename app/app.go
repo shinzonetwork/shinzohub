@@ -825,6 +825,7 @@ func NewChainApp(
 		app.HostKeeper,
 		app.IndexerKeeper,
 		app.ViewKeeper,
+		app.SettlementKeeper,
 		app.SourcehubKeeper,
 		appCodec,
 	)
