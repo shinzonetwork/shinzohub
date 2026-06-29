@@ -19,8 +19,9 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	Query_Balance_FullMethodName  = "/shinzonetwork.settlement.v1.Query/Balance"
-	Query_Balances_FullMethodName = "/shinzonetwork.settlement.v1.Query/Balances"
+	Query_Balance_FullMethodName          = "/shinzonetwork.settlement.v1.Query/Balance"
+	Query_Balances_FullMethodName         = "/shinzonetwork.settlement.v1.Query/Balances"
+	Query_EffectiveBalance_FullMethodName = "/shinzonetwork.settlement.v1.Query/EffectiveBalance"
 )
 
 // QueryClient is the client API for Query service.
@@ -29,6 +30,10 @@ const (
 type QueryClient interface {
 	Balance(ctx context.Context, in *QueryBalanceRequest, opts ...grpc.CallOption) (*QueryBalanceResponse, error)
 	Balances(ctx context.Context, in *QueryBalancesRequest, opts ...grpc.CallOption) (*QueryBalancesResponse, error)
+	// EffectiveBalance returns the gateway-visible spendable balance for an
+	// address: actual querybalance minus the sum of pending debits queued
+	// for that address across all unsettled epochs (clamped at zero).
+	EffectiveBalance(ctx context.Context, in *QueryEffectiveBalanceRequest, opts ...grpc.CallOption) (*QueryEffectiveBalanceResponse, error)
 }
 
 type queryClient struct {
@@ -59,12 +64,26 @@ func (c *queryClient) Balances(ctx context.Context, in *QueryBalancesRequest, op
 	return out, nil
 }
 
+func (c *queryClient) EffectiveBalance(ctx context.Context, in *QueryEffectiveBalanceRequest, opts ...grpc.CallOption) (*QueryEffectiveBalanceResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(QueryEffectiveBalanceResponse)
+	err := c.cc.Invoke(ctx, Query_EffectiveBalance_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // QueryServer is the server API for Query service.
 // All implementations must embed UnimplementedQueryServer
 // for forward compatibility.
 type QueryServer interface {
 	Balance(context.Context, *QueryBalanceRequest) (*QueryBalanceResponse, error)
 	Balances(context.Context, *QueryBalancesRequest) (*QueryBalancesResponse, error)
+	// EffectiveBalance returns the gateway-visible spendable balance for an
+	// address: actual querybalance minus the sum of pending debits queued
+	// for that address across all unsettled epochs (clamped at zero).
+	EffectiveBalance(context.Context, *QueryEffectiveBalanceRequest) (*QueryEffectiveBalanceResponse, error)
 	mustEmbedUnimplementedQueryServer()
 }
 
@@ -80,6 +99,9 @@ func (UnimplementedQueryServer) Balance(context.Context, *QueryBalanceRequest) (
 }
 func (UnimplementedQueryServer) Balances(context.Context, *QueryBalancesRequest) (*QueryBalancesResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Balances not implemented")
+}
+func (UnimplementedQueryServer) EffectiveBalance(context.Context, *QueryEffectiveBalanceRequest) (*QueryEffectiveBalanceResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method EffectiveBalance not implemented")
 }
 func (UnimplementedQueryServer) mustEmbedUnimplementedQueryServer() {}
 func (UnimplementedQueryServer) testEmbeddedByValue()               {}
@@ -138,6 +160,24 @@ func _Query_Balances_Handler(srv interface{}, ctx context.Context, dec func(inte
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Query_EffectiveBalance_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(QueryEffectiveBalanceRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(QueryServer).EffectiveBalance(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Query_EffectiveBalance_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(QueryServer).EffectiveBalance(ctx, req.(*QueryEffectiveBalanceRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Query_ServiceDesc is the grpc.ServiceDesc for Query service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -152,6 +192,10 @@ var Query_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "Balances",
 			Handler:    _Query_Balances_Handler,
+		},
+		{
+			MethodName: "EffectiveBalance",
+			Handler:    _Query_EffectiveBalance_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

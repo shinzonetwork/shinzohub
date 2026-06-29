@@ -55,3 +55,29 @@ func (q queryServer) Balances(goCtx context.Context, req *types.QueryBalancesReq
 		Pagination: pageRes,
 	}, nil
 }
+
+func (q queryServer) EffectiveBalance(goCtx context.Context, req *types.QueryEffectiveBalanceRequest) (*types.QueryEffectiveBalanceResponse, error) {
+	if req == nil {
+		return nil, status.Error(codes.InvalidArgument, "empty request")
+	}
+	if req.Address == "" {
+		return nil, status.Error(codes.InvalidArgument, "address is required")
+	}
+	ctx := sdk.UnwrapSDKContext(goCtx)
+
+	holder, err := sdk.AccAddressFromBech32(req.Address)
+	if err != nil {
+		return nil, status.Error(codes.InvalidArgument, "invalid bech32 address")
+	}
+
+	actual := q.Keeper.QueryBalanceKeeper().GetBalance(ctx, holder)
+	pending := q.Keeper.GetPendingDebitTotal(ctx, holder)
+	effective := q.Keeper.GetEffectiveBalance(ctx, holder)
+
+	return &types.QueryEffectiveBalanceResponse{
+		Address:      holder.String(),
+		Actual:       actual.String(),
+		PendingDebit: pending.String(),
+		Effective:    effective.String(),
+	}, nil
+}

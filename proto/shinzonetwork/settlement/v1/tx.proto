@@ -3,6 +3,7 @@ syntax = "proto3";
 package shinzonetwork.settlement.v1;
 
 import "cosmos/msg/v1/msg.proto";
+import "gogoproto/gogo.proto";
 
 option go_package = "github.com/shinzonetwork/shinzohub/x/settlement/types";
 
@@ -13,6 +14,15 @@ service Msg {
   // settlement balance to their wallet. The module mints fresh SHINUSD into
   // its module account and transfers it to the claimer.
   rpc Claim(MsgClaim) returns (MsgClaimResponse);
+
+  // AccountSettle applies an epoch's worth of off-chain accounting:
+  //   - payments: DID-keyed credits to hosts and indexers
+  //   - debits: address-keyed deductions from querybalance (drain-to-zero)
+  //   - pools: per-pool stats (currently ignored on-chain, kept in the wire
+  //            format for future processing)
+  // The chain validates the epoch number against its own clock and rejects
+  // replays via the LastSettledEpoch cursor.
+  rpc AccountSettle(MsgAccountSettle) returns (MsgAccountSettleResponse);
 }
 
 message MsgClaim {
@@ -24,4 +34,42 @@ message MsgClaim {
 
 message MsgClaimResponse {
   string remaining = 1;
+}
+
+message MsgAccountSettle {
+  option (cosmos.msg.v1.signer) = "submitter";
+
+  string submitter = 1;
+  uint64 epoch = 2;
+
+  repeated SettlePayment payments = 3 [(gogoproto.nullable) = false];
+  repeated SettleDebit   debits   = 4 [(gogoproto.nullable) = false];
+  repeated PoolUpdate    pools    = 5 [(gogoproto.nullable) = false];
+}
+
+message SettlePayment {
+  string did = 1;
+  string amount = 2;
+}
+
+message SettleDebit {
+  string address = 1;
+  string amount = 2;
+}
+
+message PoolUpdate {
+  string pool_address = 1;
+  string price = 2;
+  uint64 utilization = 3;
+  string rewards = 4;
+  uint64 number_of_queries = 5;
+}
+
+message MsgAccountSettleResponse {
+  uint64 epoch            = 1;
+  uint64 payments_applied = 2;
+  uint64 debits_applied   = 3;
+  string total_credited   = 4;
+  string total_debited    = 5;
+  uint64 pools_updated    = 6;
 }

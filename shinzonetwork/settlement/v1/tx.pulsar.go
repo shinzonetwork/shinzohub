@@ -5,6 +5,7 @@ import (
 	_ "cosmossdk.io/api/cosmos/msg/v1"
 	fmt "fmt"
 	runtime "github.com/cosmos/cosmos-proto/runtime"
+	_ "github.com/cosmos/gogoproto/gogoproto"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoiface "google.golang.org/protobuf/runtime/protoiface"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
@@ -917,6 +918,3176 @@ func (x *fastReflection_MsgClaimResponse) ProtoMethods() *protoiface.Methods {
 	}
 }
 
+var _ protoreflect.List = (*_MsgAccountSettle_3_list)(nil)
+
+type _MsgAccountSettle_3_list struct {
+	list *[]*SettlePayment
+}
+
+func (x *_MsgAccountSettle_3_list) Len() int {
+	if x.list == nil {
+		return 0
+	}
+	return len(*x.list)
+}
+
+func (x *_MsgAccountSettle_3_list) Get(i int) protoreflect.Value {
+	return protoreflect.ValueOfMessage((*x.list)[i].ProtoReflect())
+}
+
+func (x *_MsgAccountSettle_3_list) Set(i int, value protoreflect.Value) {
+	valueUnwrapped := value.Message()
+	concreteValue := valueUnwrapped.Interface().(*SettlePayment)
+	(*x.list)[i] = concreteValue
+}
+
+func (x *_MsgAccountSettle_3_list) Append(value protoreflect.Value) {
+	valueUnwrapped := value.Message()
+	concreteValue := valueUnwrapped.Interface().(*SettlePayment)
+	*x.list = append(*x.list, concreteValue)
+}
+
+func (x *_MsgAccountSettle_3_list) AppendMutable() protoreflect.Value {
+	v := new(SettlePayment)
+	*x.list = append(*x.list, v)
+	return protoreflect.ValueOfMessage(v.ProtoReflect())
+}
+
+func (x *_MsgAccountSettle_3_list) Truncate(n int) {
+	for i := n; i < len(*x.list); i++ {
+		(*x.list)[i] = nil
+	}
+	*x.list = (*x.list)[:n]
+}
+
+func (x *_MsgAccountSettle_3_list) NewElement() protoreflect.Value {
+	v := new(SettlePayment)
+	return protoreflect.ValueOfMessage(v.ProtoReflect())
+}
+
+func (x *_MsgAccountSettle_3_list) IsValid() bool {
+	return x.list != nil
+}
+
+var _ protoreflect.List = (*_MsgAccountSettle_4_list)(nil)
+
+type _MsgAccountSettle_4_list struct {
+	list *[]*SettleDebit
+}
+
+func (x *_MsgAccountSettle_4_list) Len() int {
+	if x.list == nil {
+		return 0
+	}
+	return len(*x.list)
+}
+
+func (x *_MsgAccountSettle_4_list) Get(i int) protoreflect.Value {
+	return protoreflect.ValueOfMessage((*x.list)[i].ProtoReflect())
+}
+
+func (x *_MsgAccountSettle_4_list) Set(i int, value protoreflect.Value) {
+	valueUnwrapped := value.Message()
+	concreteValue := valueUnwrapped.Interface().(*SettleDebit)
+	(*x.list)[i] = concreteValue
+}
+
+func (x *_MsgAccountSettle_4_list) Append(value protoreflect.Value) {
+	valueUnwrapped := value.Message()
+	concreteValue := valueUnwrapped.Interface().(*SettleDebit)
+	*x.list = append(*x.list, concreteValue)
+}
+
+func (x *_MsgAccountSettle_4_list) AppendMutable() protoreflect.Value {
+	v := new(SettleDebit)
+	*x.list = append(*x.list, v)
+	return protoreflect.ValueOfMessage(v.ProtoReflect())
+}
+
+func (x *_MsgAccountSettle_4_list) Truncate(n int) {
+	for i := n; i < len(*x.list); i++ {
+		(*x.list)[i] = nil
+	}
+	*x.list = (*x.list)[:n]
+}
+
+func (x *_MsgAccountSettle_4_list) NewElement() protoreflect.Value {
+	v := new(SettleDebit)
+	return protoreflect.ValueOfMessage(v.ProtoReflect())
+}
+
+func (x *_MsgAccountSettle_4_list) IsValid() bool {
+	return x.list != nil
+}
+
+var _ protoreflect.List = (*_MsgAccountSettle_5_list)(nil)
+
+type _MsgAccountSettle_5_list struct {
+	list *[]*PoolUpdate
+}
+
+func (x *_MsgAccountSettle_5_list) Len() int {
+	if x.list == nil {
+		return 0
+	}
+	return len(*x.list)
+}
+
+func (x *_MsgAccountSettle_5_list) Get(i int) protoreflect.Value {
+	return protoreflect.ValueOfMessage((*x.list)[i].ProtoReflect())
+}
+
+func (x *_MsgAccountSettle_5_list) Set(i int, value protoreflect.Value) {
+	valueUnwrapped := value.Message()
+	concreteValue := valueUnwrapped.Interface().(*PoolUpdate)
+	(*x.list)[i] = concreteValue
+}
+
+func (x *_MsgAccountSettle_5_list) Append(value protoreflect.Value) {
+	valueUnwrapped := value.Message()
+	concreteValue := valueUnwrapped.Interface().(*PoolUpdate)
+	*x.list = append(*x.list, concreteValue)
+}
+
+func (x *_MsgAccountSettle_5_list) AppendMutable() protoreflect.Value {
+	v := new(PoolUpdate)
+	*x.list = append(*x.list, v)
+	return protoreflect.ValueOfMessage(v.ProtoReflect())
+}
+
+func (x *_MsgAccountSettle_5_list) Truncate(n int) {
+	for i := n; i < len(*x.list); i++ {
+		(*x.list)[i] = nil
+	}
+	*x.list = (*x.list)[:n]
+}
+
+func (x *_MsgAccountSettle_5_list) NewElement() protoreflect.Value {
+	v := new(PoolUpdate)
+	return protoreflect.ValueOfMessage(v.ProtoReflect())
+}
+
+func (x *_MsgAccountSettle_5_list) IsValid() bool {
+	return x.list != nil
+}
+
+var (
+	md_MsgAccountSettle           protoreflect.MessageDescriptor
+	fd_MsgAccountSettle_submitter protoreflect.FieldDescriptor
+	fd_MsgAccountSettle_epoch     protoreflect.FieldDescriptor
+	fd_MsgAccountSettle_payments  protoreflect.FieldDescriptor
+	fd_MsgAccountSettle_debits    protoreflect.FieldDescriptor
+	fd_MsgAccountSettle_pools     protoreflect.FieldDescriptor
+)
+
+func init() {
+	file_shinzonetwork_settlement_v1_tx_proto_init()
+	md_MsgAccountSettle = File_shinzonetwork_settlement_v1_tx_proto.Messages().ByName("MsgAccountSettle")
+	fd_MsgAccountSettle_submitter = md_MsgAccountSettle.Fields().ByName("submitter")
+	fd_MsgAccountSettle_epoch = md_MsgAccountSettle.Fields().ByName("epoch")
+	fd_MsgAccountSettle_payments = md_MsgAccountSettle.Fields().ByName("payments")
+	fd_MsgAccountSettle_debits = md_MsgAccountSettle.Fields().ByName("debits")
+	fd_MsgAccountSettle_pools = md_MsgAccountSettle.Fields().ByName("pools")
+}
+
+var _ protoreflect.Message = (*fastReflection_MsgAccountSettle)(nil)
+
+type fastReflection_MsgAccountSettle MsgAccountSettle
+
+func (x *MsgAccountSettle) ProtoReflect() protoreflect.Message {
+	return (*fastReflection_MsgAccountSettle)(x)
+}
+
+func (x *MsgAccountSettle) slowProtoReflect() protoreflect.Message {
+	mi := &file_shinzonetwork_settlement_v1_tx_proto_msgTypes[2]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+var _fastReflection_MsgAccountSettle_messageType fastReflection_MsgAccountSettle_messageType
+var _ protoreflect.MessageType = fastReflection_MsgAccountSettle_messageType{}
+
+type fastReflection_MsgAccountSettle_messageType struct{}
+
+func (x fastReflection_MsgAccountSettle_messageType) Zero() protoreflect.Message {
+	return (*fastReflection_MsgAccountSettle)(nil)
+}
+func (x fastReflection_MsgAccountSettle_messageType) New() protoreflect.Message {
+	return new(fastReflection_MsgAccountSettle)
+}
+func (x fastReflection_MsgAccountSettle_messageType) Descriptor() protoreflect.MessageDescriptor {
+	return md_MsgAccountSettle
+}
+
+// Descriptor returns message descriptor, which contains only the protobuf
+// type information for the message.
+func (x *fastReflection_MsgAccountSettle) Descriptor() protoreflect.MessageDescriptor {
+	return md_MsgAccountSettle
+}
+
+// Type returns the message type, which encapsulates both Go and protobuf
+// type information. If the Go type information is not needed,
+// it is recommended that the message descriptor be used instead.
+func (x *fastReflection_MsgAccountSettle) Type() protoreflect.MessageType {
+	return _fastReflection_MsgAccountSettle_messageType
+}
+
+// New returns a newly allocated and mutable empty message.
+func (x *fastReflection_MsgAccountSettle) New() protoreflect.Message {
+	return new(fastReflection_MsgAccountSettle)
+}
+
+// Interface unwraps the message reflection interface and
+// returns the underlying ProtoMessage interface.
+func (x *fastReflection_MsgAccountSettle) Interface() protoreflect.ProtoMessage {
+	return (*MsgAccountSettle)(x)
+}
+
+// Range iterates over every populated field in an undefined order,
+// calling f for each field descriptor and value encountered.
+// Range returns immediately if f returns false.
+// While iterating, mutating operations may only be performed
+// on the current field descriptor.
+func (x *fastReflection_MsgAccountSettle) Range(f func(protoreflect.FieldDescriptor, protoreflect.Value) bool) {
+	if x.Submitter != "" {
+		value := protoreflect.ValueOfString(x.Submitter)
+		if !f(fd_MsgAccountSettle_submitter, value) {
+			return
+		}
+	}
+	if x.Epoch != uint64(0) {
+		value := protoreflect.ValueOfUint64(x.Epoch)
+		if !f(fd_MsgAccountSettle_epoch, value) {
+			return
+		}
+	}
+	if len(x.Payments) != 0 {
+		value := protoreflect.ValueOfList(&_MsgAccountSettle_3_list{list: &x.Payments})
+		if !f(fd_MsgAccountSettle_payments, value) {
+			return
+		}
+	}
+	if len(x.Debits) != 0 {
+		value := protoreflect.ValueOfList(&_MsgAccountSettle_4_list{list: &x.Debits})
+		if !f(fd_MsgAccountSettle_debits, value) {
+			return
+		}
+	}
+	if len(x.Pools) != 0 {
+		value := protoreflect.ValueOfList(&_MsgAccountSettle_5_list{list: &x.Pools})
+		if !f(fd_MsgAccountSettle_pools, value) {
+			return
+		}
+	}
+}
+
+// Has reports whether a field is populated.
+//
+// Some fields have the property of nullability where it is possible to
+// distinguish between the default value of a field and whether the field
+// was explicitly populated with the default value. Singular message fields,
+// member fields of a oneof, and proto2 scalar fields are nullable. Such
+// fields are populated only if explicitly set.
+//
+// In other cases (aside from the nullable cases above),
+// a proto3 scalar field is populated if it contains a non-zero value, and
+// a repeated field is populated if it is non-empty.
+func (x *fastReflection_MsgAccountSettle) Has(fd protoreflect.FieldDescriptor) bool {
+	switch fd.FullName() {
+	case "shinzonetwork.settlement.v1.MsgAccountSettle.submitter":
+		return x.Submitter != ""
+	case "shinzonetwork.settlement.v1.MsgAccountSettle.epoch":
+		return x.Epoch != uint64(0)
+	case "shinzonetwork.settlement.v1.MsgAccountSettle.payments":
+		return len(x.Payments) != 0
+	case "shinzonetwork.settlement.v1.MsgAccountSettle.debits":
+		return len(x.Debits) != 0
+	case "shinzonetwork.settlement.v1.MsgAccountSettle.pools":
+		return len(x.Pools) != 0
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: shinzonetwork.settlement.v1.MsgAccountSettle"))
+		}
+		panic(fmt.Errorf("message shinzonetwork.settlement.v1.MsgAccountSettle does not contain field %s", fd.FullName()))
+	}
+}
+
+// Clear clears the field such that a subsequent Has call reports false.
+//
+// Clearing an extension field clears both the extension type and value
+// associated with the given field number.
+//
+// Clear is a mutating operation and unsafe for concurrent use.
+func (x *fastReflection_MsgAccountSettle) Clear(fd protoreflect.FieldDescriptor) {
+	switch fd.FullName() {
+	case "shinzonetwork.settlement.v1.MsgAccountSettle.submitter":
+		x.Submitter = ""
+	case "shinzonetwork.settlement.v1.MsgAccountSettle.epoch":
+		x.Epoch = uint64(0)
+	case "shinzonetwork.settlement.v1.MsgAccountSettle.payments":
+		x.Payments = nil
+	case "shinzonetwork.settlement.v1.MsgAccountSettle.debits":
+		x.Debits = nil
+	case "shinzonetwork.settlement.v1.MsgAccountSettle.pools":
+		x.Pools = nil
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: shinzonetwork.settlement.v1.MsgAccountSettle"))
+		}
+		panic(fmt.Errorf("message shinzonetwork.settlement.v1.MsgAccountSettle does not contain field %s", fd.FullName()))
+	}
+}
+
+// Get retrieves the value for a field.
+//
+// For unpopulated scalars, it returns the default value, where
+// the default value of a bytes scalar is guaranteed to be a copy.
+// For unpopulated composite types, it returns an empty, read-only view
+// of the value; to obtain a mutable reference, use Mutable.
+func (x *fastReflection_MsgAccountSettle) Get(descriptor protoreflect.FieldDescriptor) protoreflect.Value {
+	switch descriptor.FullName() {
+	case "shinzonetwork.settlement.v1.MsgAccountSettle.submitter":
+		value := x.Submitter
+		return protoreflect.ValueOfString(value)
+	case "shinzonetwork.settlement.v1.MsgAccountSettle.epoch":
+		value := x.Epoch
+		return protoreflect.ValueOfUint64(value)
+	case "shinzonetwork.settlement.v1.MsgAccountSettle.payments":
+		if len(x.Payments) == 0 {
+			return protoreflect.ValueOfList(&_MsgAccountSettle_3_list{})
+		}
+		listValue := &_MsgAccountSettle_3_list{list: &x.Payments}
+		return protoreflect.ValueOfList(listValue)
+	case "shinzonetwork.settlement.v1.MsgAccountSettle.debits":
+		if len(x.Debits) == 0 {
+			return protoreflect.ValueOfList(&_MsgAccountSettle_4_list{})
+		}
+		listValue := &_MsgAccountSettle_4_list{list: &x.Debits}
+		return protoreflect.ValueOfList(listValue)
+	case "shinzonetwork.settlement.v1.MsgAccountSettle.pools":
+		if len(x.Pools) == 0 {
+			return protoreflect.ValueOfList(&_MsgAccountSettle_5_list{})
+		}
+		listValue := &_MsgAccountSettle_5_list{list: &x.Pools}
+		return protoreflect.ValueOfList(listValue)
+	default:
+		if descriptor.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: shinzonetwork.settlement.v1.MsgAccountSettle"))
+		}
+		panic(fmt.Errorf("message shinzonetwork.settlement.v1.MsgAccountSettle does not contain field %s", descriptor.FullName()))
+	}
+}
+
+// Set stores the value for a field.
+//
+// For a field belonging to a oneof, it implicitly clears any other field
+// that may be currently set within the same oneof.
+// For extension fields, it implicitly stores the provided ExtensionType.
+// When setting a composite type, it is unspecified whether the stored value
+// aliases the source's memory in any way. If the composite value is an
+// empty, read-only value, then it panics.
+//
+// Set is a mutating operation and unsafe for concurrent use.
+func (x *fastReflection_MsgAccountSettle) Set(fd protoreflect.FieldDescriptor, value protoreflect.Value) {
+	switch fd.FullName() {
+	case "shinzonetwork.settlement.v1.MsgAccountSettle.submitter":
+		x.Submitter = value.Interface().(string)
+	case "shinzonetwork.settlement.v1.MsgAccountSettle.epoch":
+		x.Epoch = value.Uint()
+	case "shinzonetwork.settlement.v1.MsgAccountSettle.payments":
+		lv := value.List()
+		clv := lv.(*_MsgAccountSettle_3_list)
+		x.Payments = *clv.list
+	case "shinzonetwork.settlement.v1.MsgAccountSettle.debits":
+		lv := value.List()
+		clv := lv.(*_MsgAccountSettle_4_list)
+		x.Debits = *clv.list
+	case "shinzonetwork.settlement.v1.MsgAccountSettle.pools":
+		lv := value.List()
+		clv := lv.(*_MsgAccountSettle_5_list)
+		x.Pools = *clv.list
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: shinzonetwork.settlement.v1.MsgAccountSettle"))
+		}
+		panic(fmt.Errorf("message shinzonetwork.settlement.v1.MsgAccountSettle does not contain field %s", fd.FullName()))
+	}
+}
+
+// Mutable returns a mutable reference to a composite type.
+//
+// If the field is unpopulated, it may allocate a composite value.
+// For a field belonging to a oneof, it implicitly clears any other field
+// that may be currently set within the same oneof.
+// For extension fields, it implicitly stores the provided ExtensionType
+// if not already stored.
+// It panics if the field does not contain a composite type.
+//
+// Mutable is a mutating operation and unsafe for concurrent use.
+func (x *fastReflection_MsgAccountSettle) Mutable(fd protoreflect.FieldDescriptor) protoreflect.Value {
+	switch fd.FullName() {
+	case "shinzonetwork.settlement.v1.MsgAccountSettle.payments":
+		if x.Payments == nil {
+			x.Payments = []*SettlePayment{}
+		}
+		value := &_MsgAccountSettle_3_list{list: &x.Payments}
+		return protoreflect.ValueOfList(value)
+	case "shinzonetwork.settlement.v1.MsgAccountSettle.debits":
+		if x.Debits == nil {
+			x.Debits = []*SettleDebit{}
+		}
+		value := &_MsgAccountSettle_4_list{list: &x.Debits}
+		return protoreflect.ValueOfList(value)
+	case "shinzonetwork.settlement.v1.MsgAccountSettle.pools":
+		if x.Pools == nil {
+			x.Pools = []*PoolUpdate{}
+		}
+		value := &_MsgAccountSettle_5_list{list: &x.Pools}
+		return protoreflect.ValueOfList(value)
+	case "shinzonetwork.settlement.v1.MsgAccountSettle.submitter":
+		panic(fmt.Errorf("field submitter of message shinzonetwork.settlement.v1.MsgAccountSettle is not mutable"))
+	case "shinzonetwork.settlement.v1.MsgAccountSettle.epoch":
+		panic(fmt.Errorf("field epoch of message shinzonetwork.settlement.v1.MsgAccountSettle is not mutable"))
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: shinzonetwork.settlement.v1.MsgAccountSettle"))
+		}
+		panic(fmt.Errorf("message shinzonetwork.settlement.v1.MsgAccountSettle does not contain field %s", fd.FullName()))
+	}
+}
+
+// NewField returns a new value that is assignable to the field
+// for the given descriptor. For scalars, this returns the default value.
+// For lists, maps, and messages, this returns a new, empty, mutable value.
+func (x *fastReflection_MsgAccountSettle) NewField(fd protoreflect.FieldDescriptor) protoreflect.Value {
+	switch fd.FullName() {
+	case "shinzonetwork.settlement.v1.MsgAccountSettle.submitter":
+		return protoreflect.ValueOfString("")
+	case "shinzonetwork.settlement.v1.MsgAccountSettle.epoch":
+		return protoreflect.ValueOfUint64(uint64(0))
+	case "shinzonetwork.settlement.v1.MsgAccountSettle.payments":
+		list := []*SettlePayment{}
+		return protoreflect.ValueOfList(&_MsgAccountSettle_3_list{list: &list})
+	case "shinzonetwork.settlement.v1.MsgAccountSettle.debits":
+		list := []*SettleDebit{}
+		return protoreflect.ValueOfList(&_MsgAccountSettle_4_list{list: &list})
+	case "shinzonetwork.settlement.v1.MsgAccountSettle.pools":
+		list := []*PoolUpdate{}
+		return protoreflect.ValueOfList(&_MsgAccountSettle_5_list{list: &list})
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: shinzonetwork.settlement.v1.MsgAccountSettle"))
+		}
+		panic(fmt.Errorf("message shinzonetwork.settlement.v1.MsgAccountSettle does not contain field %s", fd.FullName()))
+	}
+}
+
+// WhichOneof reports which field within the oneof is populated,
+// returning nil if none are populated.
+// It panics if the oneof descriptor does not belong to this message.
+func (x *fastReflection_MsgAccountSettle) WhichOneof(d protoreflect.OneofDescriptor) protoreflect.FieldDescriptor {
+	switch d.FullName() {
+	default:
+		panic(fmt.Errorf("%s is not a oneof field in shinzonetwork.settlement.v1.MsgAccountSettle", d.FullName()))
+	}
+	panic("unreachable")
+}
+
+// GetUnknown retrieves the entire list of unknown fields.
+// The caller may only mutate the contents of the RawFields
+// if the mutated bytes are stored back into the message with SetUnknown.
+func (x *fastReflection_MsgAccountSettle) GetUnknown() protoreflect.RawFields {
+	return x.unknownFields
+}
+
+// SetUnknown stores an entire list of unknown fields.
+// The raw fields must be syntactically valid according to the wire format.
+// An implementation may panic if this is not the case.
+// Once stored, the caller must not mutate the content of the RawFields.
+// An empty RawFields may be passed to clear the fields.
+//
+// SetUnknown is a mutating operation and unsafe for concurrent use.
+func (x *fastReflection_MsgAccountSettle) SetUnknown(fields protoreflect.RawFields) {
+	x.unknownFields = fields
+}
+
+// IsValid reports whether the message is valid.
+//
+// An invalid message is an empty, read-only value.
+//
+// An invalid message often corresponds to a nil pointer of the concrete
+// message type, but the details are implementation dependent.
+// Validity is not part of the protobuf data model, and may not
+// be preserved in marshaling or other operations.
+func (x *fastReflection_MsgAccountSettle) IsValid() bool {
+	return x != nil
+}
+
+// ProtoMethods returns optional fastReflectionFeature-path implementations of various operations.
+// This method may return nil.
+//
+// The returned methods type is identical to
+// "google.golang.org/protobuf/runtime/protoiface".Methods.
+// Consult the protoiface package documentation for details.
+func (x *fastReflection_MsgAccountSettle) ProtoMethods() *protoiface.Methods {
+	size := func(input protoiface.SizeInput) protoiface.SizeOutput {
+		x := input.Message.Interface().(*MsgAccountSettle)
+		if x == nil {
+			return protoiface.SizeOutput{
+				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+				Size:              0,
+			}
+		}
+		options := runtime.SizeInputToOptions(input)
+		_ = options
+		var n int
+		var l int
+		_ = l
+		l = len(x.Submitter)
+		if l > 0 {
+			n += 1 + l + runtime.Sov(uint64(l))
+		}
+		if x.Epoch != 0 {
+			n += 1 + runtime.Sov(uint64(x.Epoch))
+		}
+		if len(x.Payments) > 0 {
+			for _, e := range x.Payments {
+				l = options.Size(e)
+				n += 1 + l + runtime.Sov(uint64(l))
+			}
+		}
+		if len(x.Debits) > 0 {
+			for _, e := range x.Debits {
+				l = options.Size(e)
+				n += 1 + l + runtime.Sov(uint64(l))
+			}
+		}
+		if len(x.Pools) > 0 {
+			for _, e := range x.Pools {
+				l = options.Size(e)
+				n += 1 + l + runtime.Sov(uint64(l))
+			}
+		}
+		if x.unknownFields != nil {
+			n += len(x.unknownFields)
+		}
+		return protoiface.SizeOutput{
+			NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+			Size:              n,
+		}
+	}
+
+	marshal := func(input protoiface.MarshalInput) (protoiface.MarshalOutput, error) {
+		x := input.Message.Interface().(*MsgAccountSettle)
+		if x == nil {
+			return protoiface.MarshalOutput{
+				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+				Buf:               input.Buf,
+			}, nil
+		}
+		options := runtime.MarshalInputToOptions(input)
+		_ = options
+		size := options.Size(x)
+		dAtA := make([]byte, size)
+		i := len(dAtA)
+		_ = i
+		var l int
+		_ = l
+		if x.unknownFields != nil {
+			i -= len(x.unknownFields)
+			copy(dAtA[i:], x.unknownFields)
+		}
+		if len(x.Pools) > 0 {
+			for iNdEx := len(x.Pools) - 1; iNdEx >= 0; iNdEx-- {
+				encoded, err := options.Marshal(x.Pools[iNdEx])
+				if err != nil {
+					return protoiface.MarshalOutput{
+						NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+						Buf:               input.Buf,
+					}, err
+				}
+				i -= len(encoded)
+				copy(dAtA[i:], encoded)
+				i = runtime.EncodeVarint(dAtA, i, uint64(len(encoded)))
+				i--
+				dAtA[i] = 0x2a
+			}
+		}
+		if len(x.Debits) > 0 {
+			for iNdEx := len(x.Debits) - 1; iNdEx >= 0; iNdEx-- {
+				encoded, err := options.Marshal(x.Debits[iNdEx])
+				if err != nil {
+					return protoiface.MarshalOutput{
+						NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+						Buf:               input.Buf,
+					}, err
+				}
+				i -= len(encoded)
+				copy(dAtA[i:], encoded)
+				i = runtime.EncodeVarint(dAtA, i, uint64(len(encoded)))
+				i--
+				dAtA[i] = 0x22
+			}
+		}
+		if len(x.Payments) > 0 {
+			for iNdEx := len(x.Payments) - 1; iNdEx >= 0; iNdEx-- {
+				encoded, err := options.Marshal(x.Payments[iNdEx])
+				if err != nil {
+					return protoiface.MarshalOutput{
+						NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+						Buf:               input.Buf,
+					}, err
+				}
+				i -= len(encoded)
+				copy(dAtA[i:], encoded)
+				i = runtime.EncodeVarint(dAtA, i, uint64(len(encoded)))
+				i--
+				dAtA[i] = 0x1a
+			}
+		}
+		if x.Epoch != 0 {
+			i = runtime.EncodeVarint(dAtA, i, uint64(x.Epoch))
+			i--
+			dAtA[i] = 0x10
+		}
+		if len(x.Submitter) > 0 {
+			i -= len(x.Submitter)
+			copy(dAtA[i:], x.Submitter)
+			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.Submitter)))
+			i--
+			dAtA[i] = 0xa
+		}
+		if input.Buf != nil {
+			input.Buf = append(input.Buf, dAtA...)
+		} else {
+			input.Buf = dAtA
+		}
+		return protoiface.MarshalOutput{
+			NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+			Buf:               input.Buf,
+		}, nil
+	}
+	unmarshal := func(input protoiface.UnmarshalInput) (protoiface.UnmarshalOutput, error) {
+		x := input.Message.Interface().(*MsgAccountSettle)
+		if x == nil {
+			return protoiface.UnmarshalOutput{
+				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+				Flags:             input.Flags,
+			}, nil
+		}
+		options := runtime.UnmarshalInputToOptions(input)
+		_ = options
+		dAtA := input.Buf
+		l := len(dAtA)
+		iNdEx := 0
+		for iNdEx < l {
+			preIndex := iNdEx
+			var wire uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				wire |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			fieldNum := int32(wire >> 3)
+			wireType := int(wire & 0x7)
+			if wireType == 4 {
+				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: MsgAccountSettle: wiretype end group for non-group")
+			}
+			if fieldNum <= 0 {
+				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: MsgAccountSettle: illegal tag %d (wire type %d)", fieldNum, wire)
+			}
+			switch fieldNum {
+			case 1:
+				if wireType != 2 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field Submitter", wireType)
+				}
+				var stringLen uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					stringLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				intStringLen := int(stringLen)
+				if intStringLen < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				postIndex := iNdEx + intStringLen
+				if postIndex < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if postIndex > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				x.Submitter = string(dAtA[iNdEx:postIndex])
+				iNdEx = postIndex
+			case 2:
+				if wireType != 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field Epoch", wireType)
+				}
+				x.Epoch = 0
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					x.Epoch |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+			case 3:
+				if wireType != 2 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field Payments", wireType)
+				}
+				var msglen int
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					msglen |= int(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				if msglen < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				postIndex := iNdEx + msglen
+				if postIndex < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if postIndex > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				x.Payments = append(x.Payments, &SettlePayment{})
+				if err := options.Unmarshal(dAtA[iNdEx:postIndex], x.Payments[len(x.Payments)-1]); err != nil {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, err
+				}
+				iNdEx = postIndex
+			case 4:
+				if wireType != 2 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field Debits", wireType)
+				}
+				var msglen int
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					msglen |= int(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				if msglen < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				postIndex := iNdEx + msglen
+				if postIndex < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if postIndex > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				x.Debits = append(x.Debits, &SettleDebit{})
+				if err := options.Unmarshal(dAtA[iNdEx:postIndex], x.Debits[len(x.Debits)-1]); err != nil {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, err
+				}
+				iNdEx = postIndex
+			case 5:
+				if wireType != 2 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field Pools", wireType)
+				}
+				var msglen int
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					msglen |= int(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				if msglen < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				postIndex := iNdEx + msglen
+				if postIndex < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if postIndex > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				x.Pools = append(x.Pools, &PoolUpdate{})
+				if err := options.Unmarshal(dAtA[iNdEx:postIndex], x.Pools[len(x.Pools)-1]); err != nil {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, err
+				}
+				iNdEx = postIndex
+			default:
+				iNdEx = preIndex
+				skippy, err := runtime.Skip(dAtA[iNdEx:])
+				if err != nil {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, err
+				}
+				if (skippy < 0) || (iNdEx+skippy) < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if (iNdEx + skippy) > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				if !options.DiscardUnknown {
+					x.unknownFields = append(x.unknownFields, dAtA[iNdEx:iNdEx+skippy]...)
+				}
+				iNdEx += skippy
+			}
+		}
+
+		if iNdEx > l {
+			return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+		}
+		return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, nil
+	}
+	return &protoiface.Methods{
+		NoUnkeyedLiterals: struct{}{},
+		Flags:             protoiface.SupportMarshalDeterministic | protoiface.SupportUnmarshalDiscardUnknown,
+		Size:              size,
+		Marshal:           marshal,
+		Unmarshal:         unmarshal,
+		Merge:             nil,
+		CheckInitialized:  nil,
+	}
+}
+
+var (
+	md_SettlePayment        protoreflect.MessageDescriptor
+	fd_SettlePayment_did    protoreflect.FieldDescriptor
+	fd_SettlePayment_amount protoreflect.FieldDescriptor
+)
+
+func init() {
+	file_shinzonetwork_settlement_v1_tx_proto_init()
+	md_SettlePayment = File_shinzonetwork_settlement_v1_tx_proto.Messages().ByName("SettlePayment")
+	fd_SettlePayment_did = md_SettlePayment.Fields().ByName("did")
+	fd_SettlePayment_amount = md_SettlePayment.Fields().ByName("amount")
+}
+
+var _ protoreflect.Message = (*fastReflection_SettlePayment)(nil)
+
+type fastReflection_SettlePayment SettlePayment
+
+func (x *SettlePayment) ProtoReflect() protoreflect.Message {
+	return (*fastReflection_SettlePayment)(x)
+}
+
+func (x *SettlePayment) slowProtoReflect() protoreflect.Message {
+	mi := &file_shinzonetwork_settlement_v1_tx_proto_msgTypes[3]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+var _fastReflection_SettlePayment_messageType fastReflection_SettlePayment_messageType
+var _ protoreflect.MessageType = fastReflection_SettlePayment_messageType{}
+
+type fastReflection_SettlePayment_messageType struct{}
+
+func (x fastReflection_SettlePayment_messageType) Zero() protoreflect.Message {
+	return (*fastReflection_SettlePayment)(nil)
+}
+func (x fastReflection_SettlePayment_messageType) New() protoreflect.Message {
+	return new(fastReflection_SettlePayment)
+}
+func (x fastReflection_SettlePayment_messageType) Descriptor() protoreflect.MessageDescriptor {
+	return md_SettlePayment
+}
+
+// Descriptor returns message descriptor, which contains only the protobuf
+// type information for the message.
+func (x *fastReflection_SettlePayment) Descriptor() protoreflect.MessageDescriptor {
+	return md_SettlePayment
+}
+
+// Type returns the message type, which encapsulates both Go and protobuf
+// type information. If the Go type information is not needed,
+// it is recommended that the message descriptor be used instead.
+func (x *fastReflection_SettlePayment) Type() protoreflect.MessageType {
+	return _fastReflection_SettlePayment_messageType
+}
+
+// New returns a newly allocated and mutable empty message.
+func (x *fastReflection_SettlePayment) New() protoreflect.Message {
+	return new(fastReflection_SettlePayment)
+}
+
+// Interface unwraps the message reflection interface and
+// returns the underlying ProtoMessage interface.
+func (x *fastReflection_SettlePayment) Interface() protoreflect.ProtoMessage {
+	return (*SettlePayment)(x)
+}
+
+// Range iterates over every populated field in an undefined order,
+// calling f for each field descriptor and value encountered.
+// Range returns immediately if f returns false.
+// While iterating, mutating operations may only be performed
+// on the current field descriptor.
+func (x *fastReflection_SettlePayment) Range(f func(protoreflect.FieldDescriptor, protoreflect.Value) bool) {
+	if x.Did != "" {
+		value := protoreflect.ValueOfString(x.Did)
+		if !f(fd_SettlePayment_did, value) {
+			return
+		}
+	}
+	if x.Amount != "" {
+		value := protoreflect.ValueOfString(x.Amount)
+		if !f(fd_SettlePayment_amount, value) {
+			return
+		}
+	}
+}
+
+// Has reports whether a field is populated.
+//
+// Some fields have the property of nullability where it is possible to
+// distinguish between the default value of a field and whether the field
+// was explicitly populated with the default value. Singular message fields,
+// member fields of a oneof, and proto2 scalar fields are nullable. Such
+// fields are populated only if explicitly set.
+//
+// In other cases (aside from the nullable cases above),
+// a proto3 scalar field is populated if it contains a non-zero value, and
+// a repeated field is populated if it is non-empty.
+func (x *fastReflection_SettlePayment) Has(fd protoreflect.FieldDescriptor) bool {
+	switch fd.FullName() {
+	case "shinzonetwork.settlement.v1.SettlePayment.did":
+		return x.Did != ""
+	case "shinzonetwork.settlement.v1.SettlePayment.amount":
+		return x.Amount != ""
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: shinzonetwork.settlement.v1.SettlePayment"))
+		}
+		panic(fmt.Errorf("message shinzonetwork.settlement.v1.SettlePayment does not contain field %s", fd.FullName()))
+	}
+}
+
+// Clear clears the field such that a subsequent Has call reports false.
+//
+// Clearing an extension field clears both the extension type and value
+// associated with the given field number.
+//
+// Clear is a mutating operation and unsafe for concurrent use.
+func (x *fastReflection_SettlePayment) Clear(fd protoreflect.FieldDescriptor) {
+	switch fd.FullName() {
+	case "shinzonetwork.settlement.v1.SettlePayment.did":
+		x.Did = ""
+	case "shinzonetwork.settlement.v1.SettlePayment.amount":
+		x.Amount = ""
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: shinzonetwork.settlement.v1.SettlePayment"))
+		}
+		panic(fmt.Errorf("message shinzonetwork.settlement.v1.SettlePayment does not contain field %s", fd.FullName()))
+	}
+}
+
+// Get retrieves the value for a field.
+//
+// For unpopulated scalars, it returns the default value, where
+// the default value of a bytes scalar is guaranteed to be a copy.
+// For unpopulated composite types, it returns an empty, read-only view
+// of the value; to obtain a mutable reference, use Mutable.
+func (x *fastReflection_SettlePayment) Get(descriptor protoreflect.FieldDescriptor) protoreflect.Value {
+	switch descriptor.FullName() {
+	case "shinzonetwork.settlement.v1.SettlePayment.did":
+		value := x.Did
+		return protoreflect.ValueOfString(value)
+	case "shinzonetwork.settlement.v1.SettlePayment.amount":
+		value := x.Amount
+		return protoreflect.ValueOfString(value)
+	default:
+		if descriptor.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: shinzonetwork.settlement.v1.SettlePayment"))
+		}
+		panic(fmt.Errorf("message shinzonetwork.settlement.v1.SettlePayment does not contain field %s", descriptor.FullName()))
+	}
+}
+
+// Set stores the value for a field.
+//
+// For a field belonging to a oneof, it implicitly clears any other field
+// that may be currently set within the same oneof.
+// For extension fields, it implicitly stores the provided ExtensionType.
+// When setting a composite type, it is unspecified whether the stored value
+// aliases the source's memory in any way. If the composite value is an
+// empty, read-only value, then it panics.
+//
+// Set is a mutating operation and unsafe for concurrent use.
+func (x *fastReflection_SettlePayment) Set(fd protoreflect.FieldDescriptor, value protoreflect.Value) {
+	switch fd.FullName() {
+	case "shinzonetwork.settlement.v1.SettlePayment.did":
+		x.Did = value.Interface().(string)
+	case "shinzonetwork.settlement.v1.SettlePayment.amount":
+		x.Amount = value.Interface().(string)
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: shinzonetwork.settlement.v1.SettlePayment"))
+		}
+		panic(fmt.Errorf("message shinzonetwork.settlement.v1.SettlePayment does not contain field %s", fd.FullName()))
+	}
+}
+
+// Mutable returns a mutable reference to a composite type.
+//
+// If the field is unpopulated, it may allocate a composite value.
+// For a field belonging to a oneof, it implicitly clears any other field
+// that may be currently set within the same oneof.
+// For extension fields, it implicitly stores the provided ExtensionType
+// if not already stored.
+// It panics if the field does not contain a composite type.
+//
+// Mutable is a mutating operation and unsafe for concurrent use.
+func (x *fastReflection_SettlePayment) Mutable(fd protoreflect.FieldDescriptor) protoreflect.Value {
+	switch fd.FullName() {
+	case "shinzonetwork.settlement.v1.SettlePayment.did":
+		panic(fmt.Errorf("field did of message shinzonetwork.settlement.v1.SettlePayment is not mutable"))
+	case "shinzonetwork.settlement.v1.SettlePayment.amount":
+		panic(fmt.Errorf("field amount of message shinzonetwork.settlement.v1.SettlePayment is not mutable"))
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: shinzonetwork.settlement.v1.SettlePayment"))
+		}
+		panic(fmt.Errorf("message shinzonetwork.settlement.v1.SettlePayment does not contain field %s", fd.FullName()))
+	}
+}
+
+// NewField returns a new value that is assignable to the field
+// for the given descriptor. For scalars, this returns the default value.
+// For lists, maps, and messages, this returns a new, empty, mutable value.
+func (x *fastReflection_SettlePayment) NewField(fd protoreflect.FieldDescriptor) protoreflect.Value {
+	switch fd.FullName() {
+	case "shinzonetwork.settlement.v1.SettlePayment.did":
+		return protoreflect.ValueOfString("")
+	case "shinzonetwork.settlement.v1.SettlePayment.amount":
+		return protoreflect.ValueOfString("")
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: shinzonetwork.settlement.v1.SettlePayment"))
+		}
+		panic(fmt.Errorf("message shinzonetwork.settlement.v1.SettlePayment does not contain field %s", fd.FullName()))
+	}
+}
+
+// WhichOneof reports which field within the oneof is populated,
+// returning nil if none are populated.
+// It panics if the oneof descriptor does not belong to this message.
+func (x *fastReflection_SettlePayment) WhichOneof(d protoreflect.OneofDescriptor) protoreflect.FieldDescriptor {
+	switch d.FullName() {
+	default:
+		panic(fmt.Errorf("%s is not a oneof field in shinzonetwork.settlement.v1.SettlePayment", d.FullName()))
+	}
+	panic("unreachable")
+}
+
+// GetUnknown retrieves the entire list of unknown fields.
+// The caller may only mutate the contents of the RawFields
+// if the mutated bytes are stored back into the message with SetUnknown.
+func (x *fastReflection_SettlePayment) GetUnknown() protoreflect.RawFields {
+	return x.unknownFields
+}
+
+// SetUnknown stores an entire list of unknown fields.
+// The raw fields must be syntactically valid according to the wire format.
+// An implementation may panic if this is not the case.
+// Once stored, the caller must not mutate the content of the RawFields.
+// An empty RawFields may be passed to clear the fields.
+//
+// SetUnknown is a mutating operation and unsafe for concurrent use.
+func (x *fastReflection_SettlePayment) SetUnknown(fields protoreflect.RawFields) {
+	x.unknownFields = fields
+}
+
+// IsValid reports whether the message is valid.
+//
+// An invalid message is an empty, read-only value.
+//
+// An invalid message often corresponds to a nil pointer of the concrete
+// message type, but the details are implementation dependent.
+// Validity is not part of the protobuf data model, and may not
+// be preserved in marshaling or other operations.
+func (x *fastReflection_SettlePayment) IsValid() bool {
+	return x != nil
+}
+
+// ProtoMethods returns optional fastReflectionFeature-path implementations of various operations.
+// This method may return nil.
+//
+// The returned methods type is identical to
+// "google.golang.org/protobuf/runtime/protoiface".Methods.
+// Consult the protoiface package documentation for details.
+func (x *fastReflection_SettlePayment) ProtoMethods() *protoiface.Methods {
+	size := func(input protoiface.SizeInput) protoiface.SizeOutput {
+		x := input.Message.Interface().(*SettlePayment)
+		if x == nil {
+			return protoiface.SizeOutput{
+				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+				Size:              0,
+			}
+		}
+		options := runtime.SizeInputToOptions(input)
+		_ = options
+		var n int
+		var l int
+		_ = l
+		l = len(x.Did)
+		if l > 0 {
+			n += 1 + l + runtime.Sov(uint64(l))
+		}
+		l = len(x.Amount)
+		if l > 0 {
+			n += 1 + l + runtime.Sov(uint64(l))
+		}
+		if x.unknownFields != nil {
+			n += len(x.unknownFields)
+		}
+		return protoiface.SizeOutput{
+			NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+			Size:              n,
+		}
+	}
+
+	marshal := func(input protoiface.MarshalInput) (protoiface.MarshalOutput, error) {
+		x := input.Message.Interface().(*SettlePayment)
+		if x == nil {
+			return protoiface.MarshalOutput{
+				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+				Buf:               input.Buf,
+			}, nil
+		}
+		options := runtime.MarshalInputToOptions(input)
+		_ = options
+		size := options.Size(x)
+		dAtA := make([]byte, size)
+		i := len(dAtA)
+		_ = i
+		var l int
+		_ = l
+		if x.unknownFields != nil {
+			i -= len(x.unknownFields)
+			copy(dAtA[i:], x.unknownFields)
+		}
+		if len(x.Amount) > 0 {
+			i -= len(x.Amount)
+			copy(dAtA[i:], x.Amount)
+			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.Amount)))
+			i--
+			dAtA[i] = 0x12
+		}
+		if len(x.Did) > 0 {
+			i -= len(x.Did)
+			copy(dAtA[i:], x.Did)
+			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.Did)))
+			i--
+			dAtA[i] = 0xa
+		}
+		if input.Buf != nil {
+			input.Buf = append(input.Buf, dAtA...)
+		} else {
+			input.Buf = dAtA
+		}
+		return protoiface.MarshalOutput{
+			NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+			Buf:               input.Buf,
+		}, nil
+	}
+	unmarshal := func(input protoiface.UnmarshalInput) (protoiface.UnmarshalOutput, error) {
+		x := input.Message.Interface().(*SettlePayment)
+		if x == nil {
+			return protoiface.UnmarshalOutput{
+				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+				Flags:             input.Flags,
+			}, nil
+		}
+		options := runtime.UnmarshalInputToOptions(input)
+		_ = options
+		dAtA := input.Buf
+		l := len(dAtA)
+		iNdEx := 0
+		for iNdEx < l {
+			preIndex := iNdEx
+			var wire uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				wire |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			fieldNum := int32(wire >> 3)
+			wireType := int(wire & 0x7)
+			if wireType == 4 {
+				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: SettlePayment: wiretype end group for non-group")
+			}
+			if fieldNum <= 0 {
+				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: SettlePayment: illegal tag %d (wire type %d)", fieldNum, wire)
+			}
+			switch fieldNum {
+			case 1:
+				if wireType != 2 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field Did", wireType)
+				}
+				var stringLen uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					stringLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				intStringLen := int(stringLen)
+				if intStringLen < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				postIndex := iNdEx + intStringLen
+				if postIndex < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if postIndex > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				x.Did = string(dAtA[iNdEx:postIndex])
+				iNdEx = postIndex
+			case 2:
+				if wireType != 2 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field Amount", wireType)
+				}
+				var stringLen uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					stringLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				intStringLen := int(stringLen)
+				if intStringLen < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				postIndex := iNdEx + intStringLen
+				if postIndex < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if postIndex > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				x.Amount = string(dAtA[iNdEx:postIndex])
+				iNdEx = postIndex
+			default:
+				iNdEx = preIndex
+				skippy, err := runtime.Skip(dAtA[iNdEx:])
+				if err != nil {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, err
+				}
+				if (skippy < 0) || (iNdEx+skippy) < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if (iNdEx + skippy) > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				if !options.DiscardUnknown {
+					x.unknownFields = append(x.unknownFields, dAtA[iNdEx:iNdEx+skippy]...)
+				}
+				iNdEx += skippy
+			}
+		}
+
+		if iNdEx > l {
+			return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+		}
+		return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, nil
+	}
+	return &protoiface.Methods{
+		NoUnkeyedLiterals: struct{}{},
+		Flags:             protoiface.SupportMarshalDeterministic | protoiface.SupportUnmarshalDiscardUnknown,
+		Size:              size,
+		Marshal:           marshal,
+		Unmarshal:         unmarshal,
+		Merge:             nil,
+		CheckInitialized:  nil,
+	}
+}
+
+var (
+	md_SettleDebit         protoreflect.MessageDescriptor
+	fd_SettleDebit_address protoreflect.FieldDescriptor
+	fd_SettleDebit_amount  protoreflect.FieldDescriptor
+)
+
+func init() {
+	file_shinzonetwork_settlement_v1_tx_proto_init()
+	md_SettleDebit = File_shinzonetwork_settlement_v1_tx_proto.Messages().ByName("SettleDebit")
+	fd_SettleDebit_address = md_SettleDebit.Fields().ByName("address")
+	fd_SettleDebit_amount = md_SettleDebit.Fields().ByName("amount")
+}
+
+var _ protoreflect.Message = (*fastReflection_SettleDebit)(nil)
+
+type fastReflection_SettleDebit SettleDebit
+
+func (x *SettleDebit) ProtoReflect() protoreflect.Message {
+	return (*fastReflection_SettleDebit)(x)
+}
+
+func (x *SettleDebit) slowProtoReflect() protoreflect.Message {
+	mi := &file_shinzonetwork_settlement_v1_tx_proto_msgTypes[4]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+var _fastReflection_SettleDebit_messageType fastReflection_SettleDebit_messageType
+var _ protoreflect.MessageType = fastReflection_SettleDebit_messageType{}
+
+type fastReflection_SettleDebit_messageType struct{}
+
+func (x fastReflection_SettleDebit_messageType) Zero() protoreflect.Message {
+	return (*fastReflection_SettleDebit)(nil)
+}
+func (x fastReflection_SettleDebit_messageType) New() protoreflect.Message {
+	return new(fastReflection_SettleDebit)
+}
+func (x fastReflection_SettleDebit_messageType) Descriptor() protoreflect.MessageDescriptor {
+	return md_SettleDebit
+}
+
+// Descriptor returns message descriptor, which contains only the protobuf
+// type information for the message.
+func (x *fastReflection_SettleDebit) Descriptor() protoreflect.MessageDescriptor {
+	return md_SettleDebit
+}
+
+// Type returns the message type, which encapsulates both Go and protobuf
+// type information. If the Go type information is not needed,
+// it is recommended that the message descriptor be used instead.
+func (x *fastReflection_SettleDebit) Type() protoreflect.MessageType {
+	return _fastReflection_SettleDebit_messageType
+}
+
+// New returns a newly allocated and mutable empty message.
+func (x *fastReflection_SettleDebit) New() protoreflect.Message {
+	return new(fastReflection_SettleDebit)
+}
+
+// Interface unwraps the message reflection interface and
+// returns the underlying ProtoMessage interface.
+func (x *fastReflection_SettleDebit) Interface() protoreflect.ProtoMessage {
+	return (*SettleDebit)(x)
+}
+
+// Range iterates over every populated field in an undefined order,
+// calling f for each field descriptor and value encountered.
+// Range returns immediately if f returns false.
+// While iterating, mutating operations may only be performed
+// on the current field descriptor.
+func (x *fastReflection_SettleDebit) Range(f func(protoreflect.FieldDescriptor, protoreflect.Value) bool) {
+	if x.Address != "" {
+		value := protoreflect.ValueOfString(x.Address)
+		if !f(fd_SettleDebit_address, value) {
+			return
+		}
+	}
+	if x.Amount != "" {
+		value := protoreflect.ValueOfString(x.Amount)
+		if !f(fd_SettleDebit_amount, value) {
+			return
+		}
+	}
+}
+
+// Has reports whether a field is populated.
+//
+// Some fields have the property of nullability where it is possible to
+// distinguish between the default value of a field and whether the field
+// was explicitly populated with the default value. Singular message fields,
+// member fields of a oneof, and proto2 scalar fields are nullable. Such
+// fields are populated only if explicitly set.
+//
+// In other cases (aside from the nullable cases above),
+// a proto3 scalar field is populated if it contains a non-zero value, and
+// a repeated field is populated if it is non-empty.
+func (x *fastReflection_SettleDebit) Has(fd protoreflect.FieldDescriptor) bool {
+	switch fd.FullName() {
+	case "shinzonetwork.settlement.v1.SettleDebit.address":
+		return x.Address != ""
+	case "shinzonetwork.settlement.v1.SettleDebit.amount":
+		return x.Amount != ""
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: shinzonetwork.settlement.v1.SettleDebit"))
+		}
+		panic(fmt.Errorf("message shinzonetwork.settlement.v1.SettleDebit does not contain field %s", fd.FullName()))
+	}
+}
+
+// Clear clears the field such that a subsequent Has call reports false.
+//
+// Clearing an extension field clears both the extension type and value
+// associated with the given field number.
+//
+// Clear is a mutating operation and unsafe for concurrent use.
+func (x *fastReflection_SettleDebit) Clear(fd protoreflect.FieldDescriptor) {
+	switch fd.FullName() {
+	case "shinzonetwork.settlement.v1.SettleDebit.address":
+		x.Address = ""
+	case "shinzonetwork.settlement.v1.SettleDebit.amount":
+		x.Amount = ""
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: shinzonetwork.settlement.v1.SettleDebit"))
+		}
+		panic(fmt.Errorf("message shinzonetwork.settlement.v1.SettleDebit does not contain field %s", fd.FullName()))
+	}
+}
+
+// Get retrieves the value for a field.
+//
+// For unpopulated scalars, it returns the default value, where
+// the default value of a bytes scalar is guaranteed to be a copy.
+// For unpopulated composite types, it returns an empty, read-only view
+// of the value; to obtain a mutable reference, use Mutable.
+func (x *fastReflection_SettleDebit) Get(descriptor protoreflect.FieldDescriptor) protoreflect.Value {
+	switch descriptor.FullName() {
+	case "shinzonetwork.settlement.v1.SettleDebit.address":
+		value := x.Address
+		return protoreflect.ValueOfString(value)
+	case "shinzonetwork.settlement.v1.SettleDebit.amount":
+		value := x.Amount
+		return protoreflect.ValueOfString(value)
+	default:
+		if descriptor.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: shinzonetwork.settlement.v1.SettleDebit"))
+		}
+		panic(fmt.Errorf("message shinzonetwork.settlement.v1.SettleDebit does not contain field %s", descriptor.FullName()))
+	}
+}
+
+// Set stores the value for a field.
+//
+// For a field belonging to a oneof, it implicitly clears any other field
+// that may be currently set within the same oneof.
+// For extension fields, it implicitly stores the provided ExtensionType.
+// When setting a composite type, it is unspecified whether the stored value
+// aliases the source's memory in any way. If the composite value is an
+// empty, read-only value, then it panics.
+//
+// Set is a mutating operation and unsafe for concurrent use.
+func (x *fastReflection_SettleDebit) Set(fd protoreflect.FieldDescriptor, value protoreflect.Value) {
+	switch fd.FullName() {
+	case "shinzonetwork.settlement.v1.SettleDebit.address":
+		x.Address = value.Interface().(string)
+	case "shinzonetwork.settlement.v1.SettleDebit.amount":
+		x.Amount = value.Interface().(string)
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: shinzonetwork.settlement.v1.SettleDebit"))
+		}
+		panic(fmt.Errorf("message shinzonetwork.settlement.v1.SettleDebit does not contain field %s", fd.FullName()))
+	}
+}
+
+// Mutable returns a mutable reference to a composite type.
+//
+// If the field is unpopulated, it may allocate a composite value.
+// For a field belonging to a oneof, it implicitly clears any other field
+// that may be currently set within the same oneof.
+// For extension fields, it implicitly stores the provided ExtensionType
+// if not already stored.
+// It panics if the field does not contain a composite type.
+//
+// Mutable is a mutating operation and unsafe for concurrent use.
+func (x *fastReflection_SettleDebit) Mutable(fd protoreflect.FieldDescriptor) protoreflect.Value {
+	switch fd.FullName() {
+	case "shinzonetwork.settlement.v1.SettleDebit.address":
+		panic(fmt.Errorf("field address of message shinzonetwork.settlement.v1.SettleDebit is not mutable"))
+	case "shinzonetwork.settlement.v1.SettleDebit.amount":
+		panic(fmt.Errorf("field amount of message shinzonetwork.settlement.v1.SettleDebit is not mutable"))
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: shinzonetwork.settlement.v1.SettleDebit"))
+		}
+		panic(fmt.Errorf("message shinzonetwork.settlement.v1.SettleDebit does not contain field %s", fd.FullName()))
+	}
+}
+
+// NewField returns a new value that is assignable to the field
+// for the given descriptor. For scalars, this returns the default value.
+// For lists, maps, and messages, this returns a new, empty, mutable value.
+func (x *fastReflection_SettleDebit) NewField(fd protoreflect.FieldDescriptor) protoreflect.Value {
+	switch fd.FullName() {
+	case "shinzonetwork.settlement.v1.SettleDebit.address":
+		return protoreflect.ValueOfString("")
+	case "shinzonetwork.settlement.v1.SettleDebit.amount":
+		return protoreflect.ValueOfString("")
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: shinzonetwork.settlement.v1.SettleDebit"))
+		}
+		panic(fmt.Errorf("message shinzonetwork.settlement.v1.SettleDebit does not contain field %s", fd.FullName()))
+	}
+}
+
+// WhichOneof reports which field within the oneof is populated,
+// returning nil if none are populated.
+// It panics if the oneof descriptor does not belong to this message.
+func (x *fastReflection_SettleDebit) WhichOneof(d protoreflect.OneofDescriptor) protoreflect.FieldDescriptor {
+	switch d.FullName() {
+	default:
+		panic(fmt.Errorf("%s is not a oneof field in shinzonetwork.settlement.v1.SettleDebit", d.FullName()))
+	}
+	panic("unreachable")
+}
+
+// GetUnknown retrieves the entire list of unknown fields.
+// The caller may only mutate the contents of the RawFields
+// if the mutated bytes are stored back into the message with SetUnknown.
+func (x *fastReflection_SettleDebit) GetUnknown() protoreflect.RawFields {
+	return x.unknownFields
+}
+
+// SetUnknown stores an entire list of unknown fields.
+// The raw fields must be syntactically valid according to the wire format.
+// An implementation may panic if this is not the case.
+// Once stored, the caller must not mutate the content of the RawFields.
+// An empty RawFields may be passed to clear the fields.
+//
+// SetUnknown is a mutating operation and unsafe for concurrent use.
+func (x *fastReflection_SettleDebit) SetUnknown(fields protoreflect.RawFields) {
+	x.unknownFields = fields
+}
+
+// IsValid reports whether the message is valid.
+//
+// An invalid message is an empty, read-only value.
+//
+// An invalid message often corresponds to a nil pointer of the concrete
+// message type, but the details are implementation dependent.
+// Validity is not part of the protobuf data model, and may not
+// be preserved in marshaling or other operations.
+func (x *fastReflection_SettleDebit) IsValid() bool {
+	return x != nil
+}
+
+// ProtoMethods returns optional fastReflectionFeature-path implementations of various operations.
+// This method may return nil.
+//
+// The returned methods type is identical to
+// "google.golang.org/protobuf/runtime/protoiface".Methods.
+// Consult the protoiface package documentation for details.
+func (x *fastReflection_SettleDebit) ProtoMethods() *protoiface.Methods {
+	size := func(input protoiface.SizeInput) protoiface.SizeOutput {
+		x := input.Message.Interface().(*SettleDebit)
+		if x == nil {
+			return protoiface.SizeOutput{
+				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+				Size:              0,
+			}
+		}
+		options := runtime.SizeInputToOptions(input)
+		_ = options
+		var n int
+		var l int
+		_ = l
+		l = len(x.Address)
+		if l > 0 {
+			n += 1 + l + runtime.Sov(uint64(l))
+		}
+		l = len(x.Amount)
+		if l > 0 {
+			n += 1 + l + runtime.Sov(uint64(l))
+		}
+		if x.unknownFields != nil {
+			n += len(x.unknownFields)
+		}
+		return protoiface.SizeOutput{
+			NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+			Size:              n,
+		}
+	}
+
+	marshal := func(input protoiface.MarshalInput) (protoiface.MarshalOutput, error) {
+		x := input.Message.Interface().(*SettleDebit)
+		if x == nil {
+			return protoiface.MarshalOutput{
+				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+				Buf:               input.Buf,
+			}, nil
+		}
+		options := runtime.MarshalInputToOptions(input)
+		_ = options
+		size := options.Size(x)
+		dAtA := make([]byte, size)
+		i := len(dAtA)
+		_ = i
+		var l int
+		_ = l
+		if x.unknownFields != nil {
+			i -= len(x.unknownFields)
+			copy(dAtA[i:], x.unknownFields)
+		}
+		if len(x.Amount) > 0 {
+			i -= len(x.Amount)
+			copy(dAtA[i:], x.Amount)
+			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.Amount)))
+			i--
+			dAtA[i] = 0x12
+		}
+		if len(x.Address) > 0 {
+			i -= len(x.Address)
+			copy(dAtA[i:], x.Address)
+			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.Address)))
+			i--
+			dAtA[i] = 0xa
+		}
+		if input.Buf != nil {
+			input.Buf = append(input.Buf, dAtA...)
+		} else {
+			input.Buf = dAtA
+		}
+		return protoiface.MarshalOutput{
+			NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+			Buf:               input.Buf,
+		}, nil
+	}
+	unmarshal := func(input protoiface.UnmarshalInput) (protoiface.UnmarshalOutput, error) {
+		x := input.Message.Interface().(*SettleDebit)
+		if x == nil {
+			return protoiface.UnmarshalOutput{
+				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+				Flags:             input.Flags,
+			}, nil
+		}
+		options := runtime.UnmarshalInputToOptions(input)
+		_ = options
+		dAtA := input.Buf
+		l := len(dAtA)
+		iNdEx := 0
+		for iNdEx < l {
+			preIndex := iNdEx
+			var wire uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				wire |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			fieldNum := int32(wire >> 3)
+			wireType := int(wire & 0x7)
+			if wireType == 4 {
+				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: SettleDebit: wiretype end group for non-group")
+			}
+			if fieldNum <= 0 {
+				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: SettleDebit: illegal tag %d (wire type %d)", fieldNum, wire)
+			}
+			switch fieldNum {
+			case 1:
+				if wireType != 2 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field Address", wireType)
+				}
+				var stringLen uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					stringLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				intStringLen := int(stringLen)
+				if intStringLen < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				postIndex := iNdEx + intStringLen
+				if postIndex < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if postIndex > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				x.Address = string(dAtA[iNdEx:postIndex])
+				iNdEx = postIndex
+			case 2:
+				if wireType != 2 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field Amount", wireType)
+				}
+				var stringLen uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					stringLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				intStringLen := int(stringLen)
+				if intStringLen < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				postIndex := iNdEx + intStringLen
+				if postIndex < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if postIndex > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				x.Amount = string(dAtA[iNdEx:postIndex])
+				iNdEx = postIndex
+			default:
+				iNdEx = preIndex
+				skippy, err := runtime.Skip(dAtA[iNdEx:])
+				if err != nil {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, err
+				}
+				if (skippy < 0) || (iNdEx+skippy) < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if (iNdEx + skippy) > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				if !options.DiscardUnknown {
+					x.unknownFields = append(x.unknownFields, dAtA[iNdEx:iNdEx+skippy]...)
+				}
+				iNdEx += skippy
+			}
+		}
+
+		if iNdEx > l {
+			return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+		}
+		return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, nil
+	}
+	return &protoiface.Methods{
+		NoUnkeyedLiterals: struct{}{},
+		Flags:             protoiface.SupportMarshalDeterministic | protoiface.SupportUnmarshalDiscardUnknown,
+		Size:              size,
+		Marshal:           marshal,
+		Unmarshal:         unmarshal,
+		Merge:             nil,
+		CheckInitialized:  nil,
+	}
+}
+
+var (
+	md_PoolUpdate                   protoreflect.MessageDescriptor
+	fd_PoolUpdate_pool_address      protoreflect.FieldDescriptor
+	fd_PoolUpdate_price             protoreflect.FieldDescriptor
+	fd_PoolUpdate_utilization       protoreflect.FieldDescriptor
+	fd_PoolUpdate_rewards           protoreflect.FieldDescriptor
+	fd_PoolUpdate_number_of_queries protoreflect.FieldDescriptor
+)
+
+func init() {
+	file_shinzonetwork_settlement_v1_tx_proto_init()
+	md_PoolUpdate = File_shinzonetwork_settlement_v1_tx_proto.Messages().ByName("PoolUpdate")
+	fd_PoolUpdate_pool_address = md_PoolUpdate.Fields().ByName("pool_address")
+	fd_PoolUpdate_price = md_PoolUpdate.Fields().ByName("price")
+	fd_PoolUpdate_utilization = md_PoolUpdate.Fields().ByName("utilization")
+	fd_PoolUpdate_rewards = md_PoolUpdate.Fields().ByName("rewards")
+	fd_PoolUpdate_number_of_queries = md_PoolUpdate.Fields().ByName("number_of_queries")
+}
+
+var _ protoreflect.Message = (*fastReflection_PoolUpdate)(nil)
+
+type fastReflection_PoolUpdate PoolUpdate
+
+func (x *PoolUpdate) ProtoReflect() protoreflect.Message {
+	return (*fastReflection_PoolUpdate)(x)
+}
+
+func (x *PoolUpdate) slowProtoReflect() protoreflect.Message {
+	mi := &file_shinzonetwork_settlement_v1_tx_proto_msgTypes[5]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+var _fastReflection_PoolUpdate_messageType fastReflection_PoolUpdate_messageType
+var _ protoreflect.MessageType = fastReflection_PoolUpdate_messageType{}
+
+type fastReflection_PoolUpdate_messageType struct{}
+
+func (x fastReflection_PoolUpdate_messageType) Zero() protoreflect.Message {
+	return (*fastReflection_PoolUpdate)(nil)
+}
+func (x fastReflection_PoolUpdate_messageType) New() protoreflect.Message {
+	return new(fastReflection_PoolUpdate)
+}
+func (x fastReflection_PoolUpdate_messageType) Descriptor() protoreflect.MessageDescriptor {
+	return md_PoolUpdate
+}
+
+// Descriptor returns message descriptor, which contains only the protobuf
+// type information for the message.
+func (x *fastReflection_PoolUpdate) Descriptor() protoreflect.MessageDescriptor {
+	return md_PoolUpdate
+}
+
+// Type returns the message type, which encapsulates both Go and protobuf
+// type information. If the Go type information is not needed,
+// it is recommended that the message descriptor be used instead.
+func (x *fastReflection_PoolUpdate) Type() protoreflect.MessageType {
+	return _fastReflection_PoolUpdate_messageType
+}
+
+// New returns a newly allocated and mutable empty message.
+func (x *fastReflection_PoolUpdate) New() protoreflect.Message {
+	return new(fastReflection_PoolUpdate)
+}
+
+// Interface unwraps the message reflection interface and
+// returns the underlying ProtoMessage interface.
+func (x *fastReflection_PoolUpdate) Interface() protoreflect.ProtoMessage {
+	return (*PoolUpdate)(x)
+}
+
+// Range iterates over every populated field in an undefined order,
+// calling f for each field descriptor and value encountered.
+// Range returns immediately if f returns false.
+// While iterating, mutating operations may only be performed
+// on the current field descriptor.
+func (x *fastReflection_PoolUpdate) Range(f func(protoreflect.FieldDescriptor, protoreflect.Value) bool) {
+	if x.PoolAddress != "" {
+		value := protoreflect.ValueOfString(x.PoolAddress)
+		if !f(fd_PoolUpdate_pool_address, value) {
+			return
+		}
+	}
+	if x.Price != "" {
+		value := protoreflect.ValueOfString(x.Price)
+		if !f(fd_PoolUpdate_price, value) {
+			return
+		}
+	}
+	if x.Utilization != uint64(0) {
+		value := protoreflect.ValueOfUint64(x.Utilization)
+		if !f(fd_PoolUpdate_utilization, value) {
+			return
+		}
+	}
+	if x.Rewards != "" {
+		value := protoreflect.ValueOfString(x.Rewards)
+		if !f(fd_PoolUpdate_rewards, value) {
+			return
+		}
+	}
+	if x.NumberOfQueries != uint64(0) {
+		value := protoreflect.ValueOfUint64(x.NumberOfQueries)
+		if !f(fd_PoolUpdate_number_of_queries, value) {
+			return
+		}
+	}
+}
+
+// Has reports whether a field is populated.
+//
+// Some fields have the property of nullability where it is possible to
+// distinguish between the default value of a field and whether the field
+// was explicitly populated with the default value. Singular message fields,
+// member fields of a oneof, and proto2 scalar fields are nullable. Such
+// fields are populated only if explicitly set.
+//
+// In other cases (aside from the nullable cases above),
+// a proto3 scalar field is populated if it contains a non-zero value, and
+// a repeated field is populated if it is non-empty.
+func (x *fastReflection_PoolUpdate) Has(fd protoreflect.FieldDescriptor) bool {
+	switch fd.FullName() {
+	case "shinzonetwork.settlement.v1.PoolUpdate.pool_address":
+		return x.PoolAddress != ""
+	case "shinzonetwork.settlement.v1.PoolUpdate.price":
+		return x.Price != ""
+	case "shinzonetwork.settlement.v1.PoolUpdate.utilization":
+		return x.Utilization != uint64(0)
+	case "shinzonetwork.settlement.v1.PoolUpdate.rewards":
+		return x.Rewards != ""
+	case "shinzonetwork.settlement.v1.PoolUpdate.number_of_queries":
+		return x.NumberOfQueries != uint64(0)
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: shinzonetwork.settlement.v1.PoolUpdate"))
+		}
+		panic(fmt.Errorf("message shinzonetwork.settlement.v1.PoolUpdate does not contain field %s", fd.FullName()))
+	}
+}
+
+// Clear clears the field such that a subsequent Has call reports false.
+//
+// Clearing an extension field clears both the extension type and value
+// associated with the given field number.
+//
+// Clear is a mutating operation and unsafe for concurrent use.
+func (x *fastReflection_PoolUpdate) Clear(fd protoreflect.FieldDescriptor) {
+	switch fd.FullName() {
+	case "shinzonetwork.settlement.v1.PoolUpdate.pool_address":
+		x.PoolAddress = ""
+	case "shinzonetwork.settlement.v1.PoolUpdate.price":
+		x.Price = ""
+	case "shinzonetwork.settlement.v1.PoolUpdate.utilization":
+		x.Utilization = uint64(0)
+	case "shinzonetwork.settlement.v1.PoolUpdate.rewards":
+		x.Rewards = ""
+	case "shinzonetwork.settlement.v1.PoolUpdate.number_of_queries":
+		x.NumberOfQueries = uint64(0)
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: shinzonetwork.settlement.v1.PoolUpdate"))
+		}
+		panic(fmt.Errorf("message shinzonetwork.settlement.v1.PoolUpdate does not contain field %s", fd.FullName()))
+	}
+}
+
+// Get retrieves the value for a field.
+//
+// For unpopulated scalars, it returns the default value, where
+// the default value of a bytes scalar is guaranteed to be a copy.
+// For unpopulated composite types, it returns an empty, read-only view
+// of the value; to obtain a mutable reference, use Mutable.
+func (x *fastReflection_PoolUpdate) Get(descriptor protoreflect.FieldDescriptor) protoreflect.Value {
+	switch descriptor.FullName() {
+	case "shinzonetwork.settlement.v1.PoolUpdate.pool_address":
+		value := x.PoolAddress
+		return protoreflect.ValueOfString(value)
+	case "shinzonetwork.settlement.v1.PoolUpdate.price":
+		value := x.Price
+		return protoreflect.ValueOfString(value)
+	case "shinzonetwork.settlement.v1.PoolUpdate.utilization":
+		value := x.Utilization
+		return protoreflect.ValueOfUint64(value)
+	case "shinzonetwork.settlement.v1.PoolUpdate.rewards":
+		value := x.Rewards
+		return protoreflect.ValueOfString(value)
+	case "shinzonetwork.settlement.v1.PoolUpdate.number_of_queries":
+		value := x.NumberOfQueries
+		return protoreflect.ValueOfUint64(value)
+	default:
+		if descriptor.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: shinzonetwork.settlement.v1.PoolUpdate"))
+		}
+		panic(fmt.Errorf("message shinzonetwork.settlement.v1.PoolUpdate does not contain field %s", descriptor.FullName()))
+	}
+}
+
+// Set stores the value for a field.
+//
+// For a field belonging to a oneof, it implicitly clears any other field
+// that may be currently set within the same oneof.
+// For extension fields, it implicitly stores the provided ExtensionType.
+// When setting a composite type, it is unspecified whether the stored value
+// aliases the source's memory in any way. If the composite value is an
+// empty, read-only value, then it panics.
+//
+// Set is a mutating operation and unsafe for concurrent use.
+func (x *fastReflection_PoolUpdate) Set(fd protoreflect.FieldDescriptor, value protoreflect.Value) {
+	switch fd.FullName() {
+	case "shinzonetwork.settlement.v1.PoolUpdate.pool_address":
+		x.PoolAddress = value.Interface().(string)
+	case "shinzonetwork.settlement.v1.PoolUpdate.price":
+		x.Price = value.Interface().(string)
+	case "shinzonetwork.settlement.v1.PoolUpdate.utilization":
+		x.Utilization = value.Uint()
+	case "shinzonetwork.settlement.v1.PoolUpdate.rewards":
+		x.Rewards = value.Interface().(string)
+	case "shinzonetwork.settlement.v1.PoolUpdate.number_of_queries":
+		x.NumberOfQueries = value.Uint()
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: shinzonetwork.settlement.v1.PoolUpdate"))
+		}
+		panic(fmt.Errorf("message shinzonetwork.settlement.v1.PoolUpdate does not contain field %s", fd.FullName()))
+	}
+}
+
+// Mutable returns a mutable reference to a composite type.
+//
+// If the field is unpopulated, it may allocate a composite value.
+// For a field belonging to a oneof, it implicitly clears any other field
+// that may be currently set within the same oneof.
+// For extension fields, it implicitly stores the provided ExtensionType
+// if not already stored.
+// It panics if the field does not contain a composite type.
+//
+// Mutable is a mutating operation and unsafe for concurrent use.
+func (x *fastReflection_PoolUpdate) Mutable(fd protoreflect.FieldDescriptor) protoreflect.Value {
+	switch fd.FullName() {
+	case "shinzonetwork.settlement.v1.PoolUpdate.pool_address":
+		panic(fmt.Errorf("field pool_address of message shinzonetwork.settlement.v1.PoolUpdate is not mutable"))
+	case "shinzonetwork.settlement.v1.PoolUpdate.price":
+		panic(fmt.Errorf("field price of message shinzonetwork.settlement.v1.PoolUpdate is not mutable"))
+	case "shinzonetwork.settlement.v1.PoolUpdate.utilization":
+		panic(fmt.Errorf("field utilization of message shinzonetwork.settlement.v1.PoolUpdate is not mutable"))
+	case "shinzonetwork.settlement.v1.PoolUpdate.rewards":
+		panic(fmt.Errorf("field rewards of message shinzonetwork.settlement.v1.PoolUpdate is not mutable"))
+	case "shinzonetwork.settlement.v1.PoolUpdate.number_of_queries":
+		panic(fmt.Errorf("field number_of_queries of message shinzonetwork.settlement.v1.PoolUpdate is not mutable"))
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: shinzonetwork.settlement.v1.PoolUpdate"))
+		}
+		panic(fmt.Errorf("message shinzonetwork.settlement.v1.PoolUpdate does not contain field %s", fd.FullName()))
+	}
+}
+
+// NewField returns a new value that is assignable to the field
+// for the given descriptor. For scalars, this returns the default value.
+// For lists, maps, and messages, this returns a new, empty, mutable value.
+func (x *fastReflection_PoolUpdate) NewField(fd protoreflect.FieldDescriptor) protoreflect.Value {
+	switch fd.FullName() {
+	case "shinzonetwork.settlement.v1.PoolUpdate.pool_address":
+		return protoreflect.ValueOfString("")
+	case "shinzonetwork.settlement.v1.PoolUpdate.price":
+		return protoreflect.ValueOfString("")
+	case "shinzonetwork.settlement.v1.PoolUpdate.utilization":
+		return protoreflect.ValueOfUint64(uint64(0))
+	case "shinzonetwork.settlement.v1.PoolUpdate.rewards":
+		return protoreflect.ValueOfString("")
+	case "shinzonetwork.settlement.v1.PoolUpdate.number_of_queries":
+		return protoreflect.ValueOfUint64(uint64(0))
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: shinzonetwork.settlement.v1.PoolUpdate"))
+		}
+		panic(fmt.Errorf("message shinzonetwork.settlement.v1.PoolUpdate does not contain field %s", fd.FullName()))
+	}
+}
+
+// WhichOneof reports which field within the oneof is populated,
+// returning nil if none are populated.
+// It panics if the oneof descriptor does not belong to this message.
+func (x *fastReflection_PoolUpdate) WhichOneof(d protoreflect.OneofDescriptor) protoreflect.FieldDescriptor {
+	switch d.FullName() {
+	default:
+		panic(fmt.Errorf("%s is not a oneof field in shinzonetwork.settlement.v1.PoolUpdate", d.FullName()))
+	}
+	panic("unreachable")
+}
+
+// GetUnknown retrieves the entire list of unknown fields.
+// The caller may only mutate the contents of the RawFields
+// if the mutated bytes are stored back into the message with SetUnknown.
+func (x *fastReflection_PoolUpdate) GetUnknown() protoreflect.RawFields {
+	return x.unknownFields
+}
+
+// SetUnknown stores an entire list of unknown fields.
+// The raw fields must be syntactically valid according to the wire format.
+// An implementation may panic if this is not the case.
+// Once stored, the caller must not mutate the content of the RawFields.
+// An empty RawFields may be passed to clear the fields.
+//
+// SetUnknown is a mutating operation and unsafe for concurrent use.
+func (x *fastReflection_PoolUpdate) SetUnknown(fields protoreflect.RawFields) {
+	x.unknownFields = fields
+}
+
+// IsValid reports whether the message is valid.
+//
+// An invalid message is an empty, read-only value.
+//
+// An invalid message often corresponds to a nil pointer of the concrete
+// message type, but the details are implementation dependent.
+// Validity is not part of the protobuf data model, and may not
+// be preserved in marshaling or other operations.
+func (x *fastReflection_PoolUpdate) IsValid() bool {
+	return x != nil
+}
+
+// ProtoMethods returns optional fastReflectionFeature-path implementations of various operations.
+// This method may return nil.
+//
+// The returned methods type is identical to
+// "google.golang.org/protobuf/runtime/protoiface".Methods.
+// Consult the protoiface package documentation for details.
+func (x *fastReflection_PoolUpdate) ProtoMethods() *protoiface.Methods {
+	size := func(input protoiface.SizeInput) protoiface.SizeOutput {
+		x := input.Message.Interface().(*PoolUpdate)
+		if x == nil {
+			return protoiface.SizeOutput{
+				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+				Size:              0,
+			}
+		}
+		options := runtime.SizeInputToOptions(input)
+		_ = options
+		var n int
+		var l int
+		_ = l
+		l = len(x.PoolAddress)
+		if l > 0 {
+			n += 1 + l + runtime.Sov(uint64(l))
+		}
+		l = len(x.Price)
+		if l > 0 {
+			n += 1 + l + runtime.Sov(uint64(l))
+		}
+		if x.Utilization != 0 {
+			n += 1 + runtime.Sov(uint64(x.Utilization))
+		}
+		l = len(x.Rewards)
+		if l > 0 {
+			n += 1 + l + runtime.Sov(uint64(l))
+		}
+		if x.NumberOfQueries != 0 {
+			n += 1 + runtime.Sov(uint64(x.NumberOfQueries))
+		}
+		if x.unknownFields != nil {
+			n += len(x.unknownFields)
+		}
+		return protoiface.SizeOutput{
+			NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+			Size:              n,
+		}
+	}
+
+	marshal := func(input protoiface.MarshalInput) (protoiface.MarshalOutput, error) {
+		x := input.Message.Interface().(*PoolUpdate)
+		if x == nil {
+			return protoiface.MarshalOutput{
+				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+				Buf:               input.Buf,
+			}, nil
+		}
+		options := runtime.MarshalInputToOptions(input)
+		_ = options
+		size := options.Size(x)
+		dAtA := make([]byte, size)
+		i := len(dAtA)
+		_ = i
+		var l int
+		_ = l
+		if x.unknownFields != nil {
+			i -= len(x.unknownFields)
+			copy(dAtA[i:], x.unknownFields)
+		}
+		if x.NumberOfQueries != 0 {
+			i = runtime.EncodeVarint(dAtA, i, uint64(x.NumberOfQueries))
+			i--
+			dAtA[i] = 0x28
+		}
+		if len(x.Rewards) > 0 {
+			i -= len(x.Rewards)
+			copy(dAtA[i:], x.Rewards)
+			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.Rewards)))
+			i--
+			dAtA[i] = 0x22
+		}
+		if x.Utilization != 0 {
+			i = runtime.EncodeVarint(dAtA, i, uint64(x.Utilization))
+			i--
+			dAtA[i] = 0x18
+		}
+		if len(x.Price) > 0 {
+			i -= len(x.Price)
+			copy(dAtA[i:], x.Price)
+			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.Price)))
+			i--
+			dAtA[i] = 0x12
+		}
+		if len(x.PoolAddress) > 0 {
+			i -= len(x.PoolAddress)
+			copy(dAtA[i:], x.PoolAddress)
+			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.PoolAddress)))
+			i--
+			dAtA[i] = 0xa
+		}
+		if input.Buf != nil {
+			input.Buf = append(input.Buf, dAtA...)
+		} else {
+			input.Buf = dAtA
+		}
+		return protoiface.MarshalOutput{
+			NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+			Buf:               input.Buf,
+		}, nil
+	}
+	unmarshal := func(input protoiface.UnmarshalInput) (protoiface.UnmarshalOutput, error) {
+		x := input.Message.Interface().(*PoolUpdate)
+		if x == nil {
+			return protoiface.UnmarshalOutput{
+				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+				Flags:             input.Flags,
+			}, nil
+		}
+		options := runtime.UnmarshalInputToOptions(input)
+		_ = options
+		dAtA := input.Buf
+		l := len(dAtA)
+		iNdEx := 0
+		for iNdEx < l {
+			preIndex := iNdEx
+			var wire uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				wire |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			fieldNum := int32(wire >> 3)
+			wireType := int(wire & 0x7)
+			if wireType == 4 {
+				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: PoolUpdate: wiretype end group for non-group")
+			}
+			if fieldNum <= 0 {
+				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: PoolUpdate: illegal tag %d (wire type %d)", fieldNum, wire)
+			}
+			switch fieldNum {
+			case 1:
+				if wireType != 2 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field PoolAddress", wireType)
+				}
+				var stringLen uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					stringLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				intStringLen := int(stringLen)
+				if intStringLen < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				postIndex := iNdEx + intStringLen
+				if postIndex < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if postIndex > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				x.PoolAddress = string(dAtA[iNdEx:postIndex])
+				iNdEx = postIndex
+			case 2:
+				if wireType != 2 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field Price", wireType)
+				}
+				var stringLen uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					stringLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				intStringLen := int(stringLen)
+				if intStringLen < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				postIndex := iNdEx + intStringLen
+				if postIndex < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if postIndex > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				x.Price = string(dAtA[iNdEx:postIndex])
+				iNdEx = postIndex
+			case 3:
+				if wireType != 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field Utilization", wireType)
+				}
+				x.Utilization = 0
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					x.Utilization |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+			case 4:
+				if wireType != 2 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field Rewards", wireType)
+				}
+				var stringLen uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					stringLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				intStringLen := int(stringLen)
+				if intStringLen < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				postIndex := iNdEx + intStringLen
+				if postIndex < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if postIndex > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				x.Rewards = string(dAtA[iNdEx:postIndex])
+				iNdEx = postIndex
+			case 5:
+				if wireType != 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field NumberOfQueries", wireType)
+				}
+				x.NumberOfQueries = 0
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					x.NumberOfQueries |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+			default:
+				iNdEx = preIndex
+				skippy, err := runtime.Skip(dAtA[iNdEx:])
+				if err != nil {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, err
+				}
+				if (skippy < 0) || (iNdEx+skippy) < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if (iNdEx + skippy) > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				if !options.DiscardUnknown {
+					x.unknownFields = append(x.unknownFields, dAtA[iNdEx:iNdEx+skippy]...)
+				}
+				iNdEx += skippy
+			}
+		}
+
+		if iNdEx > l {
+			return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+		}
+		return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, nil
+	}
+	return &protoiface.Methods{
+		NoUnkeyedLiterals: struct{}{},
+		Flags:             protoiface.SupportMarshalDeterministic | protoiface.SupportUnmarshalDiscardUnknown,
+		Size:              size,
+		Marshal:           marshal,
+		Unmarshal:         unmarshal,
+		Merge:             nil,
+		CheckInitialized:  nil,
+	}
+}
+
+var (
+	md_MsgAccountSettleResponse                  protoreflect.MessageDescriptor
+	fd_MsgAccountSettleResponse_epoch            protoreflect.FieldDescriptor
+	fd_MsgAccountSettleResponse_payments_applied protoreflect.FieldDescriptor
+	fd_MsgAccountSettleResponse_debits_applied   protoreflect.FieldDescriptor
+	fd_MsgAccountSettleResponse_total_credited   protoreflect.FieldDescriptor
+	fd_MsgAccountSettleResponse_total_debited    protoreflect.FieldDescriptor
+	fd_MsgAccountSettleResponse_pools_updated    protoreflect.FieldDescriptor
+)
+
+func init() {
+	file_shinzonetwork_settlement_v1_tx_proto_init()
+	md_MsgAccountSettleResponse = File_shinzonetwork_settlement_v1_tx_proto.Messages().ByName("MsgAccountSettleResponse")
+	fd_MsgAccountSettleResponse_epoch = md_MsgAccountSettleResponse.Fields().ByName("epoch")
+	fd_MsgAccountSettleResponse_payments_applied = md_MsgAccountSettleResponse.Fields().ByName("payments_applied")
+	fd_MsgAccountSettleResponse_debits_applied = md_MsgAccountSettleResponse.Fields().ByName("debits_applied")
+	fd_MsgAccountSettleResponse_total_credited = md_MsgAccountSettleResponse.Fields().ByName("total_credited")
+	fd_MsgAccountSettleResponse_total_debited = md_MsgAccountSettleResponse.Fields().ByName("total_debited")
+	fd_MsgAccountSettleResponse_pools_updated = md_MsgAccountSettleResponse.Fields().ByName("pools_updated")
+}
+
+var _ protoreflect.Message = (*fastReflection_MsgAccountSettleResponse)(nil)
+
+type fastReflection_MsgAccountSettleResponse MsgAccountSettleResponse
+
+func (x *MsgAccountSettleResponse) ProtoReflect() protoreflect.Message {
+	return (*fastReflection_MsgAccountSettleResponse)(x)
+}
+
+func (x *MsgAccountSettleResponse) slowProtoReflect() protoreflect.Message {
+	mi := &file_shinzonetwork_settlement_v1_tx_proto_msgTypes[6]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+var _fastReflection_MsgAccountSettleResponse_messageType fastReflection_MsgAccountSettleResponse_messageType
+var _ protoreflect.MessageType = fastReflection_MsgAccountSettleResponse_messageType{}
+
+type fastReflection_MsgAccountSettleResponse_messageType struct{}
+
+func (x fastReflection_MsgAccountSettleResponse_messageType) Zero() protoreflect.Message {
+	return (*fastReflection_MsgAccountSettleResponse)(nil)
+}
+func (x fastReflection_MsgAccountSettleResponse_messageType) New() protoreflect.Message {
+	return new(fastReflection_MsgAccountSettleResponse)
+}
+func (x fastReflection_MsgAccountSettleResponse_messageType) Descriptor() protoreflect.MessageDescriptor {
+	return md_MsgAccountSettleResponse
+}
+
+// Descriptor returns message descriptor, which contains only the protobuf
+// type information for the message.
+func (x *fastReflection_MsgAccountSettleResponse) Descriptor() protoreflect.MessageDescriptor {
+	return md_MsgAccountSettleResponse
+}
+
+// Type returns the message type, which encapsulates both Go and protobuf
+// type information. If the Go type information is not needed,
+// it is recommended that the message descriptor be used instead.
+func (x *fastReflection_MsgAccountSettleResponse) Type() protoreflect.MessageType {
+	return _fastReflection_MsgAccountSettleResponse_messageType
+}
+
+// New returns a newly allocated and mutable empty message.
+func (x *fastReflection_MsgAccountSettleResponse) New() protoreflect.Message {
+	return new(fastReflection_MsgAccountSettleResponse)
+}
+
+// Interface unwraps the message reflection interface and
+// returns the underlying ProtoMessage interface.
+func (x *fastReflection_MsgAccountSettleResponse) Interface() protoreflect.ProtoMessage {
+	return (*MsgAccountSettleResponse)(x)
+}
+
+// Range iterates over every populated field in an undefined order,
+// calling f for each field descriptor and value encountered.
+// Range returns immediately if f returns false.
+// While iterating, mutating operations may only be performed
+// on the current field descriptor.
+func (x *fastReflection_MsgAccountSettleResponse) Range(f func(protoreflect.FieldDescriptor, protoreflect.Value) bool) {
+	if x.Epoch != uint64(0) {
+		value := protoreflect.ValueOfUint64(x.Epoch)
+		if !f(fd_MsgAccountSettleResponse_epoch, value) {
+			return
+		}
+	}
+	if x.PaymentsApplied != uint64(0) {
+		value := protoreflect.ValueOfUint64(x.PaymentsApplied)
+		if !f(fd_MsgAccountSettleResponse_payments_applied, value) {
+			return
+		}
+	}
+	if x.DebitsApplied != uint64(0) {
+		value := protoreflect.ValueOfUint64(x.DebitsApplied)
+		if !f(fd_MsgAccountSettleResponse_debits_applied, value) {
+			return
+		}
+	}
+	if x.TotalCredited != "" {
+		value := protoreflect.ValueOfString(x.TotalCredited)
+		if !f(fd_MsgAccountSettleResponse_total_credited, value) {
+			return
+		}
+	}
+	if x.TotalDebited != "" {
+		value := protoreflect.ValueOfString(x.TotalDebited)
+		if !f(fd_MsgAccountSettleResponse_total_debited, value) {
+			return
+		}
+	}
+	if x.PoolsUpdated != uint64(0) {
+		value := protoreflect.ValueOfUint64(x.PoolsUpdated)
+		if !f(fd_MsgAccountSettleResponse_pools_updated, value) {
+			return
+		}
+	}
+}
+
+// Has reports whether a field is populated.
+//
+// Some fields have the property of nullability where it is possible to
+// distinguish between the default value of a field and whether the field
+// was explicitly populated with the default value. Singular message fields,
+// member fields of a oneof, and proto2 scalar fields are nullable. Such
+// fields are populated only if explicitly set.
+//
+// In other cases (aside from the nullable cases above),
+// a proto3 scalar field is populated if it contains a non-zero value, and
+// a repeated field is populated if it is non-empty.
+func (x *fastReflection_MsgAccountSettleResponse) Has(fd protoreflect.FieldDescriptor) bool {
+	switch fd.FullName() {
+	case "shinzonetwork.settlement.v1.MsgAccountSettleResponse.epoch":
+		return x.Epoch != uint64(0)
+	case "shinzonetwork.settlement.v1.MsgAccountSettleResponse.payments_applied":
+		return x.PaymentsApplied != uint64(0)
+	case "shinzonetwork.settlement.v1.MsgAccountSettleResponse.debits_applied":
+		return x.DebitsApplied != uint64(0)
+	case "shinzonetwork.settlement.v1.MsgAccountSettleResponse.total_credited":
+		return x.TotalCredited != ""
+	case "shinzonetwork.settlement.v1.MsgAccountSettleResponse.total_debited":
+		return x.TotalDebited != ""
+	case "shinzonetwork.settlement.v1.MsgAccountSettleResponse.pools_updated":
+		return x.PoolsUpdated != uint64(0)
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: shinzonetwork.settlement.v1.MsgAccountSettleResponse"))
+		}
+		panic(fmt.Errorf("message shinzonetwork.settlement.v1.MsgAccountSettleResponse does not contain field %s", fd.FullName()))
+	}
+}
+
+// Clear clears the field such that a subsequent Has call reports false.
+//
+// Clearing an extension field clears both the extension type and value
+// associated with the given field number.
+//
+// Clear is a mutating operation and unsafe for concurrent use.
+func (x *fastReflection_MsgAccountSettleResponse) Clear(fd protoreflect.FieldDescriptor) {
+	switch fd.FullName() {
+	case "shinzonetwork.settlement.v1.MsgAccountSettleResponse.epoch":
+		x.Epoch = uint64(0)
+	case "shinzonetwork.settlement.v1.MsgAccountSettleResponse.payments_applied":
+		x.PaymentsApplied = uint64(0)
+	case "shinzonetwork.settlement.v1.MsgAccountSettleResponse.debits_applied":
+		x.DebitsApplied = uint64(0)
+	case "shinzonetwork.settlement.v1.MsgAccountSettleResponse.total_credited":
+		x.TotalCredited = ""
+	case "shinzonetwork.settlement.v1.MsgAccountSettleResponse.total_debited":
+		x.TotalDebited = ""
+	case "shinzonetwork.settlement.v1.MsgAccountSettleResponse.pools_updated":
+		x.PoolsUpdated = uint64(0)
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: shinzonetwork.settlement.v1.MsgAccountSettleResponse"))
+		}
+		panic(fmt.Errorf("message shinzonetwork.settlement.v1.MsgAccountSettleResponse does not contain field %s", fd.FullName()))
+	}
+}
+
+// Get retrieves the value for a field.
+//
+// For unpopulated scalars, it returns the default value, where
+// the default value of a bytes scalar is guaranteed to be a copy.
+// For unpopulated composite types, it returns an empty, read-only view
+// of the value; to obtain a mutable reference, use Mutable.
+func (x *fastReflection_MsgAccountSettleResponse) Get(descriptor protoreflect.FieldDescriptor) protoreflect.Value {
+	switch descriptor.FullName() {
+	case "shinzonetwork.settlement.v1.MsgAccountSettleResponse.epoch":
+		value := x.Epoch
+		return protoreflect.ValueOfUint64(value)
+	case "shinzonetwork.settlement.v1.MsgAccountSettleResponse.payments_applied":
+		value := x.PaymentsApplied
+		return protoreflect.ValueOfUint64(value)
+	case "shinzonetwork.settlement.v1.MsgAccountSettleResponse.debits_applied":
+		value := x.DebitsApplied
+		return protoreflect.ValueOfUint64(value)
+	case "shinzonetwork.settlement.v1.MsgAccountSettleResponse.total_credited":
+		value := x.TotalCredited
+		return protoreflect.ValueOfString(value)
+	case "shinzonetwork.settlement.v1.MsgAccountSettleResponse.total_debited":
+		value := x.TotalDebited
+		return protoreflect.ValueOfString(value)
+	case "shinzonetwork.settlement.v1.MsgAccountSettleResponse.pools_updated":
+		value := x.PoolsUpdated
+		return protoreflect.ValueOfUint64(value)
+	default:
+		if descriptor.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: shinzonetwork.settlement.v1.MsgAccountSettleResponse"))
+		}
+		panic(fmt.Errorf("message shinzonetwork.settlement.v1.MsgAccountSettleResponse does not contain field %s", descriptor.FullName()))
+	}
+}
+
+// Set stores the value for a field.
+//
+// For a field belonging to a oneof, it implicitly clears any other field
+// that may be currently set within the same oneof.
+// For extension fields, it implicitly stores the provided ExtensionType.
+// When setting a composite type, it is unspecified whether the stored value
+// aliases the source's memory in any way. If the composite value is an
+// empty, read-only value, then it panics.
+//
+// Set is a mutating operation and unsafe for concurrent use.
+func (x *fastReflection_MsgAccountSettleResponse) Set(fd protoreflect.FieldDescriptor, value protoreflect.Value) {
+	switch fd.FullName() {
+	case "shinzonetwork.settlement.v1.MsgAccountSettleResponse.epoch":
+		x.Epoch = value.Uint()
+	case "shinzonetwork.settlement.v1.MsgAccountSettleResponse.payments_applied":
+		x.PaymentsApplied = value.Uint()
+	case "shinzonetwork.settlement.v1.MsgAccountSettleResponse.debits_applied":
+		x.DebitsApplied = value.Uint()
+	case "shinzonetwork.settlement.v1.MsgAccountSettleResponse.total_credited":
+		x.TotalCredited = value.Interface().(string)
+	case "shinzonetwork.settlement.v1.MsgAccountSettleResponse.total_debited":
+		x.TotalDebited = value.Interface().(string)
+	case "shinzonetwork.settlement.v1.MsgAccountSettleResponse.pools_updated":
+		x.PoolsUpdated = value.Uint()
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: shinzonetwork.settlement.v1.MsgAccountSettleResponse"))
+		}
+		panic(fmt.Errorf("message shinzonetwork.settlement.v1.MsgAccountSettleResponse does not contain field %s", fd.FullName()))
+	}
+}
+
+// Mutable returns a mutable reference to a composite type.
+//
+// If the field is unpopulated, it may allocate a composite value.
+// For a field belonging to a oneof, it implicitly clears any other field
+// that may be currently set within the same oneof.
+// For extension fields, it implicitly stores the provided ExtensionType
+// if not already stored.
+// It panics if the field does not contain a composite type.
+//
+// Mutable is a mutating operation and unsafe for concurrent use.
+func (x *fastReflection_MsgAccountSettleResponse) Mutable(fd protoreflect.FieldDescriptor) protoreflect.Value {
+	switch fd.FullName() {
+	case "shinzonetwork.settlement.v1.MsgAccountSettleResponse.epoch":
+		panic(fmt.Errorf("field epoch of message shinzonetwork.settlement.v1.MsgAccountSettleResponse is not mutable"))
+	case "shinzonetwork.settlement.v1.MsgAccountSettleResponse.payments_applied":
+		panic(fmt.Errorf("field payments_applied of message shinzonetwork.settlement.v1.MsgAccountSettleResponse is not mutable"))
+	case "shinzonetwork.settlement.v1.MsgAccountSettleResponse.debits_applied":
+		panic(fmt.Errorf("field debits_applied of message shinzonetwork.settlement.v1.MsgAccountSettleResponse is not mutable"))
+	case "shinzonetwork.settlement.v1.MsgAccountSettleResponse.total_credited":
+		panic(fmt.Errorf("field total_credited of message shinzonetwork.settlement.v1.MsgAccountSettleResponse is not mutable"))
+	case "shinzonetwork.settlement.v1.MsgAccountSettleResponse.total_debited":
+		panic(fmt.Errorf("field total_debited of message shinzonetwork.settlement.v1.MsgAccountSettleResponse is not mutable"))
+	case "shinzonetwork.settlement.v1.MsgAccountSettleResponse.pools_updated":
+		panic(fmt.Errorf("field pools_updated of message shinzonetwork.settlement.v1.MsgAccountSettleResponse is not mutable"))
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: shinzonetwork.settlement.v1.MsgAccountSettleResponse"))
+		}
+		panic(fmt.Errorf("message shinzonetwork.settlement.v1.MsgAccountSettleResponse does not contain field %s", fd.FullName()))
+	}
+}
+
+// NewField returns a new value that is assignable to the field
+// for the given descriptor. For scalars, this returns the default value.
+// For lists, maps, and messages, this returns a new, empty, mutable value.
+func (x *fastReflection_MsgAccountSettleResponse) NewField(fd protoreflect.FieldDescriptor) protoreflect.Value {
+	switch fd.FullName() {
+	case "shinzonetwork.settlement.v1.MsgAccountSettleResponse.epoch":
+		return protoreflect.ValueOfUint64(uint64(0))
+	case "shinzonetwork.settlement.v1.MsgAccountSettleResponse.payments_applied":
+		return protoreflect.ValueOfUint64(uint64(0))
+	case "shinzonetwork.settlement.v1.MsgAccountSettleResponse.debits_applied":
+		return protoreflect.ValueOfUint64(uint64(0))
+	case "shinzonetwork.settlement.v1.MsgAccountSettleResponse.total_credited":
+		return protoreflect.ValueOfString("")
+	case "shinzonetwork.settlement.v1.MsgAccountSettleResponse.total_debited":
+		return protoreflect.ValueOfString("")
+	case "shinzonetwork.settlement.v1.MsgAccountSettleResponse.pools_updated":
+		return protoreflect.ValueOfUint64(uint64(0))
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: shinzonetwork.settlement.v1.MsgAccountSettleResponse"))
+		}
+		panic(fmt.Errorf("message shinzonetwork.settlement.v1.MsgAccountSettleResponse does not contain field %s", fd.FullName()))
+	}
+}
+
+// WhichOneof reports which field within the oneof is populated,
+// returning nil if none are populated.
+// It panics if the oneof descriptor does not belong to this message.
+func (x *fastReflection_MsgAccountSettleResponse) WhichOneof(d protoreflect.OneofDescriptor) protoreflect.FieldDescriptor {
+	switch d.FullName() {
+	default:
+		panic(fmt.Errorf("%s is not a oneof field in shinzonetwork.settlement.v1.MsgAccountSettleResponse", d.FullName()))
+	}
+	panic("unreachable")
+}
+
+// GetUnknown retrieves the entire list of unknown fields.
+// The caller may only mutate the contents of the RawFields
+// if the mutated bytes are stored back into the message with SetUnknown.
+func (x *fastReflection_MsgAccountSettleResponse) GetUnknown() protoreflect.RawFields {
+	return x.unknownFields
+}
+
+// SetUnknown stores an entire list of unknown fields.
+// The raw fields must be syntactically valid according to the wire format.
+// An implementation may panic if this is not the case.
+// Once stored, the caller must not mutate the content of the RawFields.
+// An empty RawFields may be passed to clear the fields.
+//
+// SetUnknown is a mutating operation and unsafe for concurrent use.
+func (x *fastReflection_MsgAccountSettleResponse) SetUnknown(fields protoreflect.RawFields) {
+	x.unknownFields = fields
+}
+
+// IsValid reports whether the message is valid.
+//
+// An invalid message is an empty, read-only value.
+//
+// An invalid message often corresponds to a nil pointer of the concrete
+// message type, but the details are implementation dependent.
+// Validity is not part of the protobuf data model, and may not
+// be preserved in marshaling or other operations.
+func (x *fastReflection_MsgAccountSettleResponse) IsValid() bool {
+	return x != nil
+}
+
+// ProtoMethods returns optional fastReflectionFeature-path implementations of various operations.
+// This method may return nil.
+//
+// The returned methods type is identical to
+// "google.golang.org/protobuf/runtime/protoiface".Methods.
+// Consult the protoiface package documentation for details.
+func (x *fastReflection_MsgAccountSettleResponse) ProtoMethods() *protoiface.Methods {
+	size := func(input protoiface.SizeInput) protoiface.SizeOutput {
+		x := input.Message.Interface().(*MsgAccountSettleResponse)
+		if x == nil {
+			return protoiface.SizeOutput{
+				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+				Size:              0,
+			}
+		}
+		options := runtime.SizeInputToOptions(input)
+		_ = options
+		var n int
+		var l int
+		_ = l
+		if x.Epoch != 0 {
+			n += 1 + runtime.Sov(uint64(x.Epoch))
+		}
+		if x.PaymentsApplied != 0 {
+			n += 1 + runtime.Sov(uint64(x.PaymentsApplied))
+		}
+		if x.DebitsApplied != 0 {
+			n += 1 + runtime.Sov(uint64(x.DebitsApplied))
+		}
+		l = len(x.TotalCredited)
+		if l > 0 {
+			n += 1 + l + runtime.Sov(uint64(l))
+		}
+		l = len(x.TotalDebited)
+		if l > 0 {
+			n += 1 + l + runtime.Sov(uint64(l))
+		}
+		if x.PoolsUpdated != 0 {
+			n += 1 + runtime.Sov(uint64(x.PoolsUpdated))
+		}
+		if x.unknownFields != nil {
+			n += len(x.unknownFields)
+		}
+		return protoiface.SizeOutput{
+			NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+			Size:              n,
+		}
+	}
+
+	marshal := func(input protoiface.MarshalInput) (protoiface.MarshalOutput, error) {
+		x := input.Message.Interface().(*MsgAccountSettleResponse)
+		if x == nil {
+			return protoiface.MarshalOutput{
+				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+				Buf:               input.Buf,
+			}, nil
+		}
+		options := runtime.MarshalInputToOptions(input)
+		_ = options
+		size := options.Size(x)
+		dAtA := make([]byte, size)
+		i := len(dAtA)
+		_ = i
+		var l int
+		_ = l
+		if x.unknownFields != nil {
+			i -= len(x.unknownFields)
+			copy(dAtA[i:], x.unknownFields)
+		}
+		if x.PoolsUpdated != 0 {
+			i = runtime.EncodeVarint(dAtA, i, uint64(x.PoolsUpdated))
+			i--
+			dAtA[i] = 0x30
+		}
+		if len(x.TotalDebited) > 0 {
+			i -= len(x.TotalDebited)
+			copy(dAtA[i:], x.TotalDebited)
+			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.TotalDebited)))
+			i--
+			dAtA[i] = 0x2a
+		}
+		if len(x.TotalCredited) > 0 {
+			i -= len(x.TotalCredited)
+			copy(dAtA[i:], x.TotalCredited)
+			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.TotalCredited)))
+			i--
+			dAtA[i] = 0x22
+		}
+		if x.DebitsApplied != 0 {
+			i = runtime.EncodeVarint(dAtA, i, uint64(x.DebitsApplied))
+			i--
+			dAtA[i] = 0x18
+		}
+		if x.PaymentsApplied != 0 {
+			i = runtime.EncodeVarint(dAtA, i, uint64(x.PaymentsApplied))
+			i--
+			dAtA[i] = 0x10
+		}
+		if x.Epoch != 0 {
+			i = runtime.EncodeVarint(dAtA, i, uint64(x.Epoch))
+			i--
+			dAtA[i] = 0x8
+		}
+		if input.Buf != nil {
+			input.Buf = append(input.Buf, dAtA...)
+		} else {
+			input.Buf = dAtA
+		}
+		return protoiface.MarshalOutput{
+			NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+			Buf:               input.Buf,
+		}, nil
+	}
+	unmarshal := func(input protoiface.UnmarshalInput) (protoiface.UnmarshalOutput, error) {
+		x := input.Message.Interface().(*MsgAccountSettleResponse)
+		if x == nil {
+			return protoiface.UnmarshalOutput{
+				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+				Flags:             input.Flags,
+			}, nil
+		}
+		options := runtime.UnmarshalInputToOptions(input)
+		_ = options
+		dAtA := input.Buf
+		l := len(dAtA)
+		iNdEx := 0
+		for iNdEx < l {
+			preIndex := iNdEx
+			var wire uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				wire |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			fieldNum := int32(wire >> 3)
+			wireType := int(wire & 0x7)
+			if wireType == 4 {
+				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: MsgAccountSettleResponse: wiretype end group for non-group")
+			}
+			if fieldNum <= 0 {
+				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: MsgAccountSettleResponse: illegal tag %d (wire type %d)", fieldNum, wire)
+			}
+			switch fieldNum {
+			case 1:
+				if wireType != 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field Epoch", wireType)
+				}
+				x.Epoch = 0
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					x.Epoch |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+			case 2:
+				if wireType != 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field PaymentsApplied", wireType)
+				}
+				x.PaymentsApplied = 0
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					x.PaymentsApplied |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+			case 3:
+				if wireType != 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field DebitsApplied", wireType)
+				}
+				x.DebitsApplied = 0
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					x.DebitsApplied |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+			case 4:
+				if wireType != 2 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field TotalCredited", wireType)
+				}
+				var stringLen uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					stringLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				intStringLen := int(stringLen)
+				if intStringLen < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				postIndex := iNdEx + intStringLen
+				if postIndex < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if postIndex > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				x.TotalCredited = string(dAtA[iNdEx:postIndex])
+				iNdEx = postIndex
+			case 5:
+				if wireType != 2 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field TotalDebited", wireType)
+				}
+				var stringLen uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					stringLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				intStringLen := int(stringLen)
+				if intStringLen < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				postIndex := iNdEx + intStringLen
+				if postIndex < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if postIndex > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				x.TotalDebited = string(dAtA[iNdEx:postIndex])
+				iNdEx = postIndex
+			case 6:
+				if wireType != 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field PoolsUpdated", wireType)
+				}
+				x.PoolsUpdated = 0
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					x.PoolsUpdated |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+			default:
+				iNdEx = preIndex
+				skippy, err := runtime.Skip(dAtA[iNdEx:])
+				if err != nil {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, err
+				}
+				if (skippy < 0) || (iNdEx+skippy) < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if (iNdEx + skippy) > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				if !options.DiscardUnknown {
+					x.unknownFields = append(x.unknownFields, dAtA[iNdEx:iNdEx+skippy]...)
+				}
+				iNdEx += skippy
+			}
+		}
+
+		if iNdEx > l {
+			return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+		}
+		return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, nil
+	}
+	return &protoiface.Methods{
+		NoUnkeyedLiterals: struct{}{},
+		Flags:             protoiface.SupportMarshalDeterministic | protoiface.SupportUnmarshalDiscardUnknown,
+		Size:              size,
+		Marshal:           marshal,
+		Unmarshal:         unmarshal,
+		Merge:             nil,
+		CheckInitialized:  nil,
+	}
+}
+
 // Code generated by protoc-gen-go. DO NOT EDIT.
 // versions:
 // 	protoc-gen-go v1.27.0
@@ -1008,6 +4179,301 @@ func (x *MsgClaimResponse) GetRemaining() string {
 	return ""
 }
 
+type MsgAccountSettle struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Submitter string           `protobuf:"bytes,1,opt,name=submitter,proto3" json:"submitter,omitempty"`
+	Epoch     uint64           `protobuf:"varint,2,opt,name=epoch,proto3" json:"epoch,omitempty"`
+	Payments  []*SettlePayment `protobuf:"bytes,3,rep,name=payments,proto3" json:"payments,omitempty"`
+	Debits    []*SettleDebit   `protobuf:"bytes,4,rep,name=debits,proto3" json:"debits,omitempty"`
+	Pools     []*PoolUpdate    `protobuf:"bytes,5,rep,name=pools,proto3" json:"pools,omitempty"`
+}
+
+func (x *MsgAccountSettle) Reset() {
+	*x = MsgAccountSettle{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_shinzonetwork_settlement_v1_tx_proto_msgTypes[2]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *MsgAccountSettle) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*MsgAccountSettle) ProtoMessage() {}
+
+// Deprecated: Use MsgAccountSettle.ProtoReflect.Descriptor instead.
+func (*MsgAccountSettle) Descriptor() ([]byte, []int) {
+	return file_shinzonetwork_settlement_v1_tx_proto_rawDescGZIP(), []int{2}
+}
+
+func (x *MsgAccountSettle) GetSubmitter() string {
+	if x != nil {
+		return x.Submitter
+	}
+	return ""
+}
+
+func (x *MsgAccountSettle) GetEpoch() uint64 {
+	if x != nil {
+		return x.Epoch
+	}
+	return 0
+}
+
+func (x *MsgAccountSettle) GetPayments() []*SettlePayment {
+	if x != nil {
+		return x.Payments
+	}
+	return nil
+}
+
+func (x *MsgAccountSettle) GetDebits() []*SettleDebit {
+	if x != nil {
+		return x.Debits
+	}
+	return nil
+}
+
+func (x *MsgAccountSettle) GetPools() []*PoolUpdate {
+	if x != nil {
+		return x.Pools
+	}
+	return nil
+}
+
+type SettlePayment struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Did    string `protobuf:"bytes,1,opt,name=did,proto3" json:"did,omitempty"`
+	Amount string `protobuf:"bytes,2,opt,name=amount,proto3" json:"amount,omitempty"`
+}
+
+func (x *SettlePayment) Reset() {
+	*x = SettlePayment{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_shinzonetwork_settlement_v1_tx_proto_msgTypes[3]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *SettlePayment) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SettlePayment) ProtoMessage() {}
+
+// Deprecated: Use SettlePayment.ProtoReflect.Descriptor instead.
+func (*SettlePayment) Descriptor() ([]byte, []int) {
+	return file_shinzonetwork_settlement_v1_tx_proto_rawDescGZIP(), []int{3}
+}
+
+func (x *SettlePayment) GetDid() string {
+	if x != nil {
+		return x.Did
+	}
+	return ""
+}
+
+func (x *SettlePayment) GetAmount() string {
+	if x != nil {
+		return x.Amount
+	}
+	return ""
+}
+
+type SettleDebit struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Address string `protobuf:"bytes,1,opt,name=address,proto3" json:"address,omitempty"`
+	Amount  string `protobuf:"bytes,2,opt,name=amount,proto3" json:"amount,omitempty"`
+}
+
+func (x *SettleDebit) Reset() {
+	*x = SettleDebit{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_shinzonetwork_settlement_v1_tx_proto_msgTypes[4]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *SettleDebit) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SettleDebit) ProtoMessage() {}
+
+// Deprecated: Use SettleDebit.ProtoReflect.Descriptor instead.
+func (*SettleDebit) Descriptor() ([]byte, []int) {
+	return file_shinzonetwork_settlement_v1_tx_proto_rawDescGZIP(), []int{4}
+}
+
+func (x *SettleDebit) GetAddress() string {
+	if x != nil {
+		return x.Address
+	}
+	return ""
+}
+
+func (x *SettleDebit) GetAmount() string {
+	if x != nil {
+		return x.Amount
+	}
+	return ""
+}
+
+type PoolUpdate struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	PoolAddress     string `protobuf:"bytes,1,opt,name=pool_address,json=poolAddress,proto3" json:"pool_address,omitempty"`
+	Price           string `protobuf:"bytes,2,opt,name=price,proto3" json:"price,omitempty"`
+	Utilization     uint64 `protobuf:"varint,3,opt,name=utilization,proto3" json:"utilization,omitempty"`
+	Rewards         string `protobuf:"bytes,4,opt,name=rewards,proto3" json:"rewards,omitempty"`
+	NumberOfQueries uint64 `protobuf:"varint,5,opt,name=number_of_queries,json=numberOfQueries,proto3" json:"number_of_queries,omitempty"`
+}
+
+func (x *PoolUpdate) Reset() {
+	*x = PoolUpdate{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_shinzonetwork_settlement_v1_tx_proto_msgTypes[5]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *PoolUpdate) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*PoolUpdate) ProtoMessage() {}
+
+// Deprecated: Use PoolUpdate.ProtoReflect.Descriptor instead.
+func (*PoolUpdate) Descriptor() ([]byte, []int) {
+	return file_shinzonetwork_settlement_v1_tx_proto_rawDescGZIP(), []int{5}
+}
+
+func (x *PoolUpdate) GetPoolAddress() string {
+	if x != nil {
+		return x.PoolAddress
+	}
+	return ""
+}
+
+func (x *PoolUpdate) GetPrice() string {
+	if x != nil {
+		return x.Price
+	}
+	return ""
+}
+
+func (x *PoolUpdate) GetUtilization() uint64 {
+	if x != nil {
+		return x.Utilization
+	}
+	return 0
+}
+
+func (x *PoolUpdate) GetRewards() string {
+	if x != nil {
+		return x.Rewards
+	}
+	return ""
+}
+
+func (x *PoolUpdate) GetNumberOfQueries() uint64 {
+	if x != nil {
+		return x.NumberOfQueries
+	}
+	return 0
+}
+
+type MsgAccountSettleResponse struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Epoch           uint64 `protobuf:"varint,1,opt,name=epoch,proto3" json:"epoch,omitempty"`
+	PaymentsApplied uint64 `protobuf:"varint,2,opt,name=payments_applied,json=paymentsApplied,proto3" json:"payments_applied,omitempty"`
+	DebitsApplied   uint64 `protobuf:"varint,3,opt,name=debits_applied,json=debitsApplied,proto3" json:"debits_applied,omitempty"`
+	TotalCredited   string `protobuf:"bytes,4,opt,name=total_credited,json=totalCredited,proto3" json:"total_credited,omitempty"`
+	TotalDebited    string `protobuf:"bytes,5,opt,name=total_debited,json=totalDebited,proto3" json:"total_debited,omitempty"`
+	PoolsUpdated    uint64 `protobuf:"varint,6,opt,name=pools_updated,json=poolsUpdated,proto3" json:"pools_updated,omitempty"`
+}
+
+func (x *MsgAccountSettleResponse) Reset() {
+	*x = MsgAccountSettleResponse{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_shinzonetwork_settlement_v1_tx_proto_msgTypes[6]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *MsgAccountSettleResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*MsgAccountSettleResponse) ProtoMessage() {}
+
+// Deprecated: Use MsgAccountSettleResponse.ProtoReflect.Descriptor instead.
+func (*MsgAccountSettleResponse) Descriptor() ([]byte, []int) {
+	return file_shinzonetwork_settlement_v1_tx_proto_rawDescGZIP(), []int{6}
+}
+
+func (x *MsgAccountSettleResponse) GetEpoch() uint64 {
+	if x != nil {
+		return x.Epoch
+	}
+	return 0
+}
+
+func (x *MsgAccountSettleResponse) GetPaymentsApplied() uint64 {
+	if x != nil {
+		return x.PaymentsApplied
+	}
+	return 0
+}
+
+func (x *MsgAccountSettleResponse) GetDebitsApplied() uint64 {
+	if x != nil {
+		return x.DebitsApplied
+	}
+	return 0
+}
+
+func (x *MsgAccountSettleResponse) GetTotalCredited() string {
+	if x != nil {
+		return x.TotalCredited
+	}
+	return ""
+}
+
+func (x *MsgAccountSettleResponse) GetTotalDebited() string {
+	if x != nil {
+		return x.TotalDebited
+	}
+	return ""
+}
+
+func (x *MsgAccountSettleResponse) GetPoolsUpdated() uint64 {
+	if x != nil {
+		return x.PoolsUpdated
+	}
+	return 0
+}
+
 var File_shinzonetwork_settlement_v1_tx_proto protoreflect.FileDescriptor
 
 var file_shinzonetwork_settlement_v1_tx_proto_rawDesc = []byte{
@@ -1016,39 +4482,101 @@ var file_shinzonetwork_settlement_v1_tx_proto_rawDesc = []byte{
 	0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x12, 0x1b, 0x73, 0x68, 0x69, 0x6e, 0x7a, 0x6f, 0x6e, 0x65,
 	0x74, 0x77, 0x6f, 0x72, 0x6b, 0x2e, 0x73, 0x65, 0x74, 0x74, 0x6c, 0x65, 0x6d, 0x65, 0x6e, 0x74,
 	0x2e, 0x76, 0x31, 0x1a, 0x17, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2f, 0x6d, 0x73, 0x67, 0x2f,
-	0x76, 0x31, 0x2f, 0x6d, 0x73, 0x67, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x22, 0x4a, 0x0a, 0x08,
-	0x4d, 0x73, 0x67, 0x43, 0x6c, 0x61, 0x69, 0x6d, 0x12, 0x18, 0x0a, 0x07, 0x63, 0x6c, 0x61, 0x69,
-	0x6d, 0x65, 0x72, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x07, 0x63, 0x6c, 0x61, 0x69, 0x6d,
-	0x65, 0x72, 0x12, 0x16, 0x0a, 0x06, 0x61, 0x6d, 0x6f, 0x75, 0x6e, 0x74, 0x18, 0x02, 0x20, 0x01,
-	0x28, 0x09, 0x52, 0x06, 0x61, 0x6d, 0x6f, 0x75, 0x6e, 0x74, 0x3a, 0x0c, 0x82, 0xe7, 0xb0, 0x2a,
-	0x07, 0x63, 0x6c, 0x61, 0x69, 0x6d, 0x65, 0x72, 0x22, 0x30, 0x0a, 0x10, 0x4d, 0x73, 0x67, 0x43,
-	0x6c, 0x61, 0x69, 0x6d, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x1c, 0x0a, 0x09,
-	0x72, 0x65, 0x6d, 0x61, 0x69, 0x6e, 0x69, 0x6e, 0x67, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52,
-	0x09, 0x72, 0x65, 0x6d, 0x61, 0x69, 0x6e, 0x69, 0x6e, 0x67, 0x32, 0x6b, 0x0a, 0x03, 0x4d, 0x73,
-	0x67, 0x12, 0x5d, 0x0a, 0x05, 0x43, 0x6c, 0x61, 0x69, 0x6d, 0x12, 0x25, 0x2e, 0x73, 0x68, 0x69,
-	0x6e, 0x7a, 0x6f, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x2e, 0x73, 0x65, 0x74, 0x74, 0x6c,
-	0x65, 0x6d, 0x65, 0x6e, 0x74, 0x2e, 0x76, 0x31, 0x2e, 0x4d, 0x73, 0x67, 0x43, 0x6c, 0x61, 0x69,
-	0x6d, 0x1a, 0x2d, 0x2e, 0x73, 0x68, 0x69, 0x6e, 0x7a, 0x6f, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72,
-	0x6b, 0x2e, 0x73, 0x65, 0x74, 0x74, 0x6c, 0x65, 0x6d, 0x65, 0x6e, 0x74, 0x2e, 0x76, 0x31, 0x2e,
-	0x4d, 0x73, 0x67, 0x43, 0x6c, 0x61, 0x69, 0x6d, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65,
-	0x1a, 0x05, 0x80, 0xe7, 0xb0, 0x2a, 0x01, 0x42, 0x89, 0x02, 0x0a, 0x1f, 0x63, 0x6f, 0x6d, 0x2e,
+	0x76, 0x31, 0x2f, 0x6d, 0x73, 0x67, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x1a, 0x14, 0x67, 0x6f,
+	0x67, 0x6f, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2f, 0x67, 0x6f, 0x67, 0x6f, 0x2e, 0x70, 0x72, 0x6f,
+	0x74, 0x6f, 0x22, 0x4a, 0x0a, 0x08, 0x4d, 0x73, 0x67, 0x43, 0x6c, 0x61, 0x69, 0x6d, 0x12, 0x18,
+	0x0a, 0x07, 0x63, 0x6c, 0x61, 0x69, 0x6d, 0x65, 0x72, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52,
+	0x07, 0x63, 0x6c, 0x61, 0x69, 0x6d, 0x65, 0x72, 0x12, 0x16, 0x0a, 0x06, 0x61, 0x6d, 0x6f, 0x75,
+	0x6e, 0x74, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x06, 0x61, 0x6d, 0x6f, 0x75, 0x6e, 0x74,
+	0x3a, 0x0c, 0x82, 0xe7, 0xb0, 0x2a, 0x07, 0x63, 0x6c, 0x61, 0x69, 0x6d, 0x65, 0x72, 0x22, 0x30,
+	0x0a, 0x10, 0x4d, 0x73, 0x67, 0x43, 0x6c, 0x61, 0x69, 0x6d, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e,
+	0x73, 0x65, 0x12, 0x1c, 0x0a, 0x09, 0x72, 0x65, 0x6d, 0x61, 0x69, 0x6e, 0x69, 0x6e, 0x67, 0x18,
+	0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x09, 0x72, 0x65, 0x6d, 0x61, 0x69, 0x6e, 0x69, 0x6e, 0x67,
+	0x22, 0xb1, 0x02, 0x0a, 0x10, 0x4d, 0x73, 0x67, 0x41, 0x63, 0x63, 0x6f, 0x75, 0x6e, 0x74, 0x53,
+	0x65, 0x74, 0x74, 0x6c, 0x65, 0x12, 0x1c, 0x0a, 0x09, 0x73, 0x75, 0x62, 0x6d, 0x69, 0x74, 0x74,
+	0x65, 0x72, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x09, 0x73, 0x75, 0x62, 0x6d, 0x69, 0x74,
+	0x74, 0x65, 0x72, 0x12, 0x14, 0x0a, 0x05, 0x65, 0x70, 0x6f, 0x63, 0x68, 0x18, 0x02, 0x20, 0x01,
+	0x28, 0x04, 0x52, 0x05, 0x65, 0x70, 0x6f, 0x63, 0x68, 0x12, 0x4c, 0x0a, 0x08, 0x70, 0x61, 0x79,
+	0x6d, 0x65, 0x6e, 0x74, 0x73, 0x18, 0x03, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x2a, 0x2e, 0x73, 0x68,
+	0x69, 0x6e, 0x7a, 0x6f, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x2e, 0x73, 0x65, 0x74, 0x74,
+	0x6c, 0x65, 0x6d, 0x65, 0x6e, 0x74, 0x2e, 0x76, 0x31, 0x2e, 0x53, 0x65, 0x74, 0x74, 0x6c, 0x65,
+	0x50, 0x61, 0x79, 0x6d, 0x65, 0x6e, 0x74, 0x42, 0x04, 0xc8, 0xde, 0x1f, 0x00, 0x52, 0x08, 0x70,
+	0x61, 0x79, 0x6d, 0x65, 0x6e, 0x74, 0x73, 0x12, 0x46, 0x0a, 0x06, 0x64, 0x65, 0x62, 0x69, 0x74,
+	0x73, 0x18, 0x04, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x28, 0x2e, 0x73, 0x68, 0x69, 0x6e, 0x7a, 0x6f,
+	0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x2e, 0x73, 0x65, 0x74, 0x74, 0x6c, 0x65, 0x6d, 0x65,
+	0x6e, 0x74, 0x2e, 0x76, 0x31, 0x2e, 0x53, 0x65, 0x74, 0x74, 0x6c, 0x65, 0x44, 0x65, 0x62, 0x69,
+	0x74, 0x42, 0x04, 0xc8, 0xde, 0x1f, 0x00, 0x52, 0x06, 0x64, 0x65, 0x62, 0x69, 0x74, 0x73, 0x12,
+	0x43, 0x0a, 0x05, 0x70, 0x6f, 0x6f, 0x6c, 0x73, 0x18, 0x05, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x27,
+	0x2e, 0x73, 0x68, 0x69, 0x6e, 0x7a, 0x6f, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x2e, 0x73,
+	0x65, 0x74, 0x74, 0x6c, 0x65, 0x6d, 0x65, 0x6e, 0x74, 0x2e, 0x76, 0x31, 0x2e, 0x50, 0x6f, 0x6f,
+	0x6c, 0x55, 0x70, 0x64, 0x61, 0x74, 0x65, 0x42, 0x04, 0xc8, 0xde, 0x1f, 0x00, 0x52, 0x05, 0x70,
+	0x6f, 0x6f, 0x6c, 0x73, 0x3a, 0x0e, 0x82, 0xe7, 0xb0, 0x2a, 0x09, 0x73, 0x75, 0x62, 0x6d, 0x69,
+	0x74, 0x74, 0x65, 0x72, 0x22, 0x39, 0x0a, 0x0d, 0x53, 0x65, 0x74, 0x74, 0x6c, 0x65, 0x50, 0x61,
+	0x79, 0x6d, 0x65, 0x6e, 0x74, 0x12, 0x10, 0x0a, 0x03, 0x64, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01,
+	0x28, 0x09, 0x52, 0x03, 0x64, 0x69, 0x64, 0x12, 0x16, 0x0a, 0x06, 0x61, 0x6d, 0x6f, 0x75, 0x6e,
+	0x74, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x06, 0x61, 0x6d, 0x6f, 0x75, 0x6e, 0x74, 0x22,
+	0x3f, 0x0a, 0x0b, 0x53, 0x65, 0x74, 0x74, 0x6c, 0x65, 0x44, 0x65, 0x62, 0x69, 0x74, 0x12, 0x18,
+	0x0a, 0x07, 0x61, 0x64, 0x64, 0x72, 0x65, 0x73, 0x73, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52,
+	0x07, 0x61, 0x64, 0x64, 0x72, 0x65, 0x73, 0x73, 0x12, 0x16, 0x0a, 0x06, 0x61, 0x6d, 0x6f, 0x75,
+	0x6e, 0x74, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x06, 0x61, 0x6d, 0x6f, 0x75, 0x6e, 0x74,
+	0x22, 0xad, 0x01, 0x0a, 0x0a, 0x50, 0x6f, 0x6f, 0x6c, 0x55, 0x70, 0x64, 0x61, 0x74, 0x65, 0x12,
+	0x21, 0x0a, 0x0c, 0x70, 0x6f, 0x6f, 0x6c, 0x5f, 0x61, 0x64, 0x64, 0x72, 0x65, 0x73, 0x73, 0x18,
+	0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x0b, 0x70, 0x6f, 0x6f, 0x6c, 0x41, 0x64, 0x64, 0x72, 0x65,
+	0x73, 0x73, 0x12, 0x14, 0x0a, 0x05, 0x70, 0x72, 0x69, 0x63, 0x65, 0x18, 0x02, 0x20, 0x01, 0x28,
+	0x09, 0x52, 0x05, 0x70, 0x72, 0x69, 0x63, 0x65, 0x12, 0x20, 0x0a, 0x0b, 0x75, 0x74, 0x69, 0x6c,
+	0x69, 0x7a, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x18, 0x03, 0x20, 0x01, 0x28, 0x04, 0x52, 0x0b, 0x75,
+	0x74, 0x69, 0x6c, 0x69, 0x7a, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x12, 0x18, 0x0a, 0x07, 0x72, 0x65,
+	0x77, 0x61, 0x72, 0x64, 0x73, 0x18, 0x04, 0x20, 0x01, 0x28, 0x09, 0x52, 0x07, 0x72, 0x65, 0x77,
+	0x61, 0x72, 0x64, 0x73, 0x12, 0x2a, 0x0a, 0x11, 0x6e, 0x75, 0x6d, 0x62, 0x65, 0x72, 0x5f, 0x6f,
+	0x66, 0x5f, 0x71, 0x75, 0x65, 0x72, 0x69, 0x65, 0x73, 0x18, 0x05, 0x20, 0x01, 0x28, 0x04, 0x52,
+	0x0f, 0x6e, 0x75, 0x6d, 0x62, 0x65, 0x72, 0x4f, 0x66, 0x51, 0x75, 0x65, 0x72, 0x69, 0x65, 0x73,
+	0x22, 0xf3, 0x01, 0x0a, 0x18, 0x4d, 0x73, 0x67, 0x41, 0x63, 0x63, 0x6f, 0x75, 0x6e, 0x74, 0x53,
+	0x65, 0x74, 0x74, 0x6c, 0x65, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x14, 0x0a,
+	0x05, 0x65, 0x70, 0x6f, 0x63, 0x68, 0x18, 0x01, 0x20, 0x01, 0x28, 0x04, 0x52, 0x05, 0x65, 0x70,
+	0x6f, 0x63, 0x68, 0x12, 0x29, 0x0a, 0x10, 0x70, 0x61, 0x79, 0x6d, 0x65, 0x6e, 0x74, 0x73, 0x5f,
+	0x61, 0x70, 0x70, 0x6c, 0x69, 0x65, 0x64, 0x18, 0x02, 0x20, 0x01, 0x28, 0x04, 0x52, 0x0f, 0x70,
+	0x61, 0x79, 0x6d, 0x65, 0x6e, 0x74, 0x73, 0x41, 0x70, 0x70, 0x6c, 0x69, 0x65, 0x64, 0x12, 0x25,
+	0x0a, 0x0e, 0x64, 0x65, 0x62, 0x69, 0x74, 0x73, 0x5f, 0x61, 0x70, 0x70, 0x6c, 0x69, 0x65, 0x64,
+	0x18, 0x03, 0x20, 0x01, 0x28, 0x04, 0x52, 0x0d, 0x64, 0x65, 0x62, 0x69, 0x74, 0x73, 0x41, 0x70,
+	0x70, 0x6c, 0x69, 0x65, 0x64, 0x12, 0x25, 0x0a, 0x0e, 0x74, 0x6f, 0x74, 0x61, 0x6c, 0x5f, 0x63,
+	0x72, 0x65, 0x64, 0x69, 0x74, 0x65, 0x64, 0x18, 0x04, 0x20, 0x01, 0x28, 0x09, 0x52, 0x0d, 0x74,
+	0x6f, 0x74, 0x61, 0x6c, 0x43, 0x72, 0x65, 0x64, 0x69, 0x74, 0x65, 0x64, 0x12, 0x23, 0x0a, 0x0d,
+	0x74, 0x6f, 0x74, 0x61, 0x6c, 0x5f, 0x64, 0x65, 0x62, 0x69, 0x74, 0x65, 0x64, 0x18, 0x05, 0x20,
+	0x01, 0x28, 0x09, 0x52, 0x0c, 0x74, 0x6f, 0x74, 0x61, 0x6c, 0x44, 0x65, 0x62, 0x69, 0x74, 0x65,
+	0x64, 0x12, 0x23, 0x0a, 0x0d, 0x70, 0x6f, 0x6f, 0x6c, 0x73, 0x5f, 0x75, 0x70, 0x64, 0x61, 0x74,
+	0x65, 0x64, 0x18, 0x06, 0x20, 0x01, 0x28, 0x04, 0x52, 0x0c, 0x70, 0x6f, 0x6f, 0x6c, 0x73, 0x55,
+	0x70, 0x64, 0x61, 0x74, 0x65, 0x64, 0x32, 0xe2, 0x01, 0x0a, 0x03, 0x4d, 0x73, 0x67, 0x12, 0x5d,
+	0x0a, 0x05, 0x43, 0x6c, 0x61, 0x69, 0x6d, 0x12, 0x25, 0x2e, 0x73, 0x68, 0x69, 0x6e, 0x7a, 0x6f,
+	0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x2e, 0x73, 0x65, 0x74, 0x74, 0x6c, 0x65, 0x6d, 0x65,
+	0x6e, 0x74, 0x2e, 0x76, 0x31, 0x2e, 0x4d, 0x73, 0x67, 0x43, 0x6c, 0x61, 0x69, 0x6d, 0x1a, 0x2d,
+	0x2e, 0x73, 0x68, 0x69, 0x6e, 0x7a, 0x6f, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x2e, 0x73,
+	0x65, 0x74, 0x74, 0x6c, 0x65, 0x6d, 0x65, 0x6e, 0x74, 0x2e, 0x76, 0x31, 0x2e, 0x4d, 0x73, 0x67,
+	0x43, 0x6c, 0x61, 0x69, 0x6d, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x75, 0x0a,
+	0x0d, 0x41, 0x63, 0x63, 0x6f, 0x75, 0x6e, 0x74, 0x53, 0x65, 0x74, 0x74, 0x6c, 0x65, 0x12, 0x2d,
+	0x2e, 0x73, 0x68, 0x69, 0x6e, 0x7a, 0x6f, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x2e, 0x73,
+	0x65, 0x74, 0x74, 0x6c, 0x65, 0x6d, 0x65, 0x6e, 0x74, 0x2e, 0x76, 0x31, 0x2e, 0x4d, 0x73, 0x67,
+	0x41, 0x63, 0x63, 0x6f, 0x75, 0x6e, 0x74, 0x53, 0x65, 0x74, 0x74, 0x6c, 0x65, 0x1a, 0x35, 0x2e,
 	0x73, 0x68, 0x69, 0x6e, 0x7a, 0x6f, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x2e, 0x73, 0x65,
-	0x74, 0x74, 0x6c, 0x65, 0x6d, 0x65, 0x6e, 0x74, 0x2e, 0x76, 0x31, 0x42, 0x07, 0x54, 0x78, 0x50,
-	0x72, 0x6f, 0x74, 0x6f, 0x50, 0x01, 0x5a, 0x4f, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63,
-	0x6f, 0x6d, 0x2f, 0x73, 0x68, 0x69, 0x6e, 0x7a, 0x6f, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b,
-	0x2f, 0x73, 0x68, 0x69, 0x6e, 0x7a, 0x6f, 0x68, 0x75, 0x62, 0x2f, 0x61, 0x70, 0x69, 0x2f, 0x73,
-	0x68, 0x69, 0x6e, 0x7a, 0x6f, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x2f, 0x73, 0x65, 0x74,
-	0x74, 0x6c, 0x65, 0x6d, 0x65, 0x6e, 0x74, 0x2f, 0x76, 0x31, 0x3b, 0x73, 0x65, 0x74, 0x74, 0x6c,
-	0x65, 0x6d, 0x65, 0x6e, 0x74, 0x76, 0x31, 0xa2, 0x02, 0x03, 0x53, 0x53, 0x58, 0xaa, 0x02, 0x1b,
-	0x53, 0x68, 0x69, 0x6e, 0x7a, 0x6f, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x2e, 0x53, 0x65,
-	0x74, 0x74, 0x6c, 0x65, 0x6d, 0x65, 0x6e, 0x74, 0x2e, 0x56, 0x31, 0xca, 0x02, 0x1b, 0x53, 0x68,
-	0x69, 0x6e, 0x7a, 0x6f, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x5c, 0x53, 0x65, 0x74, 0x74,
-	0x6c, 0x65, 0x6d, 0x65, 0x6e, 0x74, 0x5c, 0x56, 0x31, 0xe2, 0x02, 0x27, 0x53, 0x68, 0x69, 0x6e,
-	0x7a, 0x6f, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x5c, 0x53, 0x65, 0x74, 0x74, 0x6c, 0x65,
-	0x6d, 0x65, 0x6e, 0x74, 0x5c, 0x56, 0x31, 0x5c, 0x47, 0x50, 0x42, 0x4d, 0x65, 0x74, 0x61, 0x64,
-	0x61, 0x74, 0x61, 0xea, 0x02, 0x1d, 0x53, 0x68, 0x69, 0x6e, 0x7a, 0x6f, 0x6e, 0x65, 0x74, 0x77,
-	0x6f, 0x72, 0x6b, 0x3a, 0x3a, 0x53, 0x65, 0x74, 0x74, 0x6c, 0x65, 0x6d, 0x65, 0x6e, 0x74, 0x3a,
-	0x3a, 0x56, 0x31, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
+	0x74, 0x74, 0x6c, 0x65, 0x6d, 0x65, 0x6e, 0x74, 0x2e, 0x76, 0x31, 0x2e, 0x4d, 0x73, 0x67, 0x41,
+	0x63, 0x63, 0x6f, 0x75, 0x6e, 0x74, 0x53, 0x65, 0x74, 0x74, 0x6c, 0x65, 0x52, 0x65, 0x73, 0x70,
+	0x6f, 0x6e, 0x73, 0x65, 0x1a, 0x05, 0x80, 0xe7, 0xb0, 0x2a, 0x01, 0x42, 0x89, 0x02, 0x0a, 0x1f,
+	0x63, 0x6f, 0x6d, 0x2e, 0x73, 0x68, 0x69, 0x6e, 0x7a, 0x6f, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72,
+	0x6b, 0x2e, 0x73, 0x65, 0x74, 0x74, 0x6c, 0x65, 0x6d, 0x65, 0x6e, 0x74, 0x2e, 0x76, 0x31, 0x42,
+	0x07, 0x54, 0x78, 0x50, 0x72, 0x6f, 0x74, 0x6f, 0x50, 0x01, 0x5a, 0x4f, 0x67, 0x69, 0x74, 0x68,
+	0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x73, 0x68, 0x69, 0x6e, 0x7a, 0x6f, 0x6e, 0x65, 0x74,
+	0x77, 0x6f, 0x72, 0x6b, 0x2f, 0x73, 0x68, 0x69, 0x6e, 0x7a, 0x6f, 0x68, 0x75, 0x62, 0x2f, 0x61,
+	0x70, 0x69, 0x2f, 0x73, 0x68, 0x69, 0x6e, 0x7a, 0x6f, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b,
+	0x2f, 0x73, 0x65, 0x74, 0x74, 0x6c, 0x65, 0x6d, 0x65, 0x6e, 0x74, 0x2f, 0x76, 0x31, 0x3b, 0x73,
+	0x65, 0x74, 0x74, 0x6c, 0x65, 0x6d, 0x65, 0x6e, 0x74, 0x76, 0x31, 0xa2, 0x02, 0x03, 0x53, 0x53,
+	0x58, 0xaa, 0x02, 0x1b, 0x53, 0x68, 0x69, 0x6e, 0x7a, 0x6f, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72,
+	0x6b, 0x2e, 0x53, 0x65, 0x74, 0x74, 0x6c, 0x65, 0x6d, 0x65, 0x6e, 0x74, 0x2e, 0x56, 0x31, 0xca,
+	0x02, 0x1b, 0x53, 0x68, 0x69, 0x6e, 0x7a, 0x6f, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x5c,
+	0x53, 0x65, 0x74, 0x74, 0x6c, 0x65, 0x6d, 0x65, 0x6e, 0x74, 0x5c, 0x56, 0x31, 0xe2, 0x02, 0x27,
+	0x53, 0x68, 0x69, 0x6e, 0x7a, 0x6f, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x5c, 0x53, 0x65,
+	0x74, 0x74, 0x6c, 0x65, 0x6d, 0x65, 0x6e, 0x74, 0x5c, 0x56, 0x31, 0x5c, 0x47, 0x50, 0x42, 0x4d,
+	0x65, 0x74, 0x61, 0x64, 0x61, 0x74, 0x61, 0xea, 0x02, 0x1d, 0x53, 0x68, 0x69, 0x6e, 0x7a, 0x6f,
+	0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x3a, 0x3a, 0x53, 0x65, 0x74, 0x74, 0x6c, 0x65, 0x6d,
+	0x65, 0x6e, 0x74, 0x3a, 0x3a, 0x56, 0x31, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
 }
 
 var (
@@ -1063,19 +4591,29 @@ func file_shinzonetwork_settlement_v1_tx_proto_rawDescGZIP() []byte {
 	return file_shinzonetwork_settlement_v1_tx_proto_rawDescData
 }
 
-var file_shinzonetwork_settlement_v1_tx_proto_msgTypes = make([]protoimpl.MessageInfo, 2)
+var file_shinzonetwork_settlement_v1_tx_proto_msgTypes = make([]protoimpl.MessageInfo, 7)
 var file_shinzonetwork_settlement_v1_tx_proto_goTypes = []interface{}{
-	(*MsgClaim)(nil),         // 0: shinzonetwork.settlement.v1.MsgClaim
-	(*MsgClaimResponse)(nil), // 1: shinzonetwork.settlement.v1.MsgClaimResponse
+	(*MsgClaim)(nil),                 // 0: shinzonetwork.settlement.v1.MsgClaim
+	(*MsgClaimResponse)(nil),         // 1: shinzonetwork.settlement.v1.MsgClaimResponse
+	(*MsgAccountSettle)(nil),         // 2: shinzonetwork.settlement.v1.MsgAccountSettle
+	(*SettlePayment)(nil),            // 3: shinzonetwork.settlement.v1.SettlePayment
+	(*SettleDebit)(nil),              // 4: shinzonetwork.settlement.v1.SettleDebit
+	(*PoolUpdate)(nil),               // 5: shinzonetwork.settlement.v1.PoolUpdate
+	(*MsgAccountSettleResponse)(nil), // 6: shinzonetwork.settlement.v1.MsgAccountSettleResponse
 }
 var file_shinzonetwork_settlement_v1_tx_proto_depIdxs = []int32{
-	0, // 0: shinzonetwork.settlement.v1.Msg.Claim:input_type -> shinzonetwork.settlement.v1.MsgClaim
-	1, // 1: shinzonetwork.settlement.v1.Msg.Claim:output_type -> shinzonetwork.settlement.v1.MsgClaimResponse
-	1, // [1:2] is the sub-list for method output_type
-	0, // [0:1] is the sub-list for method input_type
-	0, // [0:0] is the sub-list for extension type_name
-	0, // [0:0] is the sub-list for extension extendee
-	0, // [0:0] is the sub-list for field type_name
+	3, // 0: shinzonetwork.settlement.v1.MsgAccountSettle.payments:type_name -> shinzonetwork.settlement.v1.SettlePayment
+	4, // 1: shinzonetwork.settlement.v1.MsgAccountSettle.debits:type_name -> shinzonetwork.settlement.v1.SettleDebit
+	5, // 2: shinzonetwork.settlement.v1.MsgAccountSettle.pools:type_name -> shinzonetwork.settlement.v1.PoolUpdate
+	0, // 3: shinzonetwork.settlement.v1.Msg.Claim:input_type -> shinzonetwork.settlement.v1.MsgClaim
+	2, // 4: shinzonetwork.settlement.v1.Msg.AccountSettle:input_type -> shinzonetwork.settlement.v1.MsgAccountSettle
+	1, // 5: shinzonetwork.settlement.v1.Msg.Claim:output_type -> shinzonetwork.settlement.v1.MsgClaimResponse
+	6, // 6: shinzonetwork.settlement.v1.Msg.AccountSettle:output_type -> shinzonetwork.settlement.v1.MsgAccountSettleResponse
+	5, // [5:7] is the sub-list for method output_type
+	3, // [3:5] is the sub-list for method input_type
+	3, // [3:3] is the sub-list for extension type_name
+	3, // [3:3] is the sub-list for extension extendee
+	0, // [0:3] is the sub-list for field type_name
 }
 
 func init() { file_shinzonetwork_settlement_v1_tx_proto_init() }
@@ -1108,6 +4646,66 @@ func file_shinzonetwork_settlement_v1_tx_proto_init() {
 				return nil
 			}
 		}
+		file_shinzonetwork_settlement_v1_tx_proto_msgTypes[2].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*MsgAccountSettle); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_shinzonetwork_settlement_v1_tx_proto_msgTypes[3].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*SettlePayment); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_shinzonetwork_settlement_v1_tx_proto_msgTypes[4].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*SettleDebit); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_shinzonetwork_settlement_v1_tx_proto_msgTypes[5].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*PoolUpdate); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_shinzonetwork_settlement_v1_tx_proto_msgTypes[6].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*MsgAccountSettleResponse); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
 	}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
@@ -1115,7 +4713,7 @@ func file_shinzonetwork_settlement_v1_tx_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_shinzonetwork_settlement_v1_tx_proto_rawDesc,
 			NumEnums:      0,
-			NumMessages:   2,
+			NumMessages:   7,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

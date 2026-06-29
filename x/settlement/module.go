@@ -20,9 +20,10 @@ import (
 const ConsensusVersion = 1
 
 var (
-	_ module.AppModuleBasic = (*AppModule)(nil)
-	_ module.HasGenesis     = (*AppModule)(nil)
-	_ appmodule.AppModule   = (*AppModule)(nil)
+	_ module.AppModuleBasic   = (*AppModule)(nil)
+	_ module.HasGenesis       = (*AppModule)(nil)
+	_ appmodule.AppModule     = (*AppModule)(nil)
+	_ appmodule.HasBeginBlocker = (*AppModule)(nil)
 )
 
 type AppModule struct {
@@ -89,3 +90,10 @@ func (AppModule) RegisterInterfaces(registry codectypes.InterfaceRegistry) {
 }
 
 func (AppModule) RegisterLegacyAminoCodec(_ *codec.LegacyAmino) {}
+
+// BeginBlock drives the settlement boundary processor: at every block it
+// checks whether an epoch has just closed, and if so drains that epoch's
+// pending submissions and applies them atomically.
+func (am AppModule) BeginBlock(goCtx context.Context) error {
+	return am.keeper.BeginBlocker(sdk.UnwrapSDKContext(goCtx))
+}

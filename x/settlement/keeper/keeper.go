@@ -17,25 +17,39 @@ import (
 )
 
 type Keeper struct {
-	cdc          codec.BinaryCodec
-	storeService storetypes.KVStoreService
-	authority    string
-	bankKeeper   types.BankKeeper
+	cdc                codec.BinaryCodec
+	storeService       storetypes.KVStoreService
+	authority          string
+	bankKeeper         types.BankKeeper
+	hostKeeper         types.HostKeeper
+	indexerKeeper      types.IndexerKeeper
+	queryBalanceKeeper types.QueryBalanceKeeper
 }
 
 func NewKeeper(
 	cdc codec.BinaryCodec,
 	storeService storetypes.KVStoreService,
 	bankKeeper types.BankKeeper,
+	hostKeeper types.HostKeeper,
+	indexerKeeper types.IndexerKeeper,
+	queryBalanceKeeper types.QueryBalanceKeeper,
 	authority string,
 ) Keeper {
 	return Keeper{
-		cdc:          cdc,
-		storeService: storeService,
-		bankKeeper:   bankKeeper,
-		authority:    authority,
+		cdc:                cdc,
+		storeService:       storeService,
+		bankKeeper:         bankKeeper,
+		hostKeeper:         hostKeeper,
+		indexerKeeper:      indexerKeeper,
+		queryBalanceKeeper: queryBalanceKeeper,
+		authority:          authority,
 	}
 }
+
+// Accessors used by the msg server.
+func (k Keeper) HostKeeper() types.HostKeeper                 { return k.hostKeeper }
+func (k Keeper) IndexerKeeper() types.IndexerKeeper           { return k.indexerKeeper }
+func (k Keeper) QueryBalanceKeeper() types.QueryBalanceKeeper { return k.queryBalanceKeeper }
 
 func (k Keeper) Logger(ctx sdk.Context) log.Logger {
 	return ctx.Logger().With("module", fmt.Sprintf("x/%s", types.ModuleName))
@@ -237,6 +251,215 @@ func (k Keeper) SetLastSettledEpoch(ctx sdk.Context, epoch uint64) {
 	var bz [8]byte
 	binary.BigEndian.PutUint64(bz[:], epoch)
 	store.Set([]byte(types.LastSettledEpochKey), bz[:])
+}
+
+// EnqueuePendingDebit appends a debit-only entry to the epoch's debit queue
+// AND updates the per-address pending-debit-total index. Returns the entry's
+// sequence number.
+func (k Keeper) EnqueuePendingDebit(ctx sdk.Context, epoch uint64, entry types.PendingSettleEntry) (uint64, error) {
+	for _, d := range entry.Debits {
+		amt, ok := math.NewIntFromString(d.Amount)
+		if !ok || !amt.IsPositive() {
+			continue
+		}
+		k.addPendingDebitTotal(ctx, d.Address, amt)
+	}
+	return k.enqueuePendingTo(ctx, types.PendingDebitPrefix, types.PendingDebitCounterKey, epoch, entry)
+}
+
+// EnqueuePendingCredit appends a credit-only entry to the epoch's credit queue.
+func (k Keeper) EnqueuePendingCredit(ctx sdk.Context, epoch uint64, entry types.PendingSettleEntry) (uint64, error) {
+	return k.enqueuePendingTo(ctx, types.PendingCreditPrefix, types.PendingCreditCounterKey, epoch, entry)
+}
+
+func (k Keeper) enqueuePendingTo(ctx sdk.Context, queuePrefix, counterKey string, epoch uint64, entry types.PendingSettleEntry) (uint64, error) {
+	store := runtime.KVStoreAdapter(k.storeService.OpenKVStore(ctx))
+	seq := k.nextPendingSeq(ctx, counterKey)
+	bz, err := k.cdc.Marshal(&entry)
+	if err != nil {
+		return 0, fmt.Errorf("marshal pending entry: %w", err)
+	}
+	store.Set(pendingEntryKey(queuePrefix, epoch, seq), bz)
+	return seq, nil
+}
+
+// DrainPendingDebits drains up to `limit` debit entries from the epoch's
+// debit queue. See DrainPending for behavior.
+func (k Keeper) DrainPendingDebits(ctx sdk.Context, epoch uint64, limit int, fn func(types.PendingSettleEntry)) int {
+	return k.drainPendingFrom(ctx, types.PendingDebitPrefix, epoch, limit, fn)
+}
+
+// DrainPendingCredits drains up to `limit` credit entries from the epoch's
+// credit queue.
+func (k Keeper) DrainPendingCredits(ctx sdk.Context, epoch uint64, limit int, fn func(types.PendingSettleEntry)) int {
+	return k.drainPendingFrom(ctx, types.PendingCreditPrefix, epoch, limit, fn)
+}
+
+func (k Keeper) drainPendingFrom(ctx sdk.Context, queuePrefix string, epoch uint64, limit int, fn func(types.PendingSettleEntry)) int {
+	rootStore := runtime.KVStoreAdapter(k.storeService.OpenKVStore(ctx))
+	pendingStore := prefix.NewStore(rootStore, pendingEpochPrefix(queuePrefix, epoch))
+
+	type keyed struct {
+		key   []byte
+		entry types.PendingSettleEntry
+	}
+	var batch []keyed
+
+	it := pendingStore.Iterator(nil, nil)
+	for ; it.Valid(); it.Next() {
+		if limit > 0 && len(batch) >= limit {
+			break
+		}
+		var entry types.PendingSettleEntry
+		if err := k.cdc.Unmarshal(it.Value(), &entry); err != nil {
+			it.Close()
+			panic(fmt.Errorf("unmarshal pending settle entry: %w", err))
+		}
+		keyCopy := make([]byte, len(it.Key()))
+		copy(keyCopy, it.Key())
+		batch = append(batch, keyed{key: keyCopy, entry: entry})
+	}
+	it.Close()
+
+	for _, kv := range batch {
+		fn(kv.entry)
+		pendingStore.Delete(kv.key)
+	}
+	return len(batch)
+}
+
+// PendingDebitCount / PendingCreditCount / PendingCount expose queue depth.
+// PendingCount is the union — used by BeginBlocker to know if an epoch is
+// fully settled.
+func (k Keeper) PendingDebitCount(ctx sdk.Context, epoch uint64) int {
+	return k.countQueue(ctx, types.PendingDebitPrefix, epoch)
+}
+
+func (k Keeper) PendingCreditCount(ctx sdk.Context, epoch uint64) int {
+	return k.countQueue(ctx, types.PendingCreditPrefix, epoch)
+}
+
+func (k Keeper) PendingCount(ctx sdk.Context, epoch uint64) int {
+	return k.PendingDebitCount(ctx, epoch) + k.PendingCreditCount(ctx, epoch)
+}
+
+func (k Keeper) countQueue(ctx sdk.Context, queuePrefix string, epoch uint64) int {
+	rootStore := runtime.KVStoreAdapter(k.storeService.OpenKVStore(ctx))
+	pendingStore := prefix.NewStore(rootStore, pendingEpochPrefix(queuePrefix, epoch))
+
+	it := pendingStore.Iterator(nil, nil)
+	defer it.Close()
+	n := 0
+	for ; it.Valid(); it.Next() {
+		n++
+	}
+	return n
+}
+
+func (k Keeper) nextPendingSeq(ctx sdk.Context, counterKey string) uint64 {
+	store := runtime.KVStoreAdapter(k.storeService.OpenKVStore(ctx))
+	bz := store.Get([]byte(counterKey))
+	var next uint64
+	if len(bz) == 8 {
+		next = binary.BigEndian.Uint64(bz)
+	}
+	var out [8]byte
+	binary.BigEndian.PutUint64(out[:], next+1)
+	store.Set([]byte(counterKey), out[:])
+	return next
+}
+
+// ─── pending debit total index ────────────────────────────────────────────
+//
+// pending_debit_total/<bech32_address> → math.Int as a string. Maintained on
+// every EnqueuePendingDebit (+=) and every ProcessPendingDebitChunk (-=) so
+// the EffectiveBalance query can compute querybalance - pending_debit in O(1).
+
+// GetPendingDebitTotal returns the sum of all debits currently queued (across
+// any unsettled epochs) against the given address. Returns 0 if none.
+func (k Keeper) GetPendingDebitTotal(ctx sdk.Context, addr sdk.AccAddress) math.Int {
+	store := runtime.KVStoreAdapter(k.storeService.OpenKVStore(ctx))
+	bz := store.Get(pendingDebitTotalKey(addr.String()))
+	if len(bz) == 0 {
+		return math.ZeroInt()
+	}
+	v, ok := math.NewIntFromString(string(bz))
+	if !ok {
+		return math.ZeroInt()
+	}
+	return v
+}
+
+// GetEffectiveBalance returns max(0, querybalance - pending_debit_total) for
+// the address — what the gateway should treat as actually spendable.
+func (k Keeper) GetEffectiveBalance(ctx sdk.Context, addr sdk.AccAddress) math.Int {
+	actual := k.queryBalanceKeeper.GetBalance(ctx, addr)
+	pending := k.GetPendingDebitTotal(ctx, addr)
+	if actual.LTE(pending) {
+		return math.ZeroInt()
+	}
+	return actual.Sub(pending)
+}
+
+func (k Keeper) addPendingDebitTotal(ctx sdk.Context, bech32Addr string, delta math.Int) {
+	if !delta.IsPositive() {
+		return
+	}
+	store := runtime.KVStoreAdapter(k.storeService.OpenKVStore(ctx))
+	key := pendingDebitTotalKey(bech32Addr)
+	cur := math.ZeroInt()
+	if bz := store.Get(key); len(bz) > 0 {
+		if v, ok := math.NewIntFromString(string(bz)); ok {
+			cur = v
+		}
+	}
+	store.Set(key, []byte(cur.Add(delta).String()))
+}
+
+func (k Keeper) subPendingDebitTotal(ctx sdk.Context, bech32Addr string, delta math.Int) {
+	if !delta.IsPositive() {
+		return
+	}
+	store := runtime.KVStoreAdapter(k.storeService.OpenKVStore(ctx))
+	key := pendingDebitTotalKey(bech32Addr)
+	cur := math.ZeroInt()
+	if bz := store.Get(key); len(bz) > 0 {
+		if v, ok := math.NewIntFromString(string(bz)); ok {
+			cur = v
+		}
+	}
+	next := cur.Sub(delta)
+	if !next.IsPositive() {
+		// Either zero or negative (defensive); delete the row to keep state lean.
+		store.Delete(key)
+		return
+	}
+	store.Set(key, []byte(next.String()))
+}
+
+func pendingDebitTotalKey(bech32Addr string) []byte {
+	return []byte(types.PendingDebitTotalPrefix + bech32Addr)
+}
+
+func pendingEpochPrefix(queuePrefix string, epoch uint64) []byte {
+	p := []byte(queuePrefix)
+	var epochBuf [8]byte
+	binary.BigEndian.PutUint64(epochBuf[:], epoch)
+	out := make([]byte, 0, len(p)+8+1)
+	out = append(out, p...)
+	out = append(out, epochBuf[:]...)
+	out = append(out, '/')
+	return out
+}
+
+func pendingEntryKey(queuePrefix string, epoch, seq uint64) []byte {
+	p := pendingEpochPrefix(queuePrefix, epoch)
+	var seqBuf [8]byte
+	binary.BigEndian.PutUint64(seqBuf[:], seq)
+	out := make([]byte, 0, len(p)+8)
+	out = append(out, p...)
+	out = append(out, seqBuf[:]...)
+	return out
 }
 
 func (k Keeper) InitGenesis(ctx sdk.Context, gs types.GenesisState) {

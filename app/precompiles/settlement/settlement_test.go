@@ -90,6 +90,9 @@ func newFixture(t *testing.T) *fixture {
 		cdc,
 		runtime.NewKVStoreService(storeKey),
 		bank,
+		nil, // hostKeeper — not exercised by precompile tests
+		nil, // indexerKeeper — same
+		nil, // queryBalanceKeeper — same
 		"authority",
 	)
 

@@ -166,6 +166,9 @@ import (
 	indexermod "github.com/shinzonetwork/shinzohub/x/indexer"
 	indexerkeeper "github.com/shinzonetwork/shinzohub/x/indexer/keeper"
 	indexertypes "github.com/shinzonetwork/shinzohub/x/indexer/types"
+	querybalancemod "github.com/shinzonetwork/shinzohub/x/querybalance"
+	querybalancekeeper "github.com/shinzonetwork/shinzohub/x/querybalance/keeper"
+	querybalancetypes "github.com/shinzonetwork/shinzohub/x/querybalance/types"
 	settlementmod "github.com/shinzonetwork/shinzohub/x/settlement"
 	settlementkeeper "github.com/shinzonetwork/shinzohub/x/settlement/keeper"
 	settlementtypes "github.com/shinzonetwork/shinzohub/x/settlement/types"
@@ -241,12 +244,13 @@ var maccPerms = map[string][]string{
 	feemarkettypes.ModuleName:   nil,
 	erc20types.ModuleName:       {authtypes.Minter, authtypes.Burner},
 
-	admintypes.ModuleName:      nil,
-		sourcehubtypes.ModuleName:  nil,
-		hosttypes.ModuleName:       nil,
-		indexertypes.ModuleName:    nil,
-		viewtypes.ModuleName:       nil,
-		settlementtypes.ModuleName: {authtypes.Minter, authtypes.Burner},
+	admintypes.ModuleName:        nil,
+		sourcehubtypes.ModuleName:    nil,
+		hosttypes.ModuleName:         nil,
+		indexertypes.ModuleName:      nil,
+		viewtypes.ModuleName:         nil,
+		querybalancetypes.ModuleName: nil,
+		settlementtypes.ModuleName:   {authtypes.Minter, authtypes.Burner},
 }
 
 var (
@@ -303,12 +307,13 @@ type ChainApp struct {
 	ScopedTransferKeeper      capabilitykeeper.ScopedKeeper
 	ScopedIBCFeeKeeper        capabilitykeeper.ScopedKeeper
 
-	AdminKeeper      adminkeeper.Keeper
-	SourcehubKeeper  sourcehubkeeper.Keeper
-	HostKeeper       hostkeeper.Keeper
-	IndexerKeeper    indexerkeeper.Keeper
-	ViewKeeper       viewkeeper.Keeper
-	SettlementKeeper settlementkeeper.Keeper
+	AdminKeeper        adminkeeper.Keeper
+	SourcehubKeeper    sourcehubkeeper.Keeper
+	HostKeeper         hostkeeper.Keeper
+	IndexerKeeper      indexerkeeper.Keeper
+	ViewKeeper         viewkeeper.Keeper
+	QueryBalanceKeeper querybalancekeeper.Keeper
+	SettlementKeeper   settlementkeeper.Keeper
 	// the module manager
 	ModuleManager      *module.Manager
 	BasicModuleManager module.BasicManager
@@ -424,6 +429,7 @@ func NewChainApp(
 		hosttypes.StoreKey,
 		indexertypes.StoreKey,
 		viewtypes.StoreKey,
+		querybalancetypes.StoreKey,
 		settlementtypes.StoreKey,
 	)
 
@@ -785,10 +791,20 @@ func NewChainApp(
 		&app.SourcehubKeeper,
 	)
 
+	app.QueryBalanceKeeper = querybalancekeeper.NewKeeper(
+		appCodec,
+		runtime.NewKVStoreService(keys[querybalancetypes.StoreKey]),
+		app.BankKeeper,
+		authority,
+	)
+
 	app.SettlementKeeper = settlementkeeper.NewKeeper(
 		appCodec,
 		runtime.NewKVStoreService(keys[settlementtypes.StoreKey]),
 		app.BankKeeper,
+		app.HostKeeper,
+		app.IndexerKeeper,
+		app.QueryBalanceKeeper,
 		authority,
 	)
 
@@ -946,6 +962,11 @@ func NewChainApp(
 			app.ViewKeeper,
 			runtime.NewKVStoreService(keys[viewtypes.StoreKey]),
 		),
+		querybalancemod.NewAppModule(
+			appCodec,
+			app.QueryBalanceKeeper,
+			runtime.NewKVStoreService(keys[querybalancetypes.StoreKey]),
+		),
 		settlementmod.NewAppModule(
 			appCodec,
 			app.SettlementKeeper,
@@ -998,6 +1019,7 @@ func NewChainApp(
 		hosttypes.ModuleName,
 		indexertypes.ModuleName,
 		viewtypes.ModuleName,
+		querybalancetypes.ModuleName,
 		settlementtypes.ModuleName,
 	)
 
@@ -1020,6 +1042,7 @@ func NewChainApp(
 		hosttypes.ModuleName,
 		indexertypes.ModuleName,
 		viewtypes.ModuleName,
+		querybalancetypes.ModuleName,
 		settlementtypes.ModuleName,
 	)
 
@@ -1069,6 +1092,7 @@ func NewChainApp(
 		hosttypes.ModuleName,
 		indexertypes.ModuleName,
 		viewtypes.ModuleName,
+		querybalancetypes.ModuleName,
 		settlementtypes.ModuleName,
 	}
 	app.ModuleManager.SetOrderInitGenesis(genesisModuleOrder...)

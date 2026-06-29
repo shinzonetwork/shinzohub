@@ -2,6 +2,7 @@ package keeper_test
 
 import (
 	"context"
+	"fmt"
 	"testing"
 
 	cosmoslog "cosmossdk.io/log"
@@ -68,11 +69,66 @@ type mockErr struct{ msg string }
 
 func (e *mockErr) Error() string { return e.msg }
 
+// mockHostKeeper returns whatever AccAddress has been recorded against a DID.
+type mockHostKeeper struct {
+	addrs map[string]sdk.AccAddress
+}
+
+func (m *mockHostKeeper) GetAddressForDID(_ sdk.Context, did string) (sdk.AccAddress, bool) {
+	a, ok := m.addrs[did]
+	return a, ok
+}
+
+// mockIndexerKeeper mirrors mockHostKeeper but is consulted second by the
+// settlement resolver — anything stored here resolves "as an indexer."
+type mockIndexerKeeper struct {
+	addrs map[string]sdk.AccAddress
+}
+
+func (m *mockIndexerKeeper) GetAddressForDID(_ sdk.Context, did string) (sdk.AccAddress, bool) {
+	a, ok := m.addrs[did]
+	return a, ok
+}
+
+// mockQueryBalanceKeeper keeps an in-memory holder→amount ledger so settlement
+// tests can exercise the drain-to-zero debit logic without spinning up the
+// real x/querybalance keeper.
+type mockQueryBalanceKeeper struct {
+	balances    map[string]math.Int
+	failOnDebit bool
+}
+
+func (m *mockQueryBalanceKeeper) GetBalance(_ sdk.Context, holder sdk.AccAddress) math.Int {
+	if b, ok := m.balances[holder.String()]; ok {
+		return b
+	}
+	return math.ZeroInt()
+}
+
+func (m *mockQueryBalanceKeeper) Debit(_ sdk.Context, holder sdk.AccAddress, amount math.Int) error {
+	if m.failOnDebit {
+		return errMock
+	}
+	key := holder.String()
+	cur, ok := m.balances[key]
+	if !ok {
+		return fmt.Errorf("no balance for %s", key)
+	}
+	if cur.LT(amount) {
+		return fmt.Errorf("insufficient balance for %s: have %s want %s", key, cur.String(), amount.String())
+	}
+	m.balances[key] = cur.Sub(amount)
+	return nil
+}
+
 type fixture struct {
-	t      *testing.T
-	ctx    sdk.Context
-	keeper settlementkeeper.Keeper
-	bank   *mockBankKeeper
+	t       *testing.T
+	ctx     sdk.Context
+	keeper  settlementkeeper.Keeper
+	bank    *mockBankKeeper
+	host    *mockHostKeeper
+	indexer *mockIndexerKeeper
+	qb      *mockQueryBalanceKeeper
 }
 
 func newFixture(t *testing.T) *fixture {
@@ -86,17 +142,23 @@ func newFixture(t *testing.T) *fixture {
 
 	cdc := codec.NewProtoCodec(codectypes.NewInterfaceRegistry())
 	bank := &mockBankKeeper{}
+	host := &mockHostKeeper{addrs: map[string]sdk.AccAddress{}}
+	indexer := &mockIndexerKeeper{addrs: map[string]sdk.AccAddress{}}
+	qb := &mockQueryBalanceKeeper{balances: map[string]math.Int{}}
 
 	k := settlementkeeper.NewKeeper(
 		cdc,
 		runtime.NewKVStoreService(storeKey),
 		bank,
+		host,
+		indexer,
+		qb,
 		"authority",
 	)
 
 	ctx := sdk.NewContext(cms, cmtproto.Header{Height: 1}, false, cosmoslog.NewNopLogger())
 
-	return &fixture{t: t, ctx: ctx, keeper: k, bank: bank}
+	return &fixture{t: t, ctx: ctx, keeper: k, bank: bank, host: host, indexer: indexer, qb: qb}
 }
 
 func addr(b byte) sdk.AccAddress {

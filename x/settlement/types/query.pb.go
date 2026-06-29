@@ -214,11 +214,125 @@ func (m *QueryBalancesResponse) GetPagination() *query.PageResponse {
 	return nil
 }
 
+type QueryEffectiveBalanceRequest struct {
+	Address string `protobuf:"bytes,1,opt,name=address,proto3" json:"address,omitempty"`
+}
+
+func (m *QueryEffectiveBalanceRequest) Reset()         { *m = QueryEffectiveBalanceRequest{} }
+func (m *QueryEffectiveBalanceRequest) String() string { return proto.CompactTextString(m) }
+func (*QueryEffectiveBalanceRequest) ProtoMessage()    {}
+func (*QueryEffectiveBalanceRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_8399a637393ebb95, []int{4}
+}
+func (m *QueryEffectiveBalanceRequest) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *QueryEffectiveBalanceRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_QueryEffectiveBalanceRequest.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *QueryEffectiveBalanceRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_QueryEffectiveBalanceRequest.Merge(m, src)
+}
+func (m *QueryEffectiveBalanceRequest) XXX_Size() int {
+	return m.Size()
+}
+func (m *QueryEffectiveBalanceRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_QueryEffectiveBalanceRequest.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_QueryEffectiveBalanceRequest proto.InternalMessageInfo
+
+func (m *QueryEffectiveBalanceRequest) GetAddress() string {
+	if m != nil {
+		return m.Address
+	}
+	return ""
+}
+
+type QueryEffectiveBalanceResponse struct {
+	Address      string `protobuf:"bytes,1,opt,name=address,proto3" json:"address,omitempty"`
+	Actual       string `protobuf:"bytes,2,opt,name=actual,proto3" json:"actual,omitempty"`
+	PendingDebit string `protobuf:"bytes,3,opt,name=pending_debit,json=pendingDebit,proto3" json:"pending_debit,omitempty"`
+	Effective    string `protobuf:"bytes,4,opt,name=effective,proto3" json:"effective,omitempty"`
+}
+
+func (m *QueryEffectiveBalanceResponse) Reset()         { *m = QueryEffectiveBalanceResponse{} }
+func (m *QueryEffectiveBalanceResponse) String() string { return proto.CompactTextString(m) }
+func (*QueryEffectiveBalanceResponse) ProtoMessage()    {}
+func (*QueryEffectiveBalanceResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_8399a637393ebb95, []int{5}
+}
+func (m *QueryEffectiveBalanceResponse) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *QueryEffectiveBalanceResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_QueryEffectiveBalanceResponse.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *QueryEffectiveBalanceResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_QueryEffectiveBalanceResponse.Merge(m, src)
+}
+func (m *QueryEffectiveBalanceResponse) XXX_Size() int {
+	return m.Size()
+}
+func (m *QueryEffectiveBalanceResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_QueryEffectiveBalanceResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_QueryEffectiveBalanceResponse proto.InternalMessageInfo
+
+func (m *QueryEffectiveBalanceResponse) GetAddress() string {
+	if m != nil {
+		return m.Address
+	}
+	return ""
+}
+
+func (m *QueryEffectiveBalanceResponse) GetActual() string {
+	if m != nil {
+		return m.Actual
+	}
+	return ""
+}
+
+func (m *QueryEffectiveBalanceResponse) GetPendingDebit() string {
+	if m != nil {
+		return m.PendingDebit
+	}
+	return ""
+}
+
+func (m *QueryEffectiveBalanceResponse) GetEffective() string {
+	if m != nil {
+		return m.Effective
+	}
+	return ""
+}
+
 func init() {
 	proto.RegisterType((*QueryBalanceRequest)(nil), "shinzonetwork.settlement.v1.QueryBalanceRequest")
 	proto.RegisterType((*QueryBalanceResponse)(nil), "shinzonetwork.settlement.v1.QueryBalanceResponse")
 	proto.RegisterType((*QueryBalancesRequest)(nil), "shinzonetwork.settlement.v1.QueryBalancesRequest")
 	proto.RegisterType((*QueryBalancesResponse)(nil), "shinzonetwork.settlement.v1.QueryBalancesResponse")
+	proto.RegisterType((*QueryEffectiveBalanceRequest)(nil), "shinzonetwork.settlement.v1.QueryEffectiveBalanceRequest")
+	proto.RegisterType((*QueryEffectiveBalanceResponse)(nil), "shinzonetwork.settlement.v1.QueryEffectiveBalanceResponse")
 }
 
 func init() {
@@ -226,35 +340,42 @@ func init() {
 }
 
 var fileDescriptor_8399a637393ebb95 = []byte{
-	// 447 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x94, 0x93, 0x41, 0x8e, 0xd3, 0x30,
-	0x14, 0x86, 0xe3, 0x02, 0x33, 0x83, 0x67, 0x67, 0x06, 0x54, 0x05, 0x14, 0x46, 0x91, 0xa0, 0x23,
-	0x04, 0xf6, 0x24, 0x08, 0x0e, 0xd0, 0x05, 0x2c, 0x29, 0x61, 0xc7, 0x02, 0xc9, 0x69, 0xad, 0x34,
-	0xa2, 0xb1, 0xd3, 0xd8, 0x29, 0x14, 0xc4, 0x86, 0x13, 0x20, 0x71, 0x01, 0x56, 0x1c, 0x80, 0x53,
-	0x74, 0x59, 0xa9, 0x1b, 0x56, 0x08, 0xb5, 0x1c, 0x04, 0xd5, 0x71, 0xda, 0xa4, 0x42, 0xa1, 0xdd,
-	0xf9, 0x59, 0xff, 0xff, 0xde, 0xf7, 0xfb, 0x25, 0xb0, 0x23, 0x87, 0x31, 0xff, 0x20, 0x38, 0x53,
-	0xef, 0x44, 0xf6, 0x96, 0x48, 0xa6, 0xd4, 0x88, 0x25, 0x8c, 0x2b, 0x32, 0xf1, 0xc8, 0x38, 0x67,
-	0xd9, 0x14, 0xa7, 0x99, 0x50, 0x02, 0xdd, 0xae, 0x09, 0xf1, 0x56, 0x88, 0x27, 0x9e, 0x7d, 0x27,
-	0x12, 0x22, 0x1a, 0x31, 0x42, 0xd3, 0x98, 0x50, 0xce, 0x85, 0xa2, 0x2a, 0x16, 0x5c, 0x16, 0x56,
-	0xfb, 0x41, 0x5f, 0xc8, 0x44, 0x48, 0x12, 0x52, 0xc9, 0x8a, 0x9e, 0x64, 0xe2, 0x85, 0x4c, 0x51,
-	0x8f, 0xa4, 0x34, 0x8a, 0xb9, 0x16, 0x1b, 0xed, 0x59, 0x24, 0x22, 0xa1, 0x8f, 0x64, 0x7d, 0x32,
-	0xb7, 0x0f, 0x9b, 0x28, 0x2b, 0x28, 0x5a, 0xed, 0x12, 0x78, 0xe3, 0xe5, 0x7a, 0x4a, 0x97, 0x8e,
-	0x28, 0xef, 0xb3, 0x80, 0x8d, 0x73, 0x26, 0x15, 0x6a, 0xc3, 0x63, 0x3a, 0x18, 0x64, 0x4c, 0xca,
-	0x36, 0x38, 0x07, 0x17, 0xd7, 0x83, 0xb2, 0x74, 0x31, 0x3c, 0xab, 0x1b, 0x64, 0x2a, 0xb8, 0x64,
-	0xe8, 0x16, 0x3c, 0xa2, 0x89, 0xc8, 0xb9, 0x32, 0x06, 0x53, 0xb9, 0x6f, 0xea, 0x7a, 0x59, 0x4e,
-	0x78, 0x06, 0xe1, 0x36, 0x90, 0xf6, 0x9c, 0xfa, 0xf7, 0x71, 0x91, 0x1e, 0xaf, 0xd3, 0xe3, 0xe2,
-	0x45, 0x4d, 0x7a, 0xdc, 0xa3, 0x51, 0x49, 0x17, 0x54, 0x9c, 0xee, 0x0f, 0x00, 0x6f, 0xee, 0x0c,
-	0x30, 0x44, 0x3d, 0x78, 0x12, 0x9a, 0xbb, 0x36, 0x38, 0xbf, 0x72, 0x71, 0xea, 0x63, 0xdc, 0xb0,
-	0x18, 0xfc, 0x6a, 0x53, 0x99, 0x56, 0xdd, 0xab, 0xb3, 0x5f, 0x77, 0xad, 0x60, 0xd3, 0x05, 0x3d,
-	0xaf, 0x31, 0xb7, 0x34, 0x73, 0xe7, 0xbf, 0xcc, 0x05, 0x4e, 0x15, 0xda, 0x5f, 0xb4, 0xe0, 0x35,
-	0x0d, 0x8d, 0xbe, 0x03, 0x78, 0x6c, 0xc6, 0xa1, 0xcb, 0x46, 0xbc, 0x7f, 0xac, 0xc9, 0xf6, 0x0e,
-	0x70, 0x14, 0x18, 0xee, 0xd3, 0xcf, 0x8b, 0x3f, 0x5f, 0x5b, 0x97, 0x08, 0x93, 0xa6, 0xef, 0xc4,
-	0x44, 0x26, 0x1f, 0xcd, 0xda, 0x3f, 0xa1, 0x6f, 0x00, 0x9e, 0x94, 0x4f, 0x8c, 0xf6, 0x9f, 0x5b,
-	0xee, 0xdb, 0xf6, 0x0f, 0xb1, 0x18, 0xd6, 0x47, 0x9a, 0xb5, 0x83, 0xee, 0xed, 0xc3, 0x2a, 0xbb,
-	0x2f, 0x66, 0x4b, 0x07, 0xcc, 0x97, 0x0e, 0xf8, 0xbd, 0x74, 0xc0, 0x97, 0x95, 0x63, 0xcd, 0x57,
-	0x8e, 0xf5, 0x73, 0xe5, 0x58, 0xaf, 0x9f, 0x44, 0xb1, 0x1a, 0xe6, 0x21, 0xee, 0x8b, 0x64, 0xb7,
-	0x95, 0xae, 0x86, 0x79, 0x48, 0xde, 0x57, 0xdb, 0xaa, 0x69, 0xca, 0x64, 0x78, 0xa4, 0xff, 0x91,
-	0xc7, 0x7f, 0x03, 0x00, 0x00, 0xff, 0xff, 0x8f, 0xc3, 0x3d, 0x00, 0xf9, 0x03, 0x00, 0x00,
+	// 557 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x9c, 0x94, 0xcd, 0x6e, 0xd3, 0x40,
+	0x10, 0xc7, 0xb3, 0x6d, 0xe9, 0xc7, 0x16, 0x24, 0xb4, 0x14, 0x14, 0x99, 0x60, 0x2a, 0x23, 0x48,
+	0x85, 0x60, 0xb7, 0x0e, 0x02, 0x95, 0x9e, 0x50, 0xc4, 0xc7, 0x91, 0x12, 0x6e, 0x1c, 0xa8, 0xd6,
+	0xce, 0xd6, 0xb1, 0x48, 0x76, 0xdd, 0xec, 0x3a, 0x50, 0x10, 0x17, 0x9e, 0x00, 0x09, 0x1e, 0x00,
+	0x2e, 0x3c, 0x00, 0x4f, 0x51, 0x89, 0x4b, 0x25, 0x2e, 0x9c, 0x10, 0x4a, 0x78, 0x10, 0xe4, 0xf5,
+	0x3a, 0x89, 0x03, 0x71, 0x53, 0x6e, 0x3b, 0xe3, 0xf9, 0xcf, 0xfc, 0xe6, 0x43, 0x86, 0x55, 0xd9,
+	0x0a, 0xf9, 0x6b, 0xc1, 0x99, 0x7a, 0x29, 0xba, 0x2f, 0x88, 0x64, 0x4a, 0xb5, 0x59, 0x87, 0x71,
+	0x45, 0x7a, 0x2e, 0xd9, 0x8f, 0x59, 0xf7, 0x00, 0x47, 0x5d, 0xa1, 0x04, 0xba, 0x98, 0x0b, 0xc4,
+	0xa3, 0x40, 0xdc, 0x73, 0xad, 0x4a, 0x20, 0x44, 0xd0, 0x66, 0x84, 0x46, 0x21, 0xa1, 0x9c, 0x0b,
+	0x45, 0x55, 0x28, 0xb8, 0x4c, 0xa5, 0xd6, 0x75, 0x5f, 0xc8, 0x8e, 0x90, 0xc4, 0xa3, 0x92, 0xa5,
+	0x39, 0x49, 0xcf, 0xf5, 0x98, 0xa2, 0x2e, 0x89, 0x68, 0x10, 0x72, 0x1d, 0x6c, 0x62, 0xd7, 0x02,
+	0x11, 0x08, 0xfd, 0x24, 0xc9, 0xcb, 0x78, 0x6f, 0x14, 0x51, 0x8e, 0xa1, 0xe8, 0x68, 0x87, 0xc0,
+	0x73, 0x4f, 0x92, 0x2a, 0x75, 0xda, 0xa6, 0xdc, 0x67, 0x0d, 0xb6, 0x1f, 0x33, 0xa9, 0x50, 0x19,
+	0x2e, 0xd1, 0x66, 0xb3, 0xcb, 0xa4, 0x2c, 0x83, 0x75, 0xb0, 0xb1, 0xd2, 0xc8, 0x4c, 0x07, 0xc3,
+	0xb5, 0xbc, 0x40, 0x46, 0x82, 0x4b, 0x86, 0x2e, 0xc0, 0x45, 0xda, 0x11, 0x31, 0x57, 0x46, 0x60,
+	0x2c, 0xe7, 0x79, 0x3e, 0x5e, 0x66, 0x15, 0x1e, 0x42, 0x38, 0x6a, 0x48, 0x6b, 0x56, 0x6b, 0xd7,
+	0x70, 0xda, 0x3d, 0x4e, 0xba, 0xc7, 0xe9, 0x44, 0x4d, 0xf7, 0x78, 0x87, 0x06, 0x19, 0x5d, 0x63,
+	0x4c, 0xe9, 0x7c, 0x05, 0xf0, 0xfc, 0x44, 0x01, 0x43, 0xb4, 0x03, 0x97, 0x3d, 0xe3, 0x2b, 0x83,
+	0xf5, 0xf9, 0x8d, 0xd5, 0x1a, 0xc6, 0x05, 0x8b, 0xc1, 0x4f, 0x87, 0x96, 0x49, 0x55, 0x5f, 0x38,
+	0xfc, 0x79, 0xb9, 0xd4, 0x18, 0x66, 0x41, 0x8f, 0x72, 0xcc, 0x73, 0x9a, 0xb9, 0x7a, 0x2c, 0x73,
+	0x8a, 0x93, 0x83, 0xde, 0x82, 0x15, 0xcd, 0xfc, 0x60, 0x6f, 0x8f, 0xf9, 0x2a, 0xec, 0xb1, 0x99,
+	0xc7, 0xff, 0x11, 0xc0, 0x4b, 0x53, 0xa4, 0xa6, 0xed, 0xa9, 0x5a, 0xbd, 0x22, 0x5f, 0xc5, 0xb4,
+	0xad, 0xd1, 0x93, 0x15, 0x69, 0x0b, 0x5d, 0x81, 0x67, 0x22, 0xc6, 0x9b, 0x21, 0x0f, 0x76, 0x9b,
+	0xcc, 0x0b, 0x55, 0x79, 0x5e, 0x7f, 0x3e, 0x6d, 0x9c, 0xf7, 0x13, 0x1f, 0xaa, 0xc0, 0x15, 0x96,
+	0x95, 0x2c, 0x2f, 0xe8, 0x80, 0x91, 0xa3, 0xf6, 0x79, 0x01, 0x9e, 0xd2, 0x58, 0xe8, 0x0b, 0x80,
+	0x4b, 0x06, 0x09, 0x6d, 0x16, 0xce, 0xfb, 0x1f, 0x77, 0x67, 0xb9, 0x27, 0x50, 0xa4, 0xfd, 0x3a,
+	0x77, 0xde, 0x7d, 0xff, 0xfd, 0x61, 0x6e, 0x13, 0x61, 0x52, 0x74, 0xf8, 0x66, 0x87, 0xe4, 0x8d,
+	0x19, 0xc6, 0x5b, 0xf4, 0x09, 0xc0, 0xe5, 0xec, 0x66, 0xd0, 0xec, 0x75, 0xb3, 0x03, 0xb6, 0x6a,
+	0x27, 0x91, 0x18, 0xd6, 0x9b, 0x9a, 0xb5, 0x8a, 0xae, 0xce, 0xc2, 0x2a, 0xd1, 0x37, 0x00, 0xcf,
+	0x4e, 0xee, 0x19, 0xdd, 0x3d, 0xbe, 0xee, 0x94, 0xb3, 0xb2, 0xb6, 0xff, 0x47, 0x6a, 0xd0, 0xef,
+	0x69, 0xf4, 0x6d, 0xb4, 0x55, 0x88, 0x3e, 0xbc, 0x88, 0xdd, 0xbf, 0x06, 0x5e, 0x7f, 0x7c, 0xd8,
+	0xb7, 0xc1, 0x51, 0xdf, 0x06, 0xbf, 0xfa, 0x36, 0x78, 0x3f, 0xb0, 0x4b, 0x47, 0x03, 0xbb, 0xf4,
+	0x63, 0x60, 0x97, 0x9e, 0xdd, 0x0e, 0x42, 0xd5, 0x8a, 0x3d, 0xec, 0x8b, 0xce, 0x64, 0x76, 0x6d,
+	0xb5, 0x62, 0x8f, 0xbc, 0x1a, 0xaf, 0xa4, 0x0e, 0x22, 0x26, 0xbd, 0x45, 0xfd, 0x0b, 0xbb, 0xf5,
+	0x27, 0x00, 0x00, 0xff, 0xff, 0x19, 0xb6, 0xa2, 0xe4, 0x98, 0x05, 0x00, 0x00,
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -271,6 +392,10 @@ const _ = grpc.SupportPackageIsVersion4
 type QueryClient interface {
 	Balance(ctx context.Context, in *QueryBalanceRequest, opts ...grpc.CallOption) (*QueryBalanceResponse, error)
 	Balances(ctx context.Context, in *QueryBalancesRequest, opts ...grpc.CallOption) (*QueryBalancesResponse, error)
+	// EffectiveBalance returns the gateway-visible spendable balance for an
+	// address: actual querybalance minus the sum of pending debits queued
+	// for that address across all unsettled epochs (clamped at zero).
+	EffectiveBalance(ctx context.Context, in *QueryEffectiveBalanceRequest, opts ...grpc.CallOption) (*QueryEffectiveBalanceResponse, error)
 }
 
 type queryClient struct {
@@ -299,10 +424,23 @@ func (c *queryClient) Balances(ctx context.Context, in *QueryBalancesRequest, op
 	return out, nil
 }
 
+func (c *queryClient) EffectiveBalance(ctx context.Context, in *QueryEffectiveBalanceRequest, opts ...grpc.CallOption) (*QueryEffectiveBalanceResponse, error) {
+	out := new(QueryEffectiveBalanceResponse)
+	err := c.cc.Invoke(ctx, "/shinzonetwork.settlement.v1.Query/EffectiveBalance", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // QueryServer is the server API for Query service.
 type QueryServer interface {
 	Balance(context.Context, *QueryBalanceRequest) (*QueryBalanceResponse, error)
 	Balances(context.Context, *QueryBalancesRequest) (*QueryBalancesResponse, error)
+	// EffectiveBalance returns the gateway-visible spendable balance for an
+	// address: actual querybalance minus the sum of pending debits queued
+	// for that address across all unsettled epochs (clamped at zero).
+	EffectiveBalance(context.Context, *QueryEffectiveBalanceRequest) (*QueryEffectiveBalanceResponse, error)
 }
 
 // UnimplementedQueryServer can be embedded to have forward compatible implementations.
@@ -314,6 +452,9 @@ func (*UnimplementedQueryServer) Balance(ctx context.Context, req *QueryBalanceR
 }
 func (*UnimplementedQueryServer) Balances(ctx context.Context, req *QueryBalancesRequest) (*QueryBalancesResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Balances not implemented")
+}
+func (*UnimplementedQueryServer) EffectiveBalance(ctx context.Context, req *QueryEffectiveBalanceRequest) (*QueryEffectiveBalanceResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method EffectiveBalance not implemented")
 }
 
 func RegisterQueryServer(s grpc1.Server, srv QueryServer) {
@@ -356,6 +497,24 @@ func _Query_Balances_Handler(srv interface{}, ctx context.Context, dec func(inte
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Query_EffectiveBalance_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(QueryEffectiveBalanceRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(QueryServer).EffectiveBalance(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/shinzonetwork.settlement.v1.Query/EffectiveBalance",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(QueryServer).EffectiveBalance(ctx, req.(*QueryEffectiveBalanceRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 var Query_serviceDesc = _Query_serviceDesc
 var _Query_serviceDesc = grpc.ServiceDesc{
 	ServiceName: "shinzonetwork.settlement.v1.Query",
@@ -368,6 +527,10 @@ var _Query_serviceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "Balances",
 			Handler:    _Query_Balances_Handler,
+		},
+		{
+			MethodName: "EffectiveBalance",
+			Handler:    _Query_EffectiveBalance_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
@@ -518,6 +681,87 @@ func (m *QueryBalancesResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	return len(dAtA) - i, nil
 }
 
+func (m *QueryEffectiveBalanceRequest) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *QueryEffectiveBalanceRequest) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *QueryEffectiveBalanceRequest) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if len(m.Address) > 0 {
+		i -= len(m.Address)
+		copy(dAtA[i:], m.Address)
+		i = encodeVarintQuery(dAtA, i, uint64(len(m.Address)))
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *QueryEffectiveBalanceResponse) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *QueryEffectiveBalanceResponse) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *QueryEffectiveBalanceResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if len(m.Effective) > 0 {
+		i -= len(m.Effective)
+		copy(dAtA[i:], m.Effective)
+		i = encodeVarintQuery(dAtA, i, uint64(len(m.Effective)))
+		i--
+		dAtA[i] = 0x22
+	}
+	if len(m.PendingDebit) > 0 {
+		i -= len(m.PendingDebit)
+		copy(dAtA[i:], m.PendingDebit)
+		i = encodeVarintQuery(dAtA, i, uint64(len(m.PendingDebit)))
+		i--
+		dAtA[i] = 0x1a
+	}
+	if len(m.Actual) > 0 {
+		i -= len(m.Actual)
+		copy(dAtA[i:], m.Actual)
+		i = encodeVarintQuery(dAtA, i, uint64(len(m.Actual)))
+		i--
+		dAtA[i] = 0x12
+	}
+	if len(m.Address) > 0 {
+		i -= len(m.Address)
+		copy(dAtA[i:], m.Address)
+		i = encodeVarintQuery(dAtA, i, uint64(len(m.Address)))
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+
 func encodeVarintQuery(dAtA []byte, offset int, v uint64) int {
 	offset -= sovQuery(v)
 	base := offset
@@ -582,6 +826,44 @@ func (m *QueryBalancesResponse) Size() (n int) {
 	}
 	if m.Pagination != nil {
 		l = m.Pagination.Size()
+		n += 1 + l + sovQuery(uint64(l))
+	}
+	return n
+}
+
+func (m *QueryEffectiveBalanceRequest) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	l = len(m.Address)
+	if l > 0 {
+		n += 1 + l + sovQuery(uint64(l))
+	}
+	return n
+}
+
+func (m *QueryEffectiveBalanceResponse) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	l = len(m.Address)
+	if l > 0 {
+		n += 1 + l + sovQuery(uint64(l))
+	}
+	l = len(m.Actual)
+	if l > 0 {
+		n += 1 + l + sovQuery(uint64(l))
+	}
+	l = len(m.PendingDebit)
+	if l > 0 {
+		n += 1 + l + sovQuery(uint64(l))
+	}
+	l = len(m.Effective)
+	if l > 0 {
 		n += 1 + l + sovQuery(uint64(l))
 	}
 	return n
@@ -941,6 +1223,266 @@ func (m *QueryBalancesResponse) Unmarshal(dAtA []byte) error {
 			if err := m.Pagination.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipQuery(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *QueryEffectiveBalanceRequest) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowQuery
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: QueryEffectiveBalanceRequest: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: QueryEffectiveBalanceRequest: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Address", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthQuery
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Address = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipQuery(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *QueryEffectiveBalanceResponse) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowQuery
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: QueryEffectiveBalanceResponse: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: QueryEffectiveBalanceResponse: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Address", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthQuery
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Address = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Actual", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthQuery
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Actual = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 3:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field PendingDebit", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthQuery
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.PendingDebit = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 4:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Effective", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthQuery
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Effective = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
 		default:
 			iNdEx = preIndex

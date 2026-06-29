@@ -19,7 +19,8 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	Msg_Claim_FullMethodName = "/shinzonetwork.settlement.v1.Msg/Claim"
+	Msg_Claim_FullMethodName         = "/shinzonetwork.settlement.v1.Msg/Claim"
+	Msg_AccountSettle_FullMethodName = "/shinzonetwork.settlement.v1.Msg/AccountSettle"
 )
 
 // MsgClient is the client API for Msg service.
@@ -30,6 +31,15 @@ type MsgClient interface {
 	// settlement balance to their wallet. The module mints fresh SHINUSD into
 	// its module account and transfers it to the claimer.
 	Claim(ctx context.Context, in *MsgClaim, opts ...grpc.CallOption) (*MsgClaimResponse, error)
+	// AccountSettle applies an epoch's worth of off-chain accounting:
+	//   - payments: DID-keyed credits to hosts and indexers
+	//   - debits: address-keyed deductions from querybalance (drain-to-zero)
+	//   - pools: per-pool stats (currently ignored on-chain, kept in the wire
+	//     format for future processing)
+	//
+	// The chain validates the epoch number against its own clock and rejects
+	// replays via the LastSettledEpoch cursor.
+	AccountSettle(ctx context.Context, in *MsgAccountSettle, opts ...grpc.CallOption) (*MsgAccountSettleResponse, error)
 }
 
 type msgClient struct {
@@ -50,6 +60,16 @@ func (c *msgClient) Claim(ctx context.Context, in *MsgClaim, opts ...grpc.CallOp
 	return out, nil
 }
 
+func (c *msgClient) AccountSettle(ctx context.Context, in *MsgAccountSettle, opts ...grpc.CallOption) (*MsgAccountSettleResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(MsgAccountSettleResponse)
+	err := c.cc.Invoke(ctx, Msg_AccountSettle_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // MsgServer is the server API for Msg service.
 // All implementations must embed UnimplementedMsgServer
 // for forward compatibility.
@@ -58,6 +78,15 @@ type MsgServer interface {
 	// settlement balance to their wallet. The module mints fresh SHINUSD into
 	// its module account and transfers it to the claimer.
 	Claim(context.Context, *MsgClaim) (*MsgClaimResponse, error)
+	// AccountSettle applies an epoch's worth of off-chain accounting:
+	//   - payments: DID-keyed credits to hosts and indexers
+	//   - debits: address-keyed deductions from querybalance (drain-to-zero)
+	//   - pools: per-pool stats (currently ignored on-chain, kept in the wire
+	//     format for future processing)
+	//
+	// The chain validates the epoch number against its own clock and rejects
+	// replays via the LastSettledEpoch cursor.
+	AccountSettle(context.Context, *MsgAccountSettle) (*MsgAccountSettleResponse, error)
 	mustEmbedUnimplementedMsgServer()
 }
 
@@ -70,6 +99,9 @@ type UnimplementedMsgServer struct{}
 
 func (UnimplementedMsgServer) Claim(context.Context, *MsgClaim) (*MsgClaimResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Claim not implemented")
+}
+func (UnimplementedMsgServer) AccountSettle(context.Context, *MsgAccountSettle) (*MsgAccountSettleResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method AccountSettle not implemented")
 }
 func (UnimplementedMsgServer) mustEmbedUnimplementedMsgServer() {}
 func (UnimplementedMsgServer) testEmbeddedByValue()             {}
@@ -110,6 +142,24 @@ func _Msg_Claim_Handler(srv interface{}, ctx context.Context, dec func(interface
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Msg_AccountSettle_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(MsgAccountSettle)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MsgServer).AccountSettle(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Msg_AccountSettle_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MsgServer).AccountSettle(ctx, req.(*MsgAccountSettle))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Msg_ServiceDesc is the grpc.ServiceDesc for Msg service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -120,6 +170,10 @@ var Msg_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "Claim",
 			Handler:    _Msg_Claim_Handler,
+		},
+		{
+			MethodName: "AccountSettle",
+			Handler:    _Msg_AccountSettle_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
