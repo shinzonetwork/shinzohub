@@ -45,25 +45,6 @@
     },
     {
       "inputs": [
-        { "internalType": "address", "name": "viewAddress", "type": "address" },
-        {
-          "components": [
-            { "internalType": "uint64", "name": "window_size", "type": "uint64" }
-          ],
-          "internalType": "struct ViewRegistryI.PoolConfig",
-          "name": "config",
-          "type": "tuple"
-        }
-      ],
-      "name": "registerDemandForView",
-      "outputs": [
-        { "internalType": "address", "name": "poolAddress", "type": "address" }
-      ],
-      "stateMutability": "payable",
-      "type": "function"
-    },
-    {
-      "inputs": [
         { "internalType": "address", "name": "viewAddress", "type": "address" }
       ],
       "name": "getView",
