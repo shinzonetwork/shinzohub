@@ -28,6 +28,7 @@ import (
 	"github.com/shinzonetwork/shinzohub/app/precompiles/indexerregistry"
 	indexerkeeper "github.com/shinzonetwork/shinzohub/x/indexer/keeper"
 	indexertypes "github.com/shinzonetwork/shinzohub/x/indexer/types"
+	sourcehubtypes "github.com/shinzonetwork/shinzohub/x/sourcehub/types"
 )
 
 type mockAdminKeeper struct {
@@ -98,6 +99,7 @@ type PrecompileTestSuite struct {
 	mockAdmin     *mockAdminKeeper
 	mockSourcehub *mockSourcehubKeeper
 	stateDB       *mockStateDB
+	cdc           codec.Codec
 }
 
 func (s *PrecompileTestSuite) SetupTest() {
@@ -114,6 +116,7 @@ func (s *PrecompileTestSuite) SetupTest() {
 	cdc := codec.NewProtoCodec(registry)
 	storeService := runtime.NewKVStoreService(storeKey)
 
+	s.cdc = cdc
 	s.indexerKeeper = indexerkeeper.NewKeeper(cdc, storeService, s.mockAdmin, s.mockSourcehub)
 	s.ctx = sdk.NewContext(stateStore, cmtproto.Header{}, false, cosmoslog.NewNopLogger())
 	s.stateDB = &mockStateDB{}
@@ -158,19 +161,21 @@ func (s *PrecompileTestSuite) assertOperator(operatorBech32 string) {
 	s.Require().NoError(err)
 }
 
-// confirmAck simulates the sourcehub-side ack landing successfully for the
-// most recently submitted DID, mirroring what the real ack callback does:
-// it reads the pending claim, applies it onto the indexer row, deletes the
-// pending entry.
+// confirmAck simulates the sourcehub-side ack landing successfully for the most
+// recently submitted DID by driving the real ack callback, so the test exercises
+// the same apply-and-cleanup path production does rather than re-implementing it.
 func (s *PrecompileTestSuite) confirmAck(_ string) {
 	did := s.mockSourcehub.lastDid
-	claim, found, err := s.indexerKeeper.GetPendingClaim(s.ctx, did)
+	meta := &sourcehubtypes.SetRelationshipMeta{Did: did, Group: indexertypes.GroupIndexerName}
+	metaBz, err := s.cdc.Marshal(meta)
 	s.Require().NoError(err)
-	s.Require().True(found, "no pending claim recorded for the last submitted DID")
-	s.Require().NoError(s.indexerKeeper.ApplyRegistration(
-		s.ctx, claim.OperatorAddress, did, claim.ConnectionString,
-	))
-	s.indexerKeeper.DeletePendingClaim(s.ctx, did)
+
+	cb := indexerkeeper.NewAckCallback(s.indexerKeeper)
+	s.Require().NoError(cb.OnPacketAck(s.ctx, sourcehubtypes.PendingICARequest{
+		Kind:   sourcehubtypes.RequestKind_REQUEST_KIND_SET_RELATIONSHIP,
+		Meta:   metaBz,
+		Status: sourcehubtypes.RequestStatus_REQUEST_STATUS_SUCCESS,
+	}))
 }
 
 func TestPrecompileTestSuite(t *testing.T) {

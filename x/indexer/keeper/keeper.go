@@ -348,12 +348,12 @@ func (k Keeper) RegisterIndexer(
 	store.Set(pendingClaimKey(did), claimBz)
 
 	if row.Did == "" {
-		if _, _, _, err := k.sourcehubKeeper.SendICASetRelationship(ctx, did, "indexer", operatorAddress); err != nil {
+		if _, _, _, err := k.sourcehubKeeper.SendICASetRelationship(ctx, did, types.GroupIndexerName, operatorAddress); err != nil {
 			store.Delete(pendingClaimKey(did))
 			return RegisterResult{}, err
 		}
 	} else {
-		if _, _, _, err := k.sourcehubKeeper.SendICASetAndDeleteRelationship(ctx, did, row.Did, "indexer", operatorAddress); err != nil {
+		if _, _, _, err := k.sourcehubKeeper.SendICASetAndDeleteRelationship(ctx, did, row.Did, types.GroupIndexerName, operatorAddress); err != nil {
 			store.Delete(pendingClaimKey(did))
 			return RegisterResult{}, err
 		}
