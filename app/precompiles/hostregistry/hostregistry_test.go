@@ -65,10 +65,10 @@ type PrecompileTestSuite struct {
 	cdc           codec.Codec
 }
 
-func (s *PrecompileTestSuite) simulateHostAck(callerAddr []byte) {
+func (s *PrecompileTestSuite) simulateHostAck(callerAddr sdk.AccAddress) {
 	did, found := s.hostKeeper.GetDIDForPendingAddress(s.ctx, callerAddr)
 	s.Require().True(found, "pending host did not land in state")
-	meta := &sourcehubtypes.SetRelationshipMeta{Did: string(did), Group: "host"}
+	meta := &sourcehubtypes.SetRelationshipMeta{Did: did, Group: "host"}
 	metaBz, err := s.cdc.Marshal(meta)
 	s.Require().NoError(err)
 	cb := hostkeeper.NewAckCallback(s.hostKeeper)
@@ -137,9 +137,9 @@ func (s *PrecompileTestSuite) TestRegister_Success() {
 	s.Require().NoError(err)
 	s.Require().Nil(bz)
 
-	s.Require().False(s.hostKeeper.IsRegisteredHost(s.ctx, caller.Bytes()))
-	s.simulateHostAck(caller.Bytes())
-	s.Require().True(s.hostKeeper.IsRegisteredHost(s.ctx, caller.Bytes()))
+	s.Require().False(s.hostKeeper.IsRegisteredHost(s.ctx, sdk.AccAddress(caller.Bytes())))
+	s.simulateHostAck(sdk.AccAddress(caller.Bytes()))
+	s.Require().True(s.hostKeeper.IsRegisteredHost(s.ctx, sdk.AccAddress(caller.Bytes())))
 	s.Require().Len(s.stateDB.logs, 1)
 }
 
@@ -160,7 +160,7 @@ func (s *PrecompileTestSuite) TestRegister_ICANotReady() {
 
 	s.Require().Empty(s.stateDB.logs)
 	s.Require().False(s.mockSourcehub.called)
-	s.Require().False(s.hostKeeper.IsRegisteredHost(s.ctx, caller.Bytes()))
+	s.Require().False(s.hostKeeper.IsRegisteredHost(s.ctx, sdk.AccAddress(caller.Bytes())))
 }
 
 func (s *PrecompileTestSuite) TestRegister_EmptyArgs() {

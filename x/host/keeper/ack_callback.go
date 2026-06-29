@@ -31,31 +31,33 @@ func (c AckCallback) OnPacketAck(ctx sdk.Context, req sourcehubtypes.PendingICAR
 		return nil
 	}
 
-	store := runtime.KVStoreAdapter(c.keeper.storeService.OpenKVStore(ctx))
-	didBytes := []byte(meta.Did)
-	callerAddr := store.Get(append([]byte(types.PendingDIDAddrPrefix), didBytes...))
-	if len(callerAddr) == 0 {
+	addr, found := c.keeper.GetPendingAddressForDID(ctx, meta.Did)
+	if !found {
 		return nil
 	}
-	bech32Addr := sdk.AccAddress(callerAddr).String()
+	bech32Addr := addr.String()
 
-	pending, found, err := c.keeper.GetPendingHost(ctx, bech32Addr)
+	store := runtime.KVStoreAdapter(c.keeper.storeService.OpenKVStore(ctx))
+	pendingAddrKey := addrIndexKey(types.PendingAddrDIDPrefix, bech32Addr)
+	pendingDidKey := didIndexKey(types.PendingDIDAddrPrefix, meta.Did)
+
+	pending, foundPending, err := c.keeper.GetPendingHost(ctx, bech32Addr)
 	if err != nil {
 		return fmt.Errorf("read pending host %s: %w", bech32Addr, err)
 	}
 
 	switch req.Status {
 	case sourcehubtypes.RequestStatus_REQUEST_STATUS_SUCCESS:
-		if found {
+		if foundPending {
 			if err := c.keeper.SetHost(ctx, pending); err != nil {
 				return fmt.Errorf("promote pending host: %w", err)
 			}
 			_ = c.keeper.DeletePendingHost(ctx, bech32Addr)
 		}
-		store.Set(append([]byte(types.AddrDIDPrefix), callerAddr...), didBytes)
-		store.Set(append([]byte(types.DIDAddrPrefix), didBytes...), callerAddr)
-		store.Delete(append([]byte(types.PendingAddrDIDPrefix), callerAddr...))
-		store.Delete(append([]byte(types.PendingDIDAddrPrefix), didBytes...))
+		store.Set(addrIndexKey(types.AddrDIDPrefix, bech32Addr), []byte(meta.Did))
+		store.Set(didIndexKey(types.DIDAddrPrefix, meta.Did), []byte(bech32Addr))
+		store.Delete(pendingAddrKey)
+		store.Delete(pendingDidKey)
 
 		ctx.EventManager().EmitEvent(sdk.NewEvent(
 			types.EventTypeHostRegistered,
@@ -65,8 +67,8 @@ func (c AckCallback) OnPacketAck(ctx sdk.Context, req sourcehubtypes.PendingICAR
 
 	case sourcehubtypes.RequestStatus_REQUEST_STATUS_FAILURE, sourcehubtypes.RequestStatus_REQUEST_STATUS_TIMEOUT:
 		_ = c.keeper.DeletePendingHost(ctx, bech32Addr)
-		store.Delete(append([]byte(types.PendingAddrDIDPrefix), callerAddr...))
-		store.Delete(append([]byte(types.PendingDIDAddrPrefix), didBytes...))
+		store.Delete(pendingAddrKey)
+		store.Delete(pendingDidKey)
 
 		eventType := types.EventTypeHostRegistrationFailed
 		if req.Status == sourcehubtypes.RequestStatus_REQUEST_STATUS_TIMEOUT {

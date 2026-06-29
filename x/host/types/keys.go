@@ -11,12 +11,12 @@ const (
 	// HostCountKey stores the total number of registered hosts as uint64.
 	HostCountKey = "host_count"
 
-	// AddrDIDPrefix stores the addr→DID mapping for backward compatibility.
-	// Key format: addr_did/<address_bytes> → DID bytes
+	// AddrDIDPrefix stores the addr→DID mapping.
+	// Key format: addr_did/<bech32_address> → DID string bytes
 	AddrDIDPrefix = "addr_did/"
 
-	// DIDAddrPrefix stores the DID→addr mapping for backward compatibility.
-	// Key format: did_addr/<did_bytes> → address bytes
+	// DIDAddrPrefix stores the DID→addr mapping.
+	// Key format: did_addr/<did> → bech32 address string bytes
 	DIDAddrPrefix = "did_addr/"
 
 	PendingHostPrefix    = "pending_host/"

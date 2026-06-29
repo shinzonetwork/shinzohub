@@ -49,7 +49,8 @@ func (p *Precompile) Register(
 		return nil, err
 	}
 
-	caller := contract.Caller().Bytes()
+	callerEVM := contract.Caller()
+	caller := sdk.AccAddress(callerEVM.Bytes())
 
 	did, err := p.hostKeeper.RegisterHost(
 		ctx,
@@ -74,7 +75,7 @@ func (p *Precompile) Register(
 		Address: precompAddr,
 		Topics: []common.Hash{
 			topic0,
-			common.BytesToHash(caller),
+			common.BytesToHash(callerEVM.Bytes()),
 		},
 		Data: data,
 	})
@@ -92,7 +93,7 @@ func (p *Precompile) IsRegistered(
 		return nil, fmt.Errorf("invalid type for addr")
 	}
 
-	registered := p.hostKeeper.IsRegisteredHost(ctx, addr.Bytes())
+	registered := p.hostKeeper.IsRegisteredHost(ctx, sdk.AccAddress(addr.Bytes()))
 	return method.Outputs.Pack(registered)
 }
 
