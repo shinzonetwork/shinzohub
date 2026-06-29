@@ -59,6 +59,10 @@ func addrIndexKey(operatorAddress string) []byte {
 	return []byte(types.AddrIndexPrefix + operatorAddress)
 }
 
+func didIndexKey(did string) []byte {
+	return []byte(types.DIDIndexPrefix + did)
+}
+
 func encodeAddrIndexValue(sourceChainID uint64, validatorPubkey []byte) []byte {
 	out := make([]byte, 8+len(validatorPubkey))
 	binary.BigEndian.PutUint64(out[:8], sourceChainID)
@@ -97,6 +101,31 @@ func (k Keeper) GetIndexerByAddress(ctx sdk.Context, operatorAddress string) (ty
 		return types.Indexer{}, false, err
 	}
 	return k.GetIndexerByValidator(ctx, chainID, pub)
+}
+
+func (k Keeper) GetIndexerByDID(ctx sdk.Context, did string) (types.Indexer, bool, error) {
+	store := runtime.KVStoreAdapter(k.storeService.OpenKVStore(ctx))
+	v := store.Get(didIndexKey(did))
+	if len(v) == 0 {
+		return types.Indexer{}, false, nil
+	}
+	chainID, pub, err := decodeAddrIndexValue(v)
+	if err != nil {
+		return types.Indexer{}, false, err
+	}
+	return k.GetIndexerByValidator(ctx, chainID, pub)
+}
+
+func (k Keeper) GetAddressForDID(ctx sdk.Context, did string) (sdk.AccAddress, bool) {
+	row, found, err := k.GetIndexerByDID(ctx, did)
+	if err != nil || !found {
+		return nil, false
+	}
+	addr, err := sdk.AccAddressFromBech32(row.PayoutAddress)
+	if err != nil {
+		return nil, false
+	}
+	return addr, true
 }
 
 func (k Keeper) IterateIndexers(ctx sdk.Context, sourceChainID uint64, pageReq *query.PageRequest) ([]types.Indexer, *query.PageResponse, error) {
@@ -249,6 +278,9 @@ func (k Keeper) RevokeIndexer(ctx sdk.Context, msg *types.MsgRevokeIndexer) erro
 
 	store.Delete(rowKey)
 	store.Delete(addrIndexKey(row.OperatorAddress))
+	if row.Did != "" {
+		store.Delete(didIndexKey(row.Did))
+	}
 	k.decrementCount(ctx)
 
 	emitRevoked(ctx, &row, msg.Nonce)
@@ -394,6 +426,8 @@ func (k Keeper) ApplyRegistration(
 		return err
 	}
 
+	prevDID := row.Did
+
 	row.Did = did
 	row.ConnectionString = connectionString
 	row.Registered = true
@@ -403,6 +437,11 @@ func (k Keeper) ApplyRegistration(
 		return err
 	}
 	store.Set(rowKey, out)
+
+	if prevDID != "" && prevDID != did {
+		store.Delete(didIndexKey(prevDID))
+	}
+	store.Set(didIndexKey(did), encodeAddrIndexValue(chainID, pub))
 
 	emitRegistered(ctx, &row)
 	return nil
@@ -437,6 +476,9 @@ func (k Keeper) InitGenesis(ctx sdk.Context, gs types.GenesisState) {
 		}
 		store.Set(indexerRowKey(row.SourceChainId, row.ValidatorPubkey), bz)
 		store.Set(addrIndexKey(row.OperatorAddress), encodeAddrIndexValue(row.SourceChainId, row.ValidatorPubkey))
+		if row.Did != "" {
+			store.Set(didIndexKey(row.Did), encodeAddrIndexValue(row.SourceChainId, row.ValidatorPubkey))
+		}
 	}
 	var buf [8]byte
 	binary.BigEndian.PutUint64(buf[:], uint64(len(gs.Indexers)))
