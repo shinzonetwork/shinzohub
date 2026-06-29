@@ -6,7 +6,15 @@ const (
 
 	BalancePrefix = "balance/"
 
+	// LastSettledEpochKey stores the last epoch number that has been settled.
+	// Used to reject replays and out-of-order settlement messages.
+	LastSettledEpochKey = "last_settled_epoch"
+
 	SettlementDenom = "ushinusd"
+
+	// EpochSeconds is the duration of a settlement epoch in seconds.
+	// epoch = floor(block_time_unix / EpochSeconds)
+	EpochSeconds int64 = 180
 )
 
 const (

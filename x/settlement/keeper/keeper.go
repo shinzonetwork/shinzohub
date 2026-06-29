@@ -1,6 +1,7 @@
 package keeper
 
 import (
+	"encoding/binary"
 	"fmt"
 
 	storetypes "cosmossdk.io/core/store"
@@ -212,9 +213,38 @@ func parseAmount(s string) math.Int {
 	return v
 }
 
+// GetCurrentEpoch returns the epoch number derived from the block timestamp.
+// epoch = floor(block_time_unix / EpochSeconds). Returns 0 if BlockTime is unset.
+func (k Keeper) GetCurrentEpoch(ctx sdk.Context) uint64 {
+	t := ctx.BlockTime().Unix()
+	if t <= 0 {
+		return 0
+	}
+	return uint64(t / types.EpochSeconds)
+}
+
+func (k Keeper) GetLastSettledEpoch(ctx sdk.Context) uint64 {
+	store := runtime.KVStoreAdapter(k.storeService.OpenKVStore(ctx))
+	bz := store.Get([]byte(types.LastSettledEpochKey))
+	if len(bz) == 0 {
+		return 0
+	}
+	return binary.BigEndian.Uint64(bz)
+}
+
+func (k Keeper) SetLastSettledEpoch(ctx sdk.Context, epoch uint64) {
+	store := runtime.KVStoreAdapter(k.storeService.OpenKVStore(ctx))
+	var bz [8]byte
+	binary.BigEndian.PutUint64(bz[:], epoch)
+	store.Set([]byte(types.LastSettledEpochKey), bz[:])
+}
+
 func (k Keeper) InitGenesis(ctx sdk.Context, gs types.GenesisState) {
 	for _, sb := range gs.Balances {
 		k.setEntry(ctx, sb)
+	}
+	if gs.LastSettledEpoch > 0 {
+		k.SetLastSettledEpoch(ctx, gs.LastSettledEpoch)
 	}
 }
 
@@ -233,5 +263,8 @@ func (k Keeper) ExportGenesis(ctx sdk.Context) *types.GenesisState {
 		balances = append(balances, sb)
 	}
 
-	return &types.GenesisState{Balances: balances}
+	return &types.GenesisState{
+		Balances:         balances,
+		LastSettledEpoch: k.GetLastSettledEpoch(ctx),
+	}
 }
