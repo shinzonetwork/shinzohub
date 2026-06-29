@@ -10,6 +10,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/runtime"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/cosmos/cosmos-sdk/types/query"
 
 	"github.com/shinzonetwork/shinzohub/x/settlement/types"
 )
@@ -142,6 +143,28 @@ func (k Keeper) GetBalance(ctx sdk.Context, holder sdk.AccAddress) math.Int {
 
 func (k Keeper) GetEntry(ctx sdk.Context, holder sdk.AccAddress) (types.SettlementBalance, bool) {
 	return k.getEntryIfExists(ctx, holder)
+}
+
+func (k Keeper) GetAllBalances(
+	ctx sdk.Context,
+	pageReq *query.PageRequest,
+) ([]types.SettlementBalance, *query.PageResponse, error) {
+	store := runtime.KVStoreAdapter(k.storeService.OpenKVStore(ctx))
+	balanceStore := prefix.NewStore(store, []byte(types.BalancePrefix))
+
+	var balances []types.SettlementBalance
+	pageRes, err := query.Paginate(balanceStore, pageReq, func(_, value []byte) error {
+		var sb types.SettlementBalance
+		if err := k.cdc.Unmarshal(value, &sb); err != nil {
+			return err
+		}
+		balances = append(balances, sb)
+		return nil
+	})
+	if err != nil {
+		return nil, nil, err
+	}
+	return balances, pageRes, nil
 }
 
 func (k Keeper) getEntry(ctx sdk.Context, holder sdk.AccAddress) types.SettlementBalance {

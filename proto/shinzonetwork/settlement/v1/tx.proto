@@ -1,0 +1,27 @@
+syntax = "proto3";
+
+package shinzonetwork.settlement.v1;
+
+import "cosmos/msg/v1/msg.proto";
+
+option go_package = "github.com/shinzonetwork/shinzohub/x/settlement/types";
+
+service Msg {
+  option (cosmos.msg.v1.service) = true;
+
+  // Claim moves the requested amount of SHINUSD from the claimer's pending
+  // settlement balance to their wallet. The module mints fresh SHINUSD into
+  // its module account and transfers it to the claimer.
+  rpc Claim(MsgClaim) returns (MsgClaimResponse);
+}
+
+message MsgClaim {
+  option (cosmos.msg.v1.signer) = "claimer";
+
+  string claimer = 1;
+  string amount = 2;
+}
+
+message MsgClaimResponse {
+  string remaining = 1;
+}

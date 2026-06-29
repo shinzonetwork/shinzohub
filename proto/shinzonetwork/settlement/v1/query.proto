@@ -1,0 +1,34 @@
+syntax = "proto3";
+
+package shinzonetwork.settlement.v1;
+
+import "google/api/annotations.proto";
+import "cosmos/base/query/v1beta1/pagination.proto";
+import "gogoproto/gogo.proto";
+import "shinzonetwork/settlement/v1/settlement.proto";
+
+option go_package = "github.com/shinzonetwork/shinzohub/x/settlement/types";
+
+service Query {
+  rpc Balance(QueryBalanceRequest) returns (QueryBalanceResponse) {
+    option (google.api.http).get = "/shinzonetwork/settlement/v1/balance/{address}";
+  }
+  rpc Balances(QueryBalancesRequest) returns (QueryBalancesResponse) {
+    option (google.api.http).get = "/shinzonetwork/settlement/v1/balances";
+  }
+}
+
+message QueryBalanceRequest {
+  string address = 1;
+}
+message QueryBalanceResponse {
+  string amount = 1;
+}
+
+message QueryBalancesRequest {
+  cosmos.base.query.v1beta1.PageRequest pagination = 1;
+}
+message QueryBalancesResponse {
+  repeated SettlementBalance balances = 1 [(gogoproto.nullable) = false];
+  cosmos.base.query.v1beta1.PageResponse pagination = 2;
+}
