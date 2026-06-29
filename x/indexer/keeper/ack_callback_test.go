@@ -80,6 +80,66 @@ func (s *KeeperTestSuite) TestAckCallback_FailureDropsPendingClaim_RowUntouched(
 	s.Require().False(found)
 }
 
+// TestAckCallback_RevokeWhileClaimInFlight_OrphanSilentlyDropped covers the
+// race where an operator is revoked between firing the registration ICA and its
+// ack landing. RevokeIndexer deletes the row + addr index but not the pending
+// claim, so the claim is left orphaned. When the (now stale) ack arrives,
+// ApplyRegistration finds no addr index and no-ops — the indexer is NOT
+// resurrected — and the orphan claim is cleaned up.
+func (s *KeeperTestSuite) TestAckCallback_RevokeWhileClaimInFlight_OrphanSilentlyDropped() {
+	op := addr(0x01)
+	pay := addr(0x02)
+	s.Require().NoError(s.keeper.UpsertAssertion(s.ctx, baseAssertion(op, pay)))
+
+	// Operator fires a registration → pending claim recorded, ICA in flight.
+	msg := []byte("op-claim")
+	pub, sig := nodeIdentityKey(s.T(), msg)
+	result, err := s.keeper.RegisterIndexer(s.ctx, op, pub, sig, msg, "https://op/9090")
+	s.Require().NoError(err)
+	s.Require().True(result.Pending)
+
+	// Admin revokes before the ack lands.
+	s.Require().NoError(s.keeper.RevokeIndexer(s.ctx, &indexertypes.MsgRevokeIndexer{
+		Signer:          addr(0xAA),
+		SourceChainId:   1,
+		ValidatorPubkey: validatorA(),
+		Nonce:           2,
+	}))
+	s.Require().Equal(uint64(0), s.keeper.GetIndexerCount(s.ctx))
+
+	// Revoke leaves the pending claim orphaned (it is keyed by DID, not addr).
+	_, found, err := s.keeper.GetPendingClaim(s.ctx, result.Did)
+	s.Require().NoError(err)
+	s.Require().True(found, "revoke does not touch the in-flight pending claim")
+
+	// The stale SUCCESS ack arrives for the revoked operator.
+	meta := &sourcehubtypes.SetRelationshipMeta{Did: result.Did, Group: "indexer"}
+	metaBz, err := s.cdc().Marshal(meta)
+	s.Require().NoError(err)
+
+	cb := keeper.NewAckCallback(s.keeper)
+	err = cb.OnPacketAck(s.ctx, sourcehubtypes.PendingICARequest{
+		Kind:   sourcehubtypes.RequestKind_REQUEST_KIND_SET_RELATIONSHIP,
+		Meta:   metaBz,
+		Status: sourcehubtypes.RequestStatus_REQUEST_STATUS_SUCCESS,
+	})
+	s.Require().NoError(err)
+
+	// No indexer resurrected — row and addr index stay gone, count unchanged.
+	_, found, err = s.keeper.GetIndexerByValidator(s.ctx, 1, validatorA())
+	s.Require().NoError(err)
+	s.Require().False(found)
+	_, found, err = s.keeper.GetIndexerByAddress(s.ctx, op)
+	s.Require().NoError(err)
+	s.Require().False(found)
+	s.Require().Equal(uint64(0), s.keeper.GetIndexerCount(s.ctx))
+
+	// Orphan claim is cleaned up by the ack handler.
+	_, found, err = s.keeper.GetPendingClaim(s.ctx, result.Did)
+	s.Require().NoError(err)
+	s.Require().False(found, "ack handler drops the orphaned claim")
+}
+
 func (s *KeeperTestSuite) TestAckCallback_NonIndexerGroupIsIgnored() {
 	meta := &sourcehubtypes.SetRelationshipMeta{Did: "did:host:something", Group: "host"}
 	metaBz, err := s.cdc().Marshal(meta)
