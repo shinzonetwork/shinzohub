@@ -93,6 +93,7 @@ func newFixture(t *testing.T) *fixture {
 		nil, // hostKeeper — not exercised by precompile tests
 		nil, // indexerKeeper — same
 		nil, // queryBalanceKeeper — same
+		nil, // poolKeeper — same
 		"authority",
 	)
 

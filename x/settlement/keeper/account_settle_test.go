@@ -466,18 +466,44 @@ func TestBoundary_LinearEpochAdvance(t *testing.T) {
 	require.Equal(t, uint64(testEpoch+1), f.keeper.GetLastSettledEpoch(f.ctx))
 }
 
-func TestBoundary_PoolsSectionStillIgnored(t *testing.T) {
+func TestSettle_AppliesPoolStatsAtSubmissionTime(t *testing.T) {
 	f := newFixture(t)
 	setEpoch(f, testEpoch)
 
-	submit(t, f, &types.MsgAccountSettle{
+	f.pool.existing["pool-A"] = struct{}{}
+	f.pool.existing["pool-B"] = struct{}{}
+
+	resp := submit(t, f, &types.MsgAccountSettle{
 		Submitter: addr(0xAA).String(),
 		Epoch:     testEpoch,
 		Pools: []types.PoolUpdate{
-			{PoolAddress: "anything", Price: "9995", Utilization: 32, NumberOfQueries: 10},
+			{PoolAddress: "pool-A", Price: "9995", Utilization: 32, Rewards: "1000000", NumberOfQueries: 10},
+			{PoolAddress: "pool-B", Price: "1005", Utilization: 68, Rewards: "500000", NumberOfQueries: 5},
 		},
 	})
 
-	boundaryAdvance(t, f, testEpoch)
-	// No panic. Pools field is reserved but unused.
+	require.Equal(t, uint64(2), resp.PoolsUpdated)
+	require.Len(t, f.pool.updates, 2, "pool keeper must be called once per pool update at submission time")
+	require.Equal(t, "pool-A", f.pool.updates[0].addr)
+	require.Equal(t, uint64(32), f.pool.updates[0].utilization)
+	require.Equal(t, uint64(10), f.pool.updates[0].queries)
+	require.Equal(t, "1000000", f.pool.updates[0].rewards.String())
+	require.Equal(t, uint64(testEpoch), f.pool.updates[0].epoch)
+}
+
+func TestSettle_RejectsNonexistentPool(t *testing.T) {
+	f := newFixture(t)
+	setEpoch(f, testEpoch)
+
+	srv := settlementkeeper.NewMsgServerImpl(f.keeper)
+	_, err := srv.AccountSettle(sdk.WrapSDKContext(f.ctx), &types.MsgAccountSettle{
+		Submitter: addr(0xAA).String(),
+		Epoch:     testEpoch,
+		Pools: []types.PoolUpdate{
+			{PoolAddress: "ghost", Price: "100", Utilization: 50, Rewards: "0", NumberOfQueries: 1},
+		},
+	})
+
+	require.ErrorContains(t, err, "pool ghost not found")
+	require.Len(t, f.pool.updates, 0, "pool not found must fail atomically — no partial updates")
 }

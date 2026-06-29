@@ -25,6 +25,22 @@ message PoolDetail {
   Pool pool = 1 [(gogoproto.nullable) = false];
   repeated PoolHostEntry hosts = 2 [(gogoproto.nullable) = false];
   repeated PoolDemandEntry demands = 3 [(gogoproto.nullable) = false];
+  PoolStats stats = 4 [(gogoproto.nullable) = false];
+}
+
+// PoolStats accumulates operational telemetry for a pool — the per-query
+// price set by the accounting service, the most recently reported
+// utilization (0-100), and lifetime totals for queries served and rewards
+// earned. Updated whenever a MsgAccountSettle includes the pool in its
+// pools[] slice. Utilization and price are last-writer-wins; total_queries
+// and total_rewards are monotonic sums.
+message PoolStats {
+  string pool_address       = 1;
+  string price              = 2;  // current per-query price (ushinusd, sdk.Int base-10)
+  uint64 utilization        = 3;  // most recent report (0-100)
+  uint64 total_queries      = 4;  // lifetime
+  string total_rewards      = 5;  // lifetime ushinusd earned (sdk.Int base-10)
+  uint64 last_updated_epoch = 6;
 }
 
 // PoolConfig is the configuration that uniquely identifies a pool for a given view.

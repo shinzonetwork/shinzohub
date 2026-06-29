@@ -90,6 +90,42 @@ func (m *mockIndexerKeeper) GetAddressForDID(_ sdk.Context, did string) (sdk.Acc
 	return a, ok
 }
 
+// mockPoolKeeper records the pool stats updates settlement makes so tests can
+// assert what it intends to write without spinning up the real x/pool keeper.
+type mockPoolKeeper struct {
+	existing map[string]struct{}
+	updates  []poolUpdate
+}
+
+type poolUpdate struct {
+	addr        string
+	price       math.Int
+	utilization uint64
+	queries     uint64
+	rewards     math.Int
+	epoch       uint64
+}
+
+func (m *mockPoolKeeper) PoolExists(_ sdk.Context, addr string) bool {
+	_, ok := m.existing[addr]
+	return ok
+}
+
+func (m *mockPoolKeeper) UpdatePoolStats(
+	_ sdk.Context,
+	addr string,
+	price math.Int,
+	utilization, queries uint64,
+	rewards math.Int,
+	epoch uint64,
+) error {
+	m.updates = append(m.updates, poolUpdate{
+		addr: addr, price: price, utilization: utilization,
+		queries: queries, rewards: rewards, epoch: epoch,
+	})
+	return nil
+}
+
 // mockQueryBalanceKeeper keeps an in-memory holder→amount ledger so settlement
 // tests can exercise the drain-to-zero debit logic without spinning up the
 // real x/querybalance keeper.
@@ -129,6 +165,7 @@ type fixture struct {
 	host    *mockHostKeeper
 	indexer *mockIndexerKeeper
 	qb      *mockQueryBalanceKeeper
+	pool    *mockPoolKeeper
 }
 
 func newFixture(t *testing.T) *fixture {
@@ -145,6 +182,7 @@ func newFixture(t *testing.T) *fixture {
 	host := &mockHostKeeper{addrs: map[string]sdk.AccAddress{}}
 	indexer := &mockIndexerKeeper{addrs: map[string]sdk.AccAddress{}}
 	qb := &mockQueryBalanceKeeper{balances: map[string]math.Int{}}
+	pool := &mockPoolKeeper{existing: map[string]struct{}{}}
 
 	k := settlementkeeper.NewKeeper(
 		cdc,
@@ -153,12 +191,13 @@ func newFixture(t *testing.T) *fixture {
 		host,
 		indexer,
 		qb,
+		pool,
 		"authority",
 	)
 
 	ctx := sdk.NewContext(cms, cmtproto.Header{Height: 1}, false, cosmoslog.NewNopLogger())
 
-	return &fixture{t: t, ctx: ctx, keeper: k, bank: bank, host: host, indexer: indexer, qb: qb}
+	return &fixture{t: t, ctx: ctx, keeper: k, bank: bank, host: host, indexer: indexer, qb: qb, pool: pool}
 }
 
 func addr(b byte) sdk.AccAddress {

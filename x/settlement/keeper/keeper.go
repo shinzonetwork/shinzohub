@@ -24,6 +24,7 @@ type Keeper struct {
 	hostKeeper         types.HostKeeper
 	indexerKeeper      types.IndexerKeeper
 	queryBalanceKeeper types.QueryBalanceKeeper
+	poolKeeper         types.PoolKeeper
 }
 
 func NewKeeper(
@@ -33,6 +34,7 @@ func NewKeeper(
 	hostKeeper types.HostKeeper,
 	indexerKeeper types.IndexerKeeper,
 	queryBalanceKeeper types.QueryBalanceKeeper,
+	poolKeeper types.PoolKeeper,
 	authority string,
 ) Keeper {
 	return Keeper{
@@ -42,6 +44,7 @@ func NewKeeper(
 		hostKeeper:         hostKeeper,
 		indexerKeeper:      indexerKeeper,
 		queryBalanceKeeper: queryBalanceKeeper,
+		poolKeeper:         poolKeeper,
 		authority:          authority,
 	}
 }
@@ -50,6 +53,7 @@ func NewKeeper(
 func (k Keeper) HostKeeper() types.HostKeeper                 { return k.hostKeeper }
 func (k Keeper) IndexerKeeper() types.IndexerKeeper           { return k.indexerKeeper }
 func (k Keeper) QueryBalanceKeeper() types.QueryBalanceKeeper { return k.queryBalanceKeeper }
+func (k Keeper) PoolKeeper() types.PoolKeeper                 { return k.poolKeeper }
 
 func (k Keeper) Logger(ctx sdk.Context) log.Logger {
 	return ctx.Logger().With("module", fmt.Sprintf("x/%s", types.ModuleName))

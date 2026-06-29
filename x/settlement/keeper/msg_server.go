@@ -131,6 +131,51 @@ func (m msgServer) AccountSettle(goCtx context.Context, msg *types.MsgAccountSet
 		})
 	}
 
+	// Pre-validate pool updates: every pool must exist, every numeric field
+	// must parse. Pool stats are applied IMMEDIATELY (not queued for the
+	// boundary) — they're informational, not gating, so there's no benefit
+	// to deferring them.
+	type resolvedPool struct {
+		addr        string
+		price       math.Int
+		utilization uint64
+		queries     uint64
+		rewards     math.Int
+	}
+	pools := make([]resolvedPool, 0, len(msg.Pools))
+	for i, p := range msg.Pools {
+		if !m.Keeper.poolKeeper.PoolExists(ctx, p.PoolAddress) {
+			return nil, sdkerrors.ErrInvalidRequest.Wrapf("pool[%d]: pool %s not found", i, p.PoolAddress)
+		}
+		price, err := parseNonNegativeAmount(p.Price)
+		if err != nil {
+			return nil, sdkerrors.ErrInvalidRequest.Wrapf("pool[%d].price: %s", i, err)
+		}
+		rewards, err := parseNonNegativeAmount(p.Rewards)
+		if err != nil {
+			return nil, sdkerrors.ErrInvalidRequest.Wrapf("pool[%d].rewards: %s", i, err)
+		}
+		pools = append(pools, resolvedPool{
+			addr:        p.PoolAddress,
+			price:       price,
+			utilization: p.Utilization,
+			queries:     p.NumberOfQueries,
+			rewards:     rewards,
+		})
+	}
+
+	// 3a. Apply pool stats immediately. They're informational (don't gate
+	//     any other module's behavior), and they don't have drain-to-zero
+	//     semantics, so there's nothing to be gained by queuing for the
+	//     boundary. Apply inline; the rest of the submission still queues.
+	for _, p := range pools {
+		if err := m.Keeper.poolKeeper.UpdatePoolStats(
+			ctx, p.addr, p.price, p.utilization, p.queries, p.rewards, msg.Epoch,
+		); err != nil {
+			return nil, fmt.Errorf("update pool stats %s: %w", p.addr, err)
+		}
+	}
+
 	// 3. Enqueue. Split the submission into a debit-only entry and a
 	//    credit-only entry, each going to its own queue. Debits are drained
 	//    first per block (gateway access depends on them), so isolating them
@@ -173,7 +218,7 @@ func (m msgServer) AccountSettle(goCtx context.Context, msg *types.MsgAccountSet
 		DebitsApplied:   uint64(len(resolvedDebits)),
 		TotalCredited:   "0",
 		TotalDebited:    "0",
-		PoolsUpdated:    0,
+		PoolsUpdated:    uint64(len(pools)),
 	}, nil
 }
 
@@ -194,6 +239,22 @@ func parsePositiveAmount(s string) (math.Int, error) {
 	}
 	if !amt.IsPositive() {
 		return math.Int{}, fmt.Errorf("amount %q is not positive", s)
+	}
+	return amt, nil
+}
+
+// parseNonNegativeAmount permits zero. Used for pool fields (price, rewards)
+// where zero is a meaningful "no charge" / "no activity" signal.
+func parseNonNegativeAmount(s string) (math.Int, error) {
+	if s == "" {
+		return math.ZeroInt(), nil
+	}
+	amt, ok := math.NewIntFromString(s)
+	if !ok {
+		return math.Int{}, fmt.Errorf("amount %q is not an integer", s)
+	}
+	if amt.IsNegative() {
+		return math.Int{}, fmt.Errorf("amount %q is negative", s)
 	}
 	return amt, nil
 }

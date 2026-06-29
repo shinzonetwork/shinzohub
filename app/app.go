@@ -166,6 +166,9 @@ import (
 	indexermod "github.com/shinzonetwork/shinzohub/x/indexer"
 	indexerkeeper "github.com/shinzonetwork/shinzohub/x/indexer/keeper"
 	indexertypes "github.com/shinzonetwork/shinzohub/x/indexer/types"
+	poolmod "github.com/shinzonetwork/shinzohub/x/pool"
+	poolkeeper "github.com/shinzonetwork/shinzohub/x/pool/keeper"
+	pooltypes "github.com/shinzonetwork/shinzohub/x/pool/types"
 	querybalancemod "github.com/shinzonetwork/shinzohub/x/querybalance"
 	querybalancekeeper "github.com/shinzonetwork/shinzohub/x/querybalance/keeper"
 	querybalancetypes "github.com/shinzonetwork/shinzohub/x/querybalance/types"
@@ -249,6 +252,7 @@ var maccPerms = map[string][]string{
 		hosttypes.ModuleName:         nil,
 		indexertypes.ModuleName:      nil,
 		viewtypes.ModuleName:         nil,
+		pooltypes.ModuleName:         nil,
 		querybalancetypes.ModuleName: nil,
 		settlementtypes.ModuleName:   {authtypes.Minter, authtypes.Burner},
 }
@@ -312,6 +316,7 @@ type ChainApp struct {
 	HostKeeper         hostkeeper.Keeper
 	IndexerKeeper      indexerkeeper.Keeper
 	ViewKeeper         viewkeeper.Keeper
+	PoolKeeper         poolkeeper.Keeper
 	QueryBalanceKeeper querybalancekeeper.Keeper
 	SettlementKeeper   settlementkeeper.Keeper
 	// the module manager
@@ -429,6 +434,7 @@ func NewChainApp(
 		hosttypes.StoreKey,
 		indexertypes.StoreKey,
 		viewtypes.StoreKey,
+		pooltypes.StoreKey,
 		querybalancetypes.StoreKey,
 		settlementtypes.StoreKey,
 	)
@@ -791,6 +797,14 @@ func NewChainApp(
 		&app.SourcehubKeeper,
 	)
 
+	app.PoolKeeper = poolkeeper.NewKeeper(
+		appCodec,
+		runtime.NewKVStoreService(keys[pooltypes.StoreKey]),
+		app.ViewKeeper,
+		app.BankKeeper,
+		authority,
+	)
+
 	app.QueryBalanceKeeper = querybalancekeeper.NewKeeper(
 		appCodec,
 		runtime.NewKVStoreService(keys[querybalancetypes.StoreKey]),
@@ -805,6 +819,7 @@ func NewChainApp(
 		app.HostKeeper,
 		app.IndexerKeeper,
 		app.QueryBalanceKeeper,
+		app.PoolKeeper,
 		authority,
 	)
 
@@ -963,6 +978,11 @@ func NewChainApp(
 			app.ViewKeeper,
 			runtime.NewKVStoreService(keys[viewtypes.StoreKey]),
 		),
+		poolmod.NewAppModule(
+			appCodec,
+			app.PoolKeeper,
+			runtime.NewKVStoreService(keys[pooltypes.StoreKey]),
+		),
 		querybalancemod.NewAppModule(
 			appCodec,
 			app.QueryBalanceKeeper,
@@ -1020,6 +1040,7 @@ func NewChainApp(
 		hosttypes.ModuleName,
 		indexertypes.ModuleName,
 		viewtypes.ModuleName,
+		pooltypes.ModuleName,
 		querybalancetypes.ModuleName,
 		settlementtypes.ModuleName,
 	)
@@ -1043,6 +1064,7 @@ func NewChainApp(
 		hosttypes.ModuleName,
 		indexertypes.ModuleName,
 		viewtypes.ModuleName,
+		pooltypes.ModuleName,
 		querybalancetypes.ModuleName,
 		settlementtypes.ModuleName,
 	)
@@ -1093,6 +1115,7 @@ func NewChainApp(
 		hosttypes.ModuleName,
 		indexertypes.ModuleName,
 		viewtypes.ModuleName,
+		pooltypes.ModuleName,
 		querybalancetypes.ModuleName,
 		settlementtypes.ModuleName,
 	}

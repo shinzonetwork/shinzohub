@@ -31,3 +31,19 @@ type QueryBalanceKeeper interface {
 	GetBalance(ctx sdk.Context, holder sdk.AccAddress) math.Int
 	Debit(ctx sdk.Context, holder sdk.AccAddress, amount math.Int) error
 }
+
+// PoolKeeper is what settlement uses to push the pools[] slice of an
+// AccountSettle into pool-side stats. The pool must exist (settlement
+// doesn't create pools) — see UpdatePoolStats semantics in x/pool.
+type PoolKeeper interface {
+	PoolExists(ctx sdk.Context, poolAddress string) bool
+	UpdatePoolStats(
+		ctx sdk.Context,
+		poolAddress string,
+		price math.Int,
+		utilization uint64,
+		addQueries uint64,
+		addRewards math.Int,
+		epoch uint64,
+	) error
+}

@@ -16,6 +16,12 @@ const (
 	// pool_demand/<pool_address>/<registrant_address> → PoolDemand
 	PoolDemandPrefix = "pool_demand/"
 
+	// pool_stats/<pool_address> → PoolStats. Stats are written by the
+	// settlement module's AccountSettle handler whenever it processes a
+	// pools[] entry. Missing key → all-zero stats (genesis pool, no
+	// settlement messages applied yet).
+	PoolStatsPrefix = "pool_stats/"
+
 	PoolCountKey = "pool_count"
 
 	// GlobalPriceKey holds the network-wide price-per-unit-of-data shared
@@ -54,6 +60,7 @@ const (
 	EventTypeHostJoined       = "pool.host_joined"
 	EventTypeHostLeft         = "pool.host_left"
 	EventTypeDemandRegistered = "pool.demand_registered"
+	EventTypePoolStatsUpdated = "pool.stats_updated"
 
 	AttrKeyPoolAddress       = "pool_address"
 	AttrKeyViewAddress       = "view_address"
@@ -61,4 +68,9 @@ const (
 	AttrKeyRegistrantAddress = "registrant_address"
 	AttrKeyBond              = "bond"
 	AttrKeyError             = "error"
+	AttrKeyPrice             = "price"
+	AttrKeyUtilization       = "utilization"
+	AttrKeyTotalQueries      = "total_queries"
+	AttrKeyTotalRewards      = "total_rewards"
+	AttrKeyEpoch             = "epoch"
 )
