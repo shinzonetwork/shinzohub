@@ -40,11 +40,15 @@ func (k Keeper) Logger(ctx sdk.Context) log.Logger {
 	return ctx.Logger().With("module", fmt.Sprintf("x/%s", types.ModuleName))
 }
 
+// Fund moves SHINUSD (ushinusd) from funder's wallet into the querybalance
+// module account and credits the recipient's query balance by amount. Denom
+// is fixed to types.QueryBalanceDenom — the funder must already hold SHINUSD
+// (via settlement claim, bridge, or transfer).
 func (k Keeper) Fund(
 	ctx sdk.Context,
 	funder sdk.AccAddress,
 	recipient sdk.AccAddress,
-	amount sdk.Coins,
+	amount math.Int,
 ) error {
 	if funder.Empty() {
 		return fmt.Errorf("funder is required")
@@ -52,29 +56,27 @@ func (k Keeper) Fund(
 	if recipient.Empty() {
 		return fmt.Errorf("recipient is required")
 	}
-	if !amount.IsValid() || amount.IsZero() {
-		return fmt.Errorf("amount must be a positive coin")
-	}
-	if len(amount) != 1 {
-		return fmt.Errorf("fund accepts a single coin denomination, got %d", len(amount))
+	if !amount.IsPositive() {
+		return fmt.Errorf("amount must be positive")
 	}
 
+	coins := sdk.NewCoins(sdk.NewCoin(types.QueryBalanceDenom, amount))
 	if err := k.bankKeeper.SendCoinsFromAccountToModule(
-		ctx, funder, types.ModuleName, amount,
+		ctx, funder, types.ModuleName, coins,
 	); err != nil {
 		return fmt.Errorf("transfer to module account: %w", err)
 	}
 
 	qb := k.getEntry(ctx, recipient)
 	prev := parseAmount(qb.Amount)
-	qb.Amount = prev.Add(amount[0].Amount).String()
+	qb.Amount = prev.Add(amount).String()
 	k.setEntry(ctx, qb)
 
 	ctx.EventManager().EmitEvent(sdk.NewEvent(
 		types.EventTypeFunded,
 		sdk.NewAttribute(types.AttrKeyFunder, funder.String()),
 		sdk.NewAttribute(types.AttrKeyRecipient, recipient.String()),
-		sdk.NewAttribute(types.AttrKeyAmount, amount[0].Amount.String()),
+		sdk.NewAttribute(types.AttrKeyAmount, amount.String()),
 	))
 
 	return nil

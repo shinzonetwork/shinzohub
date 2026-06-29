@@ -24,10 +24,14 @@ func (p Precompile) Fund(
 	contract *vm.Contract,
 	stateDB vm.StateDB,
 	method *abi.Method,
-	_ []interface{},
+	args []interface{},
 ) ([]byte, error) {
+	amountBig, ok := args[0].(*big.Int)
+	if !ok || amountBig == nil {
+		return nil, fmt.Errorf("invalid amount")
+	}
 	caller := contract.Caller()
-	return p.fundCore(ctx, contract, stateDB, method, caller, caller)
+	return p.fundCore(ctx, contract, stateDB, method, caller, caller, amountBig)
 }
 
 func (p Precompile) FundFor(
@@ -41,7 +45,11 @@ func (p Precompile) FundFor(
 	if !ok || recipient == (common.Address{}) {
 		return nil, fmt.Errorf("invalid recipient")
 	}
-	return p.fundCore(ctx, contract, stateDB, method, contract.Caller(), recipient)
+	amountBig, ok := args[1].(*big.Int)
+	if !ok || amountBig == nil {
+		return nil, fmt.Errorf("invalid amount")
+	}
+	return p.fundCore(ctx, contract, stateDB, method, contract.Caller(), recipient, amountBig)
 }
 
 func (p Precompile) fundCore(
@@ -51,28 +59,21 @@ func (p Precompile) fundCore(
 	method *abi.Method,
 	funderEVM common.Address,
 	recipientEVM common.Address,
+	amountBig *big.Int,
 ) ([]byte, error) {
-	value := contract.Value()
-	if value == nil || value.Sign() == 0 {
-		return nil, fmt.Errorf("must send a non-zero amount")
+	if amountBig.Sign() <= 0 {
+		return nil, fmt.Errorf("amount must be positive")
 	}
 
-	bondDenom, err := p.stakingKeeper.BondDenom(ctx)
-	if err != nil {
-		return nil, fmt.Errorf("look up bond denom: %w", err)
-	}
-
-	amount := math.NewIntFromBigInt(value.ToBig())
-	coins := sdk.NewCoins(sdk.NewCoin(bondDenom, amount))
-
+	amount := math.NewIntFromBigInt(amountBig)
 	funder := sdk.AccAddress(funderEVM.Bytes())
 	recipient := sdk.AccAddress(recipientEVM.Bytes())
 
-	if err := p.qbKeeper.Fund(ctx, funder, recipient, coins); err != nil {
+	if err := p.qbKeeper.Fund(ctx, funder, recipient, amount); err != nil {
 		return nil, fmt.Errorf("fund: %w", err)
 	}
 
-	emitFunded(stateDB, contract.Address(), funderEVM, recipientEVM, value.ToBig())
+	emitFunded(stateDB, contract.Address(), funderEVM, recipientEVM, amountBig)
 
 	return method.Outputs.Pack()
 }
