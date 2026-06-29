@@ -80,13 +80,12 @@ func (s *KeeperTestSuite) TestAckCallback_FailureDropsPendingClaim_RowUntouched(
 	s.Require().False(found)
 }
 
-// TestAckCallback_RevokeWhileClaimInFlight_OrphanSilentlyDropped covers the
-// race where an operator is revoked between firing the registration ICA and its
-// ack landing. RevokeIndexer deletes the row + addr index but not the pending
-// claim, so the claim is left orphaned. When the (now stale) ack arrives,
-// ApplyRegistration finds no addr index and no-ops — the indexer is NOT
-// resurrected — and the orphan claim is cleaned up.
-func (s *KeeperTestSuite) TestAckCallback_RevokeWhileClaimInFlight_OrphanSilentlyDropped() {
+// TestAckCallback_RevokeWhileClaimInFlight_ClaimCleanedUp covers the race where
+// an operator is revoked between firing the registration ICA and its ack landing.
+// RevokeIndexer deletes the row + addr index and proactively drops the in-flight
+// pending claim, so no orphan lingers in state. When the (now stale) ack arrives
+// it finds no claim and no-ops — the indexer is NOT resurrected.
+func (s *KeeperTestSuite) TestAckCallback_RevokeWhileClaimInFlight_ClaimCleanedUp() {
 	op := addr(0x01)
 	pay := addr(0x02)
 	s.Require().NoError(s.keeper.UpsertAssertion(s.ctx, baseAssertion(op, pay)))
@@ -98,6 +97,15 @@ func (s *KeeperTestSuite) TestAckCallback_RevokeWhileClaimInFlight_OrphanSilentl
 	s.Require().NoError(err)
 	s.Require().True(result.Pending)
 
+	// An unrelated operator also has a pending claim in flight — it must survive
+	// the revoke (the scan only drops claims for the revoked operator).
+	const otherDID = "did:other-op"
+	otherOp := addr(0x07)
+	s.Require().NoError(s.keeper.SetPendingClaim(s.ctx, otherDID, indexertypes.PendingClaim{
+		OperatorAddress:  otherOp,
+		ConnectionString: "https://other/9090",
+	}))
+
 	// Admin revokes before the ack lands.
 	s.Require().NoError(s.keeper.RevokeIndexer(s.ctx, &indexertypes.MsgRevokeIndexer{
 		Signer:          addr(0xAA),
@@ -107,10 +115,15 @@ func (s *KeeperTestSuite) TestAckCallback_RevokeWhileClaimInFlight_OrphanSilentl
 	}))
 	s.Require().Equal(uint64(0), s.keeper.GetIndexerCount(s.ctx))
 
-	// Revoke leaves the pending claim orphaned (it is keyed by DID, not addr).
+	// Revoke proactively drops the in-flight pending claim — no orphan in state.
 	_, found, err := s.keeper.GetPendingClaim(s.ctx, result.Did)
 	s.Require().NoError(err)
-	s.Require().True(found, "revoke does not touch the in-flight pending claim")
+	s.Require().False(found, "revoke cleans up the in-flight pending claim")
+
+	// The unrelated operator's claim is untouched.
+	_, found, err = s.keeper.GetPendingClaim(s.ctx, otherDID)
+	s.Require().NoError(err)
+	s.Require().True(found, "revoke must not drop other operators' claims")
 
 	// The stale SUCCESS ack arrives for the revoked operator.
 	meta := &sourcehubtypes.SetRelationshipMeta{Did: result.Did, Group: "indexer"}
@@ -134,10 +147,10 @@ func (s *KeeperTestSuite) TestAckCallback_RevokeWhileClaimInFlight_OrphanSilentl
 	s.Require().False(found)
 	s.Require().Equal(uint64(0), s.keeper.GetIndexerCount(s.ctx))
 
-	// Orphan claim is cleaned up by the ack handler.
+	// Claim is still gone (revoke already cleaned it up; the stale ack was a no-op).
 	_, found, err = s.keeper.GetPendingClaim(s.ctx, result.Did)
 	s.Require().NoError(err)
-	s.Require().False(found, "ack handler drops the orphaned claim")
+	s.Require().False(found)
 }
 
 func (s *KeeperTestSuite) TestAckCallback_NonIndexerGroupIsIgnored() {
