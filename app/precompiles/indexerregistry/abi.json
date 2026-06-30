@@ -11,9 +11,7 @@
         { "name": "nodeIdentityKeyPubkey", "type": "bytes" },
         { "name": "nodeIdentityKeySignature", "type": "bytes" },
         { "name": "message", "type": "bytes" },
-        { "name": "connectionString", "type": "string" },
-        { "name": "sourceChain", "type": "string" },
-        { "name": "sourceChainId", "type": "uint64" }
+        { "name": "connectionString", "type": "string" }
       ],
       "outputs": []
     },

@@ -6,24 +6,49 @@ import "cosmos/msg/v1/msg.proto";
 
 option go_package = "github.com/shinzonetwork/shinzohub/x/indexer/types";
 
-// Msg defines the indexer module Msg service.
 service Msg {
   option (cosmos.msg.v1.service) = true;
 
   rpc AddIndexerAssertion(MsgIndexerAssertion) returns (MsgIndexerAssertionResponse);
+  rpc SetPayout(MsgSetPayout) returns (MsgSetPayoutResponse);
+  rpc RevokeIndexer(MsgRevokeIndexer) returns (MsgRevokeIndexerResponse);
 }
 
 message MsgIndexerAssertion {
   option (cosmos.msg.v1.signer) = "signer";
 
-  string signer             = 1;
-  string consensus_pub_key  = 2;
-  string delegate_address   = 3;
-  string source_chain       = 4;
-  uint64 source_chain_id    = 5;
-  string assertion_id       = 6;
-  bytes  delegate_digest    = 7; // 32-byte pre-hashed payload signed by the delegate
-  bytes  delegate_signature = 8; // 65-byte secp256k1 ECDSA signature r‖s‖v
+  string signer = 1;
+  string source_chain = 2;
+  uint64 source_chain_id = 3;
+  bytes validator_pubkey = 4;
+  bytes assertion_authority = 5;
+  uint64 nonce = 6;
+  bytes chain_specific = 7;
+  string operator_address = 8;
+  string payout_address = 9;
 }
 
 message MsgIndexerAssertionResponse {}
+
+message MsgSetPayout {
+  option (cosmos.msg.v1.signer) = "signer";
+
+  string signer = 1;
+  uint64 source_chain_id = 2;
+  bytes validator_pubkey = 3;
+  string payout_address = 4;
+  uint64 nonce = 5;
+}
+
+message MsgSetPayoutResponse {}
+
+message MsgRevokeIndexer {
+  option (cosmos.msg.v1.signer) = "signer";
+
+  string signer = 1;
+  uint64 source_chain_id = 2;
+  bytes validator_pubkey = 3;
+  uint64 nonce = 4;
+}
+
+message MsgRevokeIndexerResponse {}

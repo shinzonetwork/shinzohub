@@ -9,19 +9,20 @@ import (
 	indexertypes "github.com/shinzonetwork/shinzohub/x/indexer/types"
 )
 
-// IndexerAssertionParams captures the minimal fields for indexer assertion.
+// IndexerAssertionParams captures the fields for an indexer assertion mirrored
+// from a source-chain outpost event.
 type IndexerAssertionParams struct {
-	Signer          TxSigner
-	ConsensusPubKey string
-	DelegateAddress string
-	SourceChain     string
-	SourceChainID   uint64
-	AssertionID     string
+	Signer TxSigner
 
-	// DelegateDigest is the 32-byte hash that the delegate signed on the source chain.
-	DelegateDigest []byte
-	// DelegateSignature is the 65-byte secp256k1 r‖s‖v signature over DelegateDigest.
-	DelegateSignature []byte
+	SourceChain        string
+	SourceChainID      uint64
+	ValidatorPubkey    []byte
+	AssertionAuthority []byte
+	Nonce              uint64
+	ChainSpecific      []byte
+
+	OperatorAddress string
+	PayoutAddress   string
 
 	// Optional per-call override.
 	MinGasPrice string
@@ -35,14 +36,15 @@ func AddIndexerAssertion(
 	p IndexerAssertionParams,
 ) (*sdk.TxResponse, error) {
 	msg := &indexertypes.MsgIndexerAssertion{
-		Signer:            p.Signer.GetAccAddress(),
-		ConsensusPubKey:   p.ConsensusPubKey,
-		DelegateAddress:   p.DelegateAddress,
-		SourceChain:       p.SourceChain,
-		SourceChainId:     p.SourceChainID,
-		AssertionId:       p.AssertionID,
-		DelegateDigest:    p.DelegateDigest,
-		DelegateSignature: p.DelegateSignature,
+		Signer:             p.Signer.GetAccAddress(),
+		SourceChain:        p.SourceChain,
+		SourceChainId:      p.SourceChainID,
+		ValidatorPubkey:    p.ValidatorPubkey,
+		AssertionAuthority: p.AssertionAuthority,
+		Nonce:              p.Nonce,
+		ChainSpecific:      p.ChainSpecific,
+		OperatorAddress:    p.OperatorAddress,
+		PayoutAddress:      p.PayoutAddress,
 	}
 
 	if err := msg.ValidateBasic(); err != nil {

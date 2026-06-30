@@ -6,20 +6,23 @@ import "gogoproto/gogo.proto";
 
 option go_package = "github.com/shinzonetwork/shinzohub/x/indexer/types";
 
-// Indexer represents a registered indexer entity.
-message Indexer {
-  string address           = 1;
-  string did               = 2;
-  string connection_string = 3;
-  string source_chain      = 4;
-  uint64 source_chain_id   = 5;
+message PendingClaim {
+  string operator_address = 1;
+  string connection_string = 2;
 }
 
-// IndexerAssertion stores the assertion record for an indexer.
-message IndexerAssertion {
-  string consensus_pub_key  = 1;
-  string delegate_address   = 2;
-  string source_chain       = 3;
-  uint64 source_chain_id    = 4;
-  string assertion_id       = 5;
+message Indexer {
+  string source_chain = 1;
+  uint64 source_chain_id = 2;
+  bytes validator_pubkey = 3;
+  bytes assertion_authority = 4;
+  uint64 nonce = 5;
+  bytes chain_specific = 6;
+
+  string operator_address = 7;
+  string payout_address = 8;
+
+  bool registered = 9;
+  string did = 10;
+  string connection_string = 11;
 }

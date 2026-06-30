@@ -153,6 +153,88 @@ func (k Keeper) SendICASetRelationship(ctx sdk.Context, did string, group string
 	return seq, portID, channelID, nil
 }
 
+func (k Keeper) SendICASetAndDeleteRelationship(
+	ctx sdk.Context,
+	newDid string,
+	prevDid string,
+	group string,
+	requestor string,
+) (seq uint64, portID, channelID string, err error) {
+	if prevDid == "" || prevDid == newDid {
+		return 0, "", "", fmt.Errorf("SendICASetAndDeleteRelationship: prevDid must be non-empty and different from newDid; use SendICASetRelationship for first-time registrations")
+	}
+
+	connectionID := k.GetControllerConnectionID(ctx)
+	if connectionID == "" {
+		return 0, "", "", fmt.Errorf("no connection ID set in module state")
+	}
+	portID = fmt.Sprintf("icacontroller-%s", types.ModuleAddress.String())
+
+	addr, _ := k.IcaCtrlKeeper.GetInterchainAccountAddress(ctx, connectionID, portID)
+	if addr == "" {
+		return 0, "", "", fmt.Errorf("ICA address not found for portID %s on connection %s", portID, connectionID)
+	}
+
+	channelID, hasChannel := k.IcaCtrlKeeper.GetActiveChannelID(ctx, connectionID, portID)
+	if !hasChannel || channelID == "" {
+		return 0, "", "", fmt.Errorf("no active ICA channel for portID %s on connection %s", portID, connectionID)
+	}
+
+	policyId := k.GetPolicyId(ctx)
+	if policyId == "" {
+		return 0, "", "", fmt.Errorf("no policy ID set in module state")
+	}
+
+	deleteCmd := acptypes.NewMsgDirectPolicyCmd(
+		addr,
+		policyId,
+		acptypes.NewDeleteRelationshipCmd(coretypes.NewActorRelationship("group", group, "guest", prevDid)),
+	)
+	anyDel, err := codectypes.NewAnyWithValue(deleteCmd)
+	if err != nil {
+		return 0, "", "", err
+	}
+
+	setCmd := acptypes.NewMsgDirectPolicyCmd(
+		addr,
+		policyId,
+		acptypes.NewSetRelationshipCmd(coretypes.NewActorRelationship("group", group, "guest", newDid)),
+	)
+	anySet, err := codectypes.NewAnyWithValue(setCmd)
+	if err != nil {
+		return 0, "", "", err
+	}
+
+	cosmosTx := &icatypes.CosmosTx{Messages: []*codectypes.Any{anyDel, anySet}}
+	bz, err := gogoproto.Marshal(cosmosTx)
+	if err != nil {
+		return 0, "", "", err
+	}
+
+	packetData := icatypes.InterchainAccountPacketData{
+		Type: icatypes.EXECUTE_TX,
+		Data: bz,
+		Memo: "",
+	}
+
+	timeout := uint64(ctx.BlockTime().Add(5 * time.Minute).UnixNano())
+
+	seq, err = k.IcaCtrlKeeper.SendTx(ctx, connectionID, portID, packetData, timeout)
+	if err != nil {
+		return 0, "", "", err
+	}
+
+	meta := &types.SetRelationshipMeta{Did: newDid, Group: group}
+	metaBz, _ := k.cdc.Marshal(meta)
+	req := NewPendingICARequest(portID, channelID, seq, types.RequestKind_REQUEST_KIND_SET_RELATIONSHIP, requestor, ctx.BlockTime(), metaBz)
+	if err := k.SetPendingRequest(ctx, req); err != nil {
+		return 0, "", "", fmt.Errorf("record pending request: %w", err)
+	}
+
+	emitRequestPending(ctx, req)
+	return seq, portID, channelID, nil
+}
+
 func (k Keeper) RegisterObject(ctx sdk.Context, id string, requestor string) (seq uint64, portID, channelID string, err error) {
 	connectionID := k.GetControllerConnectionID(ctx)
 	if connectionID == "" {

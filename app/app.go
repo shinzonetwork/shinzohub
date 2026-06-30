@@ -785,13 +785,18 @@ func NewChainApp(
 		sourcehubtypes.RequestKind_REQUEST_KIND_REGISTER_OBJECT,
 		viewkeeper.NewAckCallback(app.ViewKeeper),
 	)
-	app.SourcehubKeeper.RegisterAckCallback(
-		sourcehubtypes.RequestKind_REQUEST_KIND_SET_RELATIONSHIP,
-		indexerkeeper.NewAckCallback(app.IndexerKeeper),
-	)
+	// Host and indexer both register for SET_RELATIONSHIP. On ack, every callback
+	// for the kind is invoked in registration order, but each dispatches only on
+	// its own relationship group (host checks "host", indexer checks "indexer")
+	// and no-ops otherwise. The groups are disjoint, so the two are mutually
+	// exclusive and this registration order does not affect behavior.
 	app.SourcehubKeeper.RegisterAckCallback(
 		sourcehubtypes.RequestKind_REQUEST_KIND_SET_RELATIONSHIP,
 		hostkeeper.NewAckCallback(app.HostKeeper),
+	)
+	app.SourcehubKeeper.RegisterAckCallback(
+		sourcehubtypes.RequestKind_REQUEST_KIND_SET_RELATIONSHIP,
+		indexerkeeper.NewAckCallback(app.IndexerKeeper),
 	)
 	app.SourcehubKeeper.RegisterAckCallback(
 		sourcehubtypes.RequestKind_REQUEST_KIND_REGISTER_SHINZO_POLICY,

@@ -4,35 +4,49 @@ const (
 	ModuleName = "indexer"
 	StoreKey   = ModuleName
 
-	// IndexerPrefix is the KVStore prefix for indexer records.
-	// Key format: indexer/<bech32_address> → Indexer proto bytes
-	IndexerPrefix = "indexer/"
+	IndexerByValidatorPrefix = "indexer/"
+	AddrIndexPrefix          = "addr_idx/"
+	PendingClaimPrefix       = "pending_claim/"
+	IndexerCountKey          = "indexer_count"
 
-	// IndexerCountKey stores the total number of registered indexers.
-	IndexerCountKey = "indexer_count"
+	// GroupIndexerName is the ACP relationship group indexers are registered
+	// under on sourcehub. It is written when firing the SetRelationship ICA and
+	// read back when the ack lands, so both sides must use this constant to stay
+	// in sync.
+	GroupIndexerName = "indexer"
 
-	// AssertionPrefix is the KVStore prefix for indexer assertions.
-	// Key format: assertion/<delegate>:<sourceChain>:<sourceChainId> → IndexerAssertion proto bytes
-	AssertionPrefix = "assertion/"
+	// MaxValidatorPubkeyLen bounds the validator pubkey size. The pubkey becomes
+	// part of a store key, so an unbounded value would bloat state. The cap is
+	// chain-agnostic and generous on purpose — source chains use different key
+	// formats (secp256k1 uncompressed = 65B, ed25519 = 32B, BLS = 96B) — so this
+	// is an anti-bloat guard, not a format check.
+	MaxValidatorPubkeyLen = 128
 
-	// AddrDIDPrefix stores the addr→DID mapping.
-	AddrDIDPrefix = "addr_did/"
-
-	// DIDAddrPrefix stores the DID→addr mapping.
-	DIDAddrPrefix = "did_addr/"
-
-	PendingIndexerPrefix = "pending_indexer/"
-	PendingAddrDIDPrefix = "pending_addr_did/"
-	PendingDIDAddrPrefix = "pending_did_addr/"
+	// MaxChainSpecificLen bounds the opaque per-chain audit bytes carried on an
+	// assertion.
+	MaxChainSpecificLen = 4096
 )
 
 const (
-	EventTypeIndexerPending              = "indexer.indexer_pending"
-	EventTypeIndexerRegistered           = "indexer.indexer_registered"
-	EventTypeIndexerRegistrationFailed   = "indexer.indexer_registration_failed"
-	EventTypeIndexerRegistrationTimedOut = "indexer.indexer_registration_timed_out"
+	EventTypeIndexerAsserted           = "indexer.indexer_asserted"
+	EventTypeIndexerSuperseded         = "indexer.indexer_superseded"
+	EventTypeIndexerPayoutUpdated      = "indexer.indexer_payout_updated"
+	EventTypeIndexerRevoked            = "indexer.indexer_revoked"
+	EventTypeIndexerPending            = "indexer.indexer_pending"
+	EventTypeIndexerRegistered         = "indexer.indexer_registered"
+	EventTypeIndexerRegistrationFailed = "indexer.indexer_registration_failed"
 
-	AttrKeyAddress = "address"
-	AttrKeyDID     = "did"
-	AttrKeyError   = "error"
+	AttrKeySourceChain      = "source_chain"
+	AttrKeySourceChainID    = "source_chain_id"
+	AttrKeyValidatorPubkey  = "validator_pubkey"
+	AttrKeyOperatorAddress  = "operator_address"
+	AttrKeyOldOperator      = "old_operator_address"
+	AttrKeyNewOperator      = "new_operator_address"
+	AttrKeyPayoutAddress    = "payout_address"
+	AttrKeyNonce            = "nonce"
+	AttrKeyOldNonce         = "old_nonce"
+	AttrKeyNewNonce         = "new_nonce"
+	AttrKeyDID              = "did"
+	AttrKeyConnectionString = "connection_string"
+	AttrKeyReason           = "reason"
 )

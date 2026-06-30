@@ -20,15 +20,17 @@ const _ = grpc.SupportPackageIsVersion9
 
 const (
 	Msg_AddIndexerAssertion_FullMethodName = "/shinzonetwork.indexer.v1.Msg/AddIndexerAssertion"
+	Msg_SetPayout_FullMethodName           = "/shinzonetwork.indexer.v1.Msg/SetPayout"
+	Msg_RevokeIndexer_FullMethodName       = "/shinzonetwork.indexer.v1.Msg/RevokeIndexer"
 )
 
 // MsgClient is the client API for Msg service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
-//
-// Msg defines the indexer module Msg service.
 type MsgClient interface {
 	AddIndexerAssertion(ctx context.Context, in *MsgIndexerAssertion, opts ...grpc.CallOption) (*MsgIndexerAssertionResponse, error)
+	SetPayout(ctx context.Context, in *MsgSetPayout, opts ...grpc.CallOption) (*MsgSetPayoutResponse, error)
+	RevokeIndexer(ctx context.Context, in *MsgRevokeIndexer, opts ...grpc.CallOption) (*MsgRevokeIndexerResponse, error)
 }
 
 type msgClient struct {
@@ -49,13 +51,33 @@ func (c *msgClient) AddIndexerAssertion(ctx context.Context, in *MsgIndexerAsser
 	return out, nil
 }
 
+func (c *msgClient) SetPayout(ctx context.Context, in *MsgSetPayout, opts ...grpc.CallOption) (*MsgSetPayoutResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(MsgSetPayoutResponse)
+	err := c.cc.Invoke(ctx, Msg_SetPayout_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *msgClient) RevokeIndexer(ctx context.Context, in *MsgRevokeIndexer, opts ...grpc.CallOption) (*MsgRevokeIndexerResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(MsgRevokeIndexerResponse)
+	err := c.cc.Invoke(ctx, Msg_RevokeIndexer_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // MsgServer is the server API for Msg service.
 // All implementations must embed UnimplementedMsgServer
 // for forward compatibility.
-//
-// Msg defines the indexer module Msg service.
 type MsgServer interface {
 	AddIndexerAssertion(context.Context, *MsgIndexerAssertion) (*MsgIndexerAssertionResponse, error)
+	SetPayout(context.Context, *MsgSetPayout) (*MsgSetPayoutResponse, error)
+	RevokeIndexer(context.Context, *MsgRevokeIndexer) (*MsgRevokeIndexerResponse, error)
 	mustEmbedUnimplementedMsgServer()
 }
 
@@ -68,6 +90,12 @@ type UnimplementedMsgServer struct{}
 
 func (UnimplementedMsgServer) AddIndexerAssertion(context.Context, *MsgIndexerAssertion) (*MsgIndexerAssertionResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method AddIndexerAssertion not implemented")
+}
+func (UnimplementedMsgServer) SetPayout(context.Context, *MsgSetPayout) (*MsgSetPayoutResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SetPayout not implemented")
+}
+func (UnimplementedMsgServer) RevokeIndexer(context.Context, *MsgRevokeIndexer) (*MsgRevokeIndexerResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method RevokeIndexer not implemented")
 }
 func (UnimplementedMsgServer) mustEmbedUnimplementedMsgServer() {}
 func (UnimplementedMsgServer) testEmbeddedByValue()             {}
@@ -108,6 +136,42 @@ func _Msg_AddIndexerAssertion_Handler(srv interface{}, ctx context.Context, dec 
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Msg_SetPayout_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(MsgSetPayout)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MsgServer).SetPayout(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Msg_SetPayout_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MsgServer).SetPayout(ctx, req.(*MsgSetPayout))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Msg_RevokeIndexer_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(MsgRevokeIndexer)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MsgServer).RevokeIndexer(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Msg_RevokeIndexer_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MsgServer).RevokeIndexer(ctx, req.(*MsgRevokeIndexer))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Msg_ServiceDesc is the grpc.ServiceDesc for Msg service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -118,6 +182,14 @@ var Msg_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "AddIndexerAssertion",
 			Handler:    _Msg_AddIndexerAssertion_Handler,
+		},
+		{
+			MethodName: "SetPayout",
+			Handler:    _Msg_SetPayout_Handler,
+		},
+		{
+			MethodName: "RevokeIndexer",
+			Handler:    _Msg_RevokeIndexer_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
