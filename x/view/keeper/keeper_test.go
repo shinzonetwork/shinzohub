@@ -18,9 +18,9 @@ import (
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
 
+	sourcehubtypes "github.com/shinzonetwork/shinzohub/x/sourcehub/types"
 	"github.com/shinzonetwork/shinzohub/x/view/keeper"
 	"github.com/shinzonetwork/shinzohub/x/view/types"
-	sourcehubtypes "github.com/shinzonetwork/shinzohub/x/sourcehub/types"
 )
 
 // Records the call and can inject an error to test pending rollback.
@@ -149,6 +149,38 @@ func (s *KeeperTestSuite) TestRegisterView_RejectsMalformedCreator() {
 	s.Equal(0, s.mockSourcehub.calls)
 	_, found, _ := s.keeper.GetPendingView(s.ctx, sampleAddress)
 	s.False(found)
+}
+
+// Re-registering the same address while PENDING is an idempotent no-op: no second
+// ICA fires (a duplicate that fails could delete the pending row and strand the
+// view the first ICA registered).
+func (s *KeeperTestSuite) TestRegisterView_WhilePending_IsIdempotent() {
+	_, err := s.keeper.RegisterView(s.ctx, sampleName, sampleCreator, sampleAddress, sampleBundle)
+	s.Require().NoError(err)
+	s.Equal(1, s.mockSourcehub.calls)
+
+	view, err := s.keeper.RegisterView(s.ctx, sampleName, sampleCreator, sampleAddress, sampleBundle)
+	s.Require().NoError(err)
+	s.Equal(sampleName, view.Name)
+	s.Equal(1, s.mockSourcehub.calls, "duplicate registration must not fire a second ICA")
+}
+
+// Re-registering an already-REGISTERED address is a no-op: returns the existing
+// view, fires no second ICA, leaves the count and pending store untouched.
+func (s *KeeperTestSuite) TestRegisterView_AfterRegistered_IsNoOp() {
+	_, err := s.keeper.RegisterView(s.ctx, sampleName, sampleCreator, sampleAddress, sampleBundle)
+	s.Require().NoError(err)
+	s.fireAck(sourcehubtypes.RequestStatus_REQUEST_STATUS_SUCCESS, "")
+	s.Require().Equal(uint64(1), s.keeper.GetViewCount(s.ctx))
+
+	view, err := s.keeper.RegisterView(s.ctx, sampleName, sampleCreator, sampleAddress, sampleBundle)
+	s.Require().NoError(err)
+	s.Equal(sampleName, view.Name)
+	s.Equal(1, s.mockSourcehub.calls, "re-register of a final view must not fire a second ICA")
+	s.Equal(uint64(1), s.keeper.GetViewCount(s.ctx), "count must not change")
+
+	_, found, _ := s.keeper.GetPendingView(s.ctx, sampleAddress)
+	s.False(found, "re-register must not write a stray pending row")
 }
 
 // SUCCESS ack promotes pending → final, bumps count, fires view_registered.
