@@ -11,4 +11,5 @@ message Host {
   string address           = 1;
   string did               = 2;
   string connection_string = 3;
+  string endpoint_address  = 4;
 }

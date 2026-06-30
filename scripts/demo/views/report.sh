@@ -47,22 +47,19 @@ sleep 3
 MESSAGE_RAW="entity-registration-test-nonce"
 echo -n "$MESSAGE_RAW" > "$TMP/msg.bin"
 
-# Ed25519 peer key
-openssl genpkey -algorithm Ed25519 -out "$TMP/peer.pem" 2>/dev/null
-PEER_PUB="0x$(openssl pkey -in "$TMP/peer.pem" -pubout -outform DER 2>/dev/null | tail -c 32 | xxd -p | tr -d '\n')"
-PEER_SIG="0x$(openssl pkeyutl -sign -inkey "$TMP/peer.pem" -rawin -in "$TMP/msg.bin" | xxd -p | tr -d '\n')"
-
 # secp256k1 node identity key
 openssl ecparam -name secp256k1 -genkey -noout -out "$TMP/node.pem" 2>/dev/null
 NODE_PUB="0x$(openssl ec -in "$TMP/node.pem" -pubout -outform DER 2>/dev/null | tail -c 65 | xxd -p | tr -d '\n')"
 NODE_SIG="0x$(openssl dgst -sha256 -sign "$TMP/node.pem" "$TMP/msg.bin" | xxd -p | tr -d '\n')"
 
 MESSAGE="0x$(echo -n "$MESSAGE_RAW" | xxd -p | tr -d '\n')"
+CONNECTION_STRING="${CONNECTION_STRING:-192.168.1.1:8080}"
+ENDPOINT_ADDRESS="${ENDPOINT_ADDRESS:-https://192.168.1.1/api/v0/graphql}"
 
 echo "==> Registering host..."
 TX_RESULT=$(cast send "$HOST_REGISTRY" \
-  "register(bytes,bytes,bytes,bytes,bytes)" \
-  "$PEER_PUB" "$PEER_SIG" "$NODE_PUB" "$NODE_SIG" "$MESSAGE" \
+  "register(bytes,bytes,bytes,string,string)" \
+  "$NODE_PUB" "$NODE_SIG" "$MESSAGE" "$CONNECTION_STRING" "$ENDPOINT_ADDRESS" \
   --private-key "$PRIVATE_KEY" \
   --rpc-url "$RPC_URL" \
   --gas-limit 1000000 \

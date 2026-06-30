@@ -249,10 +249,39 @@ func (k Keeper) RevokeIndexer(ctx sdk.Context, msg *types.MsgRevokeIndexer) erro
 
 	store.Delete(rowKey)
 	store.Delete(addrIndexKey(row.OperatorAddress))
+	k.deletePendingClaimsByOperator(ctx, row.OperatorAddress)
 	k.decrementCount(ctx)
 
 	emitRevoked(ctx, &row, msg.Nonce)
 	return nil
+}
+
+// deletePendingClaimsByOperator removes any in-flight pending claims belonging to
+// operatorAddress. Pending claims are keyed by DID, not operator, so a claim from
+// an in-flight registration ICA cannot be deleted by key alone — we scan the
+// prefix and drop every entry for this operator. This keeps revoke deterministic:
+// without it an orphaned claim would linger in state until (and only if) its stale
+// ack eventually arrives.
+func (k Keeper) deletePendingClaimsByOperator(ctx sdk.Context, operatorAddress string) {
+	store := runtime.KVStoreAdapter(k.storeService.OpenKVStore(ctx))
+	claimStore := prefix.NewStore(store, []byte(types.PendingClaimPrefix))
+
+	var staleDIDs [][]byte
+	it := claimStore.Iterator(nil, nil)
+	defer it.Close()
+	for ; it.Valid(); it.Next() {
+		var claim types.PendingClaim
+		if err := k.cdc.Unmarshal(it.Value(), &claim); err != nil {
+			continue
+		}
+		if claim.OperatorAddress == operatorAddress {
+			staleDIDs = append(staleDIDs, append([]byte(nil), it.Key()...))
+		}
+	}
+
+	for _, did := range staleDIDs {
+		claimStore.Delete(did)
+	}
 }
 
 type RegisterResult struct {
@@ -319,12 +348,12 @@ func (k Keeper) RegisterIndexer(
 	store.Set(pendingClaimKey(did), claimBz)
 
 	if row.Did == "" {
-		if _, _, _, err := k.sourcehubKeeper.SendICASetRelationship(ctx, did, "indexer", operatorAddress); err != nil {
+		if _, _, _, err := k.sourcehubKeeper.SendICASetRelationship(ctx, did, types.GroupIndexerName, operatorAddress); err != nil {
 			store.Delete(pendingClaimKey(did))
 			return RegisterResult{}, err
 		}
 	} else {
-		if _, _, _, err := k.sourcehubKeeper.SendICASetAndDeleteRelationship(ctx, did, row.Did, "indexer", operatorAddress); err != nil {
+		if _, _, _, err := k.sourcehubKeeper.SendICASetAndDeleteRelationship(ctx, did, row.Did, types.GroupIndexerName, operatorAddress); err != nil {
 			store.Delete(pendingClaimKey(did))
 			return RegisterResult{}, err
 		}
