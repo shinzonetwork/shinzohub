@@ -2,74 +2,58 @@ package keeper_test
 
 import (
 	"encoding/base64"
-	"encoding/hex"
-	"fmt"
 	"testing"
 
+	cosmoslog "cosmossdk.io/log"
+	storetypes2 "cosmossdk.io/store"
+	"cosmossdk.io/store/metrics"
 	storetypes "cosmossdk.io/store/types"
+	cmtproto "github.com/cometbft/cometbft/proto/tendermint/types"
+	dbm "github.com/cosmos/cosmos-db"
 	"github.com/cosmos/cosmos-sdk/codec"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	"github.com/cosmos/cosmos-sdk/runtime"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/query"
-	"github.com/ethereum/go-ethereum/crypto"
-	viewbundle "github.com/shinzonetwork/viewbundle-go"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
-
-	cosmoslog "cosmossdk.io/log"
-	storetypes2 "cosmossdk.io/store"
-	"cosmossdk.io/store/metrics"
-	cmtproto "github.com/cometbft/cometbft/proto/tendermint/types"
-	dbm "github.com/cosmos/cosmos-db"
 
 	sourcehubtypes "github.com/shinzonetwork/shinzohub/x/sourcehub/types"
 	"github.com/shinzonetwork/shinzohub/x/view/keeper"
 	"github.com/shinzonetwork/shinzohub/x/view/types"
 )
 
-type mockHostKeeper struct{}
-
-func (m *mockHostKeeper) IsRegisteredHost(_ sdk.Context, _ []byte) bool {
-	return false
-}
-
+// Records the call and can inject an error to test pending rollback.
 type mockSourcehubKeeper struct {
-	called bool
-	lastID string
-	err    error
+	calls       int
+	lastID      string
+	lastCreator string
+	err         error
 }
 
-func (m *mockSourcehubKeeper) RegisterObject(_ sdk.Context, id string, _ string) (uint64, string, string, error) {
-	m.called = true
+func (m *mockSourcehubKeeper) RegisterObject(_ sdk.Context, id, requestor string) (uint64, string, string, error) {
+	m.calls++
 	m.lastID = id
-	return 0, "", "", m.err
+	m.lastCreator = requestor
+	if m.err != nil {
+		return 0, "", "", m.err
+	}
+	return 42, "icacontroller-test", "channel-0", nil
 }
 
 type KeeperTestSuite struct {
 	suite.Suite
 	ctx           sdk.Context
 	keeper        keeper.Keeper
-	mockHost      *mockHostKeeper
 	mockSourcehub *mockSourcehubKeeper
-	cdc           codec.BinaryCodec
+	cdc           codec.Codec
 }
 
-func (s *KeeperTestSuite) simulateViewAck(viewId string) {
-	meta := &sourcehubtypes.RegisterObjectMeta{ResourceName: sourcehubtypes.ViewResourceName, ObjectId: viewId}
-	metaBz, err := s.cdc.Marshal(meta)
-	s.Require().NoError(err)
-	cb := keeper.NewAckCallback(s.keeper)
-	err = cb.OnPacketAck(s.ctx, sourcehubtypes.PendingICARequest{
-		Kind:   sourcehubtypes.RequestKind_REQUEST_KIND_REGISTER_OBJECT,
-		Meta:   metaBz,
-		Status: sourcehubtypes.RequestStatus_REQUEST_STATUS_SUCCESS,
-	})
-	s.Require().NoError(err)
+func TestKeeperTestSuite(t *testing.T) {
+	suite.Run(t, new(KeeperTestSuite))
 }
 
 func (s *KeeperTestSuite) SetupTest() {
-	s.mockHost = &mockHostKeeper{}
 	s.mockSourcehub = &mockSourcehubKeeper{}
 
 	storeKey := storetypes.NewKVStoreKey(types.StoreKey)
@@ -82,467 +66,260 @@ func (s *KeeperTestSuite) SetupTest() {
 	cdc := codec.NewProtoCodec(registry)
 	s.cdc = cdc
 
-	storeService := runtime.NewKVStoreService(storeKey)
-
 	s.keeper = keeper.NewKeeper(
 		cdc,
-		storeService,
-		s.mockHost,
+		runtime.NewKVStoreService(storeKey),
 		s.mockSourcehub,
-		"authority",
 	)
-
-	s.ctx = sdk.NewContext(stateStore, cmtproto.Header{Height: 10}, false, cosmoslog.NewNopLogger())
+	s.ctx = sdk.NewContext(stateStore, cmtproto.Header{Height: 7}, false, cosmoslog.NewNopLogger())
 }
 
-func TestKeeperTestSuite(t *testing.T) {
-	suite.Run(t, new(KeeperTestSuite))
-}
+const (
+	sampleAddress = "0x95C3Ad461380cAF7b6Fb53Bc2B1ca42808cd031C"
+	sampleCreator = "0x939D585A4370c8Cde88CB4C34Fe751c41cAaff90"
+	sampleName    = "View651f73f5"
+)
 
-func mustBuildViewBundle(t require.TestingT, query, sdl string, lenses ...viewbundle.Lens) []byte {
-	bundle, err := viewbundle.NewBundler().BundleView(viewbundle.View{
-		Query: query,
-		Sdl:   sdl,
-		Transform: viewbundle.Transform{
-			Lenses: lenses,
-		},
-	})
-	require.NoError(t, err)
-	return bundle
-}
+var sampleBundle = []byte("VWL\x01<viewbundle bytes>")
 
-func testLens(wasm []byte, args string) viewbundle.Lens {
-	return viewbundle.Lens{
-		Path:      base64.StdEncoding.EncodeToString(wasm),
-		Arguments: args,
+func findEvent(ctx sdk.Context, t string) *sdk.Event {
+	for _, e := range ctx.EventManager().Events() {
+		if e.Type == t {
+			ev := e
+			return &ev
+		}
 	}
+	return nil
 }
 
-func expectedShortLensHash(wasm []byte) string {
-	hash := crypto.Keccak256(wasm)
-	return "0x" + hex.EncodeToString(hash[:16])
+func attr(ev *sdk.Event, key string) string {
+	for _, a := range ev.Attributes {
+		if a.Key == key {
+			return a.Value
+		}
+	}
+	return ""
 }
 
-func (s *KeeperTestSuite) TestRegisterView_Success() {
-	err := s.keeper.RegisterView(s.ctx, "TestView_0xabc", "TestView", "cosmos1creator", "0xabc", []byte("viewdata"))
+// Happy path: pending entry written, sourcehub called, view_pending emitted.
+func (s *KeeperTestSuite) TestRegisterView_WritesPendingAndCallsSourcehub() {
+	view, err := s.keeper.RegisterView(s.ctx, sampleName, sampleCreator, sampleAddress, sampleBundle)
 	s.Require().NoError(err)
-	s.Require().True(s.mockSourcehub.called)
-	s.Require().Equal("TestView_0xabc", s.mockSourcehub.lastID)
+	s.Equal(sampleName, view.Name)
+	s.Equal(uint64(7), view.Height)
 
-	_, canonicalFound, _ := s.keeper.GetView(s.ctx, "0xabc")
-	s.Require().False(canonicalFound)
-	pending, pendingFound, err := s.keeper.GetPendingView(s.ctx, "TestView_0xabc")
-	s.Require().NoError(err)
-	s.Require().True(pendingFound)
-	s.Require().Equal("TestView", pending.Name)
+	s.Equal(1, s.mockSourcehub.calls)
+	s.Equal(sampleAddress, s.mockSourcehub.lastID)
+	s.NotEmpty(s.mockSourcehub.lastCreator, "creator should be converted to bech32 before sourcehub call")
 
-	s.simulateViewAck("TestView_0xabc")
-
-	view, found, err := s.keeper.GetView(s.ctx, "0xabc")
+	pending, found, err := s.keeper.GetPendingView(s.ctx, sampleAddress)
 	s.Require().NoError(err)
 	s.Require().True(found)
-	s.Require().Equal("TestView", view.Name)
-	s.Require().Equal("cosmos1creator", view.Creator)
-	s.Require().Equal("0xabc", view.ContractAddress)
-	s.Require().Equal([]byte("viewdata"), view.Data)
-	s.Require().Equal(uint64(10), view.Height)
+	s.Equal(sampleName, pending.Name)
+
+	_, found, err = s.keeper.GetView(s.ctx, sampleAddress)
+	s.Require().NoError(err)
+	s.False(found, "final store should be empty until ack")
+
+	ev := findEvent(s.ctx, types.EventTypeViewPending)
+	s.Require().NotNil(ev)
+	s.Equal(sampleAddress, attr(ev, types.AttrKeyAddress))
+	s.Equal(sampleCreator, attr(ev, types.AttrKeyCreator))
+	s.Equal(sampleName, attr(ev, types.AttrKeyName))
+	s.Equal(base64.StdEncoding.EncodeToString(sampleBundle), attr(ev, types.AttrKeyData))
 }
 
-func (s *KeeperTestSuite) TestRegisterView_SourcehubFailure() {
-	s.mockSourcehub.err = fmt.Errorf("sourcehub down")
-	err := s.keeper.RegisterView(s.ctx, "id1", "View1", "cosmos1x", "0x1", []byte("data"))
+// Sourcehub error → pending entry rolled back so tx reverts cleanly.
+func (s *KeeperTestSuite) TestRegisterView_RolledBackWhenSourcehubFails() {
+	s.mockSourcehub.err = sdkErr("ICA channel not ready")
+
+	_, err := s.keeper.RegisterView(s.ctx, sampleName, sampleCreator, sampleAddress, sampleBundle)
 	s.Require().Error(err)
-	s.Require().Contains(err.Error(), "sourcehub down")
 
-	_, found, _ := s.keeper.GetView(s.ctx, "0x1")
-	s.Require().False(found)
+	_, found, _ := s.keeper.GetPendingView(s.ctx, sampleAddress)
+	s.False(found)
+	s.Equal(uint64(0), s.keeper.GetViewCount(s.ctx))
 }
 
-func (s *KeeperTestSuite) TestSetView_GetView() {
-	view := types.View{
-		Name:            "MyView",
-		Creator:         "cosmos1abc",
-		ContractAddress: "0xdeadbeef",
-		Data:            []byte("payload"),
-		Height:          5,
-	}
-	err := s.keeper.SetView(s.ctx, view)
+// Non-hex creator is rejected before any side-effects.
+func (s *KeeperTestSuite) TestRegisterView_RejectsMalformedCreator() {
+	_, err := s.keeper.RegisterView(s.ctx, sampleName, "not-a-hex-address", sampleAddress, sampleBundle)
+	s.Require().Error(err)
+
+	s.Equal(0, s.mockSourcehub.calls)
+	_, found, _ := s.keeper.GetPendingView(s.ctx, sampleAddress)
+	s.False(found)
+}
+
+// Re-registering the same address while PENDING is an idempotent no-op: no second
+// ICA fires (a duplicate that fails could delete the pending row and strand the
+// view the first ICA registered).
+func (s *KeeperTestSuite) TestRegisterView_WhilePending_IsIdempotent() {
+	_, err := s.keeper.RegisterView(s.ctx, sampleName, sampleCreator, sampleAddress, sampleBundle)
+	s.Require().NoError(err)
+	s.Equal(1, s.mockSourcehub.calls)
+
+	view, err := s.keeper.RegisterView(s.ctx, sampleName, sampleCreator, sampleAddress, sampleBundle)
+	s.Require().NoError(err)
+	s.Equal(sampleName, view.Name)
+	s.Equal(1, s.mockSourcehub.calls, "duplicate registration must not fire a second ICA")
+}
+
+// Re-registering an already-REGISTERED address is a no-op: returns the existing
+// view, fires no second ICA, leaves the count and pending store untouched.
+func (s *KeeperTestSuite) TestRegisterView_AfterRegistered_IsNoOp() {
+	_, err := s.keeper.RegisterView(s.ctx, sampleName, sampleCreator, sampleAddress, sampleBundle)
+	s.Require().NoError(err)
+	s.fireAck(sourcehubtypes.RequestStatus_REQUEST_STATUS_SUCCESS, "")
+	s.Require().Equal(uint64(1), s.keeper.GetViewCount(s.ctx))
+
+	view, err := s.keeper.RegisterView(s.ctx, sampleName, sampleCreator, sampleAddress, sampleBundle)
+	s.Require().NoError(err)
+	s.Equal(sampleName, view.Name)
+	s.Equal(1, s.mockSourcehub.calls, "re-register of a final view must not fire a second ICA")
+	s.Equal(uint64(1), s.keeper.GetViewCount(s.ctx), "count must not change")
+
+	_, found, _ := s.keeper.GetPendingView(s.ctx, sampleAddress)
+	s.False(found, "re-register must not write a stray pending row")
+}
+
+// SUCCESS ack promotes pending → final, bumps count, fires view_registered.
+func (s *KeeperTestSuite) TestAckSuccess_PromotesPendingToFinal() {
+	_, err := s.keeper.RegisterView(s.ctx, sampleName, sampleCreator, sampleAddress, sampleBundle)
 	s.Require().NoError(err)
 
-	got, found, err := s.keeper.GetView(s.ctx, "0xdeadbeef")
+	s.fireAck(sourcehubtypes.RequestStatus_REQUEST_STATUS_SUCCESS, "")
+
+	_, found, _ := s.keeper.GetPendingView(s.ctx, sampleAddress)
+	s.False(found)
+
+	v, found, err := s.keeper.GetView(s.ctx, sampleAddress)
 	s.Require().NoError(err)
 	s.Require().True(found)
-	s.Require().Equal(view.Name, got.Name)
-	s.Require().Equal(view.Creator, got.Creator)
-	s.Require().Equal(view.Data, got.Data)
+	s.Equal(sampleName, v.Name)
+	s.Equal(sampleCreator, v.Creator)
+	s.Equal(uint64(1), s.keeper.GetViewCount(s.ctx))
+
+	ev := findEvent(s.ctx, types.EventTypeViewRegistered)
+	s.Require().NotNil(ev)
+	s.Equal(sampleAddress, attr(ev, types.AttrKeyAddress))
+	s.Equal(sampleCreator, attr(ev, types.AttrKeyCreator))
+	s.Equal(sampleName, attr(ev, types.AttrKeyName))
 }
 
-func (s *KeeperTestSuite) TestGetView_NotFound() {
-	_, found, err := s.keeper.GetView(s.ctx, "0xnotexist")
+// FAILURE ack drops pending and emits view_registration_failed with the error.
+func (s *KeeperTestSuite) TestAckFailure_DropsPending() {
+	_, err := s.keeper.RegisterView(s.ctx, sampleName, sampleCreator, sampleAddress, sampleBundle)
 	s.Require().NoError(err)
-	s.Require().False(found)
+
+	s.fireAck(sourcehubtypes.RequestStatus_REQUEST_STATUS_FAILURE, "policy rejected")
+
+	_, found, _ := s.keeper.GetPendingView(s.ctx, sampleAddress)
+	s.False(found)
+	_, found, _ = s.keeper.GetView(s.ctx, sampleAddress)
+	s.False(found)
+	s.Equal(uint64(0), s.keeper.GetViewCount(s.ctx))
+
+	ev := findEvent(s.ctx, types.EventTypeViewRegistrationFailed)
+	s.Require().NotNil(ev)
+	s.Equal("policy rejected", attr(ev, types.AttrKeyError))
 }
 
-func (s *KeeperTestSuite) TestGetViewByAddress_Alias() {
-	err := s.keeper.SetView(s.ctx, types.View{
-		Name:            "V1",
-		Creator:         "cosmos1x",
-		ContractAddress: "0x111",
+// TIMEOUT uses a distinct event so subscribers can tell it apart from failure.
+func (s *KeeperTestSuite) TestAckTimeout_DropsPending() {
+	_, err := s.keeper.RegisterView(s.ctx, sampleName, sampleCreator, sampleAddress, sampleBundle)
+	s.Require().NoError(err)
+
+	s.fireAck(sourcehubtypes.RequestStatus_REQUEST_STATUS_TIMEOUT, "packet timed out")
+
+	_, found, _ := s.keeper.GetPendingView(s.ctx, sampleAddress)
+	s.False(found)
+
+	s.NotNil(findEvent(s.ctx, types.EventTypeViewRegistrationTimedOut))
+	s.Nil(findEvent(s.ctx, types.EventTypeViewRegistrationFailed))
+}
+
+// REGISTER_OBJECT acks for other resources (e.g. "host") must be no-ops.
+func (s *KeeperTestSuite) TestAck_IgnoresOtherResources() {
+	_, err := s.keeper.RegisterView(s.ctx, sampleName, sampleCreator, sampleAddress, sampleBundle)
+	s.Require().NoError(err)
+
+	meta := &sourcehubtypes.RegisterObjectMeta{ResourceName: "host", ObjectId: "irrelevant"}
+	metaBz, err := s.cdc.Marshal(meta)
+	s.Require().NoError(err)
+
+	err = keeper.NewAckCallback(s.keeper).OnPacketAck(s.ctx, sourcehubtypes.PendingICARequest{
+		Kind:   sourcehubtypes.RequestKind_REQUEST_KIND_REGISTER_OBJECT,
+		Meta:   metaBz,
+		Status: sourcehubtypes.RequestStatus_REQUEST_STATUS_SUCCESS,
 	})
 	s.Require().NoError(err)
 
-	v1, f1, e1 := s.keeper.GetView(s.ctx, "0x111")
-	v2, f2, e2 := s.keeper.GetViewByAddress(s.ctx, "0x111")
-	s.Require().NoError(e1)
-	s.Require().NoError(e2)
-	s.Require().Equal(f1, f2)
-	s.Require().Equal(v1, v2)
+	_, found, _ := s.keeper.GetPendingView(s.ctx, sampleAddress)
+	s.True(found)
 }
 
-func (s *KeeperTestSuite) TestSetView_UpdateDoesNotIncrementCount() {
-	err := s.keeper.SetView(s.ctx, types.View{ContractAddress: "0x1", Name: "V1"})
+// Late/replay ack with no pending entry is a silent no-op.
+func (s *KeeperTestSuite) TestAck_NoPendingView_IsNoop() {
+	err := s.fireAckFor("0xdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef",
+		sourcehubtypes.RequestStatus_REQUEST_STATUS_SUCCESS, "")
 	s.Require().NoError(err)
-	s.Require().Equal(uint64(1), s.keeper.GetViewCount(s.ctx))
+}
 
-	err = s.keeper.SetView(s.ctx, types.View{ContractAddress: "0x1", Name: "V1Updated"})
+// List/count reflect only finalized views — pending is an internal staging.
+func (s *KeeperTestSuite) TestListAndCount_ExcludePending() {
+	addrA := "0xaaaa000000000000000000000000000000000000"
+	_, err := s.keeper.RegisterView(s.ctx, "ViewA", sampleCreator, addrA, sampleBundle)
 	s.Require().NoError(err)
-	s.Require().Equal(uint64(1), s.keeper.GetViewCount(s.ctx))
-}
+	s.fireAckFor(addrA, sourcehubtypes.RequestStatus_REQUEST_STATUS_SUCCESS, "")
 
-func (s *KeeperTestSuite) TestGetViewCount_Empty() {
-	s.Require().Equal(uint64(0), s.keeper.GetViewCount(s.ctx))
-}
-
-func (s *KeeperTestSuite) TestGetViewCount_AfterMultiple() {
-	for i := 0; i < 5; i++ {
-		err := s.keeper.SetView(s.ctx, types.View{
-			ContractAddress: fmt.Sprintf("0x%d", i),
-			Name:            fmt.Sprintf("V%d", i),
-		})
-		s.Require().NoError(err)
-	}
-	s.Require().Equal(uint64(5), s.keeper.GetViewCount(s.ctx))
-}
-
-func (s *KeeperTestSuite) TestGetAllViews_Empty() {
-	views, pageRes, err := s.keeper.GetAllViews(s.ctx, &query.PageRequest{})
+	addrB := "0xbbbb000000000000000000000000000000000000"
+	_, err = s.keeper.RegisterView(s.ctx, "ViewB", sampleCreator, addrB, sampleBundle)
 	s.Require().NoError(err)
-	s.Require().NotNil(pageRes)
-	s.Require().Empty(views)
-}
-
-func (s *KeeperTestSuite) TestGetAllViews_ReturnsAll() {
-	for i := 0; i < 3; i++ {
-		_ = s.keeper.SetView(s.ctx, types.View{
-			ContractAddress: fmt.Sprintf("0x%d", i),
-			Name:            fmt.Sprintf("View%d", i),
-			Creator:         "cosmos1x",
-		})
-	}
 
 	views, _, err := s.keeper.GetAllViews(s.ctx, &query.PageRequest{Limit: 100})
 	s.Require().NoError(err)
-	s.Require().Len(views, 3)
+	s.Require().Len(views, 1)
+	s.Equal("ViewA", views[0].Name)
+
+	s.Equal(uint64(1), s.keeper.GetViewCount(s.ctx))
 }
 
-func (s *KeeperTestSuite) TestGetAllViews_Pagination() {
-	for i := 0; i < 5; i++ {
-		_ = s.keeper.SetView(s.ctx, types.View{
-			ContractAddress: fmt.Sprintf("0x%d", i),
-			Name:            fmt.Sprintf("View%d", i),
-		})
-	}
-
-	views, pageRes, err := s.keeper.GetAllViews(s.ctx, &query.PageRequest{Limit: 2})
-	s.Require().NoError(err)
-	s.Require().Len(views, 2)
-	s.Require().NotNil(pageRes.NextKey)
-
-	views2, _, err := s.keeper.GetAllViews(s.ctx, &query.PageRequest{Key: pageRes.NextKey, Limit: 10})
-	s.Require().NoError(err)
-	s.Require().Len(views2, 3)
-}
-
-func (s *KeeperTestSuite) TestGenesis_InitExportRoundtrip() {
-	gs := types.GenesisState{
+// Genesis InitGenesis ↔ ExportGenesis is a faithful round-trip.
+func (s *KeeperTestSuite) TestGenesis_RoundTrip() {
+	in := &types.GenesisState{
 		Views: []types.View{
-			{Name: "V1", Creator: "cosmos1a", ContractAddress: "0x1", Data: []byte("d1"), Height: 1},
-			{Name: "V2", Creator: "cosmos1b", ContractAddress: "0x2", Data: []byte("d2"), Height: 2},
+			{Name: "A", Address: "0xaaaa000000000000000000000000000000000000", Creator: sampleCreator, Height: 1},
+			{Name: "B", Address: "0xbbbb000000000000000000000000000000000000", Creator: sampleCreator, Height: 2},
 		},
 	}
-
-	s.keeper.InitGenesis(s.ctx, gs)
-	s.Require().Equal(uint64(2), s.keeper.GetViewCount(s.ctx))
-
-	exported := s.keeper.ExportGenesis(s.ctx)
-	s.Require().Len(exported.Views, 2)
+	s.keeper.InitGenesis(s.ctx, *in)
+	out := s.keeper.ExportGenesis(s.ctx)
+	s.Require().Len(out.Views, 2)
+	s.Equal(uint64(2), s.keeper.GetViewCount(s.ctx))
 }
 
-func (s *KeeperTestSuite) TestQueryServer_Views() {
-	_ = s.keeper.SetView(s.ctx, types.View{ContractAddress: "0x1", Name: "V1", Creator: "c1", Height: 5})
-	_ = s.keeper.SetView(s.ctx, types.View{ContractAddress: "0x2", Name: "V2", Creator: "c2", Height: 15})
-
-	qs := keeper.NewQueryServerImpl(s.keeper)
-
-	resp, err := qs.Views(s.ctx, &types.QueryViewsRequest{
-		Pagination: &query.PageRequest{Limit: 100},
-	})
-	s.Require().NoError(err)
-	s.Require().Len(resp.Views, 2)
+func (s *KeeperTestSuite) fireAck(status sourcehubtypes.RequestStatus, errMsg string) {
+	s.Require().NoError(s.fireAckFor(sampleAddress, status, errMsg))
 }
 
-func (s *KeeperTestSuite) TestQueryServer_Views_SinceBlock() {
-	_ = s.keeper.SetView(s.ctx, types.View{ContractAddress: "0x1", Name: "V1", Height: 5})
-	_ = s.keeper.SetView(s.ctx, types.View{ContractAddress: "0x2", Name: "V2", Height: 15})
-
-	qs := keeper.NewQueryServerImpl(s.keeper)
-
-	resp, err := qs.Views(s.ctx, &types.QueryViewsRequest{
-		Pagination: &query.PageRequest{Limit: 100},
-		SinceBlock: 10,
-	})
-	s.Require().NoError(err)
-	s.Require().Len(resp.Views, 1)
-	s.Require().Equal("V2", resp.Views[0].Name)
-}
-
-func (s *KeeperTestSuite) TestQueryServer_Views_ExcludeData() {
-	_ = s.keeper.SetView(s.ctx, types.View{ContractAddress: "0x1", Name: "V1", Data: []byte("bigdata")})
-
-	qs := keeper.NewQueryServerImpl(s.keeper)
-
-	resp, err := qs.Views(s.ctx, &types.QueryViewsRequest{
-		Pagination:  &query.PageRequest{Limit: 100},
-		IncludeData: false,
-	})
-	s.Require().NoError(err)
-	s.Require().Len(resp.Views, 1)
-	s.Require().Nil(resp.Views[0].Data)
-}
-
-func (s *KeeperTestSuite) TestQueryServer_Views_IncludeData() {
-	_ = s.keeper.SetView(s.ctx, types.View{ContractAddress: "0x1", Name: "V1", Data: []byte("bigdata")})
-
-	qs := keeper.NewQueryServerImpl(s.keeper)
-
-	resp, err := qs.Views(s.ctx, &types.QueryViewsRequest{
-		Pagination:  &query.PageRequest{Limit: 100},
-		IncludeData: true,
-	})
-	s.Require().NoError(err)
-	s.Require().Len(resp.Views, 1)
-	s.Require().Equal([]byte("bigdata"), resp.Views[0].Data)
-}
-
-func (s *KeeperTestSuite) TestQueryServer_Views_FilterByNameAndCreator() {
-	_ = s.keeper.SetView(s.ctx, types.View{ContractAddress: "0x1", Name: "V1", Creator: "c1"})
-	_ = s.keeper.SetView(s.ctx, types.View{ContractAddress: "0x2", Name: "V2", Creator: "c1"})
-	_ = s.keeper.SetView(s.ctx, types.View{ContractAddress: "0x3", Name: "V2", Creator: "c2"})
-
-	qs := keeper.NewQueryServerImpl(s.keeper)
-
-	resp, err := qs.Views(s.ctx, &types.QueryViewsRequest{
-		Pagination: &query.PageRequest{Limit: 100},
-		Name:       "V2",
-	})
-	s.Require().NoError(err)
-	s.Require().Len(resp.Views, 2)
-	s.Require().Equal("V2", resp.Views[0].Name)
-	s.Require().Equal("V2", resp.Views[1].Name)
-
-	resp, err = qs.Views(s.ctx, &types.QueryViewsRequest{
-		Pagination: &query.PageRequest{Limit: 100},
-		Creator:    "c1",
-	})
-	s.Require().NoError(err)
-	s.Require().Len(resp.Views, 2)
-	s.Require().Equal("c1", resp.Views[0].Creator)
-	s.Require().Equal("c1", resp.Views[1].Creator)
-
-	resp, err = qs.Views(s.ctx, &types.QueryViewsRequest{
-		Pagination: &query.PageRequest{Limit: 100},
-		Name:       "V2",
-		Creator:    "c2",
-	})
-	s.Require().NoError(err)
-	s.Require().Len(resp.Views, 1)
-	s.Require().Equal("0x3", resp.Views[0].ContractAddress)
-}
-
-func (s *KeeperTestSuite) TestQueryServer_Views_IncludeMetadata() {
-	viewQuery := "Ethereum__Mainnet__Log { address blockNumber }"
-	viewSdl := "type TestRoot @materialized(if: false) { address: String blockNumber: Int }"
-	lensWasm := []byte("lens-one")
-	lensArgs := `{"token":"0x1"}`
-	bundle := mustBuildViewBundle(s.T(), viewQuery, viewSdl, testLens(lensWasm, lensArgs))
-
-	_ = s.keeper.SetView(s.ctx, types.View{
-		ContractAddress: "0x1",
-		Name:            "TestRoot",
-		Creator:         "c1",
-		Data:            bundle,
-	})
-
-	qs := keeper.NewQueryServerImpl(s.keeper)
-	resp, err := qs.Views(s.ctx, &types.QueryViewsRequest{
-		Pagination:      &query.PageRequest{Limit: 100},
-		IncludeMetadata: true,
-	})
-	s.Require().NoError(err)
-	s.Require().Len(resp.Views, 1)
-	s.Require().Nil(resp.Views[0].Data)
-	s.Require().NotNil(resp.Views[0].Metadata)
-	s.Require().Equal(viewQuery, resp.Views[0].Metadata.Query)
-	s.Require().Equal(viewSdl, resp.Views[0].Metadata.Sdl)
-	s.Require().Equal("TestRoot", resp.Views[0].Metadata.RootType)
-	s.Require().Empty(resp.Views[0].Metadata.ParseError)
-	s.Require().Len(resp.Views[0].Metadata.Lenses, 1)
-	s.Require().Equal(uint32(1), resp.Views[0].Metadata.Lenses[0].Id)
-	s.Require().Equal(lensArgs, resp.Views[0].Metadata.Lenses[0].Args)
-	s.Require().Equal(expectedShortLensHash(lensWasm), resp.Views[0].Metadata.Lenses[0].Hash)
-}
-
-func (s *KeeperTestSuite) TestQueryServer_Views_MetadataFilters() {
-	firstQuery := "Ethereum__Mainnet__Log { address targetField }"
-	firstSdl := "type FirstRoot @materialized(if: false) { targetField: String }"
-	firstWasm := []byte("first-lens")
-	firstArgs := `{"filter":"needle"}`
-	firstBundle := mustBuildViewBundle(s.T(), firstQuery, firstSdl, testLens(firstWasm, firstArgs))
-
-	secondQuery := "Ethereum__Mainnet__Block { number }"
-	secondSdl := "type SecondRoot @materialized(if: false) { number: Int }"
-	secondBundle := mustBuildViewBundle(s.T(), secondQuery, secondSdl, testLens([]byte("second-lens"), `{"filter":"other"}`))
-
-	_ = s.keeper.SetView(s.ctx, types.View{ContractAddress: "0x1", Name: "FirstRoot", Data: firstBundle})
-	_ = s.keeper.SetView(s.ctx, types.View{ContractAddress: "0x2", Name: "SecondRoot", Data: secondBundle})
-
-	qs := keeper.NewQueryServerImpl(s.keeper)
-	assertSingleMatch := func(req *types.QueryViewsRequest) {
-		req.Pagination = &query.PageRequest{Limit: 100}
-		resp, err := qs.Views(s.ctx, req)
-		s.Require().NoError(err)
-		s.Require().Len(resp.Views, 1)
-		s.Require().Equal("0x1", resp.Views[0].ContractAddress)
-		s.Require().Nil(resp.Views[0].Metadata)
+func (s *KeeperTestSuite) fireAckFor(address string, status sourcehubtypes.RequestStatus, errMsg string) error {
+	meta := &sourcehubtypes.RegisterObjectMeta{
+		ResourceName: sourcehubtypes.ViewResourceName,
+		ObjectId:     address,
 	}
-
-	assertSingleMatch(&types.QueryViewsRequest{MetadataRootType: "FirstRoot"})
-	assertSingleMatch(&types.QueryViewsRequest{MetadataLensHash: expectedShortLensHash(firstWasm)})
-	assertSingleMatch(&types.QueryViewsRequest{MetadataQueryContains: "targetField"})
-	assertSingleMatch(&types.QueryViewsRequest{MetadataSdlContains: "targetField"})
-	assertSingleMatch(&types.QueryViewsRequest{MetadataLensArgsContains: "needle"})
-}
-
-func (s *KeeperTestSuite) TestQueryServer_Views_MetadataFilterCanIncludeMetadata() {
-	viewQuery := "Ethereum__Mainnet__Log { address }"
-	viewSdl := "type FilterRoot @materialized(if: false) { address: String }"
-	bundle := mustBuildViewBundle(s.T(), viewQuery, viewSdl, testLens([]byte("lens"), "{}"))
-
-	_ = s.keeper.SetView(s.ctx, types.View{ContractAddress: "0x1", Name: "FilterRoot", Data: bundle})
-
-	qs := keeper.NewQueryServerImpl(s.keeper)
-	resp, err := qs.Views(s.ctx, &types.QueryViewsRequest{
-		Pagination:       &query.PageRequest{Limit: 100},
-		IncludeMetadata:  true,
-		MetadataRootType: "FilterRoot",
+	metaBz, err := s.cdc.Marshal(meta)
+	s.Require().NoError(err)
+	return keeper.NewAckCallback(s.keeper).OnPacketAck(s.ctx, sourcehubtypes.PendingICARequest{
+		Kind:   sourcehubtypes.RequestKind_REQUEST_KIND_REGISTER_OBJECT,
+		Meta:   metaBz,
+		Status: status,
+		Error:  errMsg,
 	})
-	s.Require().NoError(err)
-	s.Require().Len(resp.Views, 1)
-	s.Require().NotNil(resp.Views[0].Metadata)
-	s.Require().Equal("FilterRoot", resp.Views[0].Metadata.RootType)
 }
 
-func (s *KeeperTestSuite) TestQueryServer_Views_MalformedMetadata() {
-	validBundle := mustBuildViewBundle(
-		s.T(),
-		"Ethereum__Mainnet__Log { address }",
-		"type ValidRoot @materialized(if: false) { address: String }",
-		testLens([]byte("valid-lens"), "{}"),
-	)
-	_ = s.keeper.SetView(s.ctx, types.View{ContractAddress: "0x1", Name: "Broken", Data: []byte("not-a-viewbundle")})
-	_ = s.keeper.SetView(s.ctx, types.View{ContractAddress: "0x2", Name: "Valid", Data: validBundle})
+func sdkErr(msg string) error { return &simpleErr{msg} }
 
-	qs := keeper.NewQueryServerImpl(s.keeper)
+type simpleErr struct{ s string }
 
-	resp, err := qs.Views(s.ctx, &types.QueryViewsRequest{
-		Pagination: &query.PageRequest{Limit: 100},
-	})
-	s.Require().NoError(err)
-	s.Require().Len(resp.Views, 2)
-
-	resp, err = qs.Views(s.ctx, &types.QueryViewsRequest{
-		Pagination:      &query.PageRequest{Limit: 100},
-		IncludeMetadata: true,
-		Name:            "Broken",
-	})
-	s.Require().NoError(err)
-	s.Require().Len(resp.Views, 1)
-	s.Require().NotNil(resp.Views[0].Metadata)
-	s.Require().NotEmpty(resp.Views[0].Metadata.ParseError)
-
-	resp, err = qs.Views(s.ctx, &types.QueryViewsRequest{
-		Pagination:       &query.PageRequest{Limit: 100},
-		MetadataRootType: "ValidRoot",
-	})
-	s.Require().NoError(err)
-	s.Require().Len(resp.Views, 1)
-	s.Require().Equal("0x2", resp.Views[0].ContractAddress)
-}
-
-func (s *KeeperTestSuite) TestQueryServer_View_Found() {
-	_ = s.keeper.SetView(s.ctx, types.View{ContractAddress: "0xabc", Name: "V1", Creator: "cosmos1x"})
-
-	qs := keeper.NewQueryServerImpl(s.keeper)
-	resp, err := qs.View(s.ctx, &types.QueryViewRequest{ContractAddress: "0xabc"})
-	s.Require().NoError(err)
-	s.Require().Equal("V1", resp.View.Name)
-}
-
-func (s *KeeperTestSuite) TestQueryServer_View_IncludeMetadata() {
-	viewQuery := "Ethereum__Mainnet__Log { address }"
-	viewSdl := "type SingleRoot @materialized(if: false) { address: String }"
-	bundle := mustBuildViewBundle(s.T(), viewQuery, viewSdl, testLens([]byte("single-lens"), "{}"))
-
-	_ = s.keeper.SetView(s.ctx, types.View{ContractAddress: "0xabc", Name: "SingleRoot", Data: bundle})
-
-	qs := keeper.NewQueryServerImpl(s.keeper)
-	resp, err := qs.View(s.ctx, &types.QueryViewRequest{
-		ContractAddress: "0xabc",
-		IncludeMetadata: true,
-	})
-	s.Require().NoError(err)
-	s.Require().Nil(resp.View.Data)
-	s.Require().NotNil(resp.View.Metadata)
-	s.Require().Equal("SingleRoot", resp.View.Metadata.RootType)
-	s.Require().Equal(viewQuery, resp.View.Metadata.Query)
-	s.Require().Equal(viewSdl, resp.View.Metadata.Sdl)
-}
-
-func (s *KeeperTestSuite) TestQueryServer_View_NotFound() {
-	qs := keeper.NewQueryServerImpl(s.keeper)
-	_, err := qs.View(s.ctx, &types.QueryViewRequest{ContractAddress: "0xnotexist"})
-	s.Require().Error(err)
-}
-
-func (s *KeeperTestSuite) TestQueryServer_ViewCount() {
-	_ = s.keeper.SetView(s.ctx, types.View{ContractAddress: "0x1"})
-	_ = s.keeper.SetView(s.ctx, types.View{ContractAddress: "0x2"})
-
-	qs := keeper.NewQueryServerImpl(s.keeper)
-	resp, err := qs.ViewCount(s.ctx, &types.QueryViewCountRequest{})
-	s.Require().NoError(err)
-	s.Require().Equal(uint64(2), resp.Count)
-}
-
-func (s *KeeperTestSuite) TestQueryServer_NilRequests() {
-	qs := keeper.NewQueryServerImpl(s.keeper)
-
-	_, err := qs.Views(s.ctx, nil)
-	s.Require().Error(err)
-
-	_, err = qs.View(s.ctx, nil)
-	s.Require().Error(err)
-
-	_, err = qs.ViewCount(s.ctx, nil)
-	s.Require().Error(err)
-}
+func (e *simpleErr) Error() string { return e.s }

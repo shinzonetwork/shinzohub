@@ -1,83 +1,83 @@
 {
   "_format": "hh-sol-artifact-1",
-  "contractName": "ViewRegistryV1",
-  "sourceName": "solidity/precompiles/viewregistryv1/ViewRegistry.sol",
+  "contractName": "ViewRegistryI",
+  "sourceName": "ViewRegistry.sol",
   "abi": [
     {
-      "type": "function",
-      "name": "register",
-      "stateMutability": "nonpayable",
-      "inputs": [
-        {
-          "name": "data",
-          "type": "bytes"
-        }
-      ],
-      "outputs": [
-        {
-          "name": "viewAddress",
-          "type": "address"
-        }
-      ]
-    },
-    {
-      "type": "function",
-      "name": "registerWithPricing",
-      "stateMutability": "nonpayable",
-      "inputs": [
-        {
-          "name": "data",
-          "type": "bytes"
-        },
-        {
-          "name": "pricing",
-          "type": "address"
-        }
-      ],
-      "outputs": [
-        {
-          "name": "viewAddress",
-          "type": "address"
-        }
-      ]
-    },
-    {
-      "type": "function",
-      "name": "getView",
-      "stateMutability": "view",
-      "inputs": [
-        {
-          "name": "viewAddress",
-          "type": "address"
-        }
-      ],
-      "outputs": [
-        {
-          "name": "creator",
-          "type": "string"
-        }
-      ]
-    },
-    {
-      "type": "event",
-      "name": "ViewCreated",
       "anonymous": false,
       "inputs": [
+        { "indexed": true, "internalType": "address", "name": "viewAddress", "type": "address" },
+        { "indexed": true, "internalType": "address", "name": "creator", "type": "address" },
+        { "indexed": false, "internalType": "string", "name": "name", "type": "string" }
+      ],
+      "name": "ViewCreated",
+      "type": "event"
+    },
+    {
+      "inputs": [
+        { "internalType": "bytes", "name": "data", "type": "bytes" }
+      ],
+      "name": "register",
+      "outputs": [
+        { "internalType": "address", "name": "viewAddress", "type": "address" },
+        { "internalType": "string", "name": "name", "type": "string" }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        { "internalType": "address", "name": "viewAddress", "type": "address" }
+      ],
+      "name": "getView",
+      "outputs": [
         {
-          "name": "viewAddress",
-          "type": "address",
-          "indexed": true
-        },
-        {
-          "name": "creator",
-          "type": "address",
-          "indexed": true
+          "components": [
+            { "internalType": "address", "name": "viewAddress", "type": "address" },
+            { "internalType": "string", "name": "name", "type": "string" },
+            { "internalType": "string", "name": "creator", "type": "string" },
+            { "internalType": "uint64", "name": "height", "type": "uint64" },
+            { "internalType": "uint8", "name": "status", "type": "uint8" }
+          ],
+          "internalType": "struct ViewRegistryI.View",
+          "name": "",
+          "type": "tuple"
         }
-      ]
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        { "internalType": "uint256", "name": "offset", "type": "uint256" },
+        { "internalType": "uint256", "name": "limit", "type": "uint256" }
+      ],
+      "name": "listViews",
+      "outputs": [
+        {
+          "components": [
+            { "internalType": "address", "name": "viewAddress", "type": "address" },
+            { "internalType": "string", "name": "name", "type": "string" },
+            { "internalType": "string", "name": "creator", "type": "string" },
+            { "internalType": "uint64", "name": "height", "type": "uint64" },
+            { "internalType": "uint8", "name": "status", "type": "uint8" }
+          ],
+          "internalType": "struct ViewRegistryI.View[]",
+          "name": "",
+          "type": "tuple[]"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "viewCount",
+      "outputs": [
+        { "internalType": "uint256", "name": "", "type": "uint256" }
+      ],
+      "stateMutability": "view",
+      "type": "function"
     }
-  ],
-  "bytecode": "0x",
-  "deployedBytecode": "0x",
-  "linkReferences": {},
-  "deployedLinkReferences": {}
+  ]
 }

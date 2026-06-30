@@ -2,32 +2,66 @@ package viewregistry
 
 import (
 	"fmt"
+	"math/big"
 	"regexp"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/cosmos/cosmos-sdk/types/query"
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
 	gethtypes "github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/core/vm"
 	"github.com/ethereum/go-ethereum/crypto"
-	"github.com/holiman/uint256"
 	"github.com/shinzonetwork/viewbundle-go"
+
+	"github.com/shinzonetwork/shinzohub/x/view/types"
 )
 
 const (
-	MethodRegister            = "register"
-	MethodRegisterWithPricing = "registerWithPricing"
-	MethodGetView             = "getView"
+	MethodRegister  = "register"
+	MethodGetView   = "getView"
+	MethodListViews = "listViews"
+	MethodViewCount = "viewCount"
 )
 
-var zero = uint256.NewInt(0)
+// Matches a GraphQL type declaration anchored to the start of a line so that a
+// `type <name>` mentioned inside a leading `#` comment is not picked up as the
+// view name.
+var sdlTypeRe = regexp.MustCompile(`(?m)^[ \t]*type[ \t]+([A-Za-z0-9_]+)\b`)
 
-// sdlTypeRe matches `type <Name>` in the SDL to extract the resource name.
-var sdlTypeRe = regexp.MustCompile(`\btype\s+([A-Za-z0-9_]+)\b`)
+var viewCreatedTopic0 = crypto.Keccak256Hash([]byte("ViewCreated(address,address,string)"))
+
+var viewCreatedDataArgs = func() abi.Arguments {
+	stringType, _ := abi.NewType("string", "", nil)
+	return abi.Arguments{{Name: "name", Type: stringType}}
+}()
+
+const (
+	statusNone       uint8 = 0
+	statusPending    uint8 = 1
+	statusRegistered uint8 = 2
+)
+
+type viewTuple struct {
+	ViewAddress common.Address `abi:"viewAddress"`
+	Name        string         `abi:"name"`
+	Creator     string         `abi:"creator"`
+	Height      uint64         `abi:"height"`
+	Status      uint8          `abi:"status"`
+}
+
+func toViewTuple(v types.View, status uint8) viewTuple {
+	return viewTuple{
+		ViewAddress: common.HexToAddress(v.Address),
+		Name:        v.Name,
+		Creator:     v.Creator,
+		Height:      v.Height,
+		Status:      status,
+	}
+}
 
 func (p Precompile) Register(
 	ctx sdk.Context,
-	evm *vm.EVM,
 	contract *vm.Contract,
 	stateDB vm.StateDB,
 	method *abi.Method,
@@ -38,110 +72,40 @@ func (p Precompile) Register(
 		return nil, fmt.Errorf("invalid data")
 	}
 
-	if err := p.sourcehubKeeper.CheckICAReady(ctx); err != nil {
-		return nil, err
-	}
-
-	caller := contract.Caller()
-	deployer := contract.Address()
-
-	viewAddr, viewId, viewName, leftoverGas, err := p.prepareView(evm, deployer, caller, data, common.Address{}, contract.Gas)
-	if err != nil {
-		return nil, err
-	}
-	contract.Gas = leftoverGas
-
-	creatorAddr := sdk.AccAddress(caller.Bytes()).String()
-	if err := p.viewKeeper.RegisterView(ctx, viewId, viewName, creatorAddr, viewAddr.Hex(), data); err != nil {
-		return nil, fmt.Errorf("failed to register view in keeper: %w", err)
-	}
-
-	emitViewCreated(stateDB, contract.Address(), viewAddr, caller, viewName)
-
-	return method.Outputs.Pack(viewAddr)
-}
-
-func (p Precompile) RegisterWithPricing(
-	ctx sdk.Context,
-	evm *vm.EVM,
-	contract *vm.Contract,
-	stateDB vm.StateDB,
-	method *abi.Method,
-	args []interface{},
-) ([]byte, error) {
-	data, ok := args[0].([]byte)
-	if !ok {
-		return nil, fmt.Errorf("invalid data")
-	}
-
-	pricingAddr, ok := args[1].(common.Address)
-	if !ok {
-		return nil, fmt.Errorf("invalid pricing address")
-	}
-
-	if err := p.sourcehubKeeper.CheckICAReady(ctx); err != nil {
-		return nil, err
-	}
-
-	caller := contract.Caller()
-	deployer := contract.Address()
-
-	viewAddr, viewId, viewName, leftoverGas, err := p.prepareView(evm, deployer, caller, data, pricingAddr, contract.Gas)
-	if err != nil {
-		return nil, err
-	}
-	contract.Gas = leftoverGas
-
-	creatorAddr := sdk.AccAddress(caller.Bytes()).String()
-	if err := p.viewKeeper.RegisterView(ctx, viewId, viewName, creatorAddr, viewAddr.Hex(), data); err != nil {
-		return nil, fmt.Errorf("failed to register view in keeper: %w", err)
-	}
-
-	emitViewCreated(stateDB, contract.Address(), viewAddr, caller, viewName)
-
-	return method.Outputs.Pack(viewAddr)
-}
-
-func (p Precompile) prepareView(
-	evm *vm.EVM,
-	deployer, caller common.Address,
-	data []byte,
-	pricingAddr common.Address,
-	gas uint64,
-) (viewAddr common.Address, viewId string, resourceName string, leftoverGas uint64, err error) {
-	// Decode viewbundle header to extract resource name from SDL.
 	decoded, err := viewbundle.DecodeHeader(data)
 	if err != nil {
-		return common.Address{}, "", "", gas, fmt.Errorf("failed to decode viewbundle: %w", err)
+		return nil, fmt.Errorf("decode viewbundle: %w", err)
 	}
-
 	matches := sdlTypeRe.FindStringSubmatch(decoded.Header.Sdl)
 	if len(matches) < 2 {
-		return common.Address{}, "", "", gas, fmt.Errorf("SDL missing type name")
+		return nil, fmt.Errorf("SDL missing type name")
 	}
-	resourceName = matches[1]
+	name := matches[1]
 
-	// Deploy View.sol with constructor(resourceName, caller, pricingAddr).
-	constructorArgs, err := ViewConstructorArgs.Pack(resourceName, caller, pricingAddr)
+	caller := contract.Caller()
+	id := crypto.Keccak256Hash([]byte("shinzo.view.v1"), caller.Bytes(), data)
+	viewAddr := common.BytesToAddress(id.Bytes())
+
+	if _, err := p.viewKeeper.RegisterView(ctx, name, caller.Hex(), viewAddr.Hex(), data); err != nil {
+		return nil, fmt.Errorf("register view: %w", err)
+	}
+
+	nameData, err := viewCreatedDataArgs.Pack(name)
 	if err != nil {
-		return common.Address{}, "", "", gas, fmt.Errorf("failed to pack View constructor args: %w", err)
+		return nil, fmt.Errorf("pack event data: %w", err)
 	}
 
-	viewInitCode := append(ViewBytecode, constructorArgs...)
-	_, viewAddr, leftoverGas, err = evm.Create(
-		deployer,
-		viewInitCode,
-		gas,
-		zero,
-	)
-	if err != nil {
-		return common.Address{}, "", "", leftoverGas, fmt.Errorf("failed to deploy View contract: %w", err)
-	}
+	stateDB.AddLog(&gethtypes.Log{
+		Address: p.Address(),
+		Topics: []common.Hash{
+			viewCreatedTopic0,
+			common.BytesToHash(viewAddr.Bytes()),
+			common.BytesToHash(caller.Bytes()),
+		},
+		Data: nameData,
+	})
 
-	// Build viewId = resourceName_contractAddress using the actual deployed address.
-	viewId = fmt.Sprintf("%s_%s", resourceName, viewAddr.Hex())
-
-	return viewAddr, viewId, resourceName, leftoverGas, nil
+	return method.Outputs.Pack(viewAddr, name)
 }
 
 func (p Precompile) GetView(
@@ -154,31 +118,59 @@ func (p Precompile) GetView(
 		return nil, fmt.Errorf("invalid viewAddress")
 	}
 
-	view, found, err := p.viewKeeper.GetViewByAddress(ctx, viewAddress.Hex())
+	addr := viewAddress.Hex()
+
+	if view, found, err := p.viewKeeper.GetView(ctx, addr); err != nil {
+		return nil, err
+	} else if found {
+		return method.Outputs.Pack(toViewTuple(view, statusRegistered))
+	}
+
+	if view, found, err := p.viewKeeper.GetPendingView(ctx, addr); err != nil {
+		return nil, err
+	} else if found {
+		return method.Outputs.Pack(toViewTuple(view, statusPending))
+	}
+
+	return method.Outputs.Pack(viewTuple{Status: statusNone})
+}
+
+func (p Precompile) ListViews(
+	ctx sdk.Context,
+	method *abi.Method,
+	args []interface{},
+) ([]byte, error) {
+	offset, ok := args[0].(*big.Int)
+	if !ok {
+		return nil, fmt.Errorf("invalid offset")
+	}
+	limit, ok := args[1].(*big.Int)
+	if !ok {
+		return nil, fmt.Errorf("invalid limit")
+	}
+
+	// query.Paginate treats Limit==0 as "unset" and falls back to a default page
+	// size (100). The ABI contract is an explicit page size, so a zero limit must
+	// return an empty page rather than silently fetching the default.
+	if limit.Sign() == 0 {
+		return method.Outputs.Pack([]viewTuple{})
+	}
+
+	views, _, err := p.viewKeeper.GetAllViews(ctx, &query.PageRequest{
+		Offset: offset.Uint64(),
+		Limit:  limit.Uint64(),
+	})
 	if err != nil {
 		return nil, err
 	}
-	if !found {
-		return method.Outputs.Pack("")
+
+	out := make([]viewTuple, len(views))
+	for i, v := range views {
+		out[i] = toViewTuple(v, statusRegistered)
 	}
-	return method.Outputs.Pack(view.Creator)
+	return method.Outputs.Pack(out)
 }
 
-func emitViewCreated(
-	stateDB vm.StateDB,
-	precompileAddr common.Address,
-	viewAddr, creator common.Address,
-	name string,
-) {
-	topic0 := crypto.Keccak256Hash([]byte("ViewCreated(address,address,string)"))
-	nameData, _ := ViewConstructorArgs[:1].Pack(name)
-	stateDB.AddLog(&gethtypes.Log{
-		Address: precompileAddr,
-		Topics: []common.Hash{
-			topic0,
-			common.BytesToHash(viewAddr.Bytes()),
-			common.BytesToHash(creator.Bytes()),
-		},
-		Data: nameData,
-	})
+func (p Precompile) ViewCount(ctx sdk.Context, method *abi.Method) ([]byte, error) {
+	return method.Outputs.Pack(new(big.Int).SetUint64(p.viewKeeper.GetViewCount(ctx)))
 }

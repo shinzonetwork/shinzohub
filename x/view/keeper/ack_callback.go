@@ -1,6 +1,7 @@
 package keeper
 
 import (
+	"encoding/base64"
 	"fmt"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -29,11 +30,11 @@ func (c AckCallback) OnPacketAck(ctx sdk.Context, req sourcehubtypes.PendingICAR
 	if meta.ResourceName != sourcehubtypes.ViewResourceName {
 		return nil
 	}
-	viewId := meta.ObjectId
 
-	pending, found, err := c.keeper.GetPendingView(ctx, viewId)
+	address := meta.ObjectId
+	pending, found, err := c.keeper.GetPendingView(ctx, address)
 	if err != nil {
-		return fmt.Errorf("read pending view %s: %w", viewId, err)
+		return fmt.Errorf("read pending view %s: %w", address, err)
 	}
 	if !found {
 		return nil
@@ -42,30 +43,30 @@ func (c AckCallback) OnPacketAck(ctx sdk.Context, req sourcehubtypes.PendingICAR
 	switch req.Status {
 	case sourcehubtypes.RequestStatus_REQUEST_STATUS_SUCCESS:
 		if err := c.keeper.SetView(ctx, pending); err != nil {
-			return fmt.Errorf("promote pending view %s: %w", viewId, err)
+			return fmt.Errorf("promote pending view: %w", err)
 		}
-		if err := c.keeper.DeletePendingView(ctx, viewId); err != nil {
-			return fmt.Errorf("delete pending view %s: %w", viewId, err)
-		}
+		_ = c.keeper.DeletePendingView(ctx, address)
+
 		ctx.EventManager().EmitEvent(sdk.NewEvent(
 			types.EventTypeViewRegistered,
-			sdk.NewAttribute(types.AttrKeyViewID, viewId),
-			sdk.NewAttribute(types.AttrKeyContractAddress, pending.ContractAddress),
+			sdk.NewAttribute(types.AttrKeyAddress, address),
 			sdk.NewAttribute(types.AttrKeyCreator, pending.Creator),
+			sdk.NewAttribute(types.AttrKeyName, pending.Name),
+			sdk.NewAttribute(types.AttrKeyData, base64.StdEncoding.EncodeToString(pending.Data)),
 		))
+
 	case sourcehubtypes.RequestStatus_REQUEST_STATUS_FAILURE, sourcehubtypes.RequestStatus_REQUEST_STATUS_TIMEOUT:
-		if err := c.keeper.DeletePendingView(ctx, viewId); err != nil {
-			return fmt.Errorf("delete pending view %s: %w", viewId, err)
-		}
+		_ = c.keeper.DeletePendingView(ctx, address)
+
 		eventType := types.EventTypeViewRegistrationFailed
 		if req.Status == sourcehubtypes.RequestStatus_REQUEST_STATUS_TIMEOUT {
 			eventType = types.EventTypeViewRegistrationTimedOut
 		}
 		ctx.EventManager().EmitEvent(sdk.NewEvent(
 			eventType,
-			sdk.NewAttribute(types.AttrKeyViewID, viewId),
-			sdk.NewAttribute(types.AttrKeyContractAddress, pending.ContractAddress),
+			sdk.NewAttribute(types.AttrKeyAddress, address),
 			sdk.NewAttribute(types.AttrKeyCreator, pending.Creator),
+			sdk.NewAttribute(types.AttrKeyName, pending.Name),
 			sdk.NewAttribute(types.AttrKeyError, req.Error),
 		))
 	}
