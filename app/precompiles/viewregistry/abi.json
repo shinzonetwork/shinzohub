@@ -14,24 +14,6 @@
       "type": "event"
     },
     {
-      "anonymous": false,
-      "inputs": [
-        { "indexed": true, "internalType": "address", "name": "poolAddress", "type": "address" },
-        { "indexed": true, "internalType": "address", "name": "viewAddress", "type": "address" },
-        {
-          "components": [
-            { "internalType": "uint64", "name": "window_size", "type": "uint64" }
-          ],
-          "indexed": false,
-          "internalType": "struct ViewRegistryI.PoolConfig",
-          "name": "config",
-          "type": "tuple"
-        }
-      ],
-      "name": "PoolCreated",
-      "type": "event"
-    },
-    {
       "inputs": [
         { "internalType": "bytes", "name": "data", "type": "bytes" }
       ],
@@ -41,25 +23,6 @@
         { "internalType": "string", "name": "name", "type": "string" }
       ],
       "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        { "internalType": "address", "name": "viewAddress", "type": "address" },
-        {
-          "components": [
-            { "internalType": "uint64", "name": "window_size", "type": "uint64" }
-          ],
-          "internalType": "struct ViewRegistryI.PoolConfig",
-          "name": "config",
-          "type": "tuple"
-        }
-      ],
-      "name": "registerDemandForView",
-      "outputs": [
-        { "internalType": "address", "name": "poolAddress", "type": "address" }
-      ],
-      "stateMutability": "payable",
       "type": "function"
     },
     {

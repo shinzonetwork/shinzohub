@@ -95,8 +95,6 @@ func (p *Precompile) handle(
 		return p.ListViews(ctx, method, args)
 	case MethodViewCount:
 		return p.ViewCount(ctx, method)
-	case MethodRegisterDemandForView:
-		return p.RegisterDemandForView(ctx, contract, stateDB, method, args)
 	default:
 		return nil, fmt.Errorf(cmn.ErrUnknownMethod, method.Name)
 	}
