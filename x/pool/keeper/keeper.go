@@ -126,10 +126,11 @@ func (k Keeper) GetPoolDetail(ctx sdk.Context, poolAddress string) (types.PoolDe
 	}
 
 	return types.PoolDetail{
-		Pool:    pool,
-		Hosts:   hosts,
-		Demands: demands,
-		Stats:   k.GetPoolStats(ctx, poolAddress),
+		Pool:     pool,
+		Hosts:    hosts,
+		Demands:  demands,
+		Stats:    k.GetPoolStats(ctx, poolAddress),
+		IsActive: len(hosts) >= types.MinHostsForActive,
 	}, true, nil
 }
 

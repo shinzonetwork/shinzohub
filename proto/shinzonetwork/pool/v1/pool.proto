@@ -26,6 +26,9 @@ message PoolDetail {
   repeated PoolHostEntry hosts = 2 [(gogoproto.nullable) = false];
   repeated PoolDemandEntry demands = 3 [(gogoproto.nullable) = false];
   PoolStats stats = 4 [(gogoproto.nullable) = false];
+  // is_active is true when the pool has at least MinHostsForActive hosts and is
+  // therefore eligible to serve traffic. Derived from len(hosts), not stored.
+  bool is_active = 5;
 }
 
 // PoolStats accumulates operational telemetry for a pool — the per-query
