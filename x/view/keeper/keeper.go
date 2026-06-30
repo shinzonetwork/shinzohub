@@ -34,6 +34,22 @@ func (k Keeper) Logger(ctx sdk.Context) log.Logger {
 
 // Stages a pending view and fires the ACP register-object ICA. Finalised in ack_callback.go on SUCCESS.
 func (k Keeper) RegisterView(ctx sdk.Context, name, creator, address string, data []byte) (types.View, error) {
+	// The view address is deterministic from caller+bundle, so an existing final
+	// or pending entry means this exact registration is already complete or in
+	// flight. Re-staging would fire a duplicate RegisterObject ICA; if that
+	// duplicate's ack fails it would delete the pending row and strand a view the
+	// first ICA actually registered. Treat re-registration as an idempotent no-op.
+	if existing, found, err := k.GetView(ctx, address); err != nil {
+		return types.View{}, err
+	} else if found {
+		return existing, nil
+	}
+	if existing, found, err := k.GetPendingView(ctx, address); err != nil {
+		return types.View{}, err
+	} else if found {
+		return existing, nil
+	}
+
 	view := types.View{
 		Name:    name,
 		Creator: creator,

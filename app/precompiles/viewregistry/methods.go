@@ -25,7 +25,10 @@ const (
 	MethodRegisterDemandForView = "registerDemandForView"
 )
 
-var sdlTypeRe = regexp.MustCompile(`\btype\s+([A-Za-z0-9_]+)\b`)
+// Matches a GraphQL type declaration anchored to the start of a line so that a
+// `type <name>` mentioned inside a leading `#` comment is not picked up as the
+// view name.
+var sdlTypeRe = regexp.MustCompile(`(?m)^[ \t]*type[ \t]+([A-Za-z0-9_]+)\b`)
 
 var viewCreatedTopic0 = crypto.Keccak256Hash([]byte("ViewCreated(address,address,string)"))
 
@@ -145,6 +148,13 @@ func (p Precompile) ListViews(
 	limit, ok := args[1].(*big.Int)
 	if !ok {
 		return nil, fmt.Errorf("invalid limit")
+	}
+
+	// query.Paginate treats Limit==0 as "unset" and falls back to a default page
+	// size (100). The ABI contract is an explicit page size, so a zero limit must
+	// return an empty page rather than silently fetching the default.
+	if limit.Sign() == 0 {
+		return method.Outputs.Pack([]viewTuple{})
 	}
 
 	views, _, err := p.viewKeeper.GetAllViews(ctx, &query.PageRequest{

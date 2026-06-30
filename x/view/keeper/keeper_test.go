@@ -151,6 +151,38 @@ func (s *KeeperTestSuite) TestRegisterView_RejectsMalformedCreator() {
 	s.False(found)
 }
 
+// Re-registering the same address while PENDING is an idempotent no-op: no second
+// ICA fires (a duplicate that fails could delete the pending row and strand the
+// view the first ICA registered).
+func (s *KeeperTestSuite) TestRegisterView_WhilePending_IsIdempotent() {
+	_, err := s.keeper.RegisterView(s.ctx, sampleName, sampleCreator, sampleAddress, sampleBundle)
+	s.Require().NoError(err)
+	s.Equal(1, s.mockSourcehub.calls)
+
+	view, err := s.keeper.RegisterView(s.ctx, sampleName, sampleCreator, sampleAddress, sampleBundle)
+	s.Require().NoError(err)
+	s.Equal(sampleName, view.Name)
+	s.Equal(1, s.mockSourcehub.calls, "duplicate registration must not fire a second ICA")
+}
+
+// Re-registering an already-REGISTERED address is a no-op: returns the existing
+// view, fires no second ICA, leaves the count and pending store untouched.
+func (s *KeeperTestSuite) TestRegisterView_AfterRegistered_IsNoOp() {
+	_, err := s.keeper.RegisterView(s.ctx, sampleName, sampleCreator, sampleAddress, sampleBundle)
+	s.Require().NoError(err)
+	s.fireAck(sourcehubtypes.RequestStatus_REQUEST_STATUS_SUCCESS, "")
+	s.Require().Equal(uint64(1), s.keeper.GetViewCount(s.ctx))
+
+	view, err := s.keeper.RegisterView(s.ctx, sampleName, sampleCreator, sampleAddress, sampleBundle)
+	s.Require().NoError(err)
+	s.Equal(sampleName, view.Name)
+	s.Equal(1, s.mockSourcehub.calls, "re-register of a final view must not fire a second ICA")
+	s.Equal(uint64(1), s.keeper.GetViewCount(s.ctx), "count must not change")
+
+	_, found, _ := s.keeper.GetPendingView(s.ctx, sampleAddress)
+	s.False(found, "re-register must not write a stray pending row")
+}
+
 // SUCCESS ack promotes pending → final, bumps count, fires view_registered.
 func (s *KeeperTestSuite) TestAckSuccess_PromotesPendingToFinal() {
 	_, err := s.keeper.RegisterView(s.ctx, sampleName, sampleCreator, sampleAddress, sampleBundle)

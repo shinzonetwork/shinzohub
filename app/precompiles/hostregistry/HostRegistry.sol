@@ -15,11 +15,13 @@ interface HostRegistryI {
     /// @param nodeIdentityKeySignature Signature by nodeIdentityKeyPubkey.
     /// @param message                  Payload.
     /// @param connectionString         Connection string for the host.
+    /// @param endpointAddress         	Address of GraphQL endpoint exposed by the host.
     function register(
         bytes calldata nodeIdentityKeyPubkey,
         bytes calldata nodeIdentityKeySignature,
         bytes calldata message,
-        string calldata connectionString
+        string calldata connectionString,
+        string calldata endpointAddress
     ) external;
 
     /// @param addr The address to check.
@@ -34,12 +36,18 @@ interface HostRegistryI {
     /// @return connectionString The connection string (empty if not registered).
     function getConnectionString(address addr) external view returns (string memory connectionString);
 
+    /// @param addr The address to look up.
+    /// @return endpointAddress Address of GraphQL endpoint exposed by host (empty if not registered).
+    function getEndpointAddress(address addr) external view returns (string memory endpointAddress);
+
     /// @param owner            Address that registered.
     /// @param did              The DID bytes.
     /// @param connectionString The connection string.
+    /// @param endpointAddress   Address of GraphQL endpoint exposed by host.
     event Registered(
         address indexed owner,
         bytes did,
-        string connectionString
+        string connectionString,
+        string endpointAddress
     );
 }

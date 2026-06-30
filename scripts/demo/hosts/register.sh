@@ -35,15 +35,17 @@ NODE_SIG="0x$(openssl dgst -sha256 -sign "$TMP/node.pem" "$TMP/msg.bin" | xxd -p
 
 MESSAGE="0x$(echo -n "$MESSAGE_RAW" | xxd -p | tr -d '\n')"
 CONNECTION_STRING="${CONNECTION_STRING:-192.168.1.1:8080}"
+ENDPOINT_ADDRESS="${ENDPOINT_ADDRESS:-https://192.168.1.1/api/v0/graphql}"
 
 echo "=== Register Host ==="
 echo "Address:           $FROM_ADDR"
 echo "Connection String: $CONNECTION_STRING"
+echo "Endpoint Address:  $ENDPOINT_ADDRESS"
 echo ""
 
 cast send "$HOST_REGISTRY" \
-  "register(bytes,bytes,bytes,string)" \
-  "$NODE_PUB" "$NODE_SIG" "$MESSAGE" "$CONNECTION_STRING" \
+  "register(bytes,bytes,bytes,string,string)" \
+  "$NODE_PUB" "$NODE_SIG" "$MESSAGE" "$CONNECTION_STRING" "$ENDPOINT_ADDRESS" \
   --private-key "$PRIVATE_KEY" \
   --rpc-url "$RPC_URL" \
   --gas-limit 1000000

@@ -111,6 +111,8 @@ func (p *Precompile) HandleMethod(
 		bz, err = p.GetDid(ctx, method, args)
 	case MethodGetConnectionString:
 		bz, err = p.GetConnectionString(ctx, method, args)
+	case MethodGetEndpointAddress:
+		bz, err = p.GetEndpointAddress(ctx, method, args)
 	default:
 		return nil, fmt.Errorf(cmn.ErrUnknownMethod, method.Name)
 	}

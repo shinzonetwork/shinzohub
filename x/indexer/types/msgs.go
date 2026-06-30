@@ -25,6 +25,12 @@ func (m *MsgIndexerAssertion) ValidateBasic() error {
 	if len(m.ValidatorPubkey) == 0 {
 		return fmt.Errorf("validator_pubkey cannot be empty")
 	}
+	if len(m.ValidatorPubkey) > MaxValidatorPubkeyLen {
+		return fmt.Errorf("validator_pubkey too large: %d > %d", len(m.ValidatorPubkey), MaxValidatorPubkeyLen)
+	}
+	if len(m.ChainSpecific) > MaxChainSpecificLen {
+		return fmt.Errorf("chain_specific too large: %d > %d", len(m.ChainSpecific), MaxChainSpecificLen)
+	}
 	if len(m.AssertionAuthority) == 0 {
 		return fmt.Errorf("assertion_authority cannot be empty")
 	}
@@ -50,6 +56,9 @@ func (m *MsgSetPayout) ValidateBasic() error {
 	if len(m.ValidatorPubkey) == 0 {
 		return fmt.Errorf("validator_pubkey cannot be empty")
 	}
+	if len(m.ValidatorPubkey) > MaxValidatorPubkeyLen {
+		return fmt.Errorf("validator_pubkey too large: %d > %d", len(m.ValidatorPubkey), MaxValidatorPubkeyLen)
+	}
 	if _, err := sdk.AccAddressFromBech32(m.PayoutAddress); err != nil {
 		return fmt.Errorf("invalid payout_address: %w", err)
 	}
@@ -68,6 +77,9 @@ func (m *MsgRevokeIndexer) ValidateBasic() error {
 	}
 	if len(m.ValidatorPubkey) == 0 {
 		return fmt.Errorf("validator_pubkey cannot be empty")
+	}
+	if len(m.ValidatorPubkey) > MaxValidatorPubkeyLen {
+		return fmt.Errorf("validator_pubkey too large: %d > %d", len(m.ValidatorPubkey), MaxValidatorPubkeyLen)
 	}
 	if m.Nonce == 0 {
 		return fmt.Errorf("nonce must be non-zero")
