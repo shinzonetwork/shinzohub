@@ -18,14 +18,16 @@ import (
 )
 
 const (
-	MethodRegister              = "register"
-	MethodGetView               = "getView"
-	MethodListViews             = "listViews"
-	MethodViewCount             = "viewCount"
-	MethodRegisterDemandForView = "registerDemandForView"
+	MethodRegister  = "register"
+	MethodGetView   = "getView"
+	MethodListViews = "listViews"
+	MethodViewCount = "viewCount"
 )
 
-var sdlTypeRe = regexp.MustCompile(`\btype\s+([A-Za-z0-9_]+)\b`)
+// Matches a GraphQL type declaration anchored to the start of a line so that a
+// `type <name>` mentioned inside a leading `#` comment is not picked up as the
+// view name.
+var sdlTypeRe = regexp.MustCompile(`(?m)^[ \t]*type[ \t]+([A-Za-z0-9_]+)\b`)
 
 var viewCreatedTopic0 = crypto.Keccak256Hash([]byte("ViewCreated(address,address,string)"))
 
@@ -147,6 +149,13 @@ func (p Precompile) ListViews(
 		return nil, fmt.Errorf("invalid limit")
 	}
 
+	// query.Paginate treats Limit==0 as "unset" and falls back to a default page
+	// size (100). The ABI contract is an explicit page size, so a zero limit must
+	// return an empty page rather than silently fetching the default.
+	if limit.Sign() == 0 {
+		return method.Outputs.Pack([]viewTuple{})
+	}
+
 	views, _, err := p.viewKeeper.GetAllViews(ctx, &query.PageRequest{
 		Offset: offset.Uint64(),
 		Limit:  limit.Uint64(),
@@ -164,61 +173,4 @@ func (p Precompile) ListViews(
 
 func (p Precompile) ViewCount(ctx sdk.Context, method *abi.Method) ([]byte, error) {
 	return method.Outputs.Pack(new(big.Int).SetUint64(p.viewKeeper.GetViewCount(ctx)))
-}
-
-type PoolConfig struct {
-	WindowSize uint64
-}
-
-func (p Precompile) RegisterDemandForView(
-	ctx sdk.Context,
-	contract *vm.Contract,
-	stateDB vm.StateDB,
-	method *abi.Method,
-	args []interface{},
-) ([]byte, error) {
-
-	// get the view address from the args
-	viewAddress, ok := args[0].(common.Address)
-	if !ok {
-		return nil, fmt.Errorf("invalid view address")
-	}
-
-	poolConfig := abi.ConvertType(args[1], new(PoolConfig)).(*PoolConfig)
-	if poolConfig == nil {
-		return nil, fmt.Errorf("invalid pool config")
-	}
-
-	// validate the view exists
-	if _, found, err := p.viewKeeper.GetView(ctx, viewAddress.Hex()); err != nil {
-		return nil, err
-	} else if !found {
-		return nil, fmt.Errorf("invalid view address")
-	}
-
-	fmt.Println(viewAddress, poolConfig.WindowSize)
-
-	// check if the demand/pool with this demand already exists
-	// we need a way to get and set pools in the view keeper
-	// i want it in a way that i can get pools for a view and all pools that kinda structure
-	// pools would have paericipants(hosts) we should store that in the keeper too
-
-	/**
-	we need
-	Pool {
-		viewAddress
-		config
-		hosts(array of hosts address)
-	}
-
-		the contract address of the pool should also be deterministic, so that we don't have duplicate pools for the same view and config
-	*/
-
-	// check and debit a CONSTANT from the callers wallet
-
-	// create a contract on this call the contract is a POOL
-
-	// return the pool contract address and view address
-
-	return nil, nil
 }

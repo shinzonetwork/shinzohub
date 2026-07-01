@@ -16,6 +16,7 @@ const (
 	MethodIsRegistered        = "isRegistered"
 	MethodGetDid              = "getDid"
 	MethodGetConnectionString = "getConnectionString"
+	MethodGetEndpointAddress  = "getEndpointAddress"
 )
 
 func (p *Precompile) Register(
@@ -45,6 +46,11 @@ func (p *Precompile) Register(
 		return nil, fmt.Errorf("invalid connectionString")
 	}
 
+	endpointAddress, ok := args[4].(string)
+	if !ok || endpointAddress == "" {
+		return nil, fmt.Errorf("invalid endpointAddress")
+	}
+
 	if err := p.sourcehubKeeper.CheckICAReady(ctx); err != nil {
 		return nil, err
 	}
@@ -57,6 +63,7 @@ func (p *Precompile) Register(
 		nodeIdentityKeySignature,
 		message,
 		connectionString,
+		endpointAddress,
 		caller,
 	)
 	if err != nil {
@@ -64,9 +71,9 @@ func (p *Precompile) Register(
 	}
 
 	precompAddr := contract.Address()
-	topic0 := crypto.Keccak256Hash([]byte("Registered(address,bytes,string)"))
+	topic0 := crypto.Keccak256Hash([]byte("Registered(address,bytes,string,string)"))
 	event := p.ABI.Events["Registered"]
-	data, err := event.Inputs.NonIndexed().Pack(did, connectionString)
+	data, err := event.Inputs.NonIndexed().Pack(did, connectionString, endpointAddress)
 	if err != nil {
 		return nil, fmt.Errorf("failed to pack Registered event: %w", err)
 	}
@@ -136,4 +143,25 @@ func (p *Precompile) GetConnectionString(
 		return method.Outputs.Pack("")
 	}
 	return method.Outputs.Pack(host.ConnectionString)
+}
+
+func (p *Precompile) GetEndpointAddress(
+	ctx sdk.Context,
+	method *abi.Method,
+	args []interface{},
+) ([]byte, error) {
+	addr, ok := args[0].(common.Address)
+	if !ok {
+		return nil, fmt.Errorf("invalid type for addr")
+	}
+
+	bech32Addr := sdk.AccAddress(addr.Bytes()).String()
+	host, found, err := p.hostKeeper.GetHost(ctx, bech32Addr)
+	if err != nil {
+		return nil, err
+	}
+	if !found {
+		return method.Outputs.Pack("")
+	}
+	return method.Outputs.Pack(host.EndpointAddress)
 }

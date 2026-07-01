@@ -7,8 +7,10 @@ import (
 
 	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	evmtypes "github.com/cosmos/evm/x/vm/types"
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/core/tracing"
 	gethtypes "github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/core/vm"
 	"github.com/ethereum/go-ethereum/crypto"
@@ -184,6 +186,23 @@ func (p Precompile) RegisterDemandForView(
 		}
 		created = true
 	}
+
+	// Escrow the bond. On entry the EVM credited msg.value to this precompile's
+	// own account; move it into the pool module account for custody so it isn't
+	// stranded at the precompile. Mirror werc20.Deposit: the bank transfer
+	// bypasses the EVM journal, so reconcile the StateDB afterwards with
+	// SubBalance to keep the EVM-visible balance consistent with the move.
+	bondCoins := sdk.NewCoins(sdk.NewCoin(
+		evmtypes.GetEVMCoinExtendedDenom(),
+		math.NewIntFromBigInt(bond.ToBig()),
+	))
+	precompileAcc := sdk.AccAddress(contract.Address().Bytes())
+	if err := p.poolKeeper.BankKeeper().SendCoinsFromAccountToModule(
+		ctx, precompileAcc, types.ModuleName, bondCoins,
+	); err != nil {
+		return nil, fmt.Errorf("escrow bond: %w", err)
+	}
+	stateDB.SubBalance(contract.Address(), bond, tracing.BalanceChangeUnspecified)
 
 	demand := types.PoolDemand{
 		Bond:      math.NewIntFromBigInt(bond.ToBig()).String(),

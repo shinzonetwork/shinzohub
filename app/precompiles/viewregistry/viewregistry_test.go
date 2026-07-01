@@ -333,54 +333,47 @@ func (s *PrecompileTestSuite) TestViewAddress_IsDeterministicPerCallerAndBundle(
 	s.NotEqual(addrA, addrA2)
 }
 
-// Calls registerDemandForView and returns the resulting poolAddress.
-func (s *PrecompileTestSuite) registerDemandForView(
-	caller common.Address,
-	viewAddr common.Address,
-	windowSize uint64,
-	bond *uint256.Int,
-) common.Address {
-	contract := vm.NewContract(
-		caller,
-		common.HexToAddress(viewregistry.PrecompileAddress),
-		bond, // msg.value
-		1_000_000,
-		nil,
-	)
-	method := s.precompile.ABI.Methods["registerDemandForView"]
+// The SDL name is taken from the real type declaration, not from a `type <name>`
+// mentioned in a leading comment.
+func (s *PrecompileTestSuite) TestRegister_SDLNameIgnoresLeadingComment() {
+	h := viewbundle.DecodedHeader{
+		Header: viewbundle.Header{
+			Query: "Log { address }",
+			Sdl:   "# please rename the type Legacy later\ntype RealView @materialized(if: false) { x: String }",
+		},
+	}
+	bz, err := viewbundle.EncodeHeader(h)
+	s.Require().NoError(err)
 
-	// The PoolConfig struct as an anonymous tuple matching the ABI shape
-	cfg := struct {
-		WindowSize uint64 `json:"windowSize"`
-	}{WindowSize: windowSize}
-
-	out, err := s.precompile.RegisterDemandForView(
-		s.ctx, contract, s.stateDB, &method,
-		[]interface{}{viewAddr, cfg},
-	)
+	contract := makeContract(common.HexToAddress("0x8888888888888888888888888888888888888888"))
+	method := s.precompile.ABI.Methods["register"]
+	out, err := s.precompile.Register(s.ctx, contract, s.stateDB, &method, []interface{}{bz})
 	s.Require().NoError(err)
 
 	values, err := method.Outputs.Unpack(out)
 	s.Require().NoError(err)
-	return values[0].(common.Address)
+	s.Equal("RealView", values[1].(string))
 }
 
-func (s *PrecompileTestSuite) TestRegisterDemandForView_HappyPath() {
-	caller := common.HexToAddress("0xabCDef1234567890abcdEF1234567890ABCDEF12")
-
-	// First register a view so we have something to point at
-	viewAddr := s.register(caller, buildBundle("ViewWithPool"))
+// listViews(_, 0) returns an empty page, not the cosmos default page size.
+func (s *PrecompileTestSuite) TestListViews_ZeroLimit_ReturnsEmpty() {
+	caller := common.HexToAddress("0x9999999999999999999999999999999999999999")
+	viewAddr := s.register(caller, buildBundle("ViewZeroLimit"))
 	s.fireAck(viewAddr, sourcehubtypes.RequestStatus_REQUEST_STATUS_SUCCESS)
 
-	// Then register demand for it with a bond
-	bond := uint256.NewInt(100)
-	poolAddr := s.registerDemandForView(caller, viewAddr, 200_000, bond)
-
-	s.Require().NotEqual(common.Address{}, poolAddr)
-
-	// Confirm a PoolCreated event was emitted
-	s.Require().Len(s.stateDB.logs, 2) // ViewCreated + PoolCreated
-	poolLog := s.stateDB.logs[1]
-	s.Equal(common.BytesToHash(poolAddr.Bytes()), poolLog.Topics[1])
-	s.Equal(common.BytesToHash(viewAddr.Bytes()), poolLog.Topics[2])
+	method := s.precompile.ABI.Methods["listViews"]
+	bz, err := s.precompile.ListViews(s.ctx, &method, []interface{}{
+		big.NewInt(0), big.NewInt(0),
+	})
+	s.Require().NoError(err)
+	values, err := method.Outputs.Unpack(bz)
+	s.Require().NoError(err)
+	tuples := values[0].([]struct {
+		ViewAddress common.Address `json:"viewAddress"`
+		Name        string         `json:"name"`
+		Creator     string         `json:"creator"`
+		Height      uint64         `json:"height"`
+		Status      uint8          `json:"status"`
+	})
+	s.Require().Len(tuples, 0)
 }
