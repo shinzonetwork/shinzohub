@@ -6,8 +6,8 @@ import (
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	sourcehubtypes "github.com/shinzonetwork/shinzohub/x/sourcehub/types"
 	"github.com/shinzonetwork/shinzohub/x/view/types"
+	sourcehubtypes "github.com/shinzonetwork/shinzohub/x/sourcehub/types"
 )
 
 type AckCallback struct {

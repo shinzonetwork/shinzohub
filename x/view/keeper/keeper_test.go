@@ -18,9 +18,9 @@ import (
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
 
-	sourcehubtypes "github.com/shinzonetwork/shinzohub/x/sourcehub/types"
 	"github.com/shinzonetwork/shinzohub/x/view/keeper"
 	"github.com/shinzonetwork/shinzohub/x/view/types"
+	sourcehubtypes "github.com/shinzonetwork/shinzohub/x/sourcehub/types"
 )
 
 // Records the call and can inject an error to test pending rollback.

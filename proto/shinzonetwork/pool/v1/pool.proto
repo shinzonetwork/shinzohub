@@ -1,0 +1,63 @@
+syntax = "proto3";
+
+package shinzonetwork.pool.v1;
+
+import "gogoproto/gogo.proto";
+
+option go_package = "github.com/shinzonetwork/shinzohub/x/pool/types";
+
+// Pool holds the static metadata for a pool.
+// Dynamic state (hosts, demands) lives in separate KV entries keyed by
+// their respective sub-prefixes. The price is a network-wide value read
+// from module state, not stored per pool.
+message Pool {
+  string pool_address = 1;
+  string view_address = 2;
+  PoolConfig config = 3 [(gogoproto.nullable) = false];
+  int64 created_at = 4;
+}
+
+// PoolDetail is a denormalized view of a pool: metadata plus every host and
+// demand currently in it. Useful for "show me this pool" queries and for
+// downstream modules (settlement, querybalance) that need everything in
+// one read.
+message PoolDetail {
+  Pool pool = 1 [(gogoproto.nullable) = false];
+  repeated PoolHostEntry hosts = 2 [(gogoproto.nullable) = false];
+  repeated PoolDemandEntry demands = 3 [(gogoproto.nullable) = false];
+}
+
+// PoolConfig is the configuration that uniquely identifies a pool for a given view.
+// Adding a new field changes the CREATE2 salt and produces a different pool address.
+message PoolConfig {
+  uint64 window_size = 1;
+}
+
+// PoolHost represents a host's membership in a pool.
+message PoolHost {
+  int64 joined_at = 1;
+}
+
+// PoolDemand represents a single developer's demand registration on a pool.
+message PoolDemand {
+  // sdk.Int as base-10 string.
+  string bond = 1;
+  // sdk.Int as base-10 string. "0" or empty means no preference.
+  string price_pref = 2;
+  bool binding = 3;
+  int64 expires_at = 4;
+}
+
+// PoolHostEntry wraps a PoolHost with both keys (pool + host addresses)
+// so genesis import/query responses can reconstruct the full kv key path.
+message PoolHostEntry {
+  string pool_address = 1;
+  string host_address = 2;
+  PoolHost host = 3 [(gogoproto.nullable) = false];
+}
+
+message PoolDemandEntry {
+  string pool_address = 1;
+  string registrant_address = 2;
+  PoolDemand demand = 3 [(gogoproto.nullable) = false];
+}
