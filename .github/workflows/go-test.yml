@@ -1,0 +1,44 @@
+# This workflow will run 'go test' on the project when creating a PR (or trying to push to) main
+name: Go Test CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main, develop ]
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+    - name: Check out code
+      uses: actions/checkout@v6
+
+    - name: Set up Go
+      uses: actions/setup-go@v6
+      with:
+        go-version: '1.24'
+        go-version-file: 'go.mod'
+
+    - name: Cache Go build
+      uses: actions/cache@v4
+      with:
+        path: |
+          ~/.cache/go-build
+          ~/go/pkg/mod
+        key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+        restore-keys: |
+          ${{ runner.os }}-go-
+
+    - name: Run tests
+      run:  go test -count=1 -timeout=3m -coverprofile=coverage.out -covermode=atomic -failfast ./x/... ./app/...
+
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v4
+      with:
+        token: ${{ secrets.CODECOV_TOKEN }}
+        slug: shinzonetwork/shinzohub
+        files: ./coverage.out
