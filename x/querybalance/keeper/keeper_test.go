@@ -1,6 +1,7 @@
 package keeper_test
 
 import (
+	"context"
 	"testing"
 
 	cosmoslog "cosmossdk.io/log"
@@ -34,7 +35,7 @@ type mockBankKeeper struct {
 	failNextIn bool
 }
 
-func (m *mockBankKeeper) SendCoinsFromAccountToModule(_ sdk.Context, from sdk.AccAddress, mod string, amt sdk.Coins) error {
+func (m *mockBankKeeper) SendCoinsFromAccountToModule(_ context.Context, from sdk.AccAddress, mod string, amt sdk.Coins) error {
 	if m.failNextIn {
 		m.failNextIn = false
 		return errMock
@@ -43,12 +44,12 @@ func (m *mockBankKeeper) SendCoinsFromAccountToModule(_ sdk.Context, from sdk.Ac
 	return nil
 }
 
-func (m *mockBankKeeper) SendCoinsFromModuleToAccount(_ sdk.Context, mod string, to sdk.AccAddress, amt sdk.Coins) error {
+func (m *mockBankKeeper) SendCoinsFromModuleToAccount(_ context.Context, mod string, to sdk.AccAddress, amt sdk.Coins) error {
 	m.moves = append(m.moves, bankMove{kind: "out", from: mod, to: to.String(), coins: amt})
 	return nil
 }
 
-func (m *mockBankKeeper) SendCoinsFromModuleToModule(_ sdk.Context, from, to string, amt sdk.Coins) error {
+func (m *mockBankKeeper) SendCoinsFromModuleToModule(_ context.Context, from, to string, amt sdk.Coins) error {
 	m.moves = append(m.moves, bankMove{kind: "modmod", from: from, to: to, coins: amt})
 	return nil
 }
