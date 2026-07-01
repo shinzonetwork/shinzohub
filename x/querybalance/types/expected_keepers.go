@@ -7,7 +7,7 @@ import (
 )
 
 // BankKeeper is the subset of the bank keeper this module uses to custody
-// SHINUSD topped up by users for query credits.
+// NZO topped up by users for query credits.
 type BankKeeper interface {
 	SendCoinsFromAccountToModule(ctx context.Context, senderAddr sdk.AccAddress, recipientModule string, amt sdk.Coins) error
 	SendCoinsFromModuleToAccount(ctx context.Context, senderModule string, recipientAddr sdk.AccAddress, amt sdk.Coins) error

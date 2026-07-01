@@ -40,9 +40,9 @@ func (k Keeper) Logger(ctx sdk.Context) log.Logger {
 	return ctx.Logger().With("module", fmt.Sprintf("x/%s", types.ModuleName))
 }
 
-// Fund moves SHINUSD (ushinusd) from funder's wallet into the querybalance
+// Fund moves NZO (ushinzo) from funder's wallet into the querybalance
 // module account and credits the recipient's query balance by amount. Denom
-// is fixed to types.QueryBalanceDenom — the funder must already hold SHINUSD
+// is fixed to types.QueryBalanceDenom — the funder must already hold NZO
 // (via settlement claim, bridge, or transfer).
 func (k Keeper) Fund(
 	ctx sdk.Context,

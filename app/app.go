@@ -1400,25 +1400,8 @@ func (a *ChainApp) DefaultGenesis() map[string]json.RawMessage {
 	erc20GenState.NativePrecompiles = append(
 		erc20GenState.NativePrecompiles,
 		WTokenContractMainnet,
-		ShinusdNativePrecompile,
 	)
 	genesis[erc20types.ModuleName] = a.appCodec.MustMarshalJSON(erc20GenState)
-
-	// Register denom metadata for SHINUSD so wallets and explorers display it
-	// with the friendly name and 6-decimal display unit.
-	bankGenState := banktypes.DefaultGenesisState()
-	bankGenState.DenomMetadata = append(bankGenState.DenomMetadata, banktypes.Metadata{
-		Description: "Shinzo USD stablecoin",
-		Base:        ShinusdBaseDenom,
-		Display:     ShinusdDisplayDenom,
-		Name:        "Shinzo USD",
-		Symbol:      ShinusdSymbol,
-		DenomUnits: []*banktypes.DenomUnit{
-			{Denom: ShinusdBaseDenom, Exponent: 0, Aliases: []string{"micro-shinusd"}},
-			{Denom: ShinusdDisplayDenom, Exponent: 6, Aliases: []string{}},
-		},
-	})
-	genesis[banktypes.ModuleName] = a.appCodec.MustMarshalJSON(bankGenState)
 
 	return genesis
 }

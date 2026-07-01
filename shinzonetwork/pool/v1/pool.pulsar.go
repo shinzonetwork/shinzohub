@@ -4841,10 +4841,10 @@ type PoolStats struct {
 	unknownFields protoimpl.UnknownFields
 
 	PoolAddress      string `protobuf:"bytes,1,opt,name=pool_address,json=poolAddress,proto3" json:"pool_address,omitempty"`
-	Price            string `protobuf:"bytes,2,opt,name=price,proto3" json:"price,omitempty"`                                    // current per-query price (ushinusd, sdk.Int base-10)
+	Price            string `protobuf:"bytes,2,opt,name=price,proto3" json:"price,omitempty"`                                    // current per-query price (ushinzo, sdk.Int base-10)
 	Utilization      uint64 `protobuf:"varint,3,opt,name=utilization,proto3" json:"utilization,omitempty"`                       // most recent report (0-100)
 	TotalQueries     uint64 `protobuf:"varint,4,opt,name=total_queries,json=totalQueries,proto3" json:"total_queries,omitempty"` // lifetime
-	TotalRewards     string `protobuf:"bytes,5,opt,name=total_rewards,json=totalRewards,proto3" json:"total_rewards,omitempty"`  // lifetime ushinusd earned (sdk.Int base-10)
+	TotalRewards     string `protobuf:"bytes,5,opt,name=total_rewards,json=totalRewards,proto3" json:"total_rewards,omitempty"`  // lifetime ushinzo earned (sdk.Int base-10)
 	LastUpdatedEpoch uint64 `protobuf:"varint,6,opt,name=last_updated_epoch,json=lastUpdatedEpoch,proto3" json:"last_updated_epoch,omitempty"`
 }
 

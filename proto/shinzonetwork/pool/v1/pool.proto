@@ -39,10 +39,10 @@ message PoolDetail {
 // and total_rewards are monotonic sums.
 message PoolStats {
   string pool_address       = 1;
-  string price              = 2;  // current per-query price (ushinusd, sdk.Int base-10)
+  string price              = 2;  // current per-query price (ushinzo, sdk.Int base-10)
   uint64 utilization        = 3;  // most recent report (0-100)
   uint64 total_queries      = 4;  // lifetime
-  string total_rewards      = 5;  // lifetime ushinusd earned (sdk.Int base-10)
+  string total_rewards      = 5;  // lifetime ushinzo earned (sdk.Int base-10)
   uint64 last_updated_epoch = 6;
 }
 

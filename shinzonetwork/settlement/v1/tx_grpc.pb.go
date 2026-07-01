@@ -27,8 +27,8 @@ const (
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type MsgClient interface {
-	// Claim moves the requested amount of SHINUSD from the claimer's pending
-	// settlement balance to their wallet. The module mints fresh SHINUSD into
+	// Claim moves the requested amount of NZO from the claimer's pending
+	// settlement balance to their wallet. The module mints fresh NZO into
 	// its module account and transfers it to the claimer.
 	Claim(ctx context.Context, in *MsgClaim, opts ...grpc.CallOption) (*MsgClaimResponse, error)
 	// AccountSettle applies an epoch's worth of off-chain accounting:
@@ -74,8 +74,8 @@ func (c *msgClient) AccountSettle(ctx context.Context, in *MsgAccountSettle, opt
 // All implementations must embed UnimplementedMsgServer
 // for forward compatibility.
 type MsgServer interface {
-	// Claim moves the requested amount of SHINUSD from the claimer's pending
-	// settlement balance to their wallet. The module mints fresh SHINUSD into
+	// Claim moves the requested amount of NZO from the claimer's pending
+	// settlement balance to their wallet. The module mints fresh NZO into
 	// its module account and transfers it to the claimer.
 	Claim(context.Context, *MsgClaim) (*MsgClaimResponse, error)
 	// AccountSettle applies an epoch's worth of off-chain accounting:

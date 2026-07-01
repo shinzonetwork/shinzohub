@@ -150,13 +150,13 @@ func TestFund_HappyPath(t *testing.T) {
 	})
 	require.NoError(t, err)
 
-	// Bank moved SHINUSD from caller to module
+	// Bank moved NZO from caller to module
 	require.Len(t, f.bank.moves, 1)
 	require.Equal(t, "in", f.bank.moves[0].kind)
 	require.Equal(t, cosmosAddr(caller).String(), f.bank.moves[0].from)
 	require.Equal(t, types.ModuleName, f.bank.moves[0].to)
 	require.Equal(t, types.QueryBalanceDenom, f.bank.moves[0].coins[0].Denom,
-		"precompile must transfer SHINUSD, not bond denom")
+		"precompile must transfer NZO")
 	require.Equal(t, math.NewInt(750_000), f.bank.moves[0].coins[0].Amount)
 
 	// Keeper ledger reflects the credit

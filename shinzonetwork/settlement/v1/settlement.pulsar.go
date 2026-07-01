@@ -1690,9 +1690,9 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
-// SettlementBalance is an address's pending SHINUSD owed by the protocol.
+// SettlementBalance is an address's pending NZO owed by the protocol.
 // Accumulates from Credit (driven by the epoch settlement message) and
-// drains via Claim (which mints SHINUSD to the recipient's wallet).
+// drains via Claim (which mints NZO to the recipient's wallet).
 type SettlementBalance struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache

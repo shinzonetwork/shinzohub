@@ -108,7 +108,7 @@ func TestFund_Self(t *testing.T) {
 	require.Equal(t, "in", f.bank.moves[0].kind)
 	require.Equal(t, a.String(), f.bank.moves[0].from)
 	require.Equal(t, types.QueryBalanceDenom, f.bank.moves[0].coins[0].Denom,
-		"funder's coins must be SHINUSD")
+		"funder's coins must be NZO")
 }
 
 func TestFund_Sponsor(t *testing.T) {

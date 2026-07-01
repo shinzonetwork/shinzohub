@@ -10,8 +10,8 @@ option go_package = "github.com/shinzonetwork/shinzohub/x/settlement/types";
 service Msg {
   option (cosmos.msg.v1.service) = true;
 
-  // Claim moves the requested amount of SHINUSD from the claimer's pending
-  // settlement balance to their wallet. The module mints fresh SHINUSD into
+  // Claim moves the requested amount of NZO from the claimer's pending
+  // settlement balance to their wallet. The module mints fresh NZO into
   // its module account and transfers it to the claimer.
   rpc Claim(MsgClaim) returns (MsgClaimResponse);
 

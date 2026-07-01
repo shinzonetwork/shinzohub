@@ -32,7 +32,7 @@ const (
 	// know whether work is owed.
 	LastSettledEpochKey = "last_settled_epoch"
 
-	SettlementDenom = "ushinusd"
+	SettlementDenom = "ushinzo"
 
 	// EpochSeconds is the duration of a settlement epoch in seconds.
 	// epoch = floor(block_time_unix / EpochSeconds)
