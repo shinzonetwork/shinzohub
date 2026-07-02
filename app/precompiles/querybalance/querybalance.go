@@ -13,7 +13,6 @@ import (
 	"github.com/ethereum/go-ethereum/core/vm"
 
 	qbkeeper "github.com/shinzonetwork/shinzohub/x/querybalance/keeper"
-	qbtypes "github.com/shinzonetwork/shinzohub/x/querybalance/types"
 )
 
 const PrecompileAddress = "0x0000000000000000000000000000000000000214"
@@ -25,15 +24,13 @@ var _ vm.PrecompiledContract = &Precompile{}
 
 type Precompile struct {
 	cmn.Precompile
-	baseGas       uint64
-	qbKeeper      qbkeeper.Keeper
-	stakingKeeper qbtypes.StakingKeeper
+	baseGas  uint64
+	qbKeeper qbkeeper.Keeper
 }
 
 func NewPrecompile(
 	baseGas uint64,
 	qbKeeper qbkeeper.Keeper,
-	stakingKeeper qbtypes.StakingKeeper,
 ) (*Precompile, error) {
 	newABI, err := cmn.LoadABI(f, "abi.json")
 	if err != nil {
@@ -45,9 +42,8 @@ func NewPrecompile(
 			KvGasConfig:          storetypes.GasConfig{},
 			TransientKVGasConfig: storetypes.GasConfig{},
 		},
-		baseGas:       baseGas,
-		qbKeeper:      qbKeeper,
-		stakingKeeper: stakingKeeper,
+		baseGas:  baseGas,
+		qbKeeper: qbKeeper,
 	}, nil
 }
 

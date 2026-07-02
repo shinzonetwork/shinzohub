@@ -1370,7 +1370,10 @@ func (a *ChainApp) DefaultGenesis() map[string]json.RawMessage {
 	genesis[minttypes.ModuleName] = a.appCodec.MustMarshalJSON(mintGenState)
 
 	evmGenState := evmtypes.DefaultGenesisState()
-	evmGenState.Params.ActiveStaticPrecompiles = evmtypes.AvailableStaticPrecompiles
+	// Use the chain's full precompile set (base EVM + custom Shinzo precompiles)
+	// so the custom precompiles are active by default; the bare
+	// evmtypes.AvailableStaticPrecompiles omits view/host/indexer/pool/querybalance.
+	evmGenState.Params.ActiveStaticPrecompiles = GetAvailableStaticPrecompiles()
 	genesis[evmtypes.ModuleName] = a.appCodec.MustMarshalJSON(evmGenState)
 
 	// NOTE: for the example chain implementation we are also adding a default token pair,

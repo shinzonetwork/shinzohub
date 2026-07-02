@@ -186,7 +186,7 @@ func NewAvailableStaticPrecompiles(
 		panic(fmt.Errorf("failed to instantiate pool registry precompile: %w", err))
 	}
 
-	queryBalancePrecompile, err := querybalance.NewPrecompile(precompileBaseGas, queryBalanceKeeper, stakingKeeper)
+	queryBalancePrecompile, err := querybalance.NewPrecompile(precompileBaseGas, queryBalanceKeeper)
 	if err != nil {
 		panic(fmt.Errorf("failed to instantiate query balance precompile: %w", err))
 	}

@@ -65,19 +65,62 @@ func (k Keeper) Fund(
 		return fmt.Errorf("transfer to module account: %w", err)
 	}
 
+	k.credit(ctx, funder, recipient, amount[0])
+	return nil
+}
+
+// EscrowAndCredit moves `amount`, which the caller has already parked in
+// `escrowAcc`, into the module account and credits it to `recipient`. It exists
+// for the EVM precompile: a payable call lands msg.value in the precompile's own
+// account, so the coins must be escrowed from there rather than pulled from the
+// funder again — the EVM has already debited the funder, and re-pulling would
+// double-charge them and strand the value at the precompile. `funder` is the
+// logical origin recorded in the emitted event.
+func (k Keeper) EscrowAndCredit(
+	ctx sdk.Context,
+	escrowAcc sdk.AccAddress,
+	funder sdk.AccAddress,
+	recipient sdk.AccAddress,
+	amount sdk.Coin,
+) error {
+	if escrowAcc.Empty() {
+		return fmt.Errorf("escrow account is required")
+	}
+	if funder.Empty() {
+		return fmt.Errorf("funder is required")
+	}
+	if recipient.Empty() {
+		return fmt.Errorf("recipient is required")
+	}
+	if !amount.IsValid() || amount.IsZero() {
+		return fmt.Errorf("amount must be a positive coin")
+	}
+
+	if err := k.bankKeeper.SendCoinsFromAccountToModule(
+		ctx, escrowAcc, types.ModuleName, sdk.NewCoins(amount),
+	); err != nil {
+		return fmt.Errorf("escrow to module account: %w", err)
+	}
+
+	k.credit(ctx, funder, recipient, amount)
+	return nil
+}
+
+// credit adds `amount` to `recipient`'s query balance and emits the funded
+// event. The coins backing `amount` are assumed to already be held by the
+// module account (moved there by the caller).
+func (k Keeper) credit(ctx sdk.Context, funder, recipient sdk.AccAddress, amount sdk.Coin) {
 	qb := k.getEntry(ctx, recipient)
 	prev := parseAmount(qb.Amount)
-	qb.Amount = prev.Add(amount[0].Amount).String()
+	qb.Amount = prev.Add(amount.Amount).String()
 	k.setEntry(ctx, qb)
 
 	ctx.EventManager().EmitEvent(sdk.NewEvent(
 		types.EventTypeFunded,
 		sdk.NewAttribute(types.AttrKeyFunder, funder.String()),
 		sdk.NewAttribute(types.AttrKeyRecipient, recipient.String()),
-		sdk.NewAttribute(types.AttrKeyAmount, amount[0].Amount.String()),
+		sdk.NewAttribute(types.AttrKeyAmount, amount.Amount.String()),
 	))
-
-	return nil
 }
 
 func (k Keeper) Debit(ctx sdk.Context, holder sdk.AccAddress, amount math.Int) error {
@@ -139,7 +182,9 @@ func (k Keeper) getEntryIfExists(ctx sdk.Context, holder sdk.AccAddress) (types.
 	}
 	var qb types.QueryBalance
 	if err := k.cdc.Unmarshal(bz, &qb); err != nil {
-		return types.QueryBalance{}, false
+		// A decode failure means the stored bytes are corrupt; surfacing it as
+		// "not found" would silently zero out a real balance, so fail loudly.
+		panic(fmt.Errorf("decode query balance for %s: %w", holder.String(), err))
 	}
 	return qb, true
 }
@@ -150,7 +195,11 @@ func (k Keeper) setEntry(ctx sdk.Context, qb types.QueryBalance) {
 	if err != nil {
 		panic(err)
 	}
-	store.Set([]byte(types.BalancePrefix+qb.Address), bz)
+	holder, err := sdk.AccAddressFromBech32(qb.Address)
+	if err != nil {
+		panic(fmt.Errorf("query balance has invalid address %q: %w", qb.Address, err))
+	}
+	store.Set(balanceKey(holder), bz)
 }
 
 func balanceKey(holder sdk.AccAddress) []byte {

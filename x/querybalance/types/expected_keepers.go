@@ -15,9 +15,3 @@ type BankKeeper interface {
 	SendCoinsFromModuleToAccount(ctx context.Context, senderModule string, recipientAddr sdk.AccAddress, amt sdk.Coins) error
 	SendCoinsFromModuleToModule(ctx context.Context, senderModule, recipientModule string, amt sdk.Coins) error
 }
-
-// StakingKeeper is used purely to look up the chain's bond denom so we don't
-// have to hardcode it in this module.
-type StakingKeeper interface {
-	BondDenom(ctx context.Context) (string, error)
-}

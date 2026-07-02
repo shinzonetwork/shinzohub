@@ -6,8 +6,10 @@ import (
 
 	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	evmtypes "github.com/cosmos/evm/x/vm/types"
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/core/tracing"
 	gethtypes "github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/core/vm"
 	"github.com/ethereum/go-ethereum/crypto"
@@ -57,20 +59,28 @@ func (p Precompile) fundCore(
 		return nil, fmt.Errorf("must send a non-zero amount")
 	}
 
-	bondDenom, err := p.stakingKeeper.BondDenom(ctx)
-	if err != nil {
-		return nil, fmt.Errorf("look up bond denom: %w", err)
-	}
-
-	amount := math.NewIntFromBigInt(value.ToBig())
-	coins := sdk.NewCoins(sdk.NewCoin(bondDenom, amount))
+	// msg.value is denominated in the EVM coin's extended denom; use it directly
+	// rather than the staking bond denom so the escrow always matches the coin
+	// the EVM actually parked at this precompile.
+	amount := sdk.NewCoin(
+		evmtypes.GetEVMCoinExtendedDenom(),
+		math.NewIntFromBigInt(value.ToBig()),
+	)
 
 	funder := sdk.AccAddress(funderEVM.Bytes())
 	recipient := sdk.AccAddress(recipientEVM.Bytes())
+	// A payable call parks msg.value in this precompile's own account. Escrow it
+	// from there into the module account — pulling from the funder again would
+	// double-charge them and strand the value here.
+	escrowAcc := sdk.AccAddress(contract.Address().Bytes())
 
-	if err := p.qbKeeper.Fund(ctx, funder, recipient, coins); err != nil {
+	if err := p.qbKeeper.EscrowAndCredit(ctx, escrowAcc, funder, recipient, amount); err != nil {
 		return nil, fmt.Errorf("fund: %w", err)
 	}
+
+	// The bank transfer above bypasses the EVM journal, so reconcile the StateDB
+	// to keep the precompile's EVM-visible balance consistent with the move.
+	stateDB.SubBalance(contract.Address(), value, tracing.BalanceChangeUnspecified)
 
 	emitFunded(stateDB, contract.Address(), funderEVM, recipientEVM, value.ToBig())
 
