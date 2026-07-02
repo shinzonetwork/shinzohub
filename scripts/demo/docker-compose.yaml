@@ -1,0 +1,30 @@
+name: shinzohub-demo
+
+services:
+  sourcehub:
+    image: ghcr.io/sourcenetwork/sourcehub:dev
+    environment:
+      STANDALONE: "1"
+      CHAIN_ID: "sourcehub"
+      MONIKER: "node"
+    ports:
+      - "27686:26657"
+      - "9095:9090"
+      - "1318:1317"
+    healthcheck:
+      test: ["CMD-SHELL", "sourcehubd status --node tcp://localhost:26657 >/dev/null 2>&1"]
+      interval: 2s
+      timeout: 2s
+      retries: 60
+
+  hermes:
+    image: informalsystems/hermes:1.13.1
+    depends_on:
+      sourcehub:
+        condition: service_healthy
+    volumes:
+      - ./hermes/config.toml:/tmp/hermes-config.toml:ro
+      - ./hermes/entrypoint.sh:/usr/local/bin/shinzo-hermes-entrypoint.sh:ro
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    entrypoint: ["/bin/bash", "/usr/local/bin/shinzo-hermes-entrypoint.sh"]

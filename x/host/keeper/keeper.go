@@ -3,6 +3,7 @@ package keeper
 import (
 	"encoding/binary"
 	"fmt"
+	"net/url"
 
 	storetypes "cosmossdk.io/core/store"
 	"cosmossdk.io/log"
@@ -15,6 +16,20 @@ import (
 	commoncrypto "github.com/shinzonetwork/shinzohub/x/common/crypto"
 	"github.com/shinzonetwork/shinzohub/x/host/types"
 )
+
+func validateEndpointAddress(endpointAddress string) error {
+	u, err := url.Parse(endpointAddress)
+	if err != nil {
+		return fmt.Errorf("%w: %w", types.ErrInvalidEndpointAddress, err)
+	}
+	if u.Scheme != "http" && u.Scheme != "https" {
+		return fmt.Errorf("%w: scheme must be http or https, got %q", types.ErrInvalidEndpointAddress, u.Scheme)
+	}
+	if u.Host == "" {
+		return fmt.Errorf("%w: missing host", types.ErrInvalidEndpointAddress)
+	}
+	return nil
+}
 
 type Keeper struct {
 	cdc             codec.BinaryCodec
@@ -47,9 +62,14 @@ func (k Keeper) RegisterHost(
 	nodeIdentityKeySignature []byte,
 	message []byte,
 	connectionString string,
+	endpointAddress string,
 	caller sdk.AccAddress,
 ) ([]byte, error) {
 	if err := commoncrypto.VerifyNodeIdentityKeySignature(nodeIdentityKeyPubkey, message, nodeIdentityKeySignature); err != nil {
+		return nil, err
+	}
+
+	if err := validateEndpointAddress(endpointAddress); err != nil {
 		return nil, err
 	}
 
@@ -68,7 +88,7 @@ func (k Keeper) RegisterHost(
 	for _, key := range [][]byte{addrKey, pendingAddrKey} {
 		existingDID := store.Get(key)
 		if len(existingDID) > 0 && string(existingDID) != did {
-			return nil, fmt.Errorf("address already registered as host with a different DID")
+			return nil, types.ErrAddressRegisteredDifferentDID
 		}
 	}
 
@@ -77,7 +97,7 @@ func (k Keeper) RegisterHost(
 	for _, key := range [][]byte{didKey, pendingDidKey} {
 		existingAddr := store.Get(key)
 		if len(existingAddr) > 0 && string(existingAddr) != bech32Addr {
-			return nil, fmt.Errorf("DID already registered as host with a different address")
+			return nil, types.ErrDIDRegisteredDifferentAddress
 		}
 	}
 
@@ -85,6 +105,7 @@ func (k Keeper) RegisterHost(
 		Address:          bech32Addr,
 		Did:              did,
 		ConnectionString: connectionString,
+		EndpointAddress:  endpointAddress,
 	}
 	if err := k.SetPendingHost(ctx, host); err != nil {
 		return nil, fmt.Errorf("record pending host: %w", err)

@@ -11,7 +11,8 @@
         { "name": "nodeIdentityKeyPubkey", "type": "bytes" },
         { "name": "nodeIdentityKeySignature", "type": "bytes" },
         { "name": "message", "type": "bytes" },
-        { "name": "connectionString", "type": "string" }
+        { "name": "connectionString", "type": "string" },
+        { "name": "endpointAddress", "type": "string" }
       ],
       "outputs": []
     },
@@ -37,13 +38,21 @@
       "outputs": [{ "name": "connectionString", "type": "string" }]
     },
     {
+      "type": "function",
+      "name": "getEndpointAddress",
+      "stateMutability": "view",
+      "inputs": [{ "name": "addr", "type": "address" }],
+      "outputs": [{ "name": "endpointAddress", "type": "string" }]
+    },
+    {
       "type": "event",
       "name": "Registered",
       "anonymous": false,
       "inputs": [
         { "name": "owner", "type": "address", "indexed": true },
         { "name": "did", "type": "bytes", "indexed": false },
-        { "name": "connectionString", "type": "string", "indexed": false }
+        { "name": "connectionString", "type": "string", "indexed": false },
+        { "name": "endpointAddress", "type": "string", "indexed": false }
       ]
     }
   ],

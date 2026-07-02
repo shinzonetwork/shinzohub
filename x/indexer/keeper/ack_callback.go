@@ -5,6 +5,7 @@ import (
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
+	indexertypes "github.com/shinzonetwork/shinzohub/x/indexer/types"
 	sourcehubtypes "github.com/shinzonetwork/shinzohub/x/sourcehub/types"
 )
 
@@ -25,7 +26,7 @@ func (c AckCallback) OnPacketAck(ctx sdk.Context, req sourcehubtypes.PendingICAR
 	if err := c.keeper.cdc.Unmarshal(req.Meta, &meta); err != nil {
 		return fmt.Errorf("decode SetRelationshipMeta: %w", err)
 	}
-	if meta.Group != "indexer" {
+	if meta.Group != indexertypes.GroupIndexerName {
 		return nil
 	}
 

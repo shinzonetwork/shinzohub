@@ -248,13 +248,13 @@ var maccPerms = map[string][]string{
 	erc20types.ModuleName:       {authtypes.Minter, authtypes.Burner},
 
 	admintypes.ModuleName:        nil,
-		sourcehubtypes.ModuleName:    nil,
-		hosttypes.ModuleName:         nil,
-		indexertypes.ModuleName:      nil,
-		viewtypes.ModuleName:         nil,
-		pooltypes.ModuleName:         nil,
-		querybalancetypes.ModuleName: nil,
-		settlementtypes.ModuleName:   {authtypes.Minter, authtypes.Burner},
+	sourcehubtypes.ModuleName:    nil,
+	hosttypes.ModuleName:         nil,
+	indexertypes.ModuleName:      nil,
+	viewtypes.ModuleName:         nil,
+	pooltypes.ModuleName:         nil,
+	querybalancetypes.ModuleName: nil,
+	settlementtypes.ModuleName:   {authtypes.Minter, authtypes.Burner},
 }
 
 var (
@@ -827,6 +827,11 @@ func NewChainApp(
 		sourcehubtypes.RequestKind_REQUEST_KIND_REGISTER_OBJECT,
 		viewkeeper.NewAckCallback(app.ViewKeeper),
 	)
+	// Host and indexer both register for SET_RELATIONSHIP. On ack, every callback
+	// for the kind is invoked in registration order, but each dispatches only on
+	// its own relationship group (host checks "host", indexer checks "indexer")
+	// and no-ops otherwise. The groups are disjoint, so the two are mutually
+	// exclusive and this registration order does not affect behavior.
 	app.SourcehubKeeper.RegisterAckCallback(
 		sourcehubtypes.RequestKind_REQUEST_KIND_SET_RELATIONSHIP,
 		hostkeeper.NewAckCallback(app.HostKeeper),
@@ -856,6 +861,7 @@ func NewChainApp(
 		app.HostKeeper,
 		app.IndexerKeeper,
 		app.ViewKeeper,
+		app.PoolKeeper,
 		app.QueryBalanceKeeper,
 		app.SettlementKeeper,
 		app.SourcehubKeeper,
@@ -1390,7 +1396,10 @@ func (a *ChainApp) DefaultGenesis() map[string]json.RawMessage {
 	genesis[minttypes.ModuleName] = a.appCodec.MustMarshalJSON(mintGenState)
 
 	evmGenState := evmtypes.DefaultGenesisState()
-	evmGenState.Params.ActiveStaticPrecompiles = evmtypes.AvailableStaticPrecompiles
+	// Use the chain's full precompile set (base EVM + custom Shinzo precompiles)
+	// so the custom precompiles are active by default; the bare
+	// evmtypes.AvailableStaticPrecompiles omits view/host/indexer/pool/querybalance.
+	evmGenState.Params.ActiveStaticPrecompiles = GetAvailableStaticPrecompiles()
 	genesis[evmtypes.ModuleName] = a.appCodec.MustMarshalJSON(evmGenState)
 
 	// NOTE: for the example chain implementation we are also adding a default token pair,

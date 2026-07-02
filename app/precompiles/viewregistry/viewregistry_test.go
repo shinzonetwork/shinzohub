@@ -333,3 +333,47 @@ func (s *PrecompileTestSuite) TestViewAddress_IsDeterministicPerCallerAndBundle(
 	s.NotEqual(addrA, addrA2)
 }
 
+// The SDL name is taken from the real type declaration, not from a `type <name>`
+// mentioned in a leading comment.
+func (s *PrecompileTestSuite) TestRegister_SDLNameIgnoresLeadingComment() {
+	h := viewbundle.DecodedHeader{
+		Header: viewbundle.Header{
+			Query: "Log { address }",
+			Sdl:   "# please rename the type Legacy later\ntype RealView @materialized(if: false) { x: String }",
+		},
+	}
+	bz, err := viewbundle.EncodeHeader(h)
+	s.Require().NoError(err)
+
+	contract := makeContract(common.HexToAddress("0x8888888888888888888888888888888888888888"))
+	method := s.precompile.ABI.Methods["register"]
+	out, err := s.precompile.Register(s.ctx, contract, s.stateDB, &method, []interface{}{bz})
+	s.Require().NoError(err)
+
+	values, err := method.Outputs.Unpack(out)
+	s.Require().NoError(err)
+	s.Equal("RealView", values[1].(string))
+}
+
+// listViews(_, 0) returns an empty page, not the cosmos default page size.
+func (s *PrecompileTestSuite) TestListViews_ZeroLimit_ReturnsEmpty() {
+	caller := common.HexToAddress("0x9999999999999999999999999999999999999999")
+	viewAddr := s.register(caller, buildBundle("ViewZeroLimit"))
+	s.fireAck(viewAddr, sourcehubtypes.RequestStatus_REQUEST_STATUS_SUCCESS)
+
+	method := s.precompile.ABI.Methods["listViews"]
+	bz, err := s.precompile.ListViews(s.ctx, &method, []interface{}{
+		big.NewInt(0), big.NewInt(0),
+	})
+	s.Require().NoError(err)
+	values, err := method.Outputs.Unpack(bz)
+	s.Require().NoError(err)
+	tuples := values[0].([]struct {
+		ViewAddress common.Address `json:"viewAddress"`
+		Name        string         `json:"name"`
+		Creator     string         `json:"creator"`
+		Height      uint64         `json:"height"`
+		Status      uint8          `json:"status"`
+	})
+	s.Require().Len(tuples, 0)
+}

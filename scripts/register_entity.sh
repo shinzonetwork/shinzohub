@@ -12,13 +12,15 @@ NODE_SIG="0x3045022100bca215bd97cc3f27573e7cda7a0a05e452d397643b4962581a5512bd74
 # "entity-registration-test-nonce" in hex, with 0x
 MESSAGE="0x656e746974792d726567697374726174696f6e2d746573742d6e6f6e6365"
 CONNECTION_STRING="${CONNECTION_STRING:-192.168.1.1:8080}"
+ENDPOINT_ADDRESS="${ENDPOINT_ADDRESS:-https://192.168.1.1/api/v0/graphql}"
 
 DATA=$(cast calldata \
-  "register(bytes,bytes,bytes,string)" \
+  "register(bytes,bytes,bytes,string,string)" \
   "$NODE_PUB" \
   "$NODE_SIG" \
   "$MESSAGE" \
-  "$CONNECTION_STRING")
+  "$CONNECTION_STRING" \
+  "$ENDPOINT_ADDRESS")
 
 curl -s -X POST "$RPC_URL" \
   -H "Content-Type: application/json" \
