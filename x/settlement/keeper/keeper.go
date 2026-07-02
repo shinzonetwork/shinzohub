@@ -69,7 +69,13 @@ func (k Keeper) Credit(ctx sdk.Context, recipient sdk.AccAddress, amount math.In
 
 	sb := k.getEntry(ctx, recipient)
 	prev := parseAmount(sb.Amount)
-	sb.Amount = prev.Add(amount).String()
+	// SafeAdd returns an error instead of panicking on 256-bit overflow — a panic
+	// here runs inside BeginBlocker's credit drain and would halt the chain.
+	sum, err := prev.SafeAdd(amount)
+	if err != nil {
+		return fmt.Errorf("credit %s: balance overflow: %w", recipient.String(), err)
+	}
+	sb.Amount = sum.String()
 	k.setEntry(ctx, sb)
 
 	ctx.EventManager().EmitEvent(sdk.NewEvent(

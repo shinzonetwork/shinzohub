@@ -20,6 +20,33 @@ func TestPoolStats_DefaultsToZeroForNewPool(t *testing.T) {
 	require.Equal(t, uint64(0), stats.LastUpdatedEpoch)
 }
 
+func TestUpdatePoolStats_RejectsUtilizationOver100(t *testing.T) {
+	f := newFixture(t)
+	f.views.registerView("0xview")
+	require.NoError(t, f.keeper.CreatePool(f.ctx, "0xpool", "0xview", cfg()))
+
+	err := f.keeper.UpdatePoolStats(f.ctx, "0xpool", math.NewInt(1), 101, 1, math.NewInt(1), 1)
+	require.ErrorContains(t, err, "utilization out of range")
+
+	// Rejected before any write — stats stay at defaults.
+	require.Equal(t, uint64(0), f.keeper.GetPoolStats(f.ctx, "0xpool").TotalQueries)
+}
+
+func TestUpdatePoolStats_RejectsTotalQueriesOverflow(t *testing.T) {
+	f := newFixture(t)
+	f.views.registerView("0xview")
+	require.NoError(t, f.keeper.CreatePool(f.ctx, "0xpool", "0xview", cfg()))
+
+	nearMax := ^uint64(0) - 5
+	// Seed a near-max cumulative counter, then overflow it.
+	require.NoError(t, f.keeper.UpdatePoolStats(f.ctx, "0xpool", math.NewInt(1), 0, nearMax, math.NewInt(0), 1))
+	err := f.keeper.UpdatePoolStats(f.ctx, "0xpool", math.NewInt(1), 0, 10, math.NewInt(0), 2)
+	require.ErrorContains(t, err, "total_queries overflow")
+
+	// Counter unchanged by the overflowing call.
+	require.Equal(t, nearMax, f.keeper.GetPoolStats(f.ctx, "0xpool").TotalQueries)
+}
+
 func TestUpdatePoolStats_FirstUpdate(t *testing.T) {
 	f := newFixture(t)
 	f.views.registerView("0xview")
@@ -27,11 +54,11 @@ func TestUpdatePoolStats_FirstUpdate(t *testing.T) {
 
 	err := f.keeper.UpdatePoolStats(
 		f.ctx, "0xpool",
-		math.NewInt(9995),     // price
-		32,                    // utilization
-		10,                    // addQueries
+		math.NewInt(9995),      // price
+		32,                     // utilization
+		10,                     // addQueries
 		math.NewInt(1_000_000), // addRewards
-		100,                   // epoch
+		100,                    // epoch
 	)
 	require.NoError(t, err)
 

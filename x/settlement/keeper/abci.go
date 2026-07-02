@@ -1,7 +1,6 @@
 package keeper
 
 import (
-	"fmt"
 	"strconv"
 
 	"cosmossdk.io/math"
@@ -127,7 +126,11 @@ func (k Keeper) ProcessPendingDebitChunk(ctx sdk.Context, epoch uint64, limit in
 			continue
 		}
 		if err := k.queryBalanceKeeper.Debit(ctx, addr, taken); err != nil {
-			return fmt.Errorf("debit %s: %w", key, err)
+			// Never return from BeginBlocker for a single bad entry — that would
+			// halt the chain (and, since the entry was already drained, retry
+			// identically forever). Skip it and keep the boundary making progress.
+			k.Logger(ctx).Error("settlement: skipping undrainable debit", "address", key, "err", err)
+			continue
 		}
 		totalDebited = totalDebited.Add(taken)
 	}
@@ -174,7 +177,10 @@ func (k Keeper) ProcessPendingCreditChunk(ctx sdk.Context, epoch uint64, limit i
 		}
 		amt := creditByAddr[key]
 		if err := k.Credit(ctx, addr, amt); err != nil {
-			return fmt.Errorf("credit %s: %w", key, err)
+			// See ProcessPendingDebitChunk: never halt the chain over one bad
+			// entry — skip it and continue draining the boundary.
+			k.Logger(ctx).Error("settlement: skipping unapplyable credit", "address", key, "err", err)
+			continue
 		}
 		totalCredited = totalCredited.Add(amt)
 	}

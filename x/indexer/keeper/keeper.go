@@ -213,6 +213,15 @@ func (k Keeper) UpsertAssertion(ctx sdk.Context, msg *types.MsgIndexerAssertion)
 
 	if isUpdate && operatorChanged {
 		store.Delete(addrIndexKey(existing.OperatorAddress))
+		// The superseding operator starts unregistered (row.Did == ""), so drop
+		// the old operator's DID index as well. Leaving it would keep
+		// did_idx/<oldDID> pointing at this row — now owned by the new operator —
+		// so GetIndexerByDID(oldDID) would resolve to, and settlement would pay
+		// out to, the wrong operator. Revoke can't clean it later either (row.Did
+		// is now ""), so it must be removed here.
+		if existing.Did != "" {
+			store.Delete(didIndexKey(existing.Did))
+		}
 		emitSuperseded(ctx, msg.SourceChainId, msg.ValidatorPubkey, existing.OperatorAddress, msg.OperatorAddress, existing.Nonce, msg.Nonce)
 	}
 
@@ -356,6 +365,17 @@ func (k Keeper) RegisterIndexer(
 	did, err := commoncrypto.DeriveDID(nodeIdentityKeyPubkey)
 	if err != nil {
 		return RegisterResult{}, fmt.Errorf("derive did: %w", err)
+	}
+
+	// A DID is derived from the node identity key, so two distinct validators
+	// presenting the same key would collide on the DID index and the later one
+	// would silently hijack the earlier one's payout routing. Reject a DID that
+	// is already bound to a different (chain, validator) row.
+	if existingDIDVal := store.Get(didIndexKey(did)); len(existingDIDVal) > 0 {
+		exChain, exPub, decErr := decodeAddrIndexValue(existingDIDVal)
+		if decErr == nil && (exChain != chainID || !bytes.Equal(exPub, pub)) {
+			return RegisterResult{}, fmt.Errorf("did already registered to another indexer")
+		}
 	}
 
 	out := RegisterResult{

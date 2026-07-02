@@ -142,8 +142,8 @@ func (k Keeper) GetPoolStats(ctx sdk.Context, poolAddress string) types.PoolStat
 	bz := store.Get([]byte(types.PoolStatsPrefix + poolAddress))
 	if len(bz) == 0 {
 		return types.PoolStats{
-			PoolAddress:   poolAddress,
-			TotalRewards:  "0",
+			PoolAddress:  poolAddress,
+			TotalRewards: "0",
 		}
 	}
 	var s types.PoolStats
@@ -184,14 +184,27 @@ func (k Keeper) UpdatePoolStats(
 	if price.IsPositive() {
 		stats.Price = price.String()
 	}
+	if utilization > 100 {
+		return fmt.Errorf("utilization out of range: %d (expected 0-100)", utilization)
+	}
 	stats.Utilization = utilization
+
+	// Guard the cumulative counter against a silent uint64 wrap.
+	if stats.TotalQueries+addQueries < stats.TotalQueries {
+		return fmt.Errorf("total_queries overflow: %d + %d", stats.TotalQueries, addQueries)
+	}
 	stats.TotalQueries += addQueries
 
 	priorRewards, ok := math.NewIntFromString(stats.TotalRewards)
 	if !ok {
 		priorRewards = math.ZeroInt()
 	}
-	stats.TotalRewards = priorRewards.Add(addRewards).String()
+	// SafeAdd returns an error instead of panicking on 256-bit overflow.
+	sumRewards, err := priorRewards.SafeAdd(addRewards)
+	if err != nil {
+		return fmt.Errorf("total_rewards overflow: %w", err)
+	}
+	stats.TotalRewards = sumRewards.String()
 
 	if epoch >= stats.LastUpdatedEpoch {
 		stats.LastUpdatedEpoch = epoch

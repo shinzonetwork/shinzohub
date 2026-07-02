@@ -102,6 +102,32 @@ func (s *KeeperTestSuite) TestApplyRegistration_NewDIDReplacesOldInIndex() {
 	s.Require().Equal("https://op/9091", row.ConnectionString)
 }
 
+// An operator change (key rotation) on a registered validator must clear the
+// superseded operator's DID index. Otherwise did_idx/<oldDID> keeps resolving
+// to the row — now owned by the new operator — and settlement would misroute the
+// old DID's payouts to the new operator.
+func (s *KeeperTestSuite) TestUpsertAssertion_OperatorChange_ClearsOldDIDIndex() {
+	op1 := addr(0x01)
+	pay1 := addr(0x02)
+	op2 := addr(0x03)
+	pay2 := addr(0x04)
+
+	s.Require().NoError(s.keeper.UpsertAssertion(s.ctx, baseAssertion(op1, pay1)))
+	s.claimAndConfirm(op1, "did:key:rotate", "https://op1/9090")
+
+	_, found, _ := s.keeper.GetIndexerByDID(s.ctx, "did:key:rotate")
+	s.Require().True(found)
+
+	// Same (chain, validator), different operator, higher nonce → supersede.
+	supersede := baseAssertion(op2, pay2)
+	supersede.Nonce = 2
+	s.Require().NoError(s.keeper.UpsertAssertion(s.ctx, supersede))
+
+	_, stillFound, err := s.keeper.GetIndexerByDID(s.ctx, "did:key:rotate")
+	s.Require().NoError(err)
+	s.Require().False(stillFound, "operator change must clear the superseded operator's DID index")
+}
+
 func (s *KeeperTestSuite) TestApplyRegistration_SameDIDIsIdempotent() {
 	op := addr(0x01)
 	pay := addr(0x02)
