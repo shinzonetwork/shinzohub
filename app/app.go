@@ -169,6 +169,9 @@ import (
 	poolmod "github.com/shinzonetwork/shinzohub/x/pool"
 	poolkeeper "github.com/shinzonetwork/shinzohub/x/pool/keeper"
 	pooltypes "github.com/shinzonetwork/shinzohub/x/pool/types"
+	querybalancemod "github.com/shinzonetwork/shinzohub/x/querybalance"
+	querybalancekeeper "github.com/shinzonetwork/shinzohub/x/querybalance/keeper"
+	querybalancetypes "github.com/shinzonetwork/shinzohub/x/querybalance/types"
 	sourcehub "github.com/shinzonetwork/shinzohub/x/sourcehub"
 	sourcehubkeeper "github.com/shinzonetwork/shinzohub/x/sourcehub/keeper"
 	sourcehubtypes "github.com/shinzonetwork/shinzohub/x/sourcehub/types"
@@ -241,12 +244,13 @@ var maccPerms = map[string][]string{
 	feemarkettypes.ModuleName:   nil,
 	erc20types.ModuleName:       {authtypes.Minter, authtypes.Burner},
 
-	admintypes.ModuleName:     nil,
-	sourcehubtypes.ModuleName: nil,
-	hosttypes.ModuleName:      nil,
-	indexertypes.ModuleName:   nil,
-	viewtypes.ModuleName:      nil,
-	pooltypes.ModuleName:      nil,
+	admintypes.ModuleName:        nil,
+	sourcehubtypes.ModuleName:    nil,
+	hosttypes.ModuleName:         nil,
+	indexertypes.ModuleName:      nil,
+	viewtypes.ModuleName:         nil,
+	pooltypes.ModuleName:         nil,
+	querybalancetypes.ModuleName: nil,
 }
 
 var (
@@ -303,12 +307,13 @@ type ChainApp struct {
 	ScopedTransferKeeper      capabilitykeeper.ScopedKeeper
 	ScopedIBCFeeKeeper        capabilitykeeper.ScopedKeeper
 
-	AdminKeeper     adminkeeper.Keeper
-	SourcehubKeeper sourcehubkeeper.Keeper
-	HostKeeper      hostkeeper.Keeper
-	IndexerKeeper   indexerkeeper.Keeper
-	ViewKeeper      viewkeeper.Keeper
-	PoolKeeper      poolkeeper.Keeper
+	AdminKeeper        adminkeeper.Keeper
+	SourcehubKeeper    sourcehubkeeper.Keeper
+	HostKeeper         hostkeeper.Keeper
+	IndexerKeeper      indexerkeeper.Keeper
+	ViewKeeper         viewkeeper.Keeper
+	PoolKeeper         poolkeeper.Keeper
+	QueryBalanceKeeper querybalancekeeper.Keeper
 	// the module manager
 	ModuleManager      *module.Manager
 	BasicModuleManager module.BasicManager
@@ -425,6 +430,7 @@ func NewChainApp(
 		indexertypes.StoreKey,
 		viewtypes.StoreKey,
 		pooltypes.StoreKey,
+		querybalancetypes.StoreKey,
 	)
 
 	tkeys := storetypes.NewTransientStoreKeys(
@@ -793,6 +799,13 @@ func NewChainApp(
 		authority,
 	)
 
+	app.QueryBalanceKeeper = querybalancekeeper.NewKeeper(
+		appCodec,
+		runtime.NewKVStoreService(keys[querybalancetypes.StoreKey]),
+		app.BankKeeper,
+		authority,
+	)
+
 	app.SourcehubKeeper.RegisterAckCallback(
 		sourcehubtypes.RequestKind_REQUEST_KIND_REGISTER_OBJECT,
 		viewkeeper.NewAckCallback(app.ViewKeeper),
@@ -832,6 +845,7 @@ func NewChainApp(
 		app.IndexerKeeper,
 		app.ViewKeeper,
 		app.PoolKeeper,
+		app.QueryBalanceKeeper,
 		app.SourcehubKeeper,
 		appCodec,
 	)
@@ -957,6 +971,11 @@ func NewChainApp(
 			app.PoolKeeper,
 			runtime.NewKVStoreService(keys[pooltypes.StoreKey]),
 		),
+		querybalancemod.NewAppModule(
+			appCodec,
+			app.QueryBalanceKeeper,
+			runtime.NewKVStoreService(keys[querybalancetypes.StoreKey]),
+		),
 	)
 
 	// BasicModuleManager defines the module BasicManager is in charge of setting up basic,
@@ -1005,6 +1024,7 @@ func NewChainApp(
 		indexertypes.ModuleName,
 		viewtypes.ModuleName,
 		pooltypes.ModuleName,
+		querybalancetypes.ModuleName,
 	)
 
 	app.ModuleManager.SetOrderEndBlockers(
@@ -1027,6 +1047,7 @@ func NewChainApp(
 		indexertypes.ModuleName,
 		viewtypes.ModuleName,
 		pooltypes.ModuleName,
+		querybalancetypes.ModuleName,
 	)
 
 	// NOTE: The genutils module must occur after staking so that pools are
@@ -1076,6 +1097,7 @@ func NewChainApp(
 		indexertypes.ModuleName,
 		viewtypes.ModuleName,
 		pooltypes.ModuleName,
+		querybalancetypes.ModuleName,
 	}
 	app.ModuleManager.SetOrderInitGenesis(genesisModuleOrder...)
 	app.ModuleManager.SetOrderExportGenesis(genesisModuleOrder...)
@@ -1348,7 +1370,10 @@ func (a *ChainApp) DefaultGenesis() map[string]json.RawMessage {
 	genesis[minttypes.ModuleName] = a.appCodec.MustMarshalJSON(mintGenState)
 
 	evmGenState := evmtypes.DefaultGenesisState()
-	evmGenState.Params.ActiveStaticPrecompiles = evmtypes.AvailableStaticPrecompiles
+	// Use the chain's full precompile set (base EVM + custom Shinzo precompiles)
+	// so the custom precompiles are active by default; the bare
+	// evmtypes.AvailableStaticPrecompiles omits view/host/indexer/pool/querybalance.
+	evmGenState.Params.ActiveStaticPrecompiles = GetAvailableStaticPrecompiles()
 	genesis[evmtypes.ModuleName] = a.appCodec.MustMarshalJSON(evmGenState)
 
 	// NOTE: for the example chain implementation we are also adding a default token pair,
