@@ -69,7 +69,14 @@ func (k Keeper) Fund(
 
 	qb := k.getEntry(ctx, recipient)
 	prev := parseAmount(qb.Amount)
-	qb.Amount = prev.Add(amount).String()
+	// SafeAdd returns an error instead of panicking on 256-bit overflow. A panic
+	// here would escape the precompile's gas-error recovery and crash the node,
+	// so surface it as a normal error that reverts the tx.
+	sum, err := prev.SafeAdd(amount)
+	if err != nil {
+		return fmt.Errorf("credit %s: balance overflow: %w", recipient.String(), err)
+	}
+	qb.Amount = sum.String()
 	k.setEntry(ctx, qb)
 
 	ctx.EventManager().EmitEvent(sdk.NewEvent(
@@ -141,7 +148,9 @@ func (k Keeper) getEntryIfExists(ctx sdk.Context, holder sdk.AccAddress) (types.
 	}
 	var qb types.QueryBalance
 	if err := k.cdc.Unmarshal(bz, &qb); err != nil {
-		return types.QueryBalance{}, false
+		// A decode failure means the stored bytes are corrupt; surfacing it as
+		// "not found" would silently zero out a real balance, so fail loudly.
+		panic(fmt.Errorf("decode query balance for %s: %w", holder.String(), err))
 	}
 	return qb, true
 }
@@ -152,7 +161,11 @@ func (k Keeper) setEntry(ctx sdk.Context, qb types.QueryBalance) {
 	if err != nil {
 		panic(err)
 	}
-	store.Set([]byte(types.BalancePrefix+qb.Address), bz)
+	holder, err := sdk.AccAddressFromBech32(qb.Address)
+	if err != nil {
+		panic(fmt.Errorf("query balance has invalid address %q: %w", qb.Address, err))
+	}
+	store.Set(balanceKey(holder), bz)
 }
 
 func balanceKey(holder sdk.AccAddress) []byte {
@@ -165,7 +178,11 @@ func parseAmount(s string) math.Int {
 	}
 	v, ok := math.NewIntFromString(s)
 	if !ok {
-		return math.ZeroInt()
+		// Stored amounts are always written via math.Int.String(), so a
+		// non-numeric value means the state is corrupt. Silently returning zero
+		// would make the next Fund overwrite and permanently lose the real
+		// balance, so fail loudly instead.
+		panic(fmt.Errorf("corrupt query balance amount %q", s))
 	}
 	return v
 }
