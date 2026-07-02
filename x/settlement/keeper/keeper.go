@@ -314,6 +314,7 @@ func (k Keeper) drainPendingFrom(ctx sdk.Context, queuePrefix string, epoch uint
 		entry types.PendingSettleEntry
 	}
 	var batch []keyed
+	var corrupt [][]byte
 
 	it := pendingStore.Iterator(nil, nil)
 	for ; it.Valid(); it.Next() {
@@ -322,8 +323,16 @@ func (k Keeper) drainPendingFrom(ctx sdk.Context, queuePrefix string, epoch uint
 		}
 		var entry types.PendingSettleEntry
 		if err := k.cdc.Unmarshal(it.Value(), &entry); err != nil {
-			it.Close()
-			panic(fmt.Errorf("unmarshal pending settle entry: %w", err))
+			// Never panic in the BeginBlocker drain path: it would halt the chain
+			// and, since the entry is still in the store, crash identically every
+			// block. Record the key for deletion (so it can't recur or keep the
+			// epoch's PendingCount above zero and stall the boundary) and skip
+			// applying it.
+			k.Logger(ctx).Error("settlement: skipping corrupt pending entry", "err", err)
+			keyCopy := make([]byte, len(it.Key()))
+			copy(keyCopy, it.Key())
+			corrupt = append(corrupt, keyCopy)
+			continue
 		}
 		keyCopy := make([]byte, len(it.Key()))
 		copy(keyCopy, it.Key())
@@ -334,6 +343,10 @@ func (k Keeper) drainPendingFrom(ctx sdk.Context, queuePrefix string, epoch uint
 	for _, kv := range batch {
 		fn(kv.entry)
 		pendingStore.Delete(kv.key)
+	}
+	// Purge corrupt entries so they don't recur or block epoch completion.
+	for _, key := range corrupt {
+		pendingStore.Delete(key)
 	}
 	return len(batch)
 }

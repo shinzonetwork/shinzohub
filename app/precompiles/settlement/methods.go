@@ -10,7 +10,6 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	gethtypes "github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/core/vm"
-	"github.com/ethereum/go-ethereum/crypto"
 )
 
 const (
@@ -49,7 +48,9 @@ func (p Precompile) Claim(
 
 	remaining := p.settlementKeeper.GetBalance(ctx, claimer)
 
-	emitClaimed(stateDB, contract.Address(), claimerEVM, amountBig, remaining.BigInt())
+	if err := p.emitClaimed(stateDB, contract.Address(), claimerEVM, amountBig, remaining.BigInt()); err != nil {
+		return nil, err
+	}
 
 	return method.Outputs.Pack(remaining.BigInt())
 }
@@ -68,33 +69,28 @@ func (p Precompile) BalanceOf(
 	return method.Outputs.Pack(balance.BigInt())
 }
 
-func emitClaimed(
+// emitClaimed appends the Claimed EVM log, deriving the topic hash and
+// non-indexed data layout from the ABI. A pack failure is surfaced rather than
+// silently emitting a zero-amount log.
+func (p Precompile) emitClaimed(
 	stateDB vm.StateDB,
 	precompileAddr common.Address,
 	claimer common.Address,
 	amount *big.Int,
 	remaining *big.Int,
-) {
-	topic0 := crypto.Keccak256Hash([]byte("Claimed(address,uint256,uint256)"))
-	dataArgs := abi.Arguments{
-		{Type: mustABIType("uint256")},
-		{Type: mustABIType("uint256")},
+) error {
+	event := p.ABI.Events["Claimed"]
+	data, err := event.Inputs.NonIndexed().Pack(amount, remaining)
+	if err != nil {
+		return fmt.Errorf("pack Claimed event: %w", err)
 	}
-	data, _ := dataArgs.Pack(amount, remaining)
 	stateDB.AddLog(&gethtypes.Log{
 		Address: precompileAddr,
 		Topics: []common.Hash{
-			topic0,
+			event.ID,
 			common.BytesToHash(claimer.Bytes()),
 		},
 		Data: data,
 	})
-}
-
-func mustABIType(t string) abi.Type {
-	at, err := abi.NewType(t, "", nil)
-	if err != nil {
-		panic(err)
-	}
-	return at
+	return nil
 }

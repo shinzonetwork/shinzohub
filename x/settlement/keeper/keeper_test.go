@@ -2,6 +2,7 @@ package keeper_test
 
 import (
 	"context"
+	"encoding/binary"
 	"fmt"
 	"testing"
 
@@ -30,9 +31,9 @@ type bankMove struct {
 }
 
 type mockBankKeeper struct {
-	moves          []bankMove
-	failNextMint   bool
-	failNextSend   bool
+	moves        []bankMove
+	failNextMint bool
+	failNextSend bool
 }
 
 func (m *mockBankKeeper) MintCoins(_ context.Context, mod string, amt sdk.Coins) error {
@@ -158,14 +159,29 @@ func (m *mockQueryBalanceKeeper) Debit(_ sdk.Context, holder sdk.AccAddress, amo
 }
 
 type fixture struct {
-	t       *testing.T
-	ctx     sdk.Context
-	keeper  settlementkeeper.Keeper
-	bank    *mockBankKeeper
-	host    *mockHostKeeper
-	indexer *mockIndexerKeeper
-	qb      *mockQueryBalanceKeeper
-	pool    *mockPoolKeeper
+	t        *testing.T
+	ctx      sdk.Context
+	keeper   settlementkeeper.Keeper
+	bank     *mockBankKeeper
+	host     *mockHostKeeper
+	indexer  *mockIndexerKeeper
+	qb       *mockQueryBalanceKeeper
+	pool     *mockPoolKeeper
+	storeKey *storetypes.KVStoreKey
+}
+
+// pendingDebitKey rebuilds the raw store key for a pending debit entry so tests
+// can plant bytes directly (mirrors the keeper's internal encoding:
+// PendingDebitPrefix + BE(epoch) + '/' + BE(seq)).
+func pendingDebitKey(epoch, seq uint64) []byte {
+	out := []byte(types.PendingDebitPrefix)
+	var buf [8]byte
+	binary.BigEndian.PutUint64(buf[:], epoch)
+	out = append(out, buf[:]...)
+	out = append(out, '/')
+	binary.BigEndian.PutUint64(buf[:], seq)
+	out = append(out, buf[:]...)
+	return out
 }
 
 func newFixture(t *testing.T) *fixture {
@@ -197,7 +213,7 @@ func newFixture(t *testing.T) *fixture {
 
 	ctx := sdk.NewContext(cms, cmtproto.Header{Height: 1}, false, cosmoslog.NewNopLogger())
 
-	return &fixture{t: t, ctx: ctx, keeper: k, bank: bank, host: host, indexer: indexer, qb: qb, pool: pool}
+	return &fixture{t: t, ctx: ctx, keeper: k, bank: bank, host: host, indexer: indexer, qb: qb, pool: pool, storeKey: storeKey}
 }
 
 func addr(b byte) sdk.AccAddress {
@@ -206,6 +222,34 @@ func addr(b byte) sdk.AccAddress {
 		out[i] = b
 	}
 	return out
+}
+
+// A corrupt pending entry must not halt the chain: the drain skips it, still
+// applies the valid entries, and purges the corrupt key so the epoch can finish.
+func TestProcessPendingDebitChunk_CorruptEntry_SkippedNotPanic(t *testing.T) {
+	f := newFixture(t)
+	const epoch = uint64(5)
+
+	// Plant undecodable bytes directly at a pending-debit key.
+	f.ctx.KVStore(f.storeKey).Set(pendingDebitKey(epoch, 0), []byte{0xff, 0xff, 0xff})
+
+	// A valid debit for the same epoch that should still be applied.
+	victim := addr(9)
+	f.qb.balances[victim.String()] = math.NewInt(100)
+	_, err := f.keeper.EnqueuePendingDebit(f.ctx, epoch, types.PendingSettleEntry{
+		Debits: []types.AddressAmount{{Address: victim.String(), Amount: "40"}},
+	})
+	require.NoError(t, err)
+
+	require.NotPanics(t, func() {
+		require.NoError(t, f.keeper.ProcessPendingDebitChunk(f.ctx, epoch, 50))
+	})
+
+	// Valid debit applied.
+	require.Equal(t, math.NewInt(60), f.qb.balances[victim.String()])
+	// Both entries drained/purged — nothing left to stall the epoch.
+	require.Equal(t, 0, f.keeper.PendingDebitCount(f.ctx, epoch))
+	require.Len(t, f.ctx.KVStore(f.storeKey).Get(pendingDebitKey(epoch, 0)), 0, "corrupt key must be deleted")
 }
 
 func TestCredit_AddsToBalance(t *testing.T) {

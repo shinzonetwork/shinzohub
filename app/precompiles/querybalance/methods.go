@@ -10,7 +10,6 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	gethtypes "github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/core/vm"
-	"github.com/ethereum/go-ethereum/crypto"
 )
 
 const (
@@ -73,7 +72,9 @@ func (p Precompile) fundCore(
 		return nil, fmt.Errorf("fund: %w", err)
 	}
 
-	emitFunded(stateDB, contract.Address(), funderEVM, recipientEVM, amountBig)
+	if err := p.emitFunded(stateDB, contract.Address(), funderEVM, recipientEVM, amountBig); err != nil {
+		return nil, err
+	}
 
 	return method.Outputs.Pack()
 }
@@ -92,33 +93,29 @@ func (p Precompile) BalanceOf(
 	return method.Outputs.Pack(balance.BigInt())
 }
 
-func emitFunded(
+// emitFunded appends the Funded EVM log, deriving both the topic hash and the
+// non-indexed data layout from the ABI so it stays the single source of truth.
+// A pack failure is surfaced rather than silently emitting a zero-amount log.
+func (p Precompile) emitFunded(
 	stateDB vm.StateDB,
 	precompileAddr common.Address,
 	funder common.Address,
 	recipient common.Address,
 	amount *big.Int,
-) {
-	topic0 := crypto.Keccak256Hash([]byte("Funded(address,address,uint256)"))
-	dataArgs := abi.Arguments{
-		{Type: mustABIType("uint256")},
+) error {
+	event := p.ABI.Events["Funded"]
+	data, err := event.Inputs.NonIndexed().Pack(amount)
+	if err != nil {
+		return fmt.Errorf("pack Funded event: %w", err)
 	}
-	data, _ := dataArgs.Pack(amount)
 	stateDB.AddLog(&gethtypes.Log{
 		Address: precompileAddr,
 		Topics: []common.Hash{
-			topic0,
+			event.ID,
 			common.BytesToHash(funder.Bytes()),
 			common.BytesToHash(recipient.Bytes()),
 		},
 		Data: data,
 	})
-}
-
-func mustABIType(t string) abi.Type {
-	at, err := abi.NewType(t, "", nil)
-	if err != nil {
-		panic(err)
-	}
-	return at
+	return nil
 }
