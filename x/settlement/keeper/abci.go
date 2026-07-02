@@ -1,6 +1,7 @@
 package keeper
 
 import (
+	"fmt"
 	"strconv"
 
 	"cosmossdk.io/math"
@@ -116,16 +117,8 @@ func (k Keeper) ProcessPendingDebitChunk(ctx sdk.Context, epoch uint64, limit in
 		if err != nil {
 			continue
 		}
-		requested := debitByAddr[key]
-		balance := k.queryBalanceKeeper.GetBalance(ctx, addr)
-		taken := requested
-		if balance.LT(taken) {
-			taken = balance
-		}
-		if !taken.IsPositive() {
-			continue
-		}
-		if err := k.queryBalanceKeeper.Debit(ctx, addr, taken); err != nil {
+		taken, err := k.applyDebit(ctx, addr, debitByAddr[key])
+		if err != nil {
 			// Never return from BeginBlocker for a single bad entry — that would
 			// halt the chain (and, since the entry was already drained, retry
 			// identically forever). Skip it and keep the boundary making progress.
@@ -148,6 +141,35 @@ func (k Keeper) ProcessPendingDebitChunk(ctx sdk.Context, epoch uint64, limit in
 	))
 
 	return nil
+}
+
+// applyDebit runs one address's drain-to-zero debit and returns the amount
+// actually taken. It converts a panic out of the querybalance keeper into an
+// error: querybalance fails loud on corrupt state, which is correct in a tx or
+// query context (baseapp recovers, the tx reverts) but must NOT escape here —
+// this runs inside BeginBlocker, where an unrecovered panic halts the chain and,
+// because the entry was already drained, retries identically forever. The reads
+// happen before any write, so recovering leaves no partial state behind.
+func (k Keeper) applyDebit(ctx sdk.Context, addr sdk.AccAddress, requested math.Int) (taken math.Int, err error) {
+	defer func() {
+		if r := recover(); r != nil {
+			taken = math.ZeroInt()
+			err = fmt.Errorf("querybalance drain panicked: %v", r)
+		}
+	}()
+
+	balance := k.queryBalanceKeeper.GetBalance(ctx, addr)
+	taken = requested
+	if balance.LT(taken) {
+		taken = balance
+	}
+	if !taken.IsPositive() {
+		return math.ZeroInt(), nil
+	}
+	if err := k.queryBalanceKeeper.Debit(ctx, addr, taken); err != nil {
+		return math.ZeroInt(), err
+	}
+	return taken, nil
 }
 
 // ProcessPendingCreditChunk drains up to `limit` credit entries from the

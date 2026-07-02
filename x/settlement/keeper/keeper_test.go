@@ -133,9 +133,15 @@ func (m *mockPoolKeeper) UpdatePoolStats(
 type mockQueryBalanceKeeper struct {
 	balances    map[string]math.Int
 	failOnDebit bool
+	// panicAddrs simulates querybalance's fail-loud behaviour on corrupt state:
+	// GetBalance panics for any holder in this set.
+	panicAddrs map[string]bool
 }
 
 func (m *mockQueryBalanceKeeper) GetBalance(_ sdk.Context, holder sdk.AccAddress) math.Int {
+	if m.panicAddrs[holder.String()] {
+		panic(fmt.Errorf("corrupt query balance for %s", holder.String()))
+	}
 	if b, ok := m.balances[holder.String()]; ok {
 		return b
 	}
@@ -250,6 +256,36 @@ func TestProcessPendingDebitChunk_CorruptEntry_SkippedNotPanic(t *testing.T) {
 	// Both entries drained/purged — nothing left to stall the epoch.
 	require.Equal(t, 0, f.keeper.PendingDebitCount(f.ctx, epoch))
 	require.Len(t, f.ctx.KVStore(f.storeKey).Get(pendingDebitKey(epoch, 0)), 0, "corrupt key must be deleted")
+}
+
+// querybalance fails loud (panics) on corrupt state. When that happens inside
+// the BeginBlocker debit drain it must be recovered into a skip, not allowed to
+// halt the chain. A valid debit in the same chunk still applies.
+func TestProcessPendingDebitChunk_QueryBalancePanic_Recovered(t *testing.T) {
+	f := newFixture(t)
+	const epoch = uint64(7)
+
+	corrupt := addr(1)
+	f.qb.panicAddrs = map[string]bool{corrupt.String(): true}
+
+	valid := addr(2)
+	f.qb.balances[valid.String()] = math.NewInt(100)
+
+	_, err := f.keeper.EnqueuePendingDebit(f.ctx, epoch, types.PendingSettleEntry{
+		Debits: []types.AddressAmount{
+			{Address: corrupt.String(), Amount: "10"},
+			{Address: valid.String(), Amount: "40"},
+		},
+	})
+	require.NoError(t, err)
+
+	require.NotPanics(t, func() {
+		require.NoError(t, f.keeper.ProcessPendingDebitChunk(f.ctx, epoch, 50))
+	})
+
+	// The corrupt account is skipped; the healthy one is still debited.
+	require.Equal(t, math.NewInt(60), f.qb.balances[valid.String()])
+	require.Equal(t, 0, f.keeper.PendingDebitCount(f.ctx, epoch))
 }
 
 func TestCredit_AddsToBalance(t *testing.T) {
