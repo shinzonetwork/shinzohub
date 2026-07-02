@@ -2,6 +2,7 @@ package keeper_test
 
 import (
 	"context"
+	"math/big"
 	"testing"
 
 	cosmoslog "cosmossdk.io/log"
@@ -61,10 +62,18 @@ type mockErr struct{ msg string }
 func (e *mockErr) Error() string { return e.msg }
 
 type fixture struct {
-	t      *testing.T
-	ctx    sdk.Context
-	keeper qbkeeper.Keeper
-	bank   *mockBankKeeper
+	t        *testing.T
+	ctx      sdk.Context
+	keeper   qbkeeper.Keeper
+	bank     *mockBankKeeper
+	cdc      codec.Codec
+	storeKey *storetypes.KVStoreKey
+}
+
+// writeRaw plants arbitrary bytes at a holder's balance key, letting tests
+// simulate corrupt on-disk state.
+func (f *fixture) writeRaw(holder sdk.AccAddress, bz []byte) {
+	f.ctx.KVStore(f.storeKey).Set([]byte(types.BalancePrefix+holder.String()), bz)
 }
 
 func newFixture(t *testing.T) *fixture {
@@ -88,7 +97,7 @@ func newFixture(t *testing.T) *fixture {
 
 	ctx := sdk.NewContext(cms, cmtproto.Header{Height: 1}, false, cosmoslog.NewNopLogger())
 
-	return &fixture{t: t, ctx: ctx, keeper: k, bank: bank}
+	return &fixture{t: t, ctx: ctx, keeper: k, bank: bank, cdc: cdc, storeKey: storeKey}
 }
 
 func nzo(amount int64) sdk.Coins {
@@ -219,4 +228,47 @@ func TestGenesis_RoundTrip(t *testing.T) {
 
 	require.Equal(t, math.NewInt(100), dst.keeper.GetBalance(dst.ctx, addr(10)))
 	require.Equal(t, math.NewInt(250), dst.keeper.GetBalance(dst.ctx, addr(20)))
+}
+
+// A deposit that would push a balance past 256 bits returns an error instead of
+// panicking (which in the precompile path would crash the node).
+func TestFund_OverflowReturnsError(t *testing.T) {
+	f := newFixture(t)
+	target := addr(9)
+
+	// 2^255 has bit length 256 (the max), so a single deposit is fine but two
+	// sum to 2^256 which overflows.
+	half := math.NewIntFromBigInt(new(big.Int).Lsh(big.NewInt(1), 255))
+	require.NoError(t, f.keeper.Fund(f.ctx, addr(1), target, sdk.NewCoins(sdk.NewCoin(testDenom, half))))
+
+	err := f.keeper.Fund(f.ctx, addr(2), target, sdk.NewCoins(sdk.NewCoin(testDenom, half)))
+	require.ErrorContains(t, err, "overflow")
+
+	// The overflowing deposit left the stored balance untouched.
+	require.Equal(t, half, f.keeper.GetBalance(f.ctx, target))
+}
+
+// Corrupt stored bytes (undecodable proto) must fail loudly rather than be
+// read as a zero balance and silently overwritten.
+func TestGetBalance_CorruptBytesPanics(t *testing.T) {
+	f := newFixture(t)
+	target := addr(5)
+	f.writeRaw(target, []byte{0xff, 0xff, 0xff})
+
+	require.Panics(t, func() { f.keeper.GetBalance(f.ctx, target) })
+}
+
+// A decodable entry whose amount string is non-numeric is also corrupt and must
+// panic rather than be silently zeroed on the next Fund.
+func TestFund_CorruptAmountPanics(t *testing.T) {
+	f := newFixture(t)
+	target := addr(6)
+
+	bz, err := f.cdc.Marshal(&types.QueryBalance{Address: target.String(), Amount: "not-a-number"})
+	require.NoError(t, err)
+	f.writeRaw(target, bz)
+
+	require.Panics(t, func() {
+		_ = f.keeper.Fund(f.ctx, addr(1), target, nzo(100))
+	})
 }

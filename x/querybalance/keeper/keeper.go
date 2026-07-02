@@ -65,8 +65,7 @@ func (k Keeper) Fund(
 		return fmt.Errorf("transfer to module account: %w", err)
 	}
 
-	k.credit(ctx, funder, recipient, amount[0])
-	return nil
+	return k.credit(ctx, funder, recipient, amount[0])
 }
 
 // EscrowAndCredit moves `amount`, which the caller has already parked in
@@ -102,17 +101,23 @@ func (k Keeper) EscrowAndCredit(
 		return fmt.Errorf("escrow to module account: %w", err)
 	}
 
-	k.credit(ctx, funder, recipient, amount)
-	return nil
+	return k.credit(ctx, funder, recipient, amount)
 }
 
 // credit adds `amount` to `recipient`'s query balance and emits the funded
 // event. The coins backing `amount` are assumed to already be held by the
 // module account (moved there by the caller).
-func (k Keeper) credit(ctx sdk.Context, funder, recipient sdk.AccAddress, amount sdk.Coin) {
+func (k Keeper) credit(ctx sdk.Context, funder, recipient sdk.AccAddress, amount sdk.Coin) error {
 	qb := k.getEntry(ctx, recipient)
 	prev := parseAmount(qb.Amount)
-	qb.Amount = prev.Add(amount.Amount).String()
+	// SafeAdd returns an error instead of panicking on 256-bit overflow. A panic
+	// here would escape the precompile's gas-error recovery and crash the node,
+	// so surface it as a normal error that reverts the tx.
+	sum, err := prev.SafeAdd(amount.Amount)
+	if err != nil {
+		return fmt.Errorf("credit %s: balance overflow: %w", recipient.String(), err)
+	}
+	qb.Amount = sum.String()
 	k.setEntry(ctx, qb)
 
 	ctx.EventManager().EmitEvent(sdk.NewEvent(
@@ -121,6 +126,7 @@ func (k Keeper) credit(ctx sdk.Context, funder, recipient sdk.AccAddress, amount
 		sdk.NewAttribute(types.AttrKeyRecipient, recipient.String()),
 		sdk.NewAttribute(types.AttrKeyAmount, amount.Amount.String()),
 	))
+	return nil
 }
 
 func (k Keeper) Debit(ctx sdk.Context, holder sdk.AccAddress, amount math.Int) error {
@@ -212,7 +218,11 @@ func parseAmount(s string) math.Int {
 	}
 	v, ok := math.NewIntFromString(s)
 	if !ok {
-		return math.ZeroInt()
+		// Stored amounts are always written via math.Int.String(), so a
+		// non-numeric value means the state is corrupt. Silently returning zero
+		// would make the next Fund overwrite and permanently lose the real
+		// balance, so fail loudly instead.
+		panic(fmt.Errorf("corrupt query balance amount %q", s))
 	}
 	return v
 }
