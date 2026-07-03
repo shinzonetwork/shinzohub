@@ -1,0 +1,32 @@
+syntax = "proto3";
+
+package shinzonetwork.settlement.v1;
+
+import "gogoproto/gogo.proto";
+
+option go_package = "github.com/shinzonetwork/shinzohub/x/settlement/types";
+
+// SettlementBalance is an address's pending NZO owed by the protocol.
+// Accumulates from Credit (driven by the epoch settlement message) and
+// drains via Claim (which mints NZO to the recipient's wallet).
+message SettlementBalance {
+  string address = 1;
+  string amount = 2;
+}
+
+// AddressAmount is a resolved (bech32, amount) pair — DIDs have already been
+// translated to settlement-addresses by the submission handler so the boundary
+// processor doesn't have to redo resolution against possibly-changed state.
+message AddressAmount {
+  string address = 1;
+  string amount = 2;
+}
+
+// PendingSettleEntry is a single MsgAccountSettle queued up during an epoch.
+// Stored under pending_settle/<epoch>/<seq>; drained and applied by the
+// settlement BeginBlocker at the boundary.
+message PendingSettleEntry {
+  string submitter = 1;
+  repeated AddressAmount payments = 2 [(gogoproto.nullable) = false];
+  repeated AddressAmount debits   = 3 [(gogoproto.nullable) = false];
+}

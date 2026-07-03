@@ -6,6 +6,11 @@ const (
 
 	// balance/<address> → QueryBalance
 	BalancePrefix = "balance/"
+
+	// QueryBalanceDenom is the only denomination the module accepts for
+	// funding. Users top up their per-query credit with NZO (the same base
+	// unit settlement mints into wallets via Claim).
+	QueryBalanceDenom = "ushinzo"
 )
 
 const (

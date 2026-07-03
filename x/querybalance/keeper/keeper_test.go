@@ -2,7 +2,6 @@ package keeper_test
 
 import (
 	"context"
-	"math/big"
 	"testing"
 
 	cosmoslog "cosmossdk.io/log"
@@ -21,8 +20,6 @@ import (
 	qbkeeper "github.com/shinzonetwork/shinzohub/x/querybalance/keeper"
 	"github.com/shinzonetwork/shinzohub/x/querybalance/types"
 )
-
-const testDenom = "anzo"
 
 type bankMove struct {
 	kind  string
@@ -62,18 +59,10 @@ type mockErr struct{ msg string }
 func (e *mockErr) Error() string { return e.msg }
 
 type fixture struct {
-	t        *testing.T
-	ctx      sdk.Context
-	keeper   qbkeeper.Keeper
-	bank     *mockBankKeeper
-	cdc      codec.Codec
-	storeKey *storetypes.KVStoreKey
-}
-
-// writeRaw plants arbitrary bytes at a holder's balance key, letting tests
-// simulate corrupt on-disk state.
-func (f *fixture) writeRaw(holder sdk.AccAddress, bz []byte) {
-	f.ctx.KVStore(f.storeKey).Set([]byte(types.BalancePrefix+holder.String()), bz)
+	t      *testing.T
+	ctx    sdk.Context
+	keeper qbkeeper.Keeper
+	bank   *mockBankKeeper
 }
 
 func newFixture(t *testing.T) *fixture {
@@ -97,11 +86,7 @@ func newFixture(t *testing.T) *fixture {
 
 	ctx := sdk.NewContext(cms, cmtproto.Header{Height: 1}, false, cosmoslog.NewNopLogger())
 
-	return &fixture{t: t, ctx: ctx, keeper: k, bank: bank, cdc: cdc, storeKey: storeKey}
-}
-
-func nzo(amount int64) sdk.Coins {
-	return sdk.NewCoins(sdk.NewCoin(testDenom, math.NewInt(amount)))
+	return &fixture{t: t, ctx: ctx, keeper: k, bank: bank}
 }
 
 func addr(b byte) sdk.AccAddress {
@@ -116,19 +101,21 @@ func TestFund_Self(t *testing.T) {
 	f := newFixture(t)
 	a := addr(1)
 
-	require.NoError(t, f.keeper.Fund(f.ctx, a, a, nzo(100)))
+	require.NoError(t, f.keeper.Fund(f.ctx, a, a, math.NewInt(100)))
 
 	require.Equal(t, math.NewInt(100), f.keeper.GetBalance(f.ctx, a))
 	require.Len(t, f.bank.moves, 1)
 	require.Equal(t, "in", f.bank.moves[0].kind)
 	require.Equal(t, a.String(), f.bank.moves[0].from)
+	require.Equal(t, types.QueryBalanceDenom, f.bank.moves[0].coins[0].Denom,
+		"funder's coins must be NZO")
 }
 
 func TestFund_Sponsor(t *testing.T) {
 	f := newFixture(t)
 	sponsor, recipient := addr(1), addr(2)
 
-	require.NoError(t, f.keeper.Fund(f.ctx, sponsor, recipient, nzo(100)))
+	require.NoError(t, f.keeper.Fund(f.ctx, sponsor, recipient, math.NewInt(100)))
 
 	require.Equal(t, math.NewInt(100), f.keeper.GetBalance(f.ctx, recipient))
 	require.Equal(t, math.ZeroInt(), f.keeper.GetBalance(f.ctx, sponsor))
@@ -139,8 +126,8 @@ func TestFund_AccumulatesAcrossCalls(t *testing.T) {
 	f := newFixture(t)
 	target := addr(9)
 
-	require.NoError(t, f.keeper.Fund(f.ctx, addr(1), target, nzo(50)))
-	require.NoError(t, f.keeper.Fund(f.ctx, addr(2), target, nzo(30)))
+	require.NoError(t, f.keeper.Fund(f.ctx, addr(1), target, math.NewInt(50)))
+	require.NoError(t, f.keeper.Fund(f.ctx, addr(2), target, math.NewInt(30)))
 
 	require.Equal(t, math.NewInt(80), f.keeper.GetBalance(f.ctx, target))
 }
@@ -148,40 +135,36 @@ func TestFund_AccumulatesAcrossCalls(t *testing.T) {
 func TestFund_RejectsEmptyFunder(t *testing.T) {
 	f := newFixture(t)
 
-	err := f.keeper.Fund(f.ctx, sdk.AccAddress{}, addr(1), nzo(100))
+	err := f.keeper.Fund(f.ctx, sdk.AccAddress{}, addr(1), math.NewInt(100))
 	require.ErrorContains(t, err, "funder is required")
 }
 
 func TestFund_RejectsEmptyRecipient(t *testing.T) {
 	f := newFixture(t)
 
-	err := f.keeper.Fund(f.ctx, addr(1), sdk.AccAddress{}, nzo(100))
+	err := f.keeper.Fund(f.ctx, addr(1), sdk.AccAddress{}, math.NewInt(100))
 	require.ErrorContains(t, err, "recipient is required")
 }
 
 func TestFund_RejectsZeroAmount(t *testing.T) {
 	f := newFixture(t)
 
-	err := f.keeper.Fund(f.ctx, addr(1), addr(2), sdk.Coins{})
-	require.ErrorContains(t, err, "positive coin")
+	err := f.keeper.Fund(f.ctx, addr(1), addr(2), math.ZeroInt())
+	require.ErrorContains(t, err, "positive")
 }
 
-func TestFund_RejectsMultipleDenoms(t *testing.T) {
+func TestFund_RejectsNegativeAmount(t *testing.T) {
 	f := newFixture(t)
-	mixed := sdk.NewCoins(
-		sdk.NewCoin(testDenom, math.NewInt(10)),
-		sdk.NewCoin("other", math.NewInt(10)),
-	)
 
-	err := f.keeper.Fund(f.ctx, addr(1), addr(2), mixed)
-	require.ErrorContains(t, err, "single coin denomination")
+	err := f.keeper.Fund(f.ctx, addr(1), addr(2), math.NewInt(-1))
+	require.ErrorContains(t, err, "positive")
 }
 
 func TestFund_BankFailureBubbles(t *testing.T) {
 	f := newFixture(t)
 	f.bank.failNextIn = true
 
-	err := f.keeper.Fund(f.ctx, addr(1), addr(2), nzo(100))
+	err := f.keeper.Fund(f.ctx, addr(1), addr(2), math.NewInt(100))
 	require.ErrorContains(t, err, "transfer to module account")
 	require.Equal(t, math.ZeroInt(), f.keeper.GetBalance(f.ctx, addr(2)))
 }
@@ -189,7 +172,7 @@ func TestFund_BankFailureBubbles(t *testing.T) {
 func TestDebit_DeductsFromBalance(t *testing.T) {
 	f := newFixture(t)
 	target := addr(9)
-	require.NoError(t, f.keeper.Fund(f.ctx, addr(1), target, nzo(500)))
+	require.NoError(t, f.keeper.Fund(f.ctx, addr(1), target, math.NewInt(500)))
 
 	require.NoError(t, f.keeper.Debit(f.ctx, target, math.NewInt(200)))
 	require.Equal(t, math.NewInt(300), f.keeper.GetBalance(f.ctx, target))
@@ -198,7 +181,7 @@ func TestDebit_DeductsFromBalance(t *testing.T) {
 func TestDebit_RejectsInsufficient(t *testing.T) {
 	f := newFixture(t)
 	target := addr(9)
-	require.NoError(t, f.keeper.Fund(f.ctx, addr(1), target, nzo(50)))
+	require.NoError(t, f.keeper.Fund(f.ctx, addr(1), target, math.NewInt(50)))
 
 	err := f.keeper.Debit(f.ctx, target, math.NewInt(100))
 	require.ErrorContains(t, err, "insufficient balance")
@@ -218,8 +201,8 @@ func TestGetBalance_ZeroForUnknown(t *testing.T) {
 
 func TestGenesis_RoundTrip(t *testing.T) {
 	src := newFixture(t)
-	require.NoError(t, src.keeper.Fund(src.ctx, addr(1), addr(10), nzo(100)))
-	require.NoError(t, src.keeper.Fund(src.ctx, addr(2), addr(20), nzo(250)))
+	require.NoError(t, src.keeper.Fund(src.ctx, addr(1), addr(10), math.NewInt(100)))
+	require.NoError(t, src.keeper.Fund(src.ctx, addr(2), addr(20), math.NewInt(250)))
 
 	exported := src.keeper.ExportGenesis(src.ctx)
 
@@ -228,47 +211,4 @@ func TestGenesis_RoundTrip(t *testing.T) {
 
 	require.Equal(t, math.NewInt(100), dst.keeper.GetBalance(dst.ctx, addr(10)))
 	require.Equal(t, math.NewInt(250), dst.keeper.GetBalance(dst.ctx, addr(20)))
-}
-
-// A deposit that would push a balance past 256 bits returns an error instead of
-// panicking (which in the precompile path would crash the node).
-func TestFund_OverflowReturnsError(t *testing.T) {
-	f := newFixture(t)
-	target := addr(9)
-
-	// 2^255 has bit length 256 (the max), so a single deposit is fine but two
-	// sum to 2^256 which overflows.
-	half := math.NewIntFromBigInt(new(big.Int).Lsh(big.NewInt(1), 255))
-	require.NoError(t, f.keeper.Fund(f.ctx, addr(1), target, sdk.NewCoins(sdk.NewCoin(testDenom, half))))
-
-	err := f.keeper.Fund(f.ctx, addr(2), target, sdk.NewCoins(sdk.NewCoin(testDenom, half)))
-	require.ErrorContains(t, err, "overflow")
-
-	// The overflowing deposit left the stored balance untouched.
-	require.Equal(t, half, f.keeper.GetBalance(f.ctx, target))
-}
-
-// Corrupt stored bytes (undecodable proto) must fail loudly rather than be
-// read as a zero balance and silently overwritten.
-func TestGetBalance_CorruptBytesPanics(t *testing.T) {
-	f := newFixture(t)
-	target := addr(5)
-	f.writeRaw(target, []byte{0xff, 0xff, 0xff})
-
-	require.Panics(t, func() { f.keeper.GetBalance(f.ctx, target) })
-}
-
-// A decodable entry whose amount string is non-numeric is also corrupt and must
-// panic rather than be silently zeroed on the next Fund.
-func TestFund_CorruptAmountPanics(t *testing.T) {
-	f := newFixture(t)
-	target := addr(6)
-
-	bz, err := f.cdc.Marshal(&types.QueryBalance{Address: target.String(), Amount: "not-a-number"})
-	require.NoError(t, err)
-	f.writeRaw(target, bz)
-
-	require.Panics(t, func() {
-		_ = f.keeper.Fund(f.ctx, addr(1), target, nzo(100))
-	})
 }

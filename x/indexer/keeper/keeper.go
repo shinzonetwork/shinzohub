@@ -59,6 +59,10 @@ func addrIndexKey(operatorAddress string) []byte {
 	return []byte(types.AddrIndexPrefix + operatorAddress)
 }
 
+func didIndexKey(did string) []byte {
+	return []byte(types.DIDIndexPrefix + did)
+}
+
 func encodeAddrIndexValue(sourceChainID uint64, validatorPubkey []byte) []byte {
 	out := make([]byte, 8+len(validatorPubkey))
 	binary.BigEndian.PutUint64(out[:8], sourceChainID)
@@ -97,6 +101,31 @@ func (k Keeper) GetIndexerByAddress(ctx sdk.Context, operatorAddress string) (ty
 		return types.Indexer{}, false, err
 	}
 	return k.GetIndexerByValidator(ctx, chainID, pub)
+}
+
+func (k Keeper) GetIndexerByDID(ctx sdk.Context, did string) (types.Indexer, bool, error) {
+	store := runtime.KVStoreAdapter(k.storeService.OpenKVStore(ctx))
+	v := store.Get(didIndexKey(did))
+	if len(v) == 0 {
+		return types.Indexer{}, false, nil
+	}
+	chainID, pub, err := decodeAddrIndexValue(v)
+	if err != nil {
+		return types.Indexer{}, false, err
+	}
+	return k.GetIndexerByValidator(ctx, chainID, pub)
+}
+
+func (k Keeper) GetAddressForDID(ctx sdk.Context, did string) (sdk.AccAddress, bool) {
+	row, found, err := k.GetIndexerByDID(ctx, did)
+	if err != nil || !found {
+		return nil, false
+	}
+	addr, err := sdk.AccAddressFromBech32(row.PayoutAddress)
+	if err != nil {
+		return nil, false
+	}
+	return addr, true
 }
 
 func (k Keeper) IterateIndexers(ctx sdk.Context, sourceChainID uint64, pageReq *query.PageRequest) ([]types.Indexer, *query.PageResponse, error) {
@@ -184,6 +213,15 @@ func (k Keeper) UpsertAssertion(ctx sdk.Context, msg *types.MsgIndexerAssertion)
 
 	if isUpdate && operatorChanged {
 		store.Delete(addrIndexKey(existing.OperatorAddress))
+		// The superseding operator starts unregistered (row.Did == ""), so drop
+		// the old operator's DID index as well. Leaving it would keep
+		// did_idx/<oldDID> pointing at this row — now owned by the new operator —
+		// so GetIndexerByDID(oldDID) would resolve to, and settlement would pay
+		// out to, the wrong operator. Revoke can't clean it later either (row.Did
+		// is now ""), so it must be removed here.
+		if existing.Did != "" {
+			store.Delete(didIndexKey(existing.Did))
+		}
 		emitSuperseded(ctx, msg.SourceChainId, msg.ValidatorPubkey, existing.OperatorAddress, msg.OperatorAddress, existing.Nonce, msg.Nonce)
 	}
 
@@ -249,6 +287,9 @@ func (k Keeper) RevokeIndexer(ctx sdk.Context, msg *types.MsgRevokeIndexer) erro
 
 	store.Delete(rowKey)
 	store.Delete(addrIndexKey(row.OperatorAddress))
+	if row.Did != "" {
+		store.Delete(didIndexKey(row.Did))
+	}
 	k.deletePendingClaimsByOperator(ctx, row.OperatorAddress)
 	k.decrementCount(ctx)
 
@@ -324,6 +365,17 @@ func (k Keeper) RegisterIndexer(
 	did, err := commoncrypto.DeriveDID(nodeIdentityKeyPubkey)
 	if err != nil {
 		return RegisterResult{}, fmt.Errorf("derive did: %w", err)
+	}
+
+	// A DID is derived from the node identity key, so two distinct validators
+	// presenting the same key would collide on the DID index and the later one
+	// would silently hijack the earlier one's payout routing. Reject a DID that
+	// is already bound to a different (chain, validator) row.
+	if existingDIDVal := store.Get(didIndexKey(did)); len(existingDIDVal) > 0 {
+		exChain, exPub, decErr := decodeAddrIndexValue(existingDIDVal)
+		if decErr == nil && (exChain != chainID || !bytes.Equal(exPub, pub)) {
+			return RegisterResult{}, fmt.Errorf("did already registered to another indexer")
+		}
 	}
 
 	out := RegisterResult{
@@ -423,6 +475,8 @@ func (k Keeper) ApplyRegistration(
 		return err
 	}
 
+	prevDID := row.Did
+
 	row.Did = did
 	row.ConnectionString = connectionString
 	row.Registered = true
@@ -432,6 +486,11 @@ func (k Keeper) ApplyRegistration(
 		return err
 	}
 	store.Set(rowKey, out)
+
+	if prevDID != "" && prevDID != did {
+		store.Delete(didIndexKey(prevDID))
+	}
+	store.Set(didIndexKey(did), encodeAddrIndexValue(chainID, pub))
 
 	emitRegistered(ctx, &row)
 	return nil
@@ -466,6 +525,9 @@ func (k Keeper) InitGenesis(ctx sdk.Context, gs types.GenesisState) {
 		}
 		store.Set(indexerRowKey(row.SourceChainId, row.ValidatorPubkey), bz)
 		store.Set(addrIndexKey(row.OperatorAddress), encodeAddrIndexValue(row.SourceChainId, row.ValidatorPubkey))
+		if row.Did != "" {
+			store.Set(didIndexKey(row.Did), encodeAddrIndexValue(row.SourceChainId, row.ValidatorPubkey))
+		}
 	}
 	var buf [8]byte
 	binary.BigEndian.PutUint64(buf[:], uint64(len(gs.Indexers)))

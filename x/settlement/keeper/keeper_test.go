@@ -1,0 +1,509 @@
+package keeper_test
+
+import (
+	"context"
+	"encoding/binary"
+	"fmt"
+	"testing"
+
+	cosmoslog "cosmossdk.io/log"
+	"cosmossdk.io/math"
+	storetypes2 "cosmossdk.io/store"
+	"cosmossdk.io/store/metrics"
+	storetypes "cosmossdk.io/store/types"
+	cmtproto "github.com/cometbft/cometbft/proto/tendermint/types"
+	dbm "github.com/cosmos/cosmos-db"
+	"github.com/cosmos/cosmos-sdk/codec"
+	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
+	"github.com/cosmos/cosmos-sdk/runtime"
+	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/stretchr/testify/require"
+
+	settlementkeeper "github.com/shinzonetwork/shinzohub/x/settlement/keeper"
+	"github.com/shinzonetwork/shinzohub/x/settlement/types"
+)
+
+type bankMove struct {
+	kind  string
+	from  string
+	to    string
+	coins sdk.Coins
+}
+
+type mockBankKeeper struct {
+	moves        []bankMove
+	failNextMint bool
+	failNextSend bool
+}
+
+func (m *mockBankKeeper) MintCoins(_ context.Context, mod string, amt sdk.Coins) error {
+	if m.failNextMint {
+		m.failNextMint = false
+		return errMock
+	}
+	m.moves = append(m.moves, bankMove{kind: "mint", to: mod, coins: amt})
+	return nil
+}
+
+func (m *mockBankKeeper) BurnCoins(_ context.Context, mod string, amt sdk.Coins) error {
+	m.moves = append(m.moves, bankMove{kind: "burn", from: mod, coins: amt})
+	return nil
+}
+
+func (m *mockBankKeeper) SendCoinsFromModuleToAccount(_ context.Context, mod string, to sdk.AccAddress, amt sdk.Coins) error {
+	if m.failNextSend {
+		m.failNextSend = false
+		return errMock
+	}
+	m.moves = append(m.moves, bankMove{kind: "out", from: mod, to: to.String(), coins: amt})
+	return nil
+}
+
+func (m *mockBankKeeper) SendCoinsFromAccountToModule(_ context.Context, from sdk.AccAddress, mod string, amt sdk.Coins) error {
+	m.moves = append(m.moves, bankMove{kind: "in", from: from.String(), to: mod, coins: amt})
+	return nil
+}
+
+var errMock = &mockErr{msg: "mock failure"}
+
+type mockErr struct{ msg string }
+
+func (e *mockErr) Error() string { return e.msg }
+
+// mockHostKeeper returns whatever AccAddress has been recorded against a DID.
+type mockHostKeeper struct {
+	addrs map[string]sdk.AccAddress
+}
+
+func (m *mockHostKeeper) GetAddressForDID(_ sdk.Context, did string) (sdk.AccAddress, bool) {
+	a, ok := m.addrs[did]
+	return a, ok
+}
+
+// mockIndexerKeeper mirrors mockHostKeeper but is consulted second by the
+// settlement resolver — anything stored here resolves "as an indexer."
+type mockIndexerKeeper struct {
+	addrs map[string]sdk.AccAddress
+}
+
+func (m *mockIndexerKeeper) GetAddressForDID(_ sdk.Context, did string) (sdk.AccAddress, bool) {
+	a, ok := m.addrs[did]
+	return a, ok
+}
+
+// mockPoolKeeper records the pool stats updates settlement makes so tests can
+// assert what it intends to write without spinning up the real x/pool keeper.
+type mockPoolKeeper struct {
+	existing map[string]struct{}
+	updates  []poolUpdate
+}
+
+type poolUpdate struct {
+	addr        string
+	price       math.Int
+	utilization uint64
+	queries     uint64
+	rewards     math.Int
+	epoch       uint64
+}
+
+func (m *mockPoolKeeper) PoolExists(_ sdk.Context, addr string) bool {
+	_, ok := m.existing[addr]
+	return ok
+}
+
+func (m *mockPoolKeeper) UpdatePoolStats(
+	_ sdk.Context,
+	addr string,
+	price math.Int,
+	utilization, queries uint64,
+	rewards math.Int,
+	epoch uint64,
+) error {
+	m.updates = append(m.updates, poolUpdate{
+		addr: addr, price: price, utilization: utilization,
+		queries: queries, rewards: rewards, epoch: epoch,
+	})
+	return nil
+}
+
+// mockQueryBalanceKeeper keeps an in-memory holder→amount ledger so settlement
+// tests can exercise the drain-to-zero debit logic without spinning up the
+// real x/querybalance keeper.
+type mockQueryBalanceKeeper struct {
+	balances    map[string]math.Int
+	failOnDebit bool
+	// panicAddrs simulates querybalance's fail-loud behaviour on corrupt state:
+	// GetBalance panics for any holder in this set.
+	panicAddrs map[string]bool
+}
+
+func (m *mockQueryBalanceKeeper) GetBalance(_ sdk.Context, holder sdk.AccAddress) math.Int {
+	if m.panicAddrs[holder.String()] {
+		panic(fmt.Errorf("corrupt query balance for %s", holder.String()))
+	}
+	if b, ok := m.balances[holder.String()]; ok {
+		return b
+	}
+	return math.ZeroInt()
+}
+
+func (m *mockQueryBalanceKeeper) Debit(_ sdk.Context, holder sdk.AccAddress, amount math.Int) error {
+	if m.failOnDebit {
+		return errMock
+	}
+	key := holder.String()
+	cur, ok := m.balances[key]
+	if !ok {
+		return fmt.Errorf("no balance for %s", key)
+	}
+	if cur.LT(amount) {
+		return fmt.Errorf("insufficient balance for %s: have %s want %s", key, cur.String(), amount.String())
+	}
+	m.balances[key] = cur.Sub(amount)
+	return nil
+}
+
+type fixture struct {
+	t        *testing.T
+	ctx      sdk.Context
+	keeper   settlementkeeper.Keeper
+	bank     *mockBankKeeper
+	host     *mockHostKeeper
+	indexer  *mockIndexerKeeper
+	qb       *mockQueryBalanceKeeper
+	pool     *mockPoolKeeper
+	storeKey *storetypes.KVStoreKey
+}
+
+// pendingDebitKey rebuilds the raw store key for a pending debit entry so tests
+// can plant bytes directly (mirrors the keeper's internal encoding:
+// PendingDebitPrefix + BE(epoch) + '/' + BE(seq)).
+func pendingDebitKey(epoch, seq uint64) []byte {
+	out := []byte(types.PendingDebitPrefix)
+	var buf [8]byte
+	binary.BigEndian.PutUint64(buf[:], epoch)
+	out = append(out, buf[:]...)
+	out = append(out, '/')
+	binary.BigEndian.PutUint64(buf[:], seq)
+	out = append(out, buf[:]...)
+	return out
+}
+
+func newFixture(t *testing.T) *fixture {
+	t.Helper()
+
+	storeKey := storetypes.NewKVStoreKey(types.StoreKey)
+	db := dbm.NewMemDB()
+	cms := storetypes2.NewCommitMultiStore(db, cosmoslog.NewNopLogger(), metrics.NewNoOpMetrics())
+	cms.MountStoreWithDB(storeKey, storetypes.StoreTypeIAVL, db)
+	require.NoError(t, cms.LoadLatestVersion())
+
+	cdc := codec.NewProtoCodec(codectypes.NewInterfaceRegistry())
+	bank := &mockBankKeeper{}
+	host := &mockHostKeeper{addrs: map[string]sdk.AccAddress{}}
+	indexer := &mockIndexerKeeper{addrs: map[string]sdk.AccAddress{}}
+	qb := &mockQueryBalanceKeeper{balances: map[string]math.Int{}}
+	pool := &mockPoolKeeper{existing: map[string]struct{}{}}
+
+	k := settlementkeeper.NewKeeper(
+		cdc,
+		runtime.NewKVStoreService(storeKey),
+		bank,
+		host,
+		indexer,
+		qb,
+		pool,
+		"authority",
+	)
+
+	ctx := sdk.NewContext(cms, cmtproto.Header{Height: 1}, false, cosmoslog.NewNopLogger())
+
+	return &fixture{t: t, ctx: ctx, keeper: k, bank: bank, host: host, indexer: indexer, qb: qb, pool: pool, storeKey: storeKey}
+}
+
+func addr(b byte) sdk.AccAddress {
+	out := make([]byte, 20)
+	for i := range out {
+		out[i] = b
+	}
+	return out
+}
+
+// A corrupt pending entry must not halt the chain: the drain skips it, still
+// applies the valid entries, and purges the corrupt key so the epoch can finish.
+func TestProcessPendingDebitChunk_CorruptEntry_SkippedNotPanic(t *testing.T) {
+	f := newFixture(t)
+	const epoch = uint64(5)
+
+	// Plant undecodable bytes directly at a pending-debit key.
+	f.ctx.KVStore(f.storeKey).Set(pendingDebitKey(epoch, 0), []byte{0xff, 0xff, 0xff})
+
+	// A valid debit for the same epoch that should still be applied.
+	victim := addr(9)
+	f.qb.balances[victim.String()] = math.NewInt(100)
+	_, err := f.keeper.EnqueuePendingDebit(f.ctx, epoch, types.PendingSettleEntry{
+		Debits: []types.AddressAmount{{Address: victim.String(), Amount: "40"}},
+	})
+	require.NoError(t, err)
+
+	require.NotPanics(t, func() {
+		require.NoError(t, f.keeper.ProcessPendingDebitChunk(f.ctx, epoch, 50))
+	})
+
+	// Valid debit applied.
+	require.Equal(t, math.NewInt(60), f.qb.balances[victim.String()])
+	// Both entries drained/purged — nothing left to stall the epoch.
+	require.Equal(t, 0, f.keeper.PendingDebitCount(f.ctx, epoch))
+	require.Len(t, f.ctx.KVStore(f.storeKey).Get(pendingDebitKey(epoch, 0)), 0, "corrupt key must be deleted")
+}
+
+// querybalance fails loud (panics) on corrupt state. When that happens inside
+// the BeginBlocker debit drain it must be recovered into a skip, not allowed to
+// halt the chain. A valid debit in the same chunk still applies.
+func TestProcessPendingDebitChunk_QueryBalancePanic_Recovered(t *testing.T) {
+	f := newFixture(t)
+	const epoch = uint64(7)
+
+	corrupt := addr(1)
+	f.qb.panicAddrs = map[string]bool{corrupt.String(): true}
+
+	valid := addr(2)
+	f.qb.balances[valid.String()] = math.NewInt(100)
+
+	_, err := f.keeper.EnqueuePendingDebit(f.ctx, epoch, types.PendingSettleEntry{
+		Debits: []types.AddressAmount{
+			{Address: corrupt.String(), Amount: "10"},
+			{Address: valid.String(), Amount: "40"},
+		},
+	})
+	require.NoError(t, err)
+
+	require.NotPanics(t, func() {
+		require.NoError(t, f.keeper.ProcessPendingDebitChunk(f.ctx, epoch, 50))
+	})
+
+	// The corrupt account is skipped; the healthy one is still debited.
+	require.Equal(t, math.NewInt(60), f.qb.balances[valid.String()])
+	require.Equal(t, 0, f.keeper.PendingDebitCount(f.ctx, epoch))
+}
+
+func TestCredit_AddsToBalance(t *testing.T) {
+	f := newFixture(t)
+	a := addr(1)
+
+	require.NoError(t, f.keeper.Credit(f.ctx, a, math.NewInt(100)))
+
+	require.Equal(t, math.NewInt(100), f.keeper.GetBalance(f.ctx, a))
+	require.Empty(t, f.bank.moves, "credit must not move tokens, only update the ledger")
+}
+
+func TestCredit_Accumulates(t *testing.T) {
+	f := newFixture(t)
+	target := addr(9)
+
+	require.NoError(t, f.keeper.Credit(f.ctx, target, math.NewInt(50)))
+	require.NoError(t, f.keeper.Credit(f.ctx, target, math.NewInt(30)))
+
+	require.Equal(t, math.NewInt(80), f.keeper.GetBalance(f.ctx, target))
+}
+
+func TestCredit_RejectsEmptyRecipient(t *testing.T) {
+	f := newFixture(t)
+
+	err := f.keeper.Credit(f.ctx, sdk.AccAddress{}, math.NewInt(100))
+	require.ErrorContains(t, err, "recipient is required")
+}
+
+func TestCredit_RejectsNonPositiveAmount(t *testing.T) {
+	f := newFixture(t)
+
+	require.ErrorContains(t, f.keeper.Credit(f.ctx, addr(1), math.ZeroInt()), "positive")
+	require.ErrorContains(t, f.keeper.Credit(f.ctx, addr(1), math.NewInt(-1)), "positive")
+}
+
+func TestDebit_DeductsFromBalance(t *testing.T) {
+	f := newFixture(t)
+	target := addr(9)
+	require.NoError(t, f.keeper.Credit(f.ctx, target, math.NewInt(500)))
+
+	require.NoError(t, f.keeper.Debit(f.ctx, target, math.NewInt(200)))
+	require.Equal(t, math.NewInt(300), f.keeper.GetBalance(f.ctx, target))
+}
+
+func TestDebit_RejectsInsufficient(t *testing.T) {
+	f := newFixture(t)
+	target := addr(9)
+	require.NoError(t, f.keeper.Credit(f.ctx, target, math.NewInt(50)))
+
+	err := f.keeper.Debit(f.ctx, target, math.NewInt(100))
+	require.ErrorContains(t, err, "insufficient")
+	require.Equal(t, math.NewInt(50), f.keeper.GetBalance(f.ctx, target), "failed debit must not change balance")
+}
+
+func TestDebit_RejectsUnknownAddress(t *testing.T) {
+	f := newFixture(t)
+
+	err := f.keeper.Debit(f.ctx, addr(7), math.NewInt(1))
+	require.ErrorContains(t, err, "no settlement balance")
+}
+
+func TestDebit_RejectsEmptyHolder(t *testing.T) {
+	f := newFixture(t)
+	err := f.keeper.Debit(f.ctx, sdk.AccAddress{}, math.NewInt(1))
+	require.ErrorContains(t, err, "holder is required")
+}
+
+func TestDebit_RejectsNonPositiveAmount(t *testing.T) {
+	f := newFixture(t)
+	require.NoError(t, f.keeper.Credit(f.ctx, addr(1), math.NewInt(10)))
+
+	require.ErrorContains(t, f.keeper.Debit(f.ctx, addr(1), math.ZeroInt()), "positive")
+	require.ErrorContains(t, f.keeper.Debit(f.ctx, addr(1), math.NewInt(-5)), "positive")
+}
+
+func TestClaim_MintsAndTransfers(t *testing.T) {
+	f := newFixture(t)
+	claimer := addr(3)
+	require.NoError(t, f.keeper.Credit(f.ctx, claimer, math.NewInt(1_000_000)))
+
+	require.NoError(t, f.keeper.Claim(f.ctx, claimer, math.NewInt(750_000)))
+
+	require.Equal(t, math.NewInt(250_000), f.keeper.GetBalance(f.ctx, claimer),
+		"pending balance should decrease by claim amount")
+
+	require.Len(t, f.bank.moves, 2, "claim must mint and then transfer")
+
+	mint := f.bank.moves[0]
+	require.Equal(t, "mint", mint.kind)
+	require.Equal(t, types.ModuleName, mint.to)
+	require.Equal(t, types.SettlementDenom, mint.coins[0].Denom)
+	require.Equal(t, math.NewInt(750_000), mint.coins[0].Amount)
+
+	send := f.bank.moves[1]
+	require.Equal(t, "out", send.kind)
+	require.Equal(t, types.ModuleName, send.from)
+	require.Equal(t, claimer.String(), send.to)
+	require.Equal(t, types.SettlementDenom, send.coins[0].Denom)
+	require.Equal(t, math.NewInt(750_000), send.coins[0].Amount)
+}
+
+func TestClaim_RejectsInsufficient(t *testing.T) {
+	f := newFixture(t)
+	claimer := addr(3)
+	require.NoError(t, f.keeper.Credit(f.ctx, claimer, math.NewInt(40)))
+
+	err := f.keeper.Claim(f.ctx, claimer, math.NewInt(100))
+	require.ErrorContains(t, err, "insufficient")
+	require.Equal(t, math.NewInt(40), f.keeper.GetBalance(f.ctx, claimer),
+		"failed claim must not change pending balance")
+	require.Empty(t, f.bank.moves, "failed claim must not mint or transfer")
+}
+
+func TestClaim_RejectsUnknownAddress(t *testing.T) {
+	f := newFixture(t)
+
+	err := f.keeper.Claim(f.ctx, addr(7), math.NewInt(1))
+	require.ErrorContains(t, err, "no settlement balance")
+	require.Empty(t, f.bank.moves)
+}
+
+func TestClaim_RejectsEmptyClaimer(t *testing.T) {
+	f := newFixture(t)
+	err := f.keeper.Claim(f.ctx, sdk.AccAddress{}, math.NewInt(1))
+	require.ErrorContains(t, err, "claimer is required")
+}
+
+func TestClaim_RejectsNonPositiveAmount(t *testing.T) {
+	f := newFixture(t)
+	require.NoError(t, f.keeper.Credit(f.ctx, addr(1), math.NewInt(100)))
+
+	require.ErrorContains(t, f.keeper.Claim(f.ctx, addr(1), math.ZeroInt()), "positive")
+	require.ErrorContains(t, f.keeper.Claim(f.ctx, addr(1), math.NewInt(-1)), "positive")
+}
+
+func TestClaim_MintFailureBubbles(t *testing.T) {
+	f := newFixture(t)
+	claimer := addr(3)
+	require.NoError(t, f.keeper.Credit(f.ctx, claimer, math.NewInt(100)))
+	f.bank.failNextMint = true
+
+	err := f.keeper.Claim(f.ctx, claimer, math.NewInt(100))
+	require.ErrorContains(t, err, "mint")
+	require.Equal(t, math.NewInt(100), f.keeper.GetBalance(f.ctx, claimer),
+		"failed mint must leave pending balance untouched")
+}
+
+func TestClaim_TransferFailureBubbles(t *testing.T) {
+	f := newFixture(t)
+	claimer := addr(3)
+	require.NoError(t, f.keeper.Credit(f.ctx, claimer, math.NewInt(100)))
+	f.bank.failNextSend = true
+
+	err := f.keeper.Claim(f.ctx, claimer, math.NewInt(100))
+	require.ErrorContains(t, err, "transfer")
+	require.Equal(t, math.NewInt(100), f.keeper.GetBalance(f.ctx, claimer),
+		"failed transfer must leave pending balance untouched")
+}
+
+func TestGetBalance_ZeroForUnknown(t *testing.T) {
+	f := newFixture(t)
+	require.Equal(t, math.ZeroInt(), f.keeper.GetBalance(f.ctx, addr(42)))
+}
+
+func TestGetEntry_ReturnsFalseForUnknown(t *testing.T) {
+	f := newFixture(t)
+
+	_, found := f.keeper.GetEntry(f.ctx, addr(42))
+	require.False(t, found)
+}
+
+func TestGetEntry_ReturnsTrueAfterCredit(t *testing.T) {
+	f := newFixture(t)
+	a := addr(5)
+	require.NoError(t, f.keeper.Credit(f.ctx, a, math.NewInt(123)))
+
+	entry, found := f.keeper.GetEntry(f.ctx, a)
+	require.True(t, found)
+	require.Equal(t, a.String(), entry.Address)
+	require.Equal(t, "123", entry.Amount)
+}
+
+func TestGenesis_RoundTrip(t *testing.T) {
+	src := newFixture(t)
+	require.NoError(t, src.keeper.Credit(src.ctx, addr(10), math.NewInt(100)))
+	require.NoError(t, src.keeper.Credit(src.ctx, addr(20), math.NewInt(250)))
+
+	exported := src.keeper.ExportGenesis(src.ctx)
+
+	dst := newFixture(t)
+	dst.keeper.InitGenesis(dst.ctx, *exported)
+
+	require.Equal(t, math.NewInt(100), dst.keeper.GetBalance(dst.ctx, addr(10)))
+	require.Equal(t, math.NewInt(250), dst.keeper.GetBalance(dst.ctx, addr(20)))
+}
+
+func TestEvents_EmittedOnEachOperation(t *testing.T) {
+	f := newFixture(t)
+	a := addr(1)
+
+	require.NoError(t, f.keeper.Credit(f.ctx, a, math.NewInt(100)))
+	require.NoError(t, f.keeper.Debit(f.ctx, a, math.NewInt(20)))
+	require.NoError(t, f.keeper.Claim(f.ctx, a, math.NewInt(30)))
+
+	events := f.ctx.EventManager().Events()
+	var seenCredit, seenDebit, seenClaim bool
+	for _, e := range events {
+		switch e.Type {
+		case types.EventTypeCredited:
+			seenCredit = true
+		case types.EventTypeDebited:
+			seenDebit = true
+		case types.EventTypeClaimed:
+			seenClaim = true
+		}
+	}
+	require.True(t, seenCredit, "credit event missing")
+	require.True(t, seenDebit, "debit event missing")
+	require.True(t, seenClaim, "claim event missing")
+}

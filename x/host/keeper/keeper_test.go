@@ -87,10 +87,10 @@ func TestKeeperTestSuite(t *testing.T) {
 	suite.Run(t, new(KeeperTestSuite))
 }
 
-func (s *KeeperTestSuite) simulateHostAck(callerAddr []byte) {
+func (s *KeeperTestSuite) simulateHostAck(callerAddr sdk.AccAddress) {
 	did, found := s.keeper.GetDIDForPendingAddress(s.ctx, callerAddr)
 	s.Require().True(found, "pending host did not land in state")
-	meta := &sourcehubtypes.SetRelationshipMeta{Did: string(did), Group: "host"}
+	meta := &sourcehubtypes.SetRelationshipMeta{Did: did, Group: "host"}
 	metaBz, err := s.cdc.Marshal(meta)
 	s.Require().NoError(err)
 	cb := keeper.NewAckCallback(s.keeper)
@@ -105,7 +105,7 @@ func (s *KeeperTestSuite) simulateHostAck(callerAddr []byte) {
 func (s *KeeperTestSuite) TestRegisterHost_Success() {
 	message := []byte("test-registration-nonce")
 	nodePub, nodeSig := generateNodeIdentityKey(s.T(), message)
-	callerAddr := []byte{0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f, 0x10, 0x11, 0x12, 0x13, 0x14}
+	callerAddr := sdk.AccAddress([]byte{0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f, 0x10, 0x11, 0x12, 0x13, 0x14})
 
 	did, err := s.keeper.RegisterHost(s.ctx, nodePub, nodeSig, message, "192.168.1.1:8080", "https://192.168.1.1:8443/api/v0/graphql", callerAddr)
 	s.Require().NoError(err)
@@ -120,9 +120,13 @@ func (s *KeeperTestSuite) TestRegisterHost_Success() {
 
 	gotDID, found := s.keeper.GetDIDForAddress(s.ctx, callerAddr)
 	s.Require().True(found)
-	s.Require().Equal(did, gotDID)
+	s.Require().Equal(string(did), gotDID)
 
-	bech32Addr := sdk.AccAddress(callerAddr).String()
+	gotAddr, found := s.keeper.GetAddressForDID(s.ctx, gotDID)
+	s.Require().True(found)
+	s.Require().Equal(callerAddr, gotAddr, "DID→address reverse index must round-trip")
+
+	bech32Addr := callerAddr.String()
 	host, found, err := s.keeper.GetHost(s.ctx, bech32Addr)
 	s.Require().NoError(err)
 	s.Require().True(found)
@@ -156,7 +160,7 @@ func (s *KeeperTestSuite) TestRegisterHost_InvalidEndpointAddress() {
 func (s *KeeperTestSuite) TestRegisterHost_InvalidNodeSignature() {
 	message := []byte("test-nonce")
 	nodePub, _ := generateNodeIdentityKey(s.T(), message)
-	callerAddr := []byte{0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f, 0x10, 0x11, 0x12, 0x13, 0x14}
+	callerAddr := sdk.AccAddress([]byte{0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f, 0x10, 0x11, 0x12, 0x13, 0x14})
 	_, wrongSig := generateNodeIdentityKey(s.T(), []byte("wrong-message"))
 
 	_, err := s.keeper.RegisterHost(s.ctx, nodePub, wrongSig, message, "192.168.1.1:8080", "https://192.168.1.1:8443/api/v0/graphql", callerAddr)
@@ -166,7 +170,7 @@ func (s *KeeperTestSuite) TestRegisterHost_InvalidNodeSignature() {
 func (s *KeeperTestSuite) TestRegisterHost_SameAddrDifferentDID_Fails() {
 	message := []byte("test-nonce")
 	nodePub1, nodeSig1 := generateNodeIdentityKey(s.T(), message)
-	callerAddr := []byte{0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f, 0x10, 0x11, 0x12, 0x13, 0x14}
+	callerAddr := sdk.AccAddress([]byte{0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f, 0x10, 0x11, 0x12, 0x13, 0x14})
 
 	_, err := s.keeper.RegisterHost(s.ctx, nodePub1, nodeSig1, message, "192.168.1.1:8080", "https://192.168.1.1:8443/api/v0/graphql", callerAddr)
 	s.Require().NoError(err)
@@ -182,7 +186,7 @@ func (s *KeeperTestSuite) TestRegisterHost_ICAFailure_Propagates() {
 
 	message := []byte("test-nonce")
 	nodePub, nodeSig := generateNodeIdentityKey(s.T(), message)
-	callerAddr := []byte{0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f, 0x10, 0x11, 0x12, 0x13, 0x14}
+	callerAddr := sdk.AccAddress([]byte{0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f, 0x10, 0x11, 0x12, 0x13, 0x14})
 
 	_, err := s.keeper.RegisterHost(s.ctx, nodePub, nodeSig, message, "192.168.1.1:8080", "https://192.168.1.1:8443/api/v0/graphql", callerAddr)
 	s.Require().Error(err)
@@ -190,7 +194,7 @@ func (s *KeeperTestSuite) TestRegisterHost_ICAFailure_Propagates() {
 }
 
 func (s *KeeperTestSuite) TestIsRegisteredHost_NotRegistered() {
-	callerAddr := []byte{0xaa, 0xbb, 0xcc, 0xdd, 0xee, 0xff, 0x00, 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88, 0x99, 0xaa, 0xbb, 0xcc, 0xdd}
+	callerAddr := sdk.AccAddress([]byte{0xaa, 0xbb, 0xcc, 0xdd, 0xee, 0xff, 0x00, 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88, 0x99, 0xaa, 0xbb, 0xcc, 0xdd})
 	s.Require().False(s.keeper.IsRegisteredHost(s.ctx, callerAddr))
 }
 

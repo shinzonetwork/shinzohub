@@ -6,10 +6,8 @@ import (
 
 	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	evmtypes "github.com/cosmos/evm/x/vm/types"
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/core/tracing"
 	gethtypes "github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/core/vm"
 )
@@ -25,10 +23,14 @@ func (p Precompile) Fund(
 	contract *vm.Contract,
 	stateDB vm.StateDB,
 	method *abi.Method,
-	_ []interface{},
+	args []interface{},
 ) ([]byte, error) {
+	amountBig, ok := args[0].(*big.Int)
+	if !ok || amountBig == nil {
+		return nil, fmt.Errorf("invalid amount")
+	}
 	caller := contract.Caller()
-	return p.fundCore(ctx, contract, stateDB, method, caller, caller)
+	return p.fundCore(ctx, contract, stateDB, method, caller, caller, amountBig)
 }
 
 func (p Precompile) FundFor(
@@ -42,7 +44,11 @@ func (p Precompile) FundFor(
 	if !ok || recipient == (common.Address{}) {
 		return nil, fmt.Errorf("invalid recipient")
 	}
-	return p.fundCore(ctx, contract, stateDB, method, contract.Caller(), recipient)
+	amountBig, ok := args[1].(*big.Int)
+	if !ok || amountBig == nil {
+		return nil, fmt.Errorf("invalid amount")
+	}
+	return p.fundCore(ctx, contract, stateDB, method, contract.Caller(), recipient, amountBig)
 }
 
 func (p Precompile) fundCore(
@@ -52,34 +58,21 @@ func (p Precompile) fundCore(
 	method *abi.Method,
 	funderEVM common.Address,
 	recipientEVM common.Address,
+	amountBig *big.Int,
 ) ([]byte, error) {
-	value := contract.Value()
-	if value == nil || value.Sign() == 0 {
-		return nil, fmt.Errorf("must send a non-zero amount")
+	if amountBig.Sign() <= 0 {
+		return nil, fmt.Errorf("amount must be positive")
 	}
 
-	bigVal := value.ToBig()
-	// msg.value is denominated in the EVM coin's extended denom; use it directly
-	// rather than the staking bond denom so the escrow always matches the coin
-	// the EVM actually parked at this precompile.
-	amount := sdk.NewCoin(evmtypes.GetEVMCoinExtendedDenom(), math.NewIntFromBigInt(bigVal))
-
+	amount := math.NewIntFromBigInt(amountBig)
 	funder := sdk.AccAddress(funderEVM.Bytes())
 	recipient := sdk.AccAddress(recipientEVM.Bytes())
-	// A payable call parks msg.value in this precompile's own account. Escrow it
-	// from there into the module account — pulling from the funder again would
-	// double-charge them and strand the value here.
-	escrowAcc := sdk.AccAddress(contract.Address().Bytes())
 
-	if err := p.qbKeeper.EscrowAndCredit(ctx, escrowAcc, funder, recipient, amount); err != nil {
+	if err := p.qbKeeper.Fund(ctx, funder, recipient, amount); err != nil {
 		return nil, fmt.Errorf("fund: %w", err)
 	}
 
-	// The bank transfer above bypasses the EVM journal, so reconcile the StateDB
-	// to keep the precompile's EVM-visible balance consistent with the move.
-	stateDB.SubBalance(contract.Address(), value, tracing.BalanceChangeUnspecified)
-
-	if err := p.emitFunded(stateDB, contract.Address(), funderEVM, recipientEVM, bigVal); err != nil {
+	if err := p.emitFunded(stateDB, contract.Address(), funderEVM, recipientEVM, amountBig); err != nil {
 		return nil, err
 	}
 

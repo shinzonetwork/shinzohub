@@ -126,10 +126,110 @@ func (k Keeper) GetPoolDetail(ctx sdk.Context, poolAddress string) (types.PoolDe
 	}
 
 	return types.PoolDetail{
-		Pool:    pool,
-		Hosts:   hosts,
-		Demands: demands,
+		Pool:     pool,
+		Hosts:    hosts,
+		Demands:  demands,
+		Stats:    k.GetPoolStats(ctx, poolAddress),
+		IsActive: len(hosts) >= types.MinHostsForActive,
 	}, true, nil
+}
+
+// GetPoolStats returns the current operational stats for a pool. Missing key
+// returns a zero PoolStats (no panic) — useful for newly created pools that
+// haven't received any settlement updates yet.
+func (k Keeper) GetPoolStats(ctx sdk.Context, poolAddress string) types.PoolStats {
+	store := runtime.KVStoreAdapter(k.storeService.OpenKVStore(ctx))
+	bz := store.Get([]byte(types.PoolStatsPrefix + poolAddress))
+	if len(bz) == 0 {
+		return types.PoolStats{
+			PoolAddress:  poolAddress,
+			TotalRewards: "0",
+		}
+	}
+	var s types.PoolStats
+	if err := k.cdc.Unmarshal(bz, &s); err != nil {
+		return types.PoolStats{
+			PoolAddress:  poolAddress,
+			TotalRewards: "0",
+		}
+	}
+	if s.TotalRewards == "" {
+		s.TotalRewards = "0"
+	}
+	return s
+}
+
+// UpdatePoolStats applies one accounting-service report to a pool's stats:
+//   - utilization and price are LAST-WINS (overwrite the prior value)
+//   - total_queries and total_rewards ACCUMULATE (added to running totals)
+//   - last_updated_epoch is overwritten if epoch >= current last_updated_epoch
+//
+// Returns ErrPoolNotFound if the pool doesn't exist — stats can only exist
+// for known pools so the accounting service can't smuggle in phantom data.
+func (k Keeper) UpdatePoolStats(
+	ctx sdk.Context,
+	poolAddress string,
+	price math.Int,
+	utilization uint64,
+	addQueries uint64,
+	addRewards math.Int,
+	epoch uint64,
+) error {
+	if !k.PoolExists(ctx, poolAddress) {
+		return fmt.Errorf("pool %s not found", poolAddress)
+	}
+
+	stats := k.GetPoolStats(ctx, poolAddress)
+
+	if price.IsPositive() {
+		stats.Price = price.String()
+	}
+	if utilization > 100 {
+		return fmt.Errorf("utilization out of range: %d (expected 0-100)", utilization)
+	}
+	stats.Utilization = utilization
+
+	// Guard the cumulative counter against a silent uint64 wrap.
+	if stats.TotalQueries+addQueries < stats.TotalQueries {
+		return fmt.Errorf("total_queries overflow: %d + %d", stats.TotalQueries, addQueries)
+	}
+	stats.TotalQueries += addQueries
+
+	priorRewards, ok := math.NewIntFromString(stats.TotalRewards)
+	if !ok {
+		priorRewards = math.ZeroInt()
+	}
+	// SafeAdd returns an error instead of panicking on 256-bit overflow.
+	sumRewards, err := priorRewards.SafeAdd(addRewards)
+	if err != nil {
+		return fmt.Errorf("total_rewards overflow: %w", err)
+	}
+	stats.TotalRewards = sumRewards.String()
+
+	if epoch >= stats.LastUpdatedEpoch {
+		stats.LastUpdatedEpoch = epoch
+	}
+
+	stats.PoolAddress = poolAddress
+
+	bz, err := k.cdc.Marshal(&stats)
+	if err != nil {
+		return fmt.Errorf("marshal pool stats: %w", err)
+	}
+	store := runtime.KVStoreAdapter(k.storeService.OpenKVStore(ctx))
+	store.Set([]byte(types.PoolStatsPrefix+poolAddress), bz)
+
+	ctx.EventManager().EmitEvent(sdk.NewEvent(
+		types.EventTypePoolStatsUpdated,
+		sdk.NewAttribute(types.AttrKeyPoolAddress, poolAddress),
+		sdk.NewAttribute(types.AttrKeyPrice, stats.Price),
+		sdk.NewAttribute(types.AttrKeyUtilization, fmt.Sprintf("%d", utilization)),
+		sdk.NewAttribute(types.AttrKeyTotalQueries, fmt.Sprintf("%d", stats.TotalQueries)),
+		sdk.NewAttribute(types.AttrKeyTotalRewards, stats.TotalRewards),
+		sdk.NewAttribute(types.AttrKeyEpoch, fmt.Sprintf("%d", epoch)),
+	))
+
+	return nil
 }
 
 // GetAllPoolDetails returns every pool denormalized with its hosts and demands.

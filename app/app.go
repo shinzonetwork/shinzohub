@@ -172,6 +172,9 @@ import (
 	querybalancemod "github.com/shinzonetwork/shinzohub/x/querybalance"
 	querybalancekeeper "github.com/shinzonetwork/shinzohub/x/querybalance/keeper"
 	querybalancetypes "github.com/shinzonetwork/shinzohub/x/querybalance/types"
+	settlementmod "github.com/shinzonetwork/shinzohub/x/settlement"
+	settlementkeeper "github.com/shinzonetwork/shinzohub/x/settlement/keeper"
+	settlementtypes "github.com/shinzonetwork/shinzohub/x/settlement/types"
 	sourcehub "github.com/shinzonetwork/shinzohub/x/sourcehub"
 	sourcehubkeeper "github.com/shinzonetwork/shinzohub/x/sourcehub/keeper"
 	sourcehubtypes "github.com/shinzonetwork/shinzohub/x/sourcehub/types"
@@ -251,6 +254,7 @@ var maccPerms = map[string][]string{
 	viewtypes.ModuleName:         nil,
 	pooltypes.ModuleName:         nil,
 	querybalancetypes.ModuleName: nil,
+	settlementtypes.ModuleName:   {authtypes.Minter, authtypes.Burner},
 }
 
 var (
@@ -314,6 +318,7 @@ type ChainApp struct {
 	ViewKeeper         viewkeeper.Keeper
 	PoolKeeper         poolkeeper.Keeper
 	QueryBalanceKeeper querybalancekeeper.Keeper
+	SettlementKeeper   settlementkeeper.Keeper
 	// the module manager
 	ModuleManager      *module.Manager
 	BasicModuleManager module.BasicManager
@@ -431,6 +436,7 @@ func NewChainApp(
 		viewtypes.StoreKey,
 		pooltypes.StoreKey,
 		querybalancetypes.StoreKey,
+		settlementtypes.StoreKey,
 	)
 
 	tkeys := storetypes.NewTransientStoreKeys(
@@ -806,6 +812,17 @@ func NewChainApp(
 		authority,
 	)
 
+	app.SettlementKeeper = settlementkeeper.NewKeeper(
+		appCodec,
+		runtime.NewKVStoreService(keys[settlementtypes.StoreKey]),
+		app.BankKeeper,
+		app.HostKeeper,
+		app.IndexerKeeper,
+		app.QueryBalanceKeeper,
+		app.PoolKeeper,
+		authority,
+	)
+
 	app.SourcehubKeeper.RegisterAckCallback(
 		sourcehubtypes.RequestKind_REQUEST_KIND_REGISTER_OBJECT,
 		viewkeeper.NewAckCallback(app.ViewKeeper),
@@ -846,6 +863,7 @@ func NewChainApp(
 		app.ViewKeeper,
 		app.PoolKeeper,
 		app.QueryBalanceKeeper,
+		app.SettlementKeeper,
 		app.SourcehubKeeper,
 		appCodec,
 	)
@@ -976,6 +994,11 @@ func NewChainApp(
 			app.QueryBalanceKeeper,
 			runtime.NewKVStoreService(keys[querybalancetypes.StoreKey]),
 		),
+		settlementmod.NewAppModule(
+			appCodec,
+			app.SettlementKeeper,
+			runtime.NewKVStoreService(keys[settlementtypes.StoreKey]),
+		),
 	)
 
 	// BasicModuleManager defines the module BasicManager is in charge of setting up basic,
@@ -1025,6 +1048,7 @@ func NewChainApp(
 		viewtypes.ModuleName,
 		pooltypes.ModuleName,
 		querybalancetypes.ModuleName,
+		settlementtypes.ModuleName,
 	)
 
 	app.ModuleManager.SetOrderEndBlockers(
@@ -1048,6 +1072,7 @@ func NewChainApp(
 		viewtypes.ModuleName,
 		pooltypes.ModuleName,
 		querybalancetypes.ModuleName,
+		settlementtypes.ModuleName,
 	)
 
 	// NOTE: The genutils module must occur after staking so that pools are
@@ -1098,6 +1123,7 @@ func NewChainApp(
 		viewtypes.ModuleName,
 		pooltypes.ModuleName,
 		querybalancetypes.ModuleName,
+		settlementtypes.ModuleName,
 	}
 	app.ModuleManager.SetOrderInitGenesis(genesisModuleOrder...)
 	app.ModuleManager.SetOrderExportGenesis(genesisModuleOrder...)
@@ -1379,8 +1405,11 @@ func (a *ChainApp) DefaultGenesis() map[string]json.RawMessage {
 	// NOTE: for the example chain implementation we are also adding a default token pair,
 	// which is the base denomination of the chain (i.e. the WTOKEN contract)
 	erc20GenState := erc20types.DefaultGenesisState()
-	erc20GenState.TokenPairs = ExampleTokenPairs
-	erc20GenState.NativePrecompiles = append(erc20GenState.NativePrecompiles, WTokenContractMainnet)
+	erc20GenState.TokenPairs = TokenPairs
+	erc20GenState.NativePrecompiles = append(
+		erc20GenState.NativePrecompiles,
+		WTokenContractMainnet,
+	)
 	genesis[erc20types.ModuleName] = a.appCodec.MustMarshalJSON(erc20GenState)
 
 	return genesis

@@ -40,11 +40,15 @@ func (k Keeper) Logger(ctx sdk.Context) log.Logger {
 	return ctx.Logger().With("module", fmt.Sprintf("x/%s", types.ModuleName))
 }
 
+// Fund moves NZO (ushinzo) from funder's wallet into the querybalance
+// module account and credits the recipient's query balance by amount. Denom
+// is fixed to types.QueryBalanceDenom — the funder must already hold NZO
+// (via settlement claim, bridge, or transfer).
 func (k Keeper) Fund(
 	ctx sdk.Context,
 	funder sdk.AccAddress,
 	recipient sdk.AccAddress,
-	amount sdk.Coins,
+	amount math.Int,
 ) error {
 	if funder.Empty() {
 		return fmt.Errorf("funder is required")
@@ -52,68 +56,23 @@ func (k Keeper) Fund(
 	if recipient.Empty() {
 		return fmt.Errorf("recipient is required")
 	}
-	if !amount.IsValid() || amount.IsZero() {
-		return fmt.Errorf("amount must be a positive coin")
-	}
-	if len(amount) != 1 {
-		return fmt.Errorf("fund accepts a single coin denomination, got %d", len(amount))
+	if !amount.IsPositive() {
+		return fmt.Errorf("amount must be positive")
 	}
 
+	coins := sdk.NewCoins(sdk.NewCoin(types.QueryBalanceDenom, amount))
 	if err := k.bankKeeper.SendCoinsFromAccountToModule(
-		ctx, funder, types.ModuleName, amount,
+		ctx, funder, types.ModuleName, coins,
 	); err != nil {
 		return fmt.Errorf("transfer to module account: %w", err)
 	}
 
-	return k.credit(ctx, funder, recipient, amount[0])
-}
-
-// EscrowAndCredit moves `amount`, which the caller has already parked in
-// `escrowAcc`, into the module account and credits it to `recipient`. It exists
-// for the EVM precompile: a payable call lands msg.value in the precompile's own
-// account, so the coins must be escrowed from there rather than pulled from the
-// funder again — the EVM has already debited the funder, and re-pulling would
-// double-charge them and strand the value at the precompile. `funder` is the
-// logical origin recorded in the emitted event.
-func (k Keeper) EscrowAndCredit(
-	ctx sdk.Context,
-	escrowAcc sdk.AccAddress,
-	funder sdk.AccAddress,
-	recipient sdk.AccAddress,
-	amount sdk.Coin,
-) error {
-	if escrowAcc.Empty() {
-		return fmt.Errorf("escrow account is required")
-	}
-	if funder.Empty() {
-		return fmt.Errorf("funder is required")
-	}
-	if recipient.Empty() {
-		return fmt.Errorf("recipient is required")
-	}
-	if !amount.IsValid() || amount.IsZero() {
-		return fmt.Errorf("amount must be a positive coin")
-	}
-
-	if err := k.bankKeeper.SendCoinsFromAccountToModule(
-		ctx, escrowAcc, types.ModuleName, sdk.NewCoins(amount),
-	); err != nil {
-		return fmt.Errorf("escrow to module account: %w", err)
-	}
-
-	return k.credit(ctx, funder, recipient, amount)
-}
-
-// credit adds `amount` to `recipient`'s query balance and emits the funded
-// event. The coins backing `amount` are assumed to already be held by the
-// module account (moved there by the caller).
-func (k Keeper) credit(ctx sdk.Context, funder, recipient sdk.AccAddress, amount sdk.Coin) error {
 	qb := k.getEntry(ctx, recipient)
 	prev := parseAmount(qb.Amount)
 	// SafeAdd returns an error instead of panicking on 256-bit overflow. A panic
 	// here would escape the precompile's gas-error recovery and crash the node,
 	// so surface it as a normal error that reverts the tx.
-	sum, err := prev.SafeAdd(amount.Amount)
+	sum, err := prev.SafeAdd(amount)
 	if err != nil {
 		return fmt.Errorf("credit %s: balance overflow: %w", recipient.String(), err)
 	}
@@ -124,8 +83,9 @@ func (k Keeper) credit(ctx sdk.Context, funder, recipient sdk.AccAddress, amount
 		types.EventTypeFunded,
 		sdk.NewAttribute(types.AttrKeyFunder, funder.String()),
 		sdk.NewAttribute(types.AttrKeyRecipient, recipient.String()),
-		sdk.NewAttribute(types.AttrKeyAmount, amount.Amount.String()),
+		sdk.NewAttribute(types.AttrKeyAmount, amount.String()),
 	))
+
 	return nil
 }
 

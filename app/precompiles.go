@@ -36,11 +36,13 @@ import (
 	"github.com/shinzonetwork/shinzohub/app/precompiles/indexerregistry"
 	"github.com/shinzonetwork/shinzohub/app/precompiles/poolregistry"
 	"github.com/shinzonetwork/shinzohub/app/precompiles/querybalance"
+	"github.com/shinzonetwork/shinzohub/app/precompiles/settlement"
 	"github.com/shinzonetwork/shinzohub/app/precompiles/viewregistry"
 	hostkeeper "github.com/shinzonetwork/shinzohub/x/host/keeper"
 	indexerkeeper "github.com/shinzonetwork/shinzohub/x/indexer/keeper"
 	poolkeeper "github.com/shinzonetwork/shinzohub/x/pool/keeper"
 	querybalancekeeper "github.com/shinzonetwork/shinzohub/x/querybalance/keeper"
+	settlementkeeper "github.com/shinzonetwork/shinzohub/x/settlement/keeper"
 	sourcehubkeeper "github.com/shinzonetwork/shinzohub/x/sourcehub/keeper"
 	viewkeeper "github.com/shinzonetwork/shinzohub/x/view/keeper"
 )
@@ -80,6 +82,7 @@ func GetAvailableStaticPrecompiles() []string {
 		indexerregistry.PrecompileAddress,
 		poolregistry.PrecompileAddress,
 		querybalance.PrecompileAddress,
+		settlement.PrecompileAddress,
 	}
 
 	return append(evmtypes.AvailableStaticPrecompiles, customAvailableStaticPrecompiles...)
@@ -104,6 +107,7 @@ func NewAvailableStaticPrecompiles(
 	viewKeeper viewkeeper.Keeper,
 	poolKeeper poolkeeper.Keeper,
 	queryBalanceKeeper querybalancekeeper.Keeper,
+	settlementKeeper settlementkeeper.Keeper,
 	sourcehubKeeper sourcehubkeeper.Keeper,
 	codec codec.Codec,
 	opts ...Option,
@@ -186,6 +190,11 @@ func NewAvailableStaticPrecompiles(
 		panic(fmt.Errorf("failed to instantiate pool registry precompile: %w", err))
 	}
 
+	settlementPrecompile, err := settlement.NewPrecompile(precompileBaseGas, settlementKeeper)
+	if err != nil {
+		panic(fmt.Errorf("failed to instantiate settlement precompile: %w", err))
+	}
+
 	queryBalancePrecompile, err := querybalance.NewPrecompile(precompileBaseGas, queryBalanceKeeper)
 	if err != nil {
 		panic(fmt.Errorf("failed to instantiate query balance precompile: %w", err))
@@ -208,6 +217,7 @@ func NewAvailableStaticPrecompiles(
 	precompiles[indexerRegistryPrecompile.Address()] = indexerRegistryPrecompile
 	precompiles[poolRegistryPrecompile.Address()] = poolRegistryPrecompile
 	precompiles[queryBalancePrecompile.Address()] = queryBalancePrecompile
+	precompiles[settlementPrecompile.Address()] = settlementPrecompile
 
 	return precompiles
 }

@@ -6,6 +6,7 @@ const (
 
 	IndexerByValidatorPrefix = "indexer/"
 	AddrIndexPrefix          = "addr_idx/"
+	DIDIndexPrefix           = "did_idx/"
 	PendingClaimPrefix       = "pending_claim/"
 	IndexerCountKey          = "indexer_count"
 

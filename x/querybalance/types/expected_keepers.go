@@ -6,10 +6,8 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
-// BankKeeper is the subset of the bank keeper this module uses for fund
-// custody — sending funder NZO into the module account on Fund and back out
-// during settlement (the settlement-time outflow lives on the pool keeper's
-// side, not here).
+// BankKeeper is the subset of the bank keeper this module uses to custody
+// NZO topped up by users for query credits.
 type BankKeeper interface {
 	SendCoinsFromAccountToModule(ctx context.Context, senderAddr sdk.AccAddress, recipientModule string, amt sdk.Coins) error
 	SendCoinsFromModuleToAccount(ctx context.Context, senderModule string, recipientAddr sdk.AccAddress, amt sdk.Coins) error

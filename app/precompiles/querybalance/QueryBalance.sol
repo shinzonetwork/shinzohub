@@ -5,10 +5,20 @@ address constant QUERY_BALANCE_PRECOMPILE_ADDRESS = 0x00000000000000000000000000
 
 QueryBalanceI constant QUERY_BALANCE_CONTRACT = QueryBalanceI(QUERY_BALANCE_PRECOMPILE_ADDRESS);
 
+/// @title QueryBalance precompile
+/// @notice Holds NZO that the gateway debits on a per-query basis. Users
+///         top up their own query balance (or someone else's) by funding the
+///         module account with NZO they already hold — claimed from
+///         settlement, bridged, or transferred.
 interface QueryBalanceI {
-    function fund() external payable;
+    /// @notice Move `amount` NZO (ushinzo) from msg.sender's wallet into
+    ///         msg.sender's own query balance. msg.sender must hold at least
+    ///         `amount` ushinzo.
+    function fund(uint256 amount) external;
 
-    function fundFor(address recipient) external payable;
+    /// @notice Like fund, but credits `recipient`'s query balance instead of
+    ///         msg.sender's. NZO still comes from msg.sender's wallet.
+    function fundFor(address recipient, uint256 amount) external;
 
     function balanceOf(address holder) external view returns (uint256);
 
