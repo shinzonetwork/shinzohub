@@ -237,14 +237,15 @@ func parseAmount(s string) math.Int {
 	return v
 }
 
-// GetCurrentEpoch returns the epoch number derived from the block timestamp.
-// epoch = floor(block_time_unix / EpochSeconds). Returns 0 if BlockTime is unset.
+// GetCurrentEpoch returns the epoch number derived from the block height.
+// epoch = floor(block_height / EpochBlocks). Height-based (not wall-clock)
+// so fresh genesis starts at epoch 0 — no back-catchup for pre-history epochs.
 func (k Keeper) GetCurrentEpoch(ctx sdk.Context) uint64 {
-	t := ctx.BlockTime().Unix()
-	if t <= 0 {
+	h := ctx.BlockHeight()
+	if h <= 0 {
 		return 0
 	}
-	return uint64(t / types.EpochSeconds)
+	return uint64(h / types.EpochBlocks)
 }
 
 func (k Keeper) GetLastSettledEpoch(ctx sdk.Context) uint64 {

@@ -2,7 +2,6 @@ package keeper_test
 
 import (
 	"testing"
-	"time"
 
 	"cosmossdk.io/math"
 	"github.com/stretchr/testify/require"
@@ -10,26 +9,27 @@ import (
 	"github.com/shinzonetwork/shinzohub/x/settlement/types"
 )
 
-func TestGetCurrentEpoch_DerivedFromBlockTime(t *testing.T) {
+func TestGetCurrentEpoch_DerivedFromBlockHeight(t *testing.T) {
 	f := newFixture(t)
 
-	// epoch 100 starts at 100 * 180 = 18000 unix
-	f.ctx = f.ctx.WithBlockTime(time.Unix(18_000, 0))
+	// epoch 100 starts at height 100 * 180 = 18000
+	f.ctx = f.ctx.WithBlockHeight(18_000)
 	require.Equal(t, uint64(100), f.keeper.GetCurrentEpoch(f.ctx))
 
-	// epoch 100 still — anywhere within the 180s window
-	f.ctx = f.ctx.WithBlockTime(time.Unix(18_000+179, 0))
+	// epoch 100 still — anywhere within the 180-block window
+	f.ctx = f.ctx.WithBlockHeight(18_000 + 179)
 	require.Equal(t, uint64(100), f.keeper.GetCurrentEpoch(f.ctx))
 
-	// epoch 101 starts at 18180
-	f.ctx = f.ctx.WithBlockTime(time.Unix(18_180, 0))
+	// epoch 101 starts at height 18180
+	f.ctx = f.ctx.WithBlockHeight(18_180)
 	require.Equal(t, uint64(101), f.keeper.GetCurrentEpoch(f.ctx))
 }
 
-func TestGetCurrentEpoch_ZeroWhenBlockTimeUnset(t *testing.T) {
+func TestGetCurrentEpoch_ZeroAtGenesis(t *testing.T) {
 	f := newFixture(t)
+	f.ctx = f.ctx.WithBlockHeight(0)
 	require.Equal(t, uint64(0), f.keeper.GetCurrentEpoch(f.ctx),
-		"unset block time must yield epoch 0, not panic or huge number")
+		"block height 0 must yield epoch 0, not panic or huge number")
 }
 
 func TestGetLastSettledEpoch_DefaultsToZero(t *testing.T) {
@@ -56,9 +56,9 @@ func TestSetLastSettledEpoch_AcceptsLargeValues(t *testing.T) {
 		"epoch is stored as full uint64, must round-trip past int64 max")
 }
 
-func TestEpochSecondsIs180(t *testing.T) {
-	require.Equal(t, int64(180), types.EpochSeconds,
-		"3-minute epoch is locked at 180 seconds")
+func TestEpochBlocksIs180(t *testing.T) {
+	require.Equal(t, int64(180), types.EpochBlocks,
+		"settlement epoch is locked at 180 blocks")
 }
 
 func TestGenesis_RoundTripsLastSettledEpoch(t *testing.T) {
