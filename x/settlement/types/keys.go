@@ -34,9 +34,11 @@ const (
 
 	SettlementDenom = "ushinzo"
 
-	// EpochSeconds is the duration of a settlement epoch in seconds.
-	// epoch = floor(block_time_unix / EpochSeconds)
-	EpochSeconds int64 = 180
+	// EpochBlocks is the duration of a settlement epoch in blocks.
+	// epoch = floor(block_height / EpochBlocks). Block-height-derived so
+	// fresh genesis starts at epoch 0 and the boundary processor never has
+	// to catch up "pre-history" epochs.
+	EpochBlocks int64 = 180
 
 	// MaxDebitsPerBlock caps the debit chunk drained per block. Gateway
 	// access control reads EffectiveBalance, which already subtracts the

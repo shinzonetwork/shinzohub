@@ -2,7 +2,6 @@ package keeper_test
 
 import (
 	"testing"
-	"time"
 
 	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -12,15 +11,15 @@ import (
 	"github.com/shinzonetwork/shinzohub/x/settlement/types"
 )
 
-// At block_time 18000, current epoch = 18000 / 180 = 100.
+// At block_height 18000, current epoch = 18000 / 180 = 100.
 const testEpoch = 100
 
-func atEpoch(epoch uint64) time.Time {
-	return time.Unix(int64(epoch)*180, 0)
+func heightAtEpoch(epoch uint64) int64 {
+	return int64(epoch) * 180
 }
 
 func setEpoch(f *fixture, epoch uint64) {
-	f.ctx = f.ctx.WithBlockTime(atEpoch(epoch))
+	f.ctx = f.ctx.WithBlockHeight(heightAtEpoch(epoch))
 }
 
 // primeCursor sets last_settled_epoch so BeginBlocker won't waste iterations
