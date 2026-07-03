@@ -2,9 +2,9 @@ syntax = "proto3";
 
 package shinzonetwork.indexer.v1;
 
+import "cosmos/base/query/v1beta1/pagination.proto";
 import "gogoproto/gogo.proto";
 import "google/api/annotations.proto";
-import "cosmos/base/query/v1beta1/pagination.proto";
 import "shinzonetwork/indexer/v1/indexer.proto";
 
 option go_package = "github.com/shinzonetwork/shinzohub/x/indexer/types";
@@ -15,24 +15,25 @@ service Query {
   }
 
   rpc Indexer(QueryIndexerRequest) returns (QueryIndexerResponse) {
-    option (google.api.http).get = "/shinzonetwork/indexer/v1/indexers/{address}";
+    option (google.api.http).get = "/shinzonetwork/indexer/v1/validator/{source_chain_id}/{validator_pubkey}";
+  }
+
+  rpc IndexerByAddress(QueryIndexerByAddressRequest) returns (QueryIndexerByAddressResponse) {
+    option (google.api.http).get = "/shinzonetwork/indexer/v1/indexers/{operator_address}";
   }
 
   rpc IndexerCount(QueryIndexerCountRequest) returns (QueryIndexerCountResponse) {
     option (google.api.http).get = "/shinzonetwork/indexer/v1/indexer_count";
   }
-
-  rpc IndexerAssertions(QueryIndexerAssertionsRequest) returns (QueryIndexerAssertionsResponse) {
-    option (google.api.http).get = "/shinzonetwork/indexer/v1/assertions/{address}";
-  }
 }
 
 message QueryIndexersRequest {
   cosmos.base.query.v1beta1.PageRequest pagination = 1;
+  uint64 source_chain_id = 2;
   // Exact DID filter.
-  string did = 2;
+  string did = 3;
   // Substring filter over Indexer.connection_string.
-  string connection_string = 3;
+  string connection_string = 4;
 }
 
 message QueryIndexersResponse {
@@ -41,10 +42,19 @@ message QueryIndexersResponse {
 }
 
 message QueryIndexerRequest {
-  string address = 1;
+  uint64 source_chain_id = 1;
+  bytes validator_pubkey = 2;
 }
 
 message QueryIndexerResponse {
+  Indexer indexer = 1 [(gogoproto.nullable) = false];
+}
+
+message QueryIndexerByAddressRequest {
+  string operator_address = 1;
+}
+
+message QueryIndexerByAddressResponse {
   Indexer indexer = 1 [(gogoproto.nullable) = false];
 }
 
@@ -52,12 +62,4 @@ message QueryIndexerCountRequest {}
 
 message QueryIndexerCountResponse {
   uint64 count = 1;
-}
-
-message QueryIndexerAssertionsRequest {
-  string address = 1;
-}
-
-message QueryIndexerAssertionsResponse {
-  repeated IndexerAssertion assertions = 1 [(gogoproto.nullable) = false];
 }

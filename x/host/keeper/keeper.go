@@ -63,7 +63,7 @@ func (k Keeper) RegisterHost(
 	message []byte,
 	connectionString string,
 	endpointAddress string,
-	callerAddr []byte,
+	caller sdk.AccAddress,
 ) ([]byte, error) {
 	if err := commoncrypto.VerifyNodeIdentityKeySignature(nodeIdentityKeyPubkey, message, nodeIdentityKeySignature); err != nil {
 		return nil, err
@@ -78,29 +78,28 @@ func (k Keeper) RegisterHost(
 		return nil, err
 	}
 
-	didBytes := []byte(did)
+	bech32Addr := caller.String()
+	bech32Bytes := []byte(bech32Addr)
 
 	store := runtime.KVStoreAdapter(k.storeService.OpenKVStore(ctx))
 
-	addrKey := append([]byte(types.AddrDIDPrefix), callerAddr...)
-	pendingAddrKey := append([]byte(types.PendingAddrDIDPrefix), callerAddr...)
+	addrKey := addrIndexKey(types.AddrDIDPrefix, bech32Addr)
+	pendingAddrKey := addrIndexKey(types.PendingAddrDIDPrefix, bech32Addr)
 	for _, key := range [][]byte{addrKey, pendingAddrKey} {
 		existingDID := store.Get(key)
-		if len(existingDID) > 0 && !bytesEqual(existingDID, didBytes) {
+		if len(existingDID) > 0 && string(existingDID) != did {
 			return nil, types.ErrAddressRegisteredDifferentDID
 		}
 	}
 
-	didKey := append([]byte(types.DIDAddrPrefix), didBytes...)
-	pendingDidKey := append([]byte(types.PendingDIDAddrPrefix), didBytes...)
+	didKey := didIndexKey(types.DIDAddrPrefix, did)
+	pendingDidKey := didIndexKey(types.PendingDIDAddrPrefix, did)
 	for _, key := range [][]byte{didKey, pendingDidKey} {
 		existingAddr := store.Get(key)
-		if len(existingAddr) > 0 && !bytesEqual(existingAddr, callerAddr) {
+		if len(existingAddr) > 0 && string(existingAddr) != bech32Addr {
 			return nil, types.ErrDIDRegisteredDifferentAddress
 		}
 	}
-
-	bech32Addr := sdk.AccAddress(callerAddr).String()
 
 	host := types.Host{
 		Address:          bech32Addr,
@@ -111,13 +110,13 @@ func (k Keeper) RegisterHost(
 	if err := k.SetPendingHost(ctx, host); err != nil {
 		return nil, fmt.Errorf("record pending host: %w", err)
 	}
-	store.Set(append([]byte(types.PendingAddrDIDPrefix), callerAddr...), didBytes)
-	store.Set(append([]byte(types.PendingDIDAddrPrefix), didBytes...), callerAddr)
+	store.Set(pendingAddrKey, []byte(did))
+	store.Set(pendingDidKey, bech32Bytes)
 
 	if _, _, _, err := k.sourcehubKeeper.SendICASetRelationship(ctx, did, "host", bech32Addr); err != nil {
 		_ = k.DeletePendingHost(ctx, bech32Addr)
-		store.Delete(append([]byte(types.PendingAddrDIDPrefix), callerAddr...))
-		store.Delete(append([]byte(types.PendingDIDAddrPrefix), didBytes...))
+		store.Delete(pendingAddrKey)
+		store.Delete(pendingDidKey)
 		return nil, err
 	}
 
@@ -127,7 +126,7 @@ func (k Keeper) RegisterHost(
 		sdk.NewAttribute(types.AttrKeyDID, did),
 	))
 
-	return didBytes, nil
+	return []byte(did), nil
 }
 
 func (k Keeper) SetPendingHost(ctx sdk.Context, host types.Host) error {
@@ -159,30 +158,54 @@ func (k Keeper) DeletePendingHost(ctx sdk.Context, address string) error {
 	return nil
 }
 
-func (k Keeper) IsRegisteredHost(ctx sdk.Context, address []byte) bool {
+func (k Keeper) IsRegisteredHost(ctx sdk.Context, addr sdk.AccAddress) bool {
 	store := runtime.KVStoreAdapter(k.storeService.OpenKVStore(ctx))
-	addrKey := append([]byte(types.AddrDIDPrefix), address...)
-	v := store.Get(addrKey)
+	v := store.Get(addrIndexKey(types.AddrDIDPrefix, addr.String()))
 	return len(v) > 0
 }
 
-func (k Keeper) GetDIDForAddress(ctx sdk.Context, address []byte) ([]byte, bool) {
+func (k Keeper) GetDIDForAddress(ctx sdk.Context, addr sdk.AccAddress) (string, bool) {
 	store := runtime.KVStoreAdapter(k.storeService.OpenKVStore(ctx))
-	addrKey := append([]byte(types.AddrDIDPrefix), address...)
-	v := store.Get(addrKey)
+	v := store.Get(addrIndexKey(types.AddrDIDPrefix, addr.String()))
 	if len(v) == 0 {
-		return nil, false
+		return "", false
 	}
-	return v, true
+	return string(v), true
 }
 
-func (k Keeper) GetDIDForPendingAddress(ctx sdk.Context, address []byte) ([]byte, bool) {
+func (k Keeper) GetDIDForPendingAddress(ctx sdk.Context, addr sdk.AccAddress) (string, bool) {
 	store := runtime.KVStoreAdapter(k.storeService.OpenKVStore(ctx))
-	v := store.Get(append([]byte(types.PendingAddrDIDPrefix), address...))
+	v := store.Get(addrIndexKey(types.PendingAddrDIDPrefix, addr.String()))
+	if len(v) == 0 {
+		return "", false
+	}
+	return string(v), true
+}
+
+func (k Keeper) GetAddressForDID(ctx sdk.Context, did string) (sdk.AccAddress, bool) {
+	store := runtime.KVStoreAdapter(k.storeService.OpenKVStore(ctx))
+	v := store.Get(didIndexKey(types.DIDAddrPrefix, did))
 	if len(v) == 0 {
 		return nil, false
 	}
-	return v, true
+	addr, err := sdk.AccAddressFromBech32(string(v))
+	if err != nil {
+		return nil, false
+	}
+	return addr, true
+}
+
+func (k Keeper) GetPendingAddressForDID(ctx sdk.Context, did string) (sdk.AccAddress, bool) {
+	store := runtime.KVStoreAdapter(k.storeService.OpenKVStore(ctx))
+	v := store.Get(didIndexKey(types.PendingDIDAddrPrefix, did))
+	if len(v) == 0 {
+		return nil, false
+	}
+	addr, err := sdk.AccAddressFromBech32(string(v))
+	if err != nil {
+		return nil, false
+	}
+	return addr, true
 }
 
 func (k Keeper) SetHost(ctx sdk.Context, host types.Host) error {
@@ -283,14 +306,10 @@ func (k Keeper) ExportGenesis(ctx sdk.Context) *types.GenesisState {
 	return &types.GenesisState{Hosts: hosts}
 }
 
-func bytesEqual(a, b []byte) bool {
-	if len(a) != len(b) {
-		return false
-	}
-	for i := range a {
-		if a[i] != b[i] {
-			return false
-		}
-	}
-	return true
+func addrIndexKey(prefix, bech32Addr string) []byte {
+	return []byte(prefix + bech32Addr)
+}
+
+func didIndexKey(prefix, did string) []byte {
+	return []byte(prefix + did)
 }

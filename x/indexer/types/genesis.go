@@ -2,8 +2,7 @@ package types
 
 func DefaultGenesis() *GenesisState {
 	return &GenesisState{
-		Indexers:     []Indexer{},
-		Assertions: []IndexerAssertion{},
+		Indexers: []Indexer{},
 	}
 }
 

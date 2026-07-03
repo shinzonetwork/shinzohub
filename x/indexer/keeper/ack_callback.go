@@ -3,11 +3,10 @@ package keeper
 import (
 	"fmt"
 
-	"github.com/cosmos/cosmos-sdk/runtime"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
+	indexertypes "github.com/shinzonetwork/shinzohub/x/indexer/types"
 	sourcehubtypes "github.com/shinzonetwork/shinzohub/x/sourcehub/types"
-	"github.com/shinzonetwork/shinzohub/x/indexer/types"
 )
 
 type AckCallback struct {
@@ -27,57 +26,33 @@ func (c AckCallback) OnPacketAck(ctx sdk.Context, req sourcehubtypes.PendingICAR
 	if err := c.keeper.cdc.Unmarshal(req.Meta, &meta); err != nil {
 		return fmt.Errorf("decode SetRelationshipMeta: %w", err)
 	}
-	if meta.Group != sourcehubtypes.GroupIndexerName {
+	if meta.Group != indexertypes.GroupIndexerName {
 		return nil
 	}
 
-	store := runtime.KVStoreAdapter(c.keeper.storeService.OpenKVStore(ctx))
-	didBytes := []byte(meta.Did)
-	callerAddr := store.Get(append([]byte(types.PendingDIDAddrPrefix), didBytes...))
-	if len(callerAddr) == 0 {
-		return nil
-	}
-	bech32Addr := sdk.AccAddress(callerAddr).String()
-
-	pending, found, err := c.keeper.GetPendingIndexer(ctx, bech32Addr)
+	claim, found, err := c.keeper.GetPendingClaim(ctx, meta.Did)
 	if err != nil {
-		return fmt.Errorf("read pending indexer %s: %w", bech32Addr, err)
+		return fmt.Errorf("read pending claim %s: %w", meta.Did, err)
+	}
+	if !found {
+		return nil
 	}
 
 	switch req.Status {
 	case sourcehubtypes.RequestStatus_REQUEST_STATUS_SUCCESS:
-		if found {
-			if err := c.keeper.SetIndexer(ctx, pending); err != nil {
-				return fmt.Errorf("promote pending indexer: %w", err)
-			}
-			_ = c.keeper.DeletePendingIndexer(ctx, bech32Addr)
+		if err := c.keeper.ApplyRegistration(ctx, claim.OperatorAddress, meta.Did, claim.ConnectionString); err != nil {
+			return err
 		}
-		store.Set(append([]byte(types.AddrDIDPrefix), callerAddr...), didBytes)
-		store.Set(append([]byte(types.DIDAddrPrefix), didBytes...), callerAddr)
-		store.Delete(append([]byte(types.PendingAddrDIDPrefix), callerAddr...))
-		store.Delete(append([]byte(types.PendingDIDAddrPrefix), didBytes...))
+		c.keeper.DeletePendingClaim(ctx, meta.Did)
 
-		ctx.EventManager().EmitEvent(sdk.NewEvent(
-			types.EventTypeIndexerRegistered,
-			sdk.NewAttribute(types.AttrKeyAddress, bech32Addr),
-			sdk.NewAttribute(types.AttrKeyDID, meta.Did),
-		))
-
-	case sourcehubtypes.RequestStatus_REQUEST_STATUS_FAILURE, sourcehubtypes.RequestStatus_REQUEST_STATUS_TIMEOUT:
-		_ = c.keeper.DeletePendingIndexer(ctx, bech32Addr)
-		store.Delete(append([]byte(types.PendingAddrDIDPrefix), callerAddr...))
-		store.Delete(append([]byte(types.PendingDIDAddrPrefix), didBytes...))
-
-		eventType := types.EventTypeIndexerRegistrationFailed
+	case sourcehubtypes.RequestStatus_REQUEST_STATUS_FAILURE,
+		sourcehubtypes.RequestStatus_REQUEST_STATUS_TIMEOUT:
+		reason := req.Error
 		if req.Status == sourcehubtypes.RequestStatus_REQUEST_STATUS_TIMEOUT {
-			eventType = types.EventTypeIndexerRegistrationTimedOut
+			reason = "ica timeout"
 		}
-		ctx.EventManager().EmitEvent(sdk.NewEvent(
-			eventType,
-			sdk.NewAttribute(types.AttrKeyAddress, bech32Addr),
-			sdk.NewAttribute(types.AttrKeyDID, meta.Did),
-			sdk.NewAttribute(types.AttrKeyError, req.Error),
-		))
+		c.keeper.DeletePendingClaim(ctx, meta.Did)
+		emitRegistrationFailed(ctx, claim.OperatorAddress, meta.Did, reason)
 	}
 	return nil
 }

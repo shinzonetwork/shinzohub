@@ -1,0 +1,101 @@
+{
+  "_format": "hh-sol-artifact-1",
+  "contractName": "Pool",
+  "sourceName": "Pool.sol",
+  "abi": [
+    {
+      "inputs": [
+        { "internalType": "address", "name": "_viewAddress", "type": "address" }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "constructor"
+    },
+    {
+      "inputs": [],
+      "name": "viewAddress",
+      "outputs": [
+        { "internalType": "address", "name": "", "type": "address" }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "registry",
+      "outputs": [
+        { "internalType": "address", "name": "", "type": "address" }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "join",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "exit",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "snapshot",
+      "outputs": [
+        {
+          "components": [
+            {
+              "components": [
+                { "internalType": "address", "name": "poolAddress", "type": "address" },
+                { "internalType": "address", "name": "viewAddress", "type": "address" },
+                {
+                  "components": [
+                    { "internalType": "uint64", "name": "windowSize", "type": "uint64" }
+                  ],
+                  "internalType": "struct PoolRegistryI.PoolConfig",
+                  "name": "config",
+                  "type": "tuple"
+                },
+                { "internalType": "bool", "name": "isActive", "type": "bool" },
+                { "internalType": "uint256", "name": "price", "type": "uint256" }
+              ],
+              "internalType": "struct PoolRegistryI.Pool",
+              "name": "pool",
+              "type": "tuple"
+            },
+            {
+              "components": [
+                { "internalType": "address", "name": "hostAddress", "type": "address" },
+                { "internalType": "int64", "name": "joinedAt", "type": "int64" }
+              ],
+              "internalType": "struct PoolRegistryI.PoolHostEntry[]",
+              "name": "hosts",
+              "type": "tuple[]"
+            },
+            {
+              "components": [
+                { "internalType": "address", "name": "registrant", "type": "address" },
+                { "internalType": "uint256", "name": "bond", "type": "uint256" },
+                { "internalType": "uint256", "name": "pricePref", "type": "uint256" },
+                { "internalType": "bool", "name": "binding", "type": "bool" },
+                { "internalType": "int64", "name": "expiresAt", "type": "int64" }
+              ],
+              "internalType": "struct PoolRegistryI.PoolDemandEntry[]",
+              "name": "demands",
+              "type": "tuple[]"
+            }
+          ],
+          "internalType": "struct PoolRegistryI.PoolDetail",
+          "name": "",
+          "type": "tuple"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    }
+  ]
+}

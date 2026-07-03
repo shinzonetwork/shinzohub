@@ -1,0 +1,12 @@
+syntax = "proto3";
+
+package shinzonetwork.querybalance.v1;
+
+import "gogoproto/gogo.proto";
+import "shinzonetwork/querybalance/v1/querybalance.proto";
+
+option go_package = "github.com/shinzonetwork/shinzohub/x/querybalance/types";
+
+message GenesisState {
+  repeated QueryBalance balances = 1 [(gogoproto.nullable) = false];
+}

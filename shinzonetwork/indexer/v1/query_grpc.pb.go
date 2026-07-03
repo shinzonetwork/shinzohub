@@ -19,10 +19,10 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	Query_Indexers_FullMethodName          = "/shinzonetwork.indexer.v1.Query/Indexers"
-	Query_Indexer_FullMethodName           = "/shinzonetwork.indexer.v1.Query/Indexer"
-	Query_IndexerCount_FullMethodName      = "/shinzonetwork.indexer.v1.Query/IndexerCount"
-	Query_IndexerAssertions_FullMethodName = "/shinzonetwork.indexer.v1.Query/IndexerAssertions"
+	Query_Indexers_FullMethodName         = "/shinzonetwork.indexer.v1.Query/Indexers"
+	Query_Indexer_FullMethodName          = "/shinzonetwork.indexer.v1.Query/Indexer"
+	Query_IndexerByAddress_FullMethodName = "/shinzonetwork.indexer.v1.Query/IndexerByAddress"
+	Query_IndexerCount_FullMethodName     = "/shinzonetwork.indexer.v1.Query/IndexerCount"
 )
 
 // QueryClient is the client API for Query service.
@@ -31,8 +31,8 @@ const (
 type QueryClient interface {
 	Indexers(ctx context.Context, in *QueryIndexersRequest, opts ...grpc.CallOption) (*QueryIndexersResponse, error)
 	Indexer(ctx context.Context, in *QueryIndexerRequest, opts ...grpc.CallOption) (*QueryIndexerResponse, error)
+	IndexerByAddress(ctx context.Context, in *QueryIndexerByAddressRequest, opts ...grpc.CallOption) (*QueryIndexerByAddressResponse, error)
 	IndexerCount(ctx context.Context, in *QueryIndexerCountRequest, opts ...grpc.CallOption) (*QueryIndexerCountResponse, error)
-	IndexerAssertions(ctx context.Context, in *QueryIndexerAssertionsRequest, opts ...grpc.CallOption) (*QueryIndexerAssertionsResponse, error)
 }
 
 type queryClient struct {
@@ -63,20 +63,20 @@ func (c *queryClient) Indexer(ctx context.Context, in *QueryIndexerRequest, opts
 	return out, nil
 }
 
-func (c *queryClient) IndexerCount(ctx context.Context, in *QueryIndexerCountRequest, opts ...grpc.CallOption) (*QueryIndexerCountResponse, error) {
+func (c *queryClient) IndexerByAddress(ctx context.Context, in *QueryIndexerByAddressRequest, opts ...grpc.CallOption) (*QueryIndexerByAddressResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(QueryIndexerCountResponse)
-	err := c.cc.Invoke(ctx, Query_IndexerCount_FullMethodName, in, out, cOpts...)
+	out := new(QueryIndexerByAddressResponse)
+	err := c.cc.Invoke(ctx, Query_IndexerByAddress_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *queryClient) IndexerAssertions(ctx context.Context, in *QueryIndexerAssertionsRequest, opts ...grpc.CallOption) (*QueryIndexerAssertionsResponse, error) {
+func (c *queryClient) IndexerCount(ctx context.Context, in *QueryIndexerCountRequest, opts ...grpc.CallOption) (*QueryIndexerCountResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(QueryIndexerAssertionsResponse)
-	err := c.cc.Invoke(ctx, Query_IndexerAssertions_FullMethodName, in, out, cOpts...)
+	out := new(QueryIndexerCountResponse)
+	err := c.cc.Invoke(ctx, Query_IndexerCount_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -89,8 +89,8 @@ func (c *queryClient) IndexerAssertions(ctx context.Context, in *QueryIndexerAss
 type QueryServer interface {
 	Indexers(context.Context, *QueryIndexersRequest) (*QueryIndexersResponse, error)
 	Indexer(context.Context, *QueryIndexerRequest) (*QueryIndexerResponse, error)
+	IndexerByAddress(context.Context, *QueryIndexerByAddressRequest) (*QueryIndexerByAddressResponse, error)
 	IndexerCount(context.Context, *QueryIndexerCountRequest) (*QueryIndexerCountResponse, error)
-	IndexerAssertions(context.Context, *QueryIndexerAssertionsRequest) (*QueryIndexerAssertionsResponse, error)
 	mustEmbedUnimplementedQueryServer()
 }
 
@@ -107,11 +107,11 @@ func (UnimplementedQueryServer) Indexers(context.Context, *QueryIndexersRequest)
 func (UnimplementedQueryServer) Indexer(context.Context, *QueryIndexerRequest) (*QueryIndexerResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Indexer not implemented")
 }
+func (UnimplementedQueryServer) IndexerByAddress(context.Context, *QueryIndexerByAddressRequest) (*QueryIndexerByAddressResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method IndexerByAddress not implemented")
+}
 func (UnimplementedQueryServer) IndexerCount(context.Context, *QueryIndexerCountRequest) (*QueryIndexerCountResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method IndexerCount not implemented")
-}
-func (UnimplementedQueryServer) IndexerAssertions(context.Context, *QueryIndexerAssertionsRequest) (*QueryIndexerAssertionsResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method IndexerAssertions not implemented")
 }
 func (UnimplementedQueryServer) mustEmbedUnimplementedQueryServer() {}
 func (UnimplementedQueryServer) testEmbeddedByValue()               {}
@@ -170,6 +170,24 @@ func _Query_Indexer_Handler(srv interface{}, ctx context.Context, dec func(inter
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Query_IndexerByAddress_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(QueryIndexerByAddressRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(QueryServer).IndexerByAddress(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Query_IndexerByAddress_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(QueryServer).IndexerByAddress(ctx, req.(*QueryIndexerByAddressRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _Query_IndexerCount_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(QueryIndexerCountRequest)
 	if err := dec(in); err != nil {
@@ -184,24 +202,6 @@ func _Query_IndexerCount_Handler(srv interface{}, ctx context.Context, dec func(
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(QueryServer).IndexerCount(ctx, req.(*QueryIndexerCountRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _Query_IndexerAssertions_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(QueryIndexerAssertionsRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(QueryServer).IndexerAssertions(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: Query_IndexerAssertions_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(QueryServer).IndexerAssertions(ctx, req.(*QueryIndexerAssertionsRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -222,12 +222,12 @@ var Query_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _Query_Indexer_Handler,
 		},
 		{
-			MethodName: "IndexerCount",
-			Handler:    _Query_IndexerCount_Handler,
+			MethodName: "IndexerByAddress",
+			Handler:    _Query_IndexerByAddress_Handler,
 		},
 		{
-			MethodName: "IndexerAssertions",
-			Handler:    _Query_IndexerAssertions_Handler,
+			MethodName: "IndexerCount",
+			Handler:    _Query_IndexerCount_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

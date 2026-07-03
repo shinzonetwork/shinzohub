@@ -1,0 +1,50 @@
+syntax = "proto3";
+
+package shinzonetwork.settlement.v1;
+
+import "google/api/annotations.proto";
+import "cosmos/base/query/v1beta1/pagination.proto";
+import "gogoproto/gogo.proto";
+import "shinzonetwork/settlement/v1/settlement.proto";
+
+option go_package = "github.com/shinzonetwork/shinzohub/x/settlement/types";
+
+service Query {
+  rpc Balance(QueryBalanceRequest) returns (QueryBalanceResponse) {
+    option (google.api.http).get = "/shinzonetwork/settlement/v1/balance/{address}";
+  }
+  rpc Balances(QueryBalancesRequest) returns (QueryBalancesResponse) {
+    option (google.api.http).get = "/shinzonetwork/settlement/v1/balances";
+  }
+  // EffectiveBalance returns the gateway-visible spendable balance for an
+  // address: actual querybalance minus the sum of pending debits queued
+  // for that address across all unsettled epochs (clamped at zero).
+  rpc EffectiveBalance(QueryEffectiveBalanceRequest) returns (QueryEffectiveBalanceResponse) {
+    option (google.api.http).get = "/shinzonetwork/settlement/v1/effective_balance/{address}";
+  }
+}
+
+message QueryBalanceRequest {
+  string address = 1;
+}
+message QueryBalanceResponse {
+  string amount = 1;
+}
+
+message QueryBalancesRequest {
+  cosmos.base.query.v1beta1.PageRequest pagination = 1;
+}
+message QueryBalancesResponse {
+  repeated SettlementBalance balances = 1 [(gogoproto.nullable) = false];
+  cosmos.base.query.v1beta1.PageResponse pagination = 2;
+}
+
+message QueryEffectiveBalanceRequest {
+  string address = 1;
+}
+message QueryEffectiveBalanceResponse {
+  string address       = 1;
+  string actual        = 2;  // current querybalance
+  string pending_debit = 3;  // sum of queued debits for this address
+  string effective     = 4;  // max(0, actual - pending_debit)
+}

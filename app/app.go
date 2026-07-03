@@ -166,6 +166,15 @@ import (
 	indexermod "github.com/shinzonetwork/shinzohub/x/indexer"
 	indexerkeeper "github.com/shinzonetwork/shinzohub/x/indexer/keeper"
 	indexertypes "github.com/shinzonetwork/shinzohub/x/indexer/types"
+	poolmod "github.com/shinzonetwork/shinzohub/x/pool"
+	poolkeeper "github.com/shinzonetwork/shinzohub/x/pool/keeper"
+	pooltypes "github.com/shinzonetwork/shinzohub/x/pool/types"
+	querybalancemod "github.com/shinzonetwork/shinzohub/x/querybalance"
+	querybalancekeeper "github.com/shinzonetwork/shinzohub/x/querybalance/keeper"
+	querybalancetypes "github.com/shinzonetwork/shinzohub/x/querybalance/types"
+	settlementmod "github.com/shinzonetwork/shinzohub/x/settlement"
+	settlementkeeper "github.com/shinzonetwork/shinzohub/x/settlement/keeper"
+	settlementtypes "github.com/shinzonetwork/shinzohub/x/settlement/types"
 	sourcehub "github.com/shinzonetwork/shinzohub/x/sourcehub"
 	sourcehubkeeper "github.com/shinzonetwork/shinzohub/x/sourcehub/keeper"
 	sourcehubtypes "github.com/shinzonetwork/shinzohub/x/sourcehub/types"
@@ -238,11 +247,14 @@ var maccPerms = map[string][]string{
 	feemarkettypes.ModuleName:   nil,
 	erc20types.ModuleName:       {authtypes.Minter, authtypes.Burner},
 
-	admintypes.ModuleName:     nil,
-		sourcehubtypes.ModuleName: nil,
-		hosttypes.ModuleName:      nil,
-		indexertypes.ModuleName:   nil,
-		viewtypes.ModuleName:      nil,
+	admintypes.ModuleName:        nil,
+	sourcehubtypes.ModuleName:    nil,
+	hosttypes.ModuleName:         nil,
+	indexertypes.ModuleName:      nil,
+	viewtypes.ModuleName:         nil,
+	pooltypes.ModuleName:         nil,
+	querybalancetypes.ModuleName: nil,
+	settlementtypes.ModuleName:   {authtypes.Minter, authtypes.Burner},
 }
 
 var (
@@ -299,11 +311,14 @@ type ChainApp struct {
 	ScopedTransferKeeper      capabilitykeeper.ScopedKeeper
 	ScopedIBCFeeKeeper        capabilitykeeper.ScopedKeeper
 
-	AdminKeeper     adminkeeper.Keeper
-	SourcehubKeeper sourcehubkeeper.Keeper
-	HostKeeper      hostkeeper.Keeper
-	IndexerKeeper   indexerkeeper.Keeper
-	ViewKeeper      viewkeeper.Keeper
+	AdminKeeper        adminkeeper.Keeper
+	SourcehubKeeper    sourcehubkeeper.Keeper
+	HostKeeper         hostkeeper.Keeper
+	IndexerKeeper      indexerkeeper.Keeper
+	ViewKeeper         viewkeeper.Keeper
+	PoolKeeper         poolkeeper.Keeper
+	QueryBalanceKeeper querybalancekeeper.Keeper
+	SettlementKeeper   settlementkeeper.Keeper
 	// the module manager
 	ModuleManager      *module.Manager
 	BasicModuleManager module.BasicManager
@@ -419,6 +434,9 @@ func NewChainApp(
 		hosttypes.StoreKey,
 		indexertypes.StoreKey,
 		viewtypes.StoreKey,
+		pooltypes.StoreKey,
+		querybalancetypes.StoreKey,
+		settlementtypes.StoreKey,
 	)
 
 	tkeys := storetypes.NewTransientStoreKeys(
@@ -776,8 +794,32 @@ func NewChainApp(
 	app.ViewKeeper = viewkeeper.NewKeeper(
 		appCodec,
 		runtime.NewKVStoreService(keys[viewtypes.StoreKey]),
-		app.HostKeeper,
 		&app.SourcehubKeeper,
+	)
+
+	app.PoolKeeper = poolkeeper.NewKeeper(
+		appCodec,
+		runtime.NewKVStoreService(keys[pooltypes.StoreKey]),
+		app.ViewKeeper,
+		app.BankKeeper,
+		authority,
+	)
+
+	app.QueryBalanceKeeper = querybalancekeeper.NewKeeper(
+		appCodec,
+		runtime.NewKVStoreService(keys[querybalancetypes.StoreKey]),
+		app.BankKeeper,
+		authority,
+	)
+
+	app.SettlementKeeper = settlementkeeper.NewKeeper(
+		appCodec,
+		runtime.NewKVStoreService(keys[settlementtypes.StoreKey]),
+		app.BankKeeper,
+		app.HostKeeper,
+		app.IndexerKeeper,
+		app.QueryBalanceKeeper,
+		app.PoolKeeper,
 		authority,
 	)
 
@@ -785,13 +827,18 @@ func NewChainApp(
 		sourcehubtypes.RequestKind_REQUEST_KIND_REGISTER_OBJECT,
 		viewkeeper.NewAckCallback(app.ViewKeeper),
 	)
-	app.SourcehubKeeper.RegisterAckCallback(
-		sourcehubtypes.RequestKind_REQUEST_KIND_SET_RELATIONSHIP,
-		indexerkeeper.NewAckCallback(app.IndexerKeeper),
-	)
+	// Host and indexer both register for SET_RELATIONSHIP. On ack, every callback
+	// for the kind is invoked in registration order, but each dispatches only on
+	// its own relationship group (host checks "host", indexer checks "indexer")
+	// and no-ops otherwise. The groups are disjoint, so the two are mutually
+	// exclusive and this registration order does not affect behavior.
 	app.SourcehubKeeper.RegisterAckCallback(
 		sourcehubtypes.RequestKind_REQUEST_KIND_SET_RELATIONSHIP,
 		hostkeeper.NewAckCallback(app.HostKeeper),
+	)
+	app.SourcehubKeeper.RegisterAckCallback(
+		sourcehubtypes.RequestKind_REQUEST_KIND_SET_RELATIONSHIP,
+		indexerkeeper.NewAckCallback(app.IndexerKeeper),
 	)
 	app.SourcehubKeeper.RegisterAckCallback(
 		sourcehubtypes.RequestKind_REQUEST_KIND_REGISTER_SHINZO_POLICY,
@@ -814,6 +861,9 @@ func NewChainApp(
 		app.HostKeeper,
 		app.IndexerKeeper,
 		app.ViewKeeper,
+		app.PoolKeeper,
+		app.QueryBalanceKeeper,
+		app.SettlementKeeper,
 		app.SourcehubKeeper,
 		appCodec,
 	)
@@ -934,6 +984,21 @@ func NewChainApp(
 			app.ViewKeeper,
 			runtime.NewKVStoreService(keys[viewtypes.StoreKey]),
 		),
+		poolmod.NewAppModule(
+			appCodec,
+			app.PoolKeeper,
+			runtime.NewKVStoreService(keys[pooltypes.StoreKey]),
+		),
+		querybalancemod.NewAppModule(
+			appCodec,
+			app.QueryBalanceKeeper,
+			runtime.NewKVStoreService(keys[querybalancetypes.StoreKey]),
+		),
+		settlementmod.NewAppModule(
+			appCodec,
+			app.SettlementKeeper,
+			runtime.NewKVStoreService(keys[settlementtypes.StoreKey]),
+		),
 	)
 
 	// BasicModuleManager defines the module BasicManager is in charge of setting up basic,
@@ -981,6 +1046,9 @@ func NewChainApp(
 		hosttypes.ModuleName,
 		indexertypes.ModuleName,
 		viewtypes.ModuleName,
+		pooltypes.ModuleName,
+		querybalancetypes.ModuleName,
+		settlementtypes.ModuleName,
 	)
 
 	app.ModuleManager.SetOrderEndBlockers(
@@ -1002,6 +1070,9 @@ func NewChainApp(
 		hosttypes.ModuleName,
 		indexertypes.ModuleName,
 		viewtypes.ModuleName,
+		pooltypes.ModuleName,
+		querybalancetypes.ModuleName,
+		settlementtypes.ModuleName,
 	)
 
 	// NOTE: The genutils module must occur after staking so that pools are
@@ -1050,6 +1121,9 @@ func NewChainApp(
 		hosttypes.ModuleName,
 		indexertypes.ModuleName,
 		viewtypes.ModuleName,
+		pooltypes.ModuleName,
+		querybalancetypes.ModuleName,
+		settlementtypes.ModuleName,
 	}
 	app.ModuleManager.SetOrderInitGenesis(genesisModuleOrder...)
 	app.ModuleManager.SetOrderExportGenesis(genesisModuleOrder...)
@@ -1322,14 +1396,20 @@ func (a *ChainApp) DefaultGenesis() map[string]json.RawMessage {
 	genesis[minttypes.ModuleName] = a.appCodec.MustMarshalJSON(mintGenState)
 
 	evmGenState := evmtypes.DefaultGenesisState()
-	evmGenState.Params.ActiveStaticPrecompiles = evmtypes.AvailableStaticPrecompiles
+	// Use the chain's full precompile set (base EVM + custom Shinzo precompiles)
+	// so the custom precompiles are active by default; the bare
+	// evmtypes.AvailableStaticPrecompiles omits view/host/indexer/pool/querybalance.
+	evmGenState.Params.ActiveStaticPrecompiles = GetAvailableStaticPrecompiles()
 	genesis[evmtypes.ModuleName] = a.appCodec.MustMarshalJSON(evmGenState)
 
 	// NOTE: for the example chain implementation we are also adding a default token pair,
 	// which is the base denomination of the chain (i.e. the WTOKEN contract)
 	erc20GenState := erc20types.DefaultGenesisState()
-	erc20GenState.TokenPairs = ExampleTokenPairs
-	erc20GenState.NativePrecompiles = append(erc20GenState.NativePrecompiles, WTokenContractMainnet)
+	erc20GenState.TokenPairs = TokenPairs
+	erc20GenState.NativePrecompiles = append(
+		erc20GenState.NativePrecompiles,
+		WTokenContractMainnet,
+	)
 	genesis[erc20types.ModuleName] = a.appCodec.MustMarshalJSON(erc20GenState)
 
 	return genesis

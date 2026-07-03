@@ -4,14 +4,11 @@ const (
 	ModuleName = "view"
 	StoreKey   = ModuleName
 
-	// ViewPrefix is the KVStore prefix for view records.
-	// Key format: view/<contract_address> → View proto bytes
+	// view/<address> → View
 	ViewPrefix = "view/"
-
-	// ViewCountKey stores the total number of registered views.
-	ViewCountKey = "view_count"
-
+	// pending_view/<address> → View (awaiting sourcehub ack)
 	PendingViewPrefix = "pending_view/"
+	ViewCountKey      = "view_count"
 )
 
 const (
@@ -20,8 +17,9 @@ const (
 	EventTypeViewRegistrationFailed   = "view.view_registration_failed"
 	EventTypeViewRegistrationTimedOut = "view.view_registration_timed_out"
 
-	AttrKeyViewID          = "view_id"
-	AttrKeyContractAddress = "contract_address"
-	AttrKeyCreator         = "creator"
-	AttrKeyError           = "error"
+	AttrKeyAddress = "address"
+	AttrKeyCreator = "creator"
+	AttrKeyName    = "name"
+	AttrKeyData    = "data"
+	AttrKeyError   = "error"
 )

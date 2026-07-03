@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+package shinzonetwork.pool.v1;
+
+import "gogoproto/gogo.proto";
+import "shinzonetwork/pool/v1/pool.proto";
+
+option go_package = "github.com/shinzonetwork/shinzohub/x/pool/types";
+
+// GenesisState defines the pool module genesis state.
+message GenesisState {
+  repeated Pool pools = 1 [(gogoproto.nullable) = false];
+  repeated PoolHostEntry hosts = 2 [(gogoproto.nullable) = false];
+  repeated PoolDemandEntry demands = 3 [(gogoproto.nullable) = false];
+}

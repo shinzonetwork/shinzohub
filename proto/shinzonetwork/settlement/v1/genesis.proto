@@ -1,0 +1,13 @@
+syntax = "proto3";
+
+package shinzonetwork.settlement.v1;
+
+import "gogoproto/gogo.proto";
+import "shinzonetwork/settlement/v1/settlement.proto";
+
+option go_package = "github.com/shinzonetwork/shinzohub/x/settlement/types";
+
+message GenesisState {
+  repeated SettlementBalance balances = 1 [(gogoproto.nullable) = false];
+  uint64 last_settled_epoch = 2;
+}
