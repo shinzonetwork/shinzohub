@@ -154,6 +154,31 @@ func (k Keeper) IterateIndexers(ctx sdk.Context, sourceChainID uint64, pageReq *
 	return indexers, pageRes, nil
 }
 
+func (k Keeper) FilterIndexers(
+	ctx sdk.Context,
+	sourceChainID uint64,
+	pageReq *query.PageRequest,
+	onResult func(indexer types.Indexer, accumulate bool) (bool, error),
+) (*query.PageResponse, error) {
+	store := runtime.KVStoreAdapter(k.storeService.OpenKVStore(ctx))
+
+	iterPrefix := []byte(types.IndexerByValidatorPrefix)
+	if sourceChainID != 0 {
+		var buf [8]byte
+		binary.BigEndian.PutUint64(buf[:], sourceChainID)
+		iterPrefix = append(iterPrefix, buf[:]...)
+	}
+	indexerStore := prefix.NewStore(store, iterPrefix)
+
+	return query.FilteredPaginate(indexerStore, pageReq, func(_, value []byte, accumulate bool) (bool, error) {
+		var indexer types.Indexer
+		if err := k.cdc.Unmarshal(value, &indexer); err != nil {
+			return false, err
+		}
+		return onResult(indexer, accumulate)
+	})
+}
+
 func (k Keeper) GetIndexerCount(ctx sdk.Context) uint64 {
 	store := runtime.KVStoreAdapter(k.storeService.OpenKVStore(ctx))
 	bz := store.Get([]byte(types.IndexerCountKey))

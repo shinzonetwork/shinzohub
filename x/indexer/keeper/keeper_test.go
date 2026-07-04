@@ -9,6 +9,7 @@ import (
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	"github.com/cosmos/cosmos-sdk/runtime"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/cosmos/cosmos-sdk/types/query"
 	"github.com/decred/dcrd/dcrec/secp256k1/v4"
 	"github.com/decred/dcrd/dcrec/secp256k1/v4/ecdsa"
 	"github.com/stretchr/testify/require"
@@ -33,13 +34,13 @@ func (m *mockAdminKeeper) IsAdmin(_ sdk.Context, address string) bool {
 }
 
 type mockSourcehubKeeper struct {
-	setCalls         int
-	setAndDelCalls   int
-	lastDid          string
-	lastPrev         string
-	lastGroup        string
-	lastReq          string
-	err              error
+	setCalls       int
+	setAndDelCalls int
+	lastDid        string
+	lastPrev       string
+	lastGroup      string
+	lastReq        string
+	err            error
 }
 
 func (m *mockSourcehubKeeper) calls() int { return m.setCalls + m.setAndDelCalls }
@@ -147,6 +148,22 @@ func baseAssertion(op, pay string) *types.MsgIndexerAssertion {
 		OperatorAddress:    op,
 		PayoutAddress:      pay,
 	}
+}
+
+func (s *KeeperTestSuite) upsertRegisteredIndexer(
+	op string,
+	sourceChainID uint64,
+	sourceChain string,
+	validatorPubkey []byte,
+	did string,
+	connectionString string,
+) {
+	assertion := baseAssertion(op, op)
+	assertion.SourceChainId = sourceChainID
+	assertion.SourceChain = sourceChain
+	assertion.ValidatorPubkey = validatorPubkey
+	s.Require().NoError(s.keeper.UpsertAssertion(s.ctx, assertion))
+	s.claimAndConfirm(op, did, connectionString)
 }
 
 // ─── tests ────────────────────────────────────────────────────────────
@@ -322,6 +339,87 @@ func (s *KeeperTestSuite) TestRevokeIndexer_DropsRowAndIndex() {
 	s.Require().False(found)
 
 	s.Require().Equal(uint64(0), s.keeper.GetIndexerCount(s.ctx))
+}
+
+func (s *KeeperTestSuite) TestQueryServer_IndexersFilters() {
+	qs := keeper.NewQueryServerImpl(s.keeper)
+	op0 := addr(0x10)
+	op1 := addr(0x11)
+	op2 := addr(0x12)
+	op3 := addr(0x13)
+	s.upsertRegisteredIndexer(op0, 1, "ethereum", []byte("validator-filter-0"), "did:key:z0", "10.0.0.1:8080")
+	s.upsertRegisteredIndexer(op1, 1, "ethereum", []byte("validator-filter-1"), "did:key:z1", "10.0.0.2:8080")
+	s.upsertRegisteredIndexer(op2, 501, "solana", []byte("validator-filter-2"), "did:key:z2", "10.0.0.3:8080")
+	s.upsertRegisteredIndexer(op3, 1, "ethereum", []byte("validator-filter-3"), "did:key:z3", "wss://example.com/indexer")
+
+	resp, err := qs.Indexers(s.ctx, &types.QueryIndexersRequest{Did: "did:key:z1"})
+	s.Require().NoError(err)
+	s.Require().Len(resp.Indexers, 1)
+	s.Require().Equal(op1, resp.Indexers[0].OperatorAddress)
+
+	resp, err = qs.Indexers(s.ctx, &types.QueryIndexersRequest{
+		SourceChainId:    1,
+		ConnectionString: "10.0.0.",
+	})
+	s.Require().NoError(err)
+	s.Require().Len(resp.Indexers, 2)
+	s.Require().Equal(op0, resp.Indexers[0].OperatorAddress)
+	s.Require().Equal(op1, resp.Indexers[1].OperatorAddress)
+
+	resp, err = qs.Indexers(s.ctx, &types.QueryIndexersRequest{
+		Did:              "did:key:z1",
+		ConnectionString: "example.com",
+	})
+	s.Require().NoError(err)
+	s.Require().Empty(resp.Indexers)
+
+	resp, err = qs.Indexers(s.ctx, &types.QueryIndexersRequest{
+		SourceChainId: 1,
+		Did:           "did:key:z2",
+	})
+	s.Require().NoError(err)
+	s.Require().Empty(resp.Indexers)
+}
+
+func (s *KeeperTestSuite) TestQueryServer_IndexersFilterBeforePagination() {
+	qs := keeper.NewQueryServerImpl(s.keeper)
+	opA := addr(0x20)
+	opB := addr(0x21)
+	opC := addr(0x22)
+	s.upsertRegisteredIndexer(opA, 1, "ethereum", []byte("validator-page-a"), "did:key:za", "alpha")
+	s.upsertRegisteredIndexer(opB, 1, "ethereum", []byte("validator-page-b"), "did:key:zb", "needle-1")
+	s.upsertRegisteredIndexer(opC, 1, "ethereum", []byte("validator-page-c"), "did:key:zc", "needle-2")
+
+	resp, err := qs.Indexers(s.ctx, &types.QueryIndexersRequest{
+		Pagination:       &query.PageRequest{Limit: 1},
+		ConnectionString: "needle",
+	})
+	s.Require().NoError(err)
+	s.Require().Len(resp.Indexers, 1)
+	s.Require().Equal(opB, resp.Indexers[0].OperatorAddress)
+	s.Require().NotEmpty(resp.Pagination.NextKey)
+
+	resp, err = qs.Indexers(s.ctx, &types.QueryIndexersRequest{
+		Pagination:       &query.PageRequest{Key: resp.Pagination.NextKey, Limit: 1},
+		ConnectionString: "needle",
+	})
+	s.Require().NoError(err)
+	s.Require().Len(resp.Indexers, 1)
+	s.Require().Equal(opC, resp.Indexers[0].OperatorAddress)
+	s.Require().Empty(resp.Pagination.NextKey)
+}
+
+func (s *KeeperTestSuite) TestQueryServer_NilRequests() {
+	qs := keeper.NewQueryServerImpl(s.keeper)
+
+	_, err := qs.Indexers(s.ctx, nil)
+	s.Require().Error(err)
+
+	_, err = qs.Indexer(s.ctx, nil)
+	s.Require().Error(err)
+
+	_, err = qs.IndexerCount(s.ctx, nil)
+	s.Require().Error(err)
 }
 
 func (s *KeeperTestSuite) TestRegisterIndexer_FirstTime_FiresICA_NoRowMutation() {

@@ -25,6 +25,10 @@ service Query {
 
 message QueryHostsRequest {
   cosmos.base.query.v1beta1.PageRequest pagination = 1;
+  // Exact DID filter.
+  string did = 2;
+  // Substring filter over Host.connection_string.
+  string connection_string = 3;
 }
 
 message QueryHostsResponse {

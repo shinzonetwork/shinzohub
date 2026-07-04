@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"context"
+	"strings"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"google.golang.org/grpc/codes"
@@ -28,7 +29,20 @@ func (q queryServer) Indexers(
 		return nil, status.Error(codes.InvalidArgument, "empty request")
 	}
 	ctx := sdk.UnwrapSDKContext(goCtx)
-	indexers, pageRes, err := q.Keeper.IterateIndexers(ctx, req.SourceChainId, req.Pagination)
+	indexers := make([]types.Indexer, 0)
+	pageRes, err := q.Keeper.FilterIndexers(ctx, req.SourceChainId, req.Pagination, func(indexer types.Indexer, accumulate bool) (bool, error) {
+		if req.Did != "" && indexer.Did != req.Did {
+			return false, nil
+		}
+		if req.ConnectionString != "" && !strings.Contains(indexer.ConnectionString, req.ConnectionString) {
+			return false, nil
+		}
+
+		if accumulate {
+			indexers = append(indexers, indexer)
+		}
+		return true, nil
+	})
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}

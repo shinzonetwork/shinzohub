@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"context"
+	"strings"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"google.golang.org/grpc/codes"
@@ -26,7 +27,20 @@ func (q queryServer) Hosts(goCtx context.Context, req *types.QueryHostsRequest) 
 	}
 
 	ctx := sdk.UnwrapSDKContext(goCtx)
-	hosts, pageRes, err := q.Keeper.GetAllHosts(ctx, req.Pagination)
+	hosts := make([]types.Host, 0)
+	pageRes, err := q.Keeper.FilterHosts(ctx, req.Pagination, func(host types.Host, accumulate bool) (bool, error) {
+		if req.Did != "" && host.Did != req.Did {
+			return false, nil
+		}
+		if req.ConnectionString != "" && !strings.Contains(host.ConnectionString, req.ConnectionString) {
+			return false, nil
+		}
+
+		if accumulate {
+			hosts = append(hosts, host)
+		}
+		return true, nil
+	})
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
