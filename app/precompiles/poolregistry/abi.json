@@ -59,7 +59,8 @@
           "internalType": "struct PoolRegistryI.PoolConfig",
           "name": "config",
           "type": "tuple"
-        }
+        },
+        { "internalType": "uint256", "name": "bond", "type": "uint256" }
       ],
       "name": "registerDemandForView",
       "outputs": [
@@ -83,7 +84,7 @@
           "type": "tuple"
         }
       ],
-      "stateMutability": "payable",
+      "stateMutability": "nonpayable",
       "type": "function"
     },
     {

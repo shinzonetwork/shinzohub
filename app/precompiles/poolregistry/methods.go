@@ -10,7 +10,6 @@ import (
 	evmtypes "github.com/cosmos/evm/x/vm/types"
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/core/tracing"
 	gethtypes "github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/core/vm"
 	"github.com/ethereum/go-ethereum/crypto"
@@ -136,9 +135,9 @@ func (p Precompile) RegisterDemandForView(
 
 	cfg := *abi.ConvertType(args[1], new(poolConfigInput)).(*poolConfigInput)
 
-	bond := contract.Value()
-	if bond == nil || bond.Sign() == 0 {
-		return nil, fmt.Errorf("must send a non-zero bond")
+	bond, ok := args[2].(*big.Int)
+	if !ok || bond == nil || bond.Sign() == 0 {
+		return nil, fmt.Errorf("must provide a non-zero bond")
 	}
 
 	poolAddr := derivePoolAddress(viewAddress, cfg)
@@ -187,25 +186,24 @@ func (p Precompile) RegisterDemandForView(
 		created = true
 	}
 
-	// Escrow the bond. On entry the EVM credited msg.value to this precompile's
-	// own account; move it into the pool module account for custody so it isn't
-	// stranded at the precompile. Mirror werc20.Deposit: the bank transfer
-	// bypasses the EVM journal, so reconcile the StateDB afterwards with
-	// SubBalance to keep the EVM-visible balance consistent with the move.
+	// Escrow the bond by pulling it straight from the registrant's account into
+	// the pool module for custody. Taking the bond as a call argument and moving
+	// it caller -> module (rather than routing NZO through this precompile's own
+	// address via msg.value) keeps the method non-payable, so the precompile can
+	// stay on the bank blocked-address list like every other precompile. Mirrors
+	// the x/querybalance fund flow.
 	bondCoins := sdk.NewCoins(sdk.NewCoin(
 		evmtypes.GetEVMCoinExtendedDenom(),
-		math.NewIntFromBigInt(bond.ToBig()),
+		math.NewIntFromBigInt(bond),
 	))
-	precompileAcc := sdk.AccAddress(contract.Address().Bytes())
 	if err := p.poolKeeper.BankKeeper().SendCoinsFromAccountToModule(
-		ctx, precompileAcc, types.ModuleName, bondCoins,
+		ctx, sdk.AccAddress(registrant.Bytes()), types.ModuleName, bondCoins,
 	); err != nil {
 		return nil, fmt.Errorf("escrow bond: %w", err)
 	}
-	stateDB.SubBalance(contract.Address(), bond, tracing.BalanceChangeUnspecified)
 
 	demand := types.PoolDemand{
-		Bond:      math.NewIntFromBigInt(bond.ToBig()).String(),
+		Bond:      math.NewIntFromBigInt(bond).String(),
 		PricePref: "0",
 		Binding:   false,
 		ExpiresAt: 0,
@@ -217,7 +215,7 @@ func (p Precompile) RegisterDemandForView(
 	if created {
 		emitPoolCreated(stateDB, contract.Address(), poolAddr, viewAddress, cfg)
 	}
-	emitDemandRegistered(stateDB, contract.Address(), poolAddr, registrant, bond.ToBig())
+	emitDemandRegistered(stateDB, contract.Address(), poolAddr, registrant, bond)
 
 	out := poolOutput{
 		PoolAddress: poolAddr,
