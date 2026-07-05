@@ -62,17 +62,20 @@ interface PoolRegistryI {
     }
 
     /// @notice Register a demand for a view, materialising the pool if it
-    ///         doesn't exist yet. The caller's `msg.value` is the demand bond.
+    ///         doesn't exist yet. `bond` NZO is escrowed from the caller.
     /// @dev    Computes the pool address from `(viewAddress, config)`. If no
     ///         pool exists at that address, persists one. Then records a
-    ///         demand entry for `msg.sender` with `msg.value` as the bond.
-    ///         Reverts if the view isn't registered or `msg.value == 0`.
+    ///         demand entry for `msg.sender` and escrows `bond` ushinzo from
+    ///         msg.sender's wallet into the pool module. The method is
+    ///         non-payable: the bond is pulled from the caller's balance, not
+    ///         sent as `msg.value`. Reverts if the view isn't registered, if
+    ///         `bond == 0`, or if msg.sender holds less than `bond`.
     /// @param viewAddress The view to register demand against.
     /// @param config      The pool configuration.
+    /// @param bond        The demand bond in ushinzo, escrowed from msg.sender.
     /// @return pool       The pool snapshot after the call.
-    function registerDemandForView(address viewAddress, PoolConfig calldata config)
+    function registerDemandForView(address viewAddress, PoolConfig calldata config, uint256 bond)
         external
-        payable
         returns (Pool memory pool);
 
     /// @notice List every pool that has been created for a given view.
@@ -133,7 +136,7 @@ interface PoolRegistryI {
 
     /// @notice Emitted by {registerDemandForView} after the demand bond is recorded.
     /// @param poolAddress The pool the demand was registered against.
-    /// @param registrant  The address that sent the bond (msg.sender).
-    /// @param bond        The bond amount (msg.value).
+    /// @param registrant  The address the bond was escrowed from (msg.sender).
+    /// @param bond        The bond amount in ushinzo.
     event DemandRegistered(address indexed poolAddress, address indexed registrant, uint256 bond);
 }
