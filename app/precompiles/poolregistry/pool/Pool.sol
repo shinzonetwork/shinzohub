@@ -39,15 +39,37 @@ contract Pool {
     /// @notice Join this pool as a host.
     /// @dev    Forwards msg.sender to the registry, which records the new host
     ///         entry against this pool's address.
+    ///
+    ///         The registry is the PoolRegistry precompile. Precompiles report
+    ///         zero EXTCODESIZE, so a high-level `PoolRegistryI(registry).joinPool`
+    ///         call would revert on Solidity's contract-existence check before
+    ///         ever reaching the precompile. We use a low-level call, which skips
+    ///         that check, and forward any revert reason from the precompile.
+    ///         `registry` is set once at construction to the deployer (the
+    ///         precompile), so it is not attacker-controllable.
     function join() external {
-        PoolRegistryI(registry).joinPool(msg.sender);
+        _callRegistry(abi.encodeWithSelector(PoolRegistryI.joinPool.selector, msg.sender));
     }
 
     /// @notice Exit this pool as a host.
     /// @dev    Forwards msg.sender to the registry, which removes the host
     ///         entry. Emits PoolDeactivated if this exit drops the pool
-    ///         below the activation threshold.
+    ///         below the activation threshold. Uses a low-level call for the
+    ///         same reason as {join}.
     function exit() external {
-        PoolRegistryI(registry).leavePool(msg.sender);
+        _callRegistry(abi.encodeWithSelector(PoolRegistryI.leavePool.selector, msg.sender));
+    }
+
+    /// @dev Low-level call into the registry precompile, bubbling up its revert
+    ///      reason on failure. Used instead of a typed interface call because
+    ///      precompiles report zero EXTCODESIZE and would trip Solidity's
+    ///      contract-existence guard.
+    function _callRegistry(bytes memory callData) private {
+        (bool success, bytes memory ret) = registry.call(callData);
+        if (!success) {
+            assembly {
+                revert(add(ret, 0x20), mload(ret))
+            }
+        }
     }
 }
