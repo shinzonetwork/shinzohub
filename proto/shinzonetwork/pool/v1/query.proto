@@ -28,6 +28,9 @@ service Query {
   rpc Demands(QueryDemandsRequest) returns (QueryDemandsResponse) {
     option (google.api.http).get = "/shinzonetwork/pool/v1/pools/{pool_address}/demands";
   }
+  rpc PoolsForView(QueryPoolsForViewRequest) returns (QueryPoolsForViewResponse) {
+    option (google.api.http).get = "/shinzonetwork/pool/v1/views/{view_address}/pools";
+  }
 }
 
 message QueryPoolRequest {
@@ -76,4 +79,11 @@ message QueryDemandsRequest {
 message QueryDemandsResponse {
   repeated PoolDemandEntry demands = 1 [(gogoproto.nullable) = false];
   cosmos.base.query.v1beta1.PageResponse pagination = 2;
+}
+
+message QueryPoolsForViewRequest {
+  string view_address = 1;
+}
+message QueryPoolsForViewResponse {
+  repeated PoolDetail details = 1 [(gogoproto.nullable) = false];
 }

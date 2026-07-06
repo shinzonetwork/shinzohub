@@ -133,3 +133,33 @@ func (q queryServer) Demands(goCtx context.Context, req *types.QueryDemandsReque
 		Pagination: pageRes,
 	}, nil
 }
+
+// PoolsForView returns every pool registered for a view, each carrying its
+// is_active flag and window config, so a caller can pick an active pool to serve.
+func (q queryServer) PoolsForView(goCtx context.Context, req *types.QueryPoolsForViewRequest) (*types.QueryPoolsForViewResponse, error) {
+	if req == nil {
+		return nil, status.Error(codes.InvalidArgument, "empty request")
+	}
+	if req.ViewAddress == "" {
+		return nil, status.Error(codes.InvalidArgument, "view_address is required")
+	}
+
+	ctx := sdk.UnwrapSDKContext(goCtx)
+	poolAddrs, err := q.Keeper.GetPoolsForView(ctx, req.ViewAddress)
+	if err != nil {
+		return nil, status.Error(codes.Internal, err.Error())
+	}
+
+	details := make([]types.PoolDetail, 0, len(poolAddrs))
+	for _, addr := range poolAddrs {
+		detail, found, err := q.Keeper.GetPoolDetail(ctx, addr)
+		if err != nil {
+			return nil, status.Error(codes.Internal, err.Error())
+		}
+		if found {
+			details = append(details, detail)
+		}
+	}
+
+	return &types.QueryPoolsForViewResponse{Details: details}, nil
+}
