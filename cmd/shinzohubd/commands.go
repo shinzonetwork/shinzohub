@@ -234,10 +234,21 @@ func newApp(
 	return app.NewChainApp(
 		logger, db, traceStore, true,
 		appOpts,
-		app.ChainID18Decimals,
+		resolveEVMChainID(appOpts),
 		app.EVMAppOptions,
 		baseappOptions...,
 	)
+}
+
+// resolveEVMChainID reads the EIP-155 EVM chain-id from app.toml ([evm].evm-chain-id),
+// falling back to the ChainID18Decimals constant. Reading it from the same source the
+// JSON-RPC backend uses keeps the ante signer and the RPC layer in agreement, and lets
+// the EVM chain-id track the cosmos chain-id per environment without a code change.
+func resolveEVMChainID(appOpts servertypes.AppOptions) uint64 {
+	if id := cast.ToUint64(appOpts.Get("evm.evm-chain-id")); id != 0 {
+		return id
+	}
+	return app.ChainID18Decimals
 }
 
 func appExport(
@@ -273,7 +284,7 @@ func appExport(
 		traceStore,
 		height == -1,
 		appOpts,
-		app.ChainID18Decimals,
+		resolveEVMChainID(appOpts),
 		app.EVMAppOptions,
 	)
 

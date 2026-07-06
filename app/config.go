@@ -31,5 +31,17 @@ var ChainsCoinInfo = map[uint64]evmtypes.EvmCoinInfo{
 // EVMAppOptions allows to setup the global configuration
 // for the chain.
 func EVMAppOptions(chainID uint64) error {
-	return evmconfig.EvmAppOptionsWithConfig(chainID, ChainsCoinInfo, cosmosEVMActivators)
+	// Register coin info for whatever chainID the node is configured with, so the
+	// EVM chain-id can follow the cosmos chain-id (set via app.toml evm-chain-id)
+	// instead of being pinned to the ChainID18Decimals constant. ChainsCoinInfo is
+	// kept for the compile-time default (see ChainID18Decimals).
+	coinInfo := map[uint64]evmtypes.EvmCoinInfo{
+		chainID: {
+			Denom:         BaseDenom,
+			ExtendedDenom: BaseDenom,
+			DisplayDenom:  DisplayDenom,
+			Decimals:      evmtypes.EighteenDecimals,
+		},
+	}
+	return evmconfig.EvmAppOptionsWithConfig(chainID, coinInfo, cosmosEVMActivators)
 }
