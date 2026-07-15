@@ -414,6 +414,23 @@ func (k Keeper) RegisterIndexer(
 		return out, nil
 	}
 
+	// Same DID, only the connection string changed: the group→DID relationship is
+	// unchanged, so no ICA round-trip is needed. SendICASetAndDeleteRelationship
+	// rejects prevDid == newDid, which previously forced operators to rotate their
+	// node identity key (and thus their DID) just to update the connection string.
+	// Apply the change in place and report it as already registered.
+	if row.Did == did {
+		row.ConnectionString = connectionString
+		rowOut, mErr := k.cdc.Marshal(&row)
+		if mErr != nil {
+			return RegisterResult{}, fmt.Errorf("marshal indexer row: %w", mErr)
+		}
+		store.Set(indexerRowKey(chainID, pub), rowOut)
+		emitRegistered(ctx, &row)
+		out.Pending = false
+		return out, nil
+	}
+
 	claim := &types.PendingClaim{
 		OperatorAddress:  operatorAddress,
 		ConnectionString: connectionString,

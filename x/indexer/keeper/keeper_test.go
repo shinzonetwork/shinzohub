@@ -542,6 +542,43 @@ func (s *KeeperTestSuite) TestRegisterIndexer_IdempotentNoICA() {
 	s.Require().Equal(0, s.mockSourcehub.calls())
 }
 
+func (s *KeeperTestSuite) TestRegisterIndexer_SameDID_ConnStringChange_UpdatesInPlaceNoICA() {
+	op := addr(0x01)
+	pay := addr(0x02)
+	s.Require().NoError(s.keeper.UpsertAssertion(s.ctx, baseAssertion(op, pay)))
+
+	// Confirmed registration with a node identity key.
+	msg := []byte("op-claim")
+	pub, sig := nodeIdentityKey(s.T(), msg)
+	first, err := s.keeper.RegisterIndexer(s.ctx, op, pub, sig, msg, "https://op/9090")
+	s.Require().NoError(err)
+	s.Require().NoError(s.keeper.ApplyRegistration(s.ctx, op, first.Did, "https://op/9090"))
+	s.keeper.DeletePendingClaim(s.ctx, first.Did)
+	s.mockSourcehub.setCalls = 0
+	s.mockSourcehub.setAndDelCalls = 0
+
+	// Same node identity key (same DID), NEW connection string. The group→DID
+	// relationship is unchanged, so this must update the row in place with no ICA
+	// round-trip — and must NOT hit the Set+Delete path (which rejects
+	// prevDid == newDid and previously forced a DID rotation just to move endpoints).
+	second, err := s.keeper.RegisterIndexer(s.ctx, op, pub, sig, msg, "https://op/7070")
+	s.Require().NoError(err)
+	s.Require().False(second.Pending)
+	s.Require().Equal(first.Did, second.Did)
+	s.Require().Equal(0, s.mockSourcehub.calls(), "connection-string-only change must not fire any ICA")
+
+	// Row reflects the new connection string immediately, DID unchanged.
+	row, _, _ := s.keeper.GetIndexerByAddress(s.ctx, op)
+	s.Require().True(row.Registered)
+	s.Require().Equal(first.Did, row.Did)
+	s.Require().Equal("https://op/7070", row.ConnectionString)
+
+	// No lingering pending claim from the in-place update.
+	_, found, err := s.keeper.GetPendingClaim(s.ctx, first.Did)
+	s.Require().NoError(err)
+	s.Require().False(found)
+}
+
 func (s *KeeperTestSuite) TestRegisterIndexer_UnknownOperatorErrors() {
 	msg := []byte("op-claim")
 	pub, sig := nodeIdentityKey(s.T(), msg)
