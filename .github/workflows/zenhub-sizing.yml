@@ -1,0 +1,11 @@
+name: Sync size label to Zenhub estimate
+
+on:
+  issues:
+    types: [labeled]
+
+jobs:
+  sync-estimate:
+    uses: shinzonetwork/docs/.github/workflows/zenhub-sizing.yml@main
+    secrets:
+      ZENHUB_API_KEY: ${{ secrets.ZENHUB_API_KEY }}
