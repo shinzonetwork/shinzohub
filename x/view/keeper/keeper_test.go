@@ -128,44 +128,46 @@ func attr(ev *sdk.Event, key string) string {
 	return ""
 }
 
-// Happy path: pending entry written, sourcehub called, view_pending emitted.
-func (s *KeeperTestSuite) TestRegisterView_WritesPendingAndCallsSourcehub() {
+// The view is final on return, nothing goes to sourcehub and view_registered
+// is emitted instead of view_pending.
+func (s *KeeperTestSuite) TestRegisterView_RegistersImmediately() {
 	view, err := s.keeper.RegisterView(s.ctx, sampleName, sampleCreator, sampleAddress, sampleBundle)
 	s.Require().NoError(err)
 	s.Equal(sampleName, view.Name)
 	s.Equal(uint64(7), view.Height)
 
-	s.Equal(1, s.mockSourcehub.calls)
-	s.Equal(sampleAddress, s.mockSourcehub.lastID)
-	s.NotEmpty(s.mockSourcehub.lastCreator, "creator should be converted to bech32 before sourcehub call")
+	s.Equal(0, s.mockSourcehub.calls, "no ICA while ACP is bypassed")
 
-	pending, found, err := s.keeper.GetPendingView(s.ctx, sampleAddress)
+	_, found, err := s.keeper.GetPendingView(s.ctx, sampleAddress)
+	s.Require().NoError(err)
+	s.False(found, "nothing should be staged as pending")
+
+	stored, found, err := s.keeper.GetView(s.ctx, sampleAddress)
 	s.Require().NoError(err)
 	s.Require().True(found)
-	s.Equal(sampleName, pending.Name)
+	s.Equal(sampleName, stored.Name)
+	s.Equal(uint64(1), s.keeper.GetViewCount(s.ctx))
 
-	_, found, err = s.keeper.GetView(s.ctx, sampleAddress)
-	s.Require().NoError(err)
-	s.False(found, "final store should be empty until ack")
-
-	ev := findEvent(s.ctx, types.EventTypeViewPending)
+	ev := findEvent(s.ctx, types.EventTypeViewRegistered)
 	s.Require().NotNil(ev)
 	s.Equal(sampleAddress, attr(ev, types.AttrKeyAddress))
 	s.Equal(sampleCreator, attr(ev, types.AttrKeyCreator))
 	s.Equal(sampleName, attr(ev, types.AttrKeyName))
 	s.Equal(base64.StdEncoding.EncodeToString(sampleBundle), attr(ev, types.AttrKeyData))
+	s.Nil(findEvent(s.ctx, types.EventTypeViewPending))
 }
 
-// Sourcehub error → pending entry rolled back so tx reverts cleanly.
-func (s *KeeperTestSuite) TestRegisterView_RolledBackWhenSourcehubFails() {
+// A broken ICA no longer blocks registration.
+func (s *KeeperTestSuite) TestRegisterView_SourcehubFailureIgnored() {
 	s.mockSourcehub.err = sdkErr("ICA channel not ready")
 
 	_, err := s.keeper.RegisterView(s.ctx, sampleName, sampleCreator, sampleAddress, sampleBundle)
-	s.Require().Error(err)
+	s.Require().NoError(err)
+	s.Equal(0, s.mockSourcehub.calls)
 
-	_, found, _ := s.keeper.GetPendingView(s.ctx, sampleAddress)
-	s.False(found)
-	s.Equal(uint64(0), s.keeper.GetViewCount(s.ctx))
+	_, found, _ := s.keeper.GetView(s.ctx, sampleAddress)
+	s.True(found)
+	s.Equal(uint64(1), s.keeper.GetViewCount(s.ctx))
 }
 
 // Non-hex creator is rejected before any side-effects.
@@ -178,18 +180,28 @@ func (s *KeeperTestSuite) TestRegisterView_RejectsMalformedCreator() {
 	s.False(found)
 }
 
-// Re-registering the same address while PENDING is an idempotent no-op: no second
-// ICA fires (a duplicate that fails could delete the pending row and strand the
-// view the first ICA registered).
-func (s *KeeperTestSuite) TestRegisterView_WhilePending_IsIdempotent() {
-	_, err := s.keeper.RegisterView(s.ctx, sampleName, sampleCreator, sampleAddress, sampleBundle)
-	s.Require().NoError(err)
-	s.Equal(1, s.mockSourcehub.calls)
+// A view staged by the old ICA flow is promoted on its next registration,
+// keeping the original creator and height.
+func (s *KeeperTestSuite) TestRegisterView_WhilePending_PromotesStagedRecord() {
+	s.stagePendingView(types.View{
+		Name:    sampleName,
+		Creator: sampleCreator,
+		Address: sampleAddress,
+		Data:    sampleBundle,
+		Height:  3,
+	})
 
-	view, err := s.keeper.RegisterView(s.ctx, sampleName, sampleCreator, sampleAddress, sampleBundle)
+	view, err := s.keeper.RegisterView(s.ctx, "RenamedView", sampleCreator, sampleAddress, sampleBundle)
 	s.Require().NoError(err)
-	s.Equal(sampleName, view.Name)
-	s.Equal(1, s.mockSourcehub.calls, "duplicate registration must not fire a second ICA")
+	s.Equal(sampleName, view.Name, "the staged record is promoted as-is")
+	s.Equal(uint64(3), view.Height)
+
+	_, found, _ := s.keeper.GetPendingView(s.ctx, sampleAddress)
+	s.False(found)
+	stored, found, _ := s.keeper.GetView(s.ctx, sampleAddress)
+	s.Require().True(found)
+	s.Equal(sampleName, stored.Name)
+	s.Equal(uint64(1), s.keeper.GetViewCount(s.ctx))
 }
 
 // Re-registering an already-REGISTERED address is a no-op: returns the existing
@@ -197,13 +209,11 @@ func (s *KeeperTestSuite) TestRegisterView_WhilePending_IsIdempotent() {
 func (s *KeeperTestSuite) TestRegisterView_AfterRegistered_IsNoOp() {
 	_, err := s.keeper.RegisterView(s.ctx, sampleName, sampleCreator, sampleAddress, sampleBundle)
 	s.Require().NoError(err)
-	s.fireAck(sourcehubtypes.RequestStatus_REQUEST_STATUS_SUCCESS, "")
 	s.Require().Equal(uint64(1), s.keeper.GetViewCount(s.ctx))
 
 	view, err := s.keeper.RegisterView(s.ctx, sampleName, sampleCreator, sampleAddress, sampleBundle)
 	s.Require().NoError(err)
 	s.Equal(sampleName, view.Name)
-	s.Equal(1, s.mockSourcehub.calls, "re-register of a final view must not fire a second ICA")
 	s.Equal(uint64(1), s.keeper.GetViewCount(s.ctx), "count must not change")
 
 	_, found, _ := s.keeper.GetPendingView(s.ctx, sampleAddress)
@@ -212,8 +222,12 @@ func (s *KeeperTestSuite) TestRegisterView_AfterRegistered_IsNoOp() {
 
 // SUCCESS ack promotes pending → final, bumps count, fires view_registered.
 func (s *KeeperTestSuite) TestAckSuccess_PromotesPendingToFinal() {
-	_, err := s.keeper.RegisterView(s.ctx, sampleName, sampleCreator, sampleAddress, sampleBundle)
-	s.Require().NoError(err)
+	s.stagePendingView(types.View{
+		Name:    sampleName,
+		Creator: sampleCreator,
+		Address: sampleAddress,
+		Data:    sampleBundle,
+	})
 
 	s.fireAck(sourcehubtypes.RequestStatus_REQUEST_STATUS_SUCCESS, "")
 
@@ -236,8 +250,12 @@ func (s *KeeperTestSuite) TestAckSuccess_PromotesPendingToFinal() {
 
 // FAILURE ack drops pending and emits view_registration_failed with the error.
 func (s *KeeperTestSuite) TestAckFailure_DropsPending() {
-	_, err := s.keeper.RegisterView(s.ctx, sampleName, sampleCreator, sampleAddress, sampleBundle)
-	s.Require().NoError(err)
+	s.stagePendingView(types.View{
+		Name:    sampleName,
+		Creator: sampleCreator,
+		Address: sampleAddress,
+		Data:    sampleBundle,
+	})
 
 	s.fireAck(sourcehubtypes.RequestStatus_REQUEST_STATUS_FAILURE, "policy rejected")
 
@@ -254,8 +272,12 @@ func (s *KeeperTestSuite) TestAckFailure_DropsPending() {
 
 // TIMEOUT uses a distinct event so subscribers can tell it apart from failure.
 func (s *KeeperTestSuite) TestAckTimeout_DropsPending() {
-	_, err := s.keeper.RegisterView(s.ctx, sampleName, sampleCreator, sampleAddress, sampleBundle)
-	s.Require().NoError(err)
+	s.stagePendingView(types.View{
+		Name:    sampleName,
+		Creator: sampleCreator,
+		Address: sampleAddress,
+		Data:    sampleBundle,
+	})
 
 	s.fireAck(sourcehubtypes.RequestStatus_REQUEST_STATUS_TIMEOUT, "packet timed out")
 
@@ -268,8 +290,12 @@ func (s *KeeperTestSuite) TestAckTimeout_DropsPending() {
 
 // REGISTER_OBJECT acks for other resources (e.g. "host") must be no-ops.
 func (s *KeeperTestSuite) TestAck_IgnoresOtherResources() {
-	_, err := s.keeper.RegisterView(s.ctx, sampleName, sampleCreator, sampleAddress, sampleBundle)
-	s.Require().NoError(err)
+	s.stagePendingView(types.View{
+		Name:    sampleName,
+		Creator: sampleCreator,
+		Address: sampleAddress,
+		Data:    sampleBundle,
+	})
 
 	meta := &sourcehubtypes.RegisterObjectMeta{ResourceName: "host", ObjectId: "irrelevant"}
 	metaBz, err := s.cdc.Marshal(meta)
@@ -298,11 +324,9 @@ func (s *KeeperTestSuite) TestListAndCount_ExcludePending() {
 	addrA := "0xaaaa000000000000000000000000000000000000"
 	_, err := s.keeper.RegisterView(s.ctx, "ViewA", sampleCreator, addrA, sampleBundle)
 	s.Require().NoError(err)
-	s.fireAckFor(addrA, sourcehubtypes.RequestStatus_REQUEST_STATUS_SUCCESS, "")
 
 	addrB := "0xbbbb000000000000000000000000000000000000"
-	_, err = s.keeper.RegisterView(s.ctx, "ViewB", sampleCreator, addrB, sampleBundle)
-	s.Require().NoError(err)
+	s.stagePendingView(types.View{Name: "ViewB", Creator: sampleCreator, Address: addrB, Data: sampleBundle})
 
 	views, _, err := s.keeper.GetAllViews(s.ctx, &query.PageRequest{Limit: 100})
 	s.Require().NoError(err)
@@ -619,6 +643,12 @@ func (s *KeeperTestSuite) TestQueryServer_NilRequests() {
 
 	_, err = qs.ViewCount(s.ctx, nil)
 	s.Require().Error(err)
+}
+
+// stagePendingView writes a pending view, the state RegisterView wrote before
+// ACP was bypassed. Tests that cover the ack callback stage it here.
+func (s *KeeperTestSuite) stagePendingView(view types.View) {
+	s.Require().NoError(s.keeper.SetPendingView(s.ctx, view))
 }
 
 func (s *KeeperTestSuite) fireAck(status sourcehubtypes.RequestStatus, errMsg string) {

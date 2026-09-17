@@ -32,21 +32,33 @@ func (k Keeper) Logger(ctx sdk.Context) log.Logger {
 	return ctx.Logger().With("module", fmt.Sprintf("x/%s", types.ModuleName))
 }
 
-// Stages a pending view and fires the ACP register-object ICA. Finalised in ack_callback.go on SUCCESS.
+// RegisterView stores a view. The ACP register object ICA is bypassed, so the
+// view is final on return instead of being staged for the ack.
 func (k Keeper) RegisterView(ctx sdk.Context, name, creator, address string, data []byte) (types.View, error) {
 	// The view address is deterministic from caller+bundle, so an existing final
-	// or pending entry means this exact registration is already complete or in
-	// flight. Re-staging would fire a duplicate RegisterObject ICA; if that
-	// duplicate's ack fails it would delete the pending row and strand a view the
-	// first ICA actually registered. Treat re-registration as an idempotent no-op.
+	// entry means this exact registration is already complete. Treat
+	// re-registration as an idempotent no-op.
 	if existing, found, err := k.GetView(ctx, address); err != nil {
 		return types.View{}, err
 	} else if found {
 		return existing, nil
 	}
+
+	// A pending view was staged by the ICA flow and its ack never landed.
+	// Promote that record, which holds the original creator and height,
+	// instead of returning it as pending like the old flow did
+	//
+	//	if existing, found, err := k.GetPendingView(ctx, address); err != nil {
+	//		return types.View{}, err
+	//	} else if found {
+	//		return existing, nil
+	//	}
 	if existing, found, err := k.GetPendingView(ctx, address); err != nil {
 		return types.View{}, err
 	} else if found {
+		if err := k.promoteView(ctx, existing); err != nil {
+			return types.View{}, err
+		}
 		return existing, nil
 	}
 
@@ -58,29 +70,61 @@ func (k Keeper) RegisterView(ctx sdk.Context, name, creator, address string, dat
 		Height:  uint64(ctx.BlockHeight()),
 	}
 
-	if err := k.SetPendingView(ctx, view); err != nil {
-		return types.View{}, fmt.Errorf("record pending view: %w", err)
-	}
-
-	requestor, err := evmHexToBech32(creator)
-	if err != nil {
-		_ = k.DeletePendingView(ctx, address)
+	// Creator is still validated even though nothing goes to sourcehub.
+	if _, err := evmHexToBech32(creator); err != nil {
 		return types.View{}, fmt.Errorf("convert creator to bech32: %w", err)
 	}
-	if _, _, _, err := k.sourcehubKeeper.RegisterObject(ctx, address, requestor); err != nil {
-		_ = k.DeletePendingView(ctx, address)
-		return types.View{}, fmt.Errorf("register view object via ICA: %w", err)
+
+	// ACP is bypassed for now. Nothing reads the sourcehub policy, and the ICA
+	// round trip strands views in pending when the IBC connection dies.
+	// Promote the view here instead of waiting for the ack.
+	//
+	// Old flow, restore it together with the promoteView call removed
+	//
+	//	if err := k.SetPendingView(ctx, view); err != nil {
+	//		return types.View{}, fmt.Errorf("record pending view: %w", err)
+	//	}
+	//
+	//	requestor, err := evmHexToBech32(creator)
+	//	if err != nil {
+	//		_ = k.DeletePendingView(ctx, address)
+	//		return types.View{}, fmt.Errorf("convert creator to bech32: %w", err)
+	//	}
+	//	if _, _, _, err := k.sourcehubKeeper.RegisterObject(ctx, address, requestor); err != nil {
+	//		_ = k.DeletePendingView(ctx, address)
+	//		return types.View{}, fmt.Errorf("register view object via ICA: %w", err)
+	//	}
+	//
+	//	ctx.EventManager().EmitEvent(sdk.NewEvent(
+	//		types.EventTypeViewPending,
+	//		sdk.NewAttribute(types.AttrKeyAddress, address),
+	//		sdk.NewAttribute(types.AttrKeyCreator, creator),
+	//		sdk.NewAttribute(types.AttrKeyName, name),
+	//		sdk.NewAttribute(types.AttrKeyData, base64.StdEncoding.EncodeToString(data)),
+	//	))
+	if err := k.promoteView(ctx, view); err != nil {
+		return types.View{}, err
 	}
 
-	ctx.EventManager().EmitEvent(sdk.NewEvent(
-		types.EventTypeViewPending,
-		sdk.NewAttribute(types.AttrKeyAddress, address),
-		sdk.NewAttribute(types.AttrKeyCreator, creator),
-		sdk.NewAttribute(types.AttrKeyName, name),
-		sdk.NewAttribute(types.AttrKeyData, base64.StdEncoding.EncodeToString(data)),
-	))
-
 	return view, nil
+}
+
+// promoteView stores the view and clears pending staging, the same state the
+// ack callback wrote on success.
+func (k Keeper) promoteView(ctx sdk.Context, view types.View) error {
+	if err := k.SetView(ctx, view); err != nil {
+		return fmt.Errorf("promote view: %w", err)
+	}
+	_ = k.DeletePendingView(ctx, view.Address)
+
+	ctx.EventManager().EmitEvent(sdk.NewEvent(
+		types.EventTypeViewRegistered,
+		sdk.NewAttribute(types.AttrKeyAddress, view.Address),
+		sdk.NewAttribute(types.AttrKeyCreator, view.Creator),
+		sdk.NewAttribute(types.AttrKeyName, view.Name),
+		sdk.NewAttribute(types.AttrKeyData, base64.StdEncoding.EncodeToString(view.Data)),
+	))
+	return nil
 }
 
 func (k Keeper) SetPendingView(ctx sdk.Context, view types.View) error {

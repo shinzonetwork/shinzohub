@@ -141,8 +141,9 @@ func (s *PrecompileTestSuite) TestRegister_Success() {
 	s.Require().NoError(err)
 	s.Require().Nil(bz)
 
-	s.Require().False(s.hostKeeper.IsRegisteredHost(s.ctx, sdk.AccAddress(caller.Bytes())))
-	s.simulateHostAck(sdk.AccAddress(caller.Bytes()))
+	// The host is registered by the call itself, with no ack to wait for.
+	s.Require().False(s.mockSourcehub.called)
+	s.Require().True(s.hostKeeper.IsRegisteredHost(s.ctx, sdk.AccAddress(caller.Bytes())))
 	s.Require().True(s.hostKeeper.IsRegisteredHost(s.ctx, sdk.AccAddress(caller.Bytes())))
 	s.Require().Len(s.stateDB.logs, 1)
 
@@ -163,7 +164,8 @@ func (s *PrecompileTestSuite) TestRegister_Success() {
 	s.Require().Equal(endpoint, unpacked[2])
 }
 
-func (s *PrecompileTestSuite) TestRegister_ICANotReady() {
+// An unusable ICA no longer blocks registration.
+func (s *PrecompileTestSuite) TestRegister_ICANotReady_Ignored() {
 	s.mockSourcehub.checkErr = fmt.Errorf("no active ICA channel for portID X on connection Y")
 
 	message := []byte("ica-not-ready-nonce")
@@ -175,12 +177,11 @@ func (s *PrecompileTestSuite) TestRegister_ICANotReady() {
 	args := []interface{}{nodePub, nodeSig, message, "192.168.1.1:8080", "https://192.168.1.1:8443/api/v0/graphql"}
 
 	_, err := s.precompile.Register(s.ctx, contract, s.stateDB, &method, args)
-	s.Require().Error(err)
-	s.Require().Contains(err.Error(), "no active ICA channel")
+	s.Require().NoError(err)
 
-	s.Require().Empty(s.stateDB.logs)
+	s.Require().Len(s.stateDB.logs, 1)
 	s.Require().False(s.mockSourcehub.called)
-	s.Require().False(s.hostKeeper.IsRegisteredHost(s.ctx, sdk.AccAddress(caller.Bytes())))
+	s.Require().True(s.hostKeeper.IsRegisteredHost(s.ctx, sdk.AccAddress(caller.Bytes())))
 }
 
 func (s *PrecompileTestSuite) TestRegister_EmptyArgs() {
@@ -213,7 +214,8 @@ func (s *PrecompileTestSuite) TestRegister_EmptyArgs() {
 	s.Require().Contains(err.Error(), "invalid connectionString")
 }
 
-func (s *PrecompileTestSuite) TestRegister_ICAFailure() {
+// Same for a failing ICA send, since nothing is sent.
+func (s *PrecompileTestSuite) TestRegister_ICAFailure_Ignored() {
 	s.mockSourcehub.err = fmt.Errorf("ICA not ready")
 
 	message := []byte("test-nonce")
@@ -225,8 +227,9 @@ func (s *PrecompileTestSuite) TestRegister_ICAFailure() {
 	args := []interface{}{nodePub, nodeSig, message, "192.168.1.1:8080", "https://192.168.1.1:8443/api/v0/graphql"}
 
 	_, err := s.precompile.Register(s.ctx, contract, s.stateDB, &method, args)
-	s.Require().Error(err)
-	s.Require().Contains(err.Error(), "ICA not ready")
+	s.Require().NoError(err)
+	s.Require().False(s.mockSourcehub.called)
+	s.Require().True(s.hostKeeper.IsRegisteredHost(s.ctx, sdk.AccAddress(caller.Bytes())))
 }
 
 func (s *PrecompileTestSuite) TestHandleMethod_UnknownMethod() {

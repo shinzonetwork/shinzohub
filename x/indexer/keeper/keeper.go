@@ -354,7 +354,11 @@ type RegisterResult struct {
 	Did           string
 	SourceChain   string
 	SourceChainID uint64
-	Pending       bool
+	// Pending reports a registration waiting on a sourcehub ack. Always false
+	// while ACP is bypassed.
+	Pending bool
+	// Applied reports a registration written by this call.
+	Applied bool
 }
 
 func (k Keeper) RegisterIndexer(
@@ -414,31 +418,52 @@ func (k Keeper) RegisterIndexer(
 		return out, nil
 	}
 
-	claim := &types.PendingClaim{
-		OperatorAddress:  operatorAddress,
-		ConnectionString: connectionString,
+	// ACP is bypassed for now. Nothing reads the sourcehub policy, and the ICA
+	// round trip strands claims when the IBC connection dies. Apply the
+	// registration here instead of waiting for the ack.
+	//
+	// Old flow, restore it together with the promoteIndexer call removed
+	//
+	//	claim := &types.PendingClaim{
+	//		OperatorAddress:  operatorAddress,
+	//		ConnectionString: connectionString,
+	//	}
+	//	claimBz, mErr := k.cdc.Marshal(claim)
+	//	if mErr != nil {
+	//		return RegisterResult{}, fmt.Errorf("marshal pending claim: %w", mErr)
+	//	}
+	//	store.Set(pendingClaimKey(did), claimBz)
+	//
+	//	if row.Did == "" {
+	//		if _, _, _, err := k.sourcehubKeeper.SendICASetRelationship(ctx, did, types.GroupIndexerName, operatorAddress); err != nil {
+	//			store.Delete(pendingClaimKey(did))
+	//			return RegisterResult{}, err
+	//		}
+	//	} else {
+	//		if _, _, _, err := k.sourcehubKeeper.SendICASetAndDeleteRelationship(ctx, did, row.Did, types.GroupIndexerName, operatorAddress); err != nil {
+	//			store.Delete(pendingClaimKey(did))
+	//			return RegisterResult{}, err
+	//		}
+	//	}
+	//
+	//	emitPending(ctx, &row, did, connectionString)
+	//	out.Pending = true
+	if err := k.promoteIndexer(ctx, operatorAddress, did, connectionString); err != nil {
+		return RegisterResult{}, err
 	}
-	claimBz, mErr := k.cdc.Marshal(claim)
-	if mErr != nil {
-		return RegisterResult{}, fmt.Errorf("marshal pending claim: %w", mErr)
-	}
-	store.Set(pendingClaimKey(did), claimBz)
-
-	if row.Did == "" {
-		if _, _, _, err := k.sourcehubKeeper.SendICASetRelationship(ctx, did, types.GroupIndexerName, operatorAddress); err != nil {
-			store.Delete(pendingClaimKey(did))
-			return RegisterResult{}, err
-		}
-	} else {
-		if _, _, _, err := k.sourcehubKeeper.SendICASetAndDeleteRelationship(ctx, did, row.Did, types.GroupIndexerName, operatorAddress); err != nil {
-			store.Delete(pendingClaimKey(did))
-			return RegisterResult{}, err
-		}
-	}
-
-	emitPending(ctx, &row, did, connectionString)
-	out.Pending = true
+	out.Applied = true
 	return out, nil
+}
+
+// promoteIndexer applies the registration to the row, the same state the ack
+// callback wrote on success. It also drops the pending claim, so a stale ack
+// cannot reapply an old value.
+func (k Keeper) promoteIndexer(ctx sdk.Context, operatorAddress, did, connectionString string) error {
+	if err := k.ApplyRegistration(ctx, operatorAddress, did, connectionString); err != nil {
+		return err
+	}
+	k.DeletePendingClaim(ctx, did)
+	return nil
 }
 
 func pendingClaimKey(did string) []byte {
