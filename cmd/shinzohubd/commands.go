@@ -95,7 +95,9 @@ func initAppConfig() (string, interface{}) {
 
 	customAppTemplate += evmosserverconfig.DefaultEVMConfigTemplate
 
-	// customAppConfig.EVM.EVMChainID = app.ChainID18Decimals // TODO: This may be a good idea if the config/app.toml evm-chain-id is a pain. Question is for a testnet.
+	// evm-chain-id only gates the JSON RPC send path, so default it to the same
+	// number the app uses. evmChainID rejects an app.toml that says otherwise.
+	customAppConfig.EVM.EVMChainID = app.DefaultEVMChainID
 
 	return customAppTemplate, customAppConfig
 }
@@ -231,13 +233,24 @@ func newApp(
 	if cast.ToBool(appOpts.Get("telemetry.enabled")) {
 	}
 
-	return app.NewChainApp(
+	chainID, err := evmChainID(appOpts)
+	if err != nil {
+		panic(err)
+	}
+
+	chainApp := app.NewChainApp(
 		logger, db, traceStore, true,
 		appOpts,
-		app.ChainID18Decimals,
+		chainID,
 		app.EVMAppOptions,
 		baseappOptions...,
 	)
+
+	if err := checkSealedChainID(chainID); err != nil {
+		panic(err)
+	}
+
+	return chainApp
 }
 
 func appExport(
@@ -267,13 +280,18 @@ func appExport(
 	viperAppOpts.Set(server.FlagInvCheckPeriod, 1)
 	appOpts = viperAppOpts
 
+	chainID, err := evmChainID(appOpts)
+	if err != nil {
+		return servertypes.ExportedApp{}, err
+	}
+
 	chainApp = app.NewChainApp(
 		logger,
 		db,
 		traceStore,
 		height == -1,
 		appOpts,
-		app.ChainID18Decimals,
+		chainID,
 		app.EVMAppOptions,
 	)
 

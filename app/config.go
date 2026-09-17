@@ -16,20 +16,21 @@ func NoOpEVMOptions(_ uint64) error {
 	return nil
 }
 
-// ChainsCoinInfo is a map of the chain id and its corresponding EvmCoinInfo
-// that allows initializing the app with different coin info based on the
-// chain id
-var ChainsCoinInfo = map[uint64]evmtypes.EvmCoinInfo{
-	ChainID18Decimals: {
-		Denom:         BaseDenom,
-		ExtendedDenom: BaseDenom,
-		DisplayDenom:  DisplayDenom,
-		Decimals:      evmtypes.EighteenDecimals,
-	},
+// ChainsCoinInfo returns the coin info for chainID. Every shinzo network uses
+// the same coin, so the id only decides which key it is filed under.
+func ChainsCoinInfo(chainID uint64) map[uint64]evmtypes.EvmCoinInfo {
+	return map[uint64]evmtypes.EvmCoinInfo{
+		chainID: {
+			Denom:         BaseDenom,
+			ExtendedDenom: BaseDenom,
+			DisplayDenom:  DisplayDenom,
+			Decimals:      evmtypes.EighteenDecimals,
+		},
+	}
 }
 
 // EVMAppOptions allows to setup the global configuration
 // for the chain.
 func EVMAppOptions(chainID uint64) error {
-	return evmconfig.EvmAppOptionsWithConfig(chainID, ChainsCoinInfo, cosmosEVMActivators)
+	return evmconfig.EvmAppOptionsWithConfig(chainID, ChainsCoinInfo(chainID), cosmosEVMActivators)
 }
