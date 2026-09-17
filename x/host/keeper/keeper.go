@@ -79,7 +79,6 @@ func (k Keeper) RegisterHost(
 	}
 
 	bech32Addr := caller.String()
-	bech32Bytes := []byte(bech32Addr)
 
 	store := runtime.KVStoreAdapter(k.storeService.OpenKVStore(ctx))
 
@@ -107,26 +106,58 @@ func (k Keeper) RegisterHost(
 		ConnectionString: connectionString,
 		EndpointAddress:  endpointAddress,
 	}
-	if err := k.SetPendingHost(ctx, host); err != nil {
-		return nil, fmt.Errorf("record pending host: %w", err)
-	}
-	store.Set(pendingAddrKey, []byte(did))
-	store.Set(pendingDidKey, bech32Bytes)
-
-	if _, _, _, err := k.sourcehubKeeper.SendICASetRelationship(ctx, did, "host", bech32Addr); err != nil {
-		_ = k.DeletePendingHost(ctx, bech32Addr)
-		store.Delete(pendingAddrKey)
-		store.Delete(pendingDidKey)
+	// ACP is bypassed for now. Nothing reads the sourcehub policy, and the ICA
+	// round trip strands registrations in pending when the IBC connection
+	// dies. Promote the host here instead of waiting for the ack.
+	//
+	// Old flow, restore it together with the promoteHost call removed
+	//
+	//	if err := k.SetPendingHost(ctx, host); err != nil {
+	//		return nil, fmt.Errorf("record pending host: %w", err)
+	//	}
+	//	store.Set(pendingAddrKey, []byte(did))
+	//	store.Set(pendingDidKey, []byte(bech32Addr))
+	//
+	//	if _, _, _, err := k.sourcehubKeeper.SendICASetRelationship(ctx, did, "host", bech32Addr); err != nil {
+	//		_ = k.DeletePendingHost(ctx, bech32Addr)
+	//		store.Delete(pendingAddrKey)
+	//		store.Delete(pendingDidKey)
+	//		return nil, err
+	//	}
+	//
+	//	ctx.EventManager().EmitEvent(sdk.NewEvent(
+	//		types.EventTypeHostPending,
+	//		sdk.NewAttribute(types.AttrKeyAddress, bech32Addr),
+	//		sdk.NewAttribute(types.AttrKeyDID, did),
+	//	))
+	if err := k.promoteHost(ctx, host); err != nil {
 		return nil, err
 	}
 
-	ctx.EventManager().EmitEvent(sdk.NewEvent(
-		types.EventTypeHostPending,
-		sdk.NewAttribute(types.AttrKeyAddress, bech32Addr),
-		sdk.NewAttribute(types.AttrKeyDID, did),
-	))
-
 	return []byte(did), nil
+}
+
+// promoteHost stores the host and binds its address and DID indexes, the same
+// state the ack callback wrote on success. It also clears pending staging, so a
+// host left behind by the ICA flow lands on its next registration.
+func (k Keeper) promoteHost(ctx sdk.Context, host types.Host) error {
+	if err := k.SetHost(ctx, host); err != nil {
+		return fmt.Errorf("promote host: %w", err)
+	}
+	_ = k.DeletePendingHost(ctx, host.Address)
+
+	store := runtime.KVStoreAdapter(k.storeService.OpenKVStore(ctx))
+	store.Set(addrIndexKey(types.AddrDIDPrefix, host.Address), []byte(host.Did))
+	store.Set(didIndexKey(types.DIDAddrPrefix, host.Did), []byte(host.Address))
+	store.Delete(addrIndexKey(types.PendingAddrDIDPrefix, host.Address))
+	store.Delete(didIndexKey(types.PendingDIDAddrPrefix, host.Did))
+
+	ctx.EventManager().EmitEvent(sdk.NewEvent(
+		types.EventTypeHostRegistered,
+		sdk.NewAttribute(types.AttrKeyAddress, host.Address),
+		sdk.NewAttribute(types.AttrKeyDID, host.Did),
+	))
+	return nil
 }
 
 func (k Keeper) SetPendingHost(ctx sdk.Context, host types.Host) error {
