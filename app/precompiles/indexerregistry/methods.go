@@ -43,9 +43,12 @@ func (p *Precompile) Register(
 		return nil, fmt.Errorf("invalid connectionString")
 	}
 
-	if err := p.sourcehubKeeper.CheckICAReady(ctx); err != nil {
-		return nil, err
-	}
+	// ACP is bypassed so there is no ICA to be ready. Restore this with the
+	// ICA call
+	//
+	//	if err := p.sourcehubKeeper.CheckICAReady(ctx); err != nil {
+	//		return nil, err
+	//	}
 
 	caller := contract.Caller().Bytes()
 	callerBech32 := sdk.AccAddress(caller).String()
@@ -61,7 +64,9 @@ func (p *Precompile) Register(
 		return nil, err
 	}
 
-	if result.Pending {
+	// Fires for a registration written by this call. Pending stays false while
+	// ACP is bypassed.
+	if result.Pending || result.Applied {
 		topic0 := crypto.Keccak256Hash([]byte("Registered(address,bytes,string,string,uint64)"))
 		event := p.ABI.Events["Registered"]
 		data, perr := event.Inputs.NonIndexed().Pack(
