@@ -422,7 +422,8 @@ func (s *KeeperTestSuite) TestQueryServer_NilRequests() {
 	s.Require().Error(err)
 }
 
-func (s *KeeperTestSuite) TestRegisterIndexer_FirstTime_FiresICA_NoRowMutation() {
+// A first registration is applied on return, with no ICA and no claim.
+func (s *KeeperTestSuite) TestRegisterIndexer_FirstTime_AppliesRow() {
 	op := addr(0x01)
 	pay := addr(0x02)
 	s.Require().NoError(s.keeper.UpsertAssertion(s.ctx, baseAssertion(op, pay)))
@@ -432,29 +433,21 @@ func (s *KeeperTestSuite) TestRegisterIndexer_FirstTime_FiresICA_NoRowMutation()
 
 	result, err := s.keeper.RegisterIndexer(s.ctx, op, pub, sig, msg, "https://op/9090")
 	s.Require().NoError(err)
-	s.Require().True(result.Pending)
+	s.Require().Equal(keeper.RegisterStatusApplied, result.Status)
 	s.Require().NotEmpty(result.Did)
 	s.Require().Equal("ethereum", result.SourceChain)
 	s.Require().Equal(uint64(1), result.SourceChainID)
 
-	s.Require().Equal(1, s.mockSourcehub.calls())
-	s.Require().Equal(result.Did, s.mockSourcehub.lastDid)
-	s.Require().Equal("indexer", s.mockSourcehub.lastGroup)
-	s.Require().Equal(op, s.mockSourcehub.lastReq)
+	s.Require().Equal(0, s.mockSourcehub.calls(), "no ICA while ACP is bypassed")
 
-	// Pending claim recorded so the ack callback can find the operator +
-	// connection string when the SetRelationship ack lands.
-	claim, found, err := s.keeper.GetPendingClaim(s.ctx, result.Did)
+	_, found, err := s.keeper.GetPendingClaim(s.ctx, result.Did)
 	s.Require().NoError(err)
-	s.Require().True(found)
-	s.Require().Equal(op, claim.OperatorAddress)
-	s.Require().Equal("https://op/9090", claim.ConnectionString)
+	s.Require().False(found, "no claim while ACP is bypassed")
 
-	// Row is NOT mutated yet — operator-side fields stay empty until ack.
 	row, _, _ := s.keeper.GetIndexerByAddress(s.ctx, op)
-	s.Require().False(row.Registered)
-	s.Require().Empty(row.Did)
-	s.Require().Empty(row.ConnectionString)
+	s.Require().True(row.Registered)
+	s.Require().Equal(result.Did, row.Did)
+	s.Require().Equal("https://op/9090", row.ConnectionString)
 }
 
 func (s *KeeperTestSuite) TestRegisterIndexer_AppliedOnAck_FlipsRow() {
@@ -477,7 +470,9 @@ func (s *KeeperTestSuite) TestRegisterIndexer_AppliedOnAck_FlipsRow() {
 	s.Require().Equal("https://op/9090", row.ConnectionString)
 }
 
-func (s *KeeperTestSuite) TestRegisterIndexer_NewDIDRecordsFreshPendingClaim() {
+// Rotating the node identity key rebinds the row and releases the old DID
+// index in the same call.
+func (s *KeeperTestSuite) TestRegisterIndexer_NewDIDRebindsRow() {
 	op := addr(0x01)
 	pay := addr(0x02)
 	s.Require().NoError(s.keeper.UpsertAssertion(s.ctx, baseAssertion(op, pay)))
@@ -490,34 +485,28 @@ func (s *KeeperTestSuite) TestRegisterIndexer_NewDIDRecordsFreshPendingClaim() {
 	s.Require().NoError(s.keeper.ApplyRegistration(s.ctx, op, resultA.Did, "https://op/A"))
 	s.keeper.DeletePendingClaim(s.ctx, resultA.Did)
 
-	// New registration with key B — fires a fresh SetRelationship ICA and
-	// records a new pending-claim entry keyed by the new DID.
+	// New registration with key B — applied on return, no ICA.
 	msgB := []byte("op-key-B")
 	pubB, sigB := nodeIdentityKey(s.T(), msgB)
-	priorSetCalls := s.mockSourcehub.setCalls
 	resultB, err := s.keeper.RegisterIndexer(s.ctx, op, pubB, sigB, msgB, "https://op/B")
 	s.Require().NoError(err)
-	s.Require().True(resultB.Pending)
+	s.Require().Equal(keeper.RegisterStatusApplied, resultB.Status)
 	s.Require().NotEqual(resultA.Did, resultB.Did)
-	s.Require().Equal(resultB.Did, s.mockSourcehub.lastDid)
+	s.Require().Equal(0, s.mockSourcehub.calls(), "no ICA while ACP is bypassed")
 
-	// Rotation goes through the atomic Set+Delete path; the single-Set path
-	// is not used again.
-	s.Require().Equal(priorSetCalls, s.mockSourcehub.setCalls, "single-Set ICA should not fire on rotation")
-	s.Require().Equal(1, s.mockSourcehub.setAndDelCalls, "Set+Delete ICA should fire on rotation")
-	s.Require().Equal(resultA.Did, s.mockSourcehub.lastPrev, "rotation must forward the prev DID to sourcehub for the atomic Delete")
-
-	claim, found, err := s.keeper.GetPendingClaim(s.ctx, resultB.Did)
+	_, found, err := s.keeper.GetPendingClaim(s.ctx, resultB.Did)
 	s.Require().NoError(err)
-	s.Require().True(found)
-	s.Require().Equal(op, claim.OperatorAddress)
-	s.Require().Equal("https://op/B", claim.ConnectionString)
+	s.Require().False(found)
 
-	// Row still reflects the previously-confirmed state — no speculative write.
 	row, _, _ := s.keeper.GetIndexerByAddress(s.ctx, op)
 	s.Require().True(row.Registered)
-	s.Require().Equal(resultA.Did, row.Did)
-	s.Require().Equal("https://op/A", row.ConnectionString)
+	s.Require().Equal(resultB.Did, row.Did)
+	s.Require().Equal("https://op/B", row.ConnectionString)
+
+	// The superseded DID index is released so it cannot resolve to this row.
+	_, found, err = s.keeper.GetIndexerByDID(s.ctx, resultA.Did)
+	s.Require().NoError(err)
+	s.Require().False(found)
 }
 
 func (s *KeeperTestSuite) TestRegisterIndexer_IdempotentNoICA() {
@@ -534,10 +523,10 @@ func (s *KeeperTestSuite) TestRegisterIndexer_IdempotentNoICA() {
 	s.mockSourcehub.setAndDelCalls = 0
 
 	// Same node identity key + same connection string while row is Registered:
-	// keeper returns Pending=false and skips the ICA.
+	// keeper reports Unchanged and skips the ICA.
 	second, err := s.keeper.RegisterIndexer(s.ctx, op, pub, sig, msg, "https://op/9090")
 	s.Require().NoError(err)
-	s.Require().False(second.Pending)
+	s.Require().Equal(keeper.RegisterStatusUnchanged, second.Status)
 	s.Require().Equal(first.Did, second.Did)
 	s.Require().Equal(0, s.mockSourcehub.calls())
 }

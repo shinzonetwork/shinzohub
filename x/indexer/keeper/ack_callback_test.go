@@ -90,12 +90,13 @@ func (s *KeeperTestSuite) TestAckCallback_RevokeWhileClaimInFlight_ClaimCleanedU
 	pay := addr(0x02)
 	s.Require().NoError(s.keeper.UpsertAssertion(s.ctx, baseAssertion(op, pay)))
 
-	// Operator fires a registration → pending claim recorded, ICA in flight.
-	msg := []byte("op-claim")
-	pub, sig := nodeIdentityKey(s.T(), msg)
-	result, err := s.keeper.RegisterIndexer(s.ctx, op, pub, sig, msg, "https://op/9090")
-	s.Require().NoError(err)
-	s.Require().True(result.Pending)
+	// A registration in flight, claim recorded and ack outstanding.
+	// RegisterIndexer no longer writes this state, so stage it directly.
+	const inFlightDID = "did:key:zInFlightIndexer"
+	s.Require().NoError(s.keeper.SetPendingClaim(s.ctx, inFlightDID, indexertypes.PendingClaim{
+		OperatorAddress:  op,
+		ConnectionString: "https://op/9090",
+	}))
 
 	// An unrelated operator also has a pending claim in flight — it must survive
 	// the revoke (the scan only drops claims for the revoked operator).
@@ -116,7 +117,7 @@ func (s *KeeperTestSuite) TestAckCallback_RevokeWhileClaimInFlight_ClaimCleanedU
 	s.Require().Equal(uint64(0), s.keeper.GetIndexerCount(s.ctx))
 
 	// Revoke proactively drops the in-flight pending claim — no orphan in state.
-	_, found, err := s.keeper.GetPendingClaim(s.ctx, result.Did)
+	_, found, err := s.keeper.GetPendingClaim(s.ctx, inFlightDID)
 	s.Require().NoError(err)
 	s.Require().False(found, "revoke cleans up the in-flight pending claim")
 
@@ -126,7 +127,7 @@ func (s *KeeperTestSuite) TestAckCallback_RevokeWhileClaimInFlight_ClaimCleanedU
 	s.Require().True(found, "revoke must not drop other operators' claims")
 
 	// The stale SUCCESS ack arrives for the revoked operator.
-	meta := &sourcehubtypes.SetRelationshipMeta{Did: result.Did, Group: "indexer"}
+	meta := &sourcehubtypes.SetRelationshipMeta{Did: inFlightDID, Group: "indexer"}
 	metaBz, err := s.cdc().Marshal(meta)
 	s.Require().NoError(err)
 
@@ -148,7 +149,7 @@ func (s *KeeperTestSuite) TestAckCallback_RevokeWhileClaimInFlight_ClaimCleanedU
 	s.Require().Equal(uint64(0), s.keeper.GetIndexerCount(s.ctx))
 
 	// Claim is still gone (revoke already cleaned it up; the stale ack was a no-op).
-	_, found, err = s.keeper.GetPendingClaim(s.ctx, result.Did)
+	_, found, err = s.keeper.GetPendingClaim(s.ctx, inFlightDID)
 	s.Require().NoError(err)
 	s.Require().False(found)
 }
