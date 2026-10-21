@@ -84,7 +84,8 @@ func (p *Precompile) Register(
 			topic0,
 			common.BytesToHash(callerEVM.Bytes()),
 		},
-		Data: data,
+		Data:        data,
+		BlockNumber: uint64(ctx.BlockHeight()), //nolint:gosec // block height is non-negative
 	})
 
 	return nil, nil

@@ -102,7 +102,8 @@ func (p Precompile) Register(
 			common.BytesToHash(viewAddr.Bytes()),
 			common.BytesToHash(caller.Bytes()),
 		},
-		Data: nameData,
+		Data:        nameData,
+		BlockNumber: uint64(ctx.BlockHeight()), //nolint:gosec // block height is non-negative
 	})
 
 	return method.Outputs.Pack(viewAddr, name)
