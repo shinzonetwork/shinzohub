@@ -350,15 +350,24 @@ func (k Keeper) deletePendingClaimsByOperator(ctx sdk.Context, operatorAddress s
 	}
 }
 
+// RegisterStatus reports what a RegisterIndexer call did to the row.
+type RegisterStatus int
+
+const (
+	// RegisterStatusUnchanged means the row already held this registration.
+	RegisterStatusUnchanged RegisterStatus = iota
+	// RegisterStatusPending means the registration waits on a sourcehub ack.
+	// Unused while ACP is bypassed.
+	RegisterStatusPending
+	// RegisterStatusApplied means this call wrote the registration.
+	RegisterStatusApplied
+)
+
 type RegisterResult struct {
 	Did           string
 	SourceChain   string
 	SourceChainID uint64
-	// Pending reports a registration waiting on a sourcehub ack. Always false
-	// while ACP is bypassed.
-	Pending bool
-	// Applied reports a registration written by this call.
-	Applied bool
+	Status        RegisterStatus
 }
 
 func (k Keeper) RegisterIndexer(
@@ -414,7 +423,7 @@ func (k Keeper) RegisterIndexer(
 	}
 
 	if row.Registered && row.Did == did && row.ConnectionString == connectionString {
-		out.Pending = false
+		out.Status = RegisterStatusUnchanged
 		return out, nil
 	}
 
@@ -447,11 +456,11 @@ func (k Keeper) RegisterIndexer(
 	//	}
 	//
 	//	emitPending(ctx, &row, did, connectionString)
-	//	out.Pending = true
+	//	out.Status = RegisterStatusPending
 	if err := k.promoteIndexer(ctx, operatorAddress, did, connectionString); err != nil {
 		return RegisterResult{}, err
 	}
-	out.Applied = true
+	out.Status = RegisterStatusApplied
 	return out, nil
 }
 

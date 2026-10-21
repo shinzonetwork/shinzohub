@@ -9,6 +9,8 @@ import (
 	gethtypes "github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/core/vm"
 	"github.com/ethereum/go-ethereum/crypto"
+
+	indexerkeeper "github.com/shinzonetwork/shinzohub/x/indexer/keeper"
 )
 
 const (
@@ -64,9 +66,9 @@ func (p *Precompile) Register(
 		return nil, err
 	}
 
-	// Fires for a registration written by this call. Pending stays false while
-	// ACP is bypassed.
-	if result.Pending || result.Applied {
+	// Fires unless the row already held this registration. Pending is unused
+	// while ACP is bypassed.
+	if result.Status != indexerkeeper.RegisterStatusUnchanged {
 		topic0 := crypto.Keccak256Hash([]byte("Registered(address,bytes,string,string,uint64)"))
 		event := p.ABI.Events["Registered"]
 		data, perr := event.Inputs.NonIndexed().Pack(

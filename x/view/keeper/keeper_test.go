@@ -26,21 +26,17 @@ import (
 	"github.com/shinzonetwork/shinzohub/x/view/types"
 )
 
-// Records the call and can inject an error to test pending rollback.
+// Records calls so tests can assert nothing goes to sourcehub.
 type mockSourcehubKeeper struct {
 	calls       int
 	lastID      string
 	lastCreator string
-	err         error
 }
 
 func (m *mockSourcehubKeeper) RegisterObject(_ sdk.Context, id, requestor string) (uint64, string, string, error) {
 	m.calls++
 	m.lastID = id
 	m.lastCreator = requestor
-	if m.err != nil {
-		return 0, "", "", m.err
-	}
 	return 42, "icacontroller-test", "channel-0", nil
 }
 
@@ -155,19 +151,6 @@ func (s *KeeperTestSuite) TestRegisterView_RegistersImmediately() {
 	s.Equal(sampleName, attr(ev, types.AttrKeyName))
 	s.Equal(base64.StdEncoding.EncodeToString(sampleBundle), attr(ev, types.AttrKeyData))
 	s.Nil(findEvent(s.ctx, types.EventTypeViewPending))
-}
-
-// A broken ICA no longer blocks registration.
-func (s *KeeperTestSuite) TestRegisterView_SourcehubFailureIgnored() {
-	s.mockSourcehub.err = sdkErr("ICA channel not ready")
-
-	_, err := s.keeper.RegisterView(s.ctx, sampleName, sampleCreator, sampleAddress, sampleBundle)
-	s.Require().NoError(err)
-	s.Equal(0, s.mockSourcehub.calls)
-
-	_, found, _ := s.keeper.GetView(s.ctx, sampleAddress)
-	s.True(found)
-	s.Equal(uint64(1), s.keeper.GetViewCount(s.ctx))
 }
 
 // Non-hex creator is rejected before any side-effects.
@@ -669,9 +652,3 @@ func (s *KeeperTestSuite) fireAckFor(address string, status sourcehubtypes.Reque
 		Error:  errMsg,
 	})
 }
-
-func sdkErr(msg string) error { return &simpleErr{msg} }
-
-type simpleErr struct{ s string }
-
-func (e *simpleErr) Error() string { return e.s }

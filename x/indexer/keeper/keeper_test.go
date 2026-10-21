@@ -433,8 +433,7 @@ func (s *KeeperTestSuite) TestRegisterIndexer_FirstTime_AppliesRow() {
 
 	result, err := s.keeper.RegisterIndexer(s.ctx, op, pub, sig, msg, "https://op/9090")
 	s.Require().NoError(err)
-	s.Require().False(result.Pending)
-	s.Require().True(result.Applied)
+	s.Require().Equal(keeper.RegisterStatusApplied, result.Status)
 	s.Require().NotEmpty(result.Did)
 	s.Require().Equal("ethereum", result.SourceChain)
 	s.Require().Equal(uint64(1), result.SourceChainID)
@@ -491,7 +490,7 @@ func (s *KeeperTestSuite) TestRegisterIndexer_NewDIDRebindsRow() {
 	pubB, sigB := nodeIdentityKey(s.T(), msgB)
 	resultB, err := s.keeper.RegisterIndexer(s.ctx, op, pubB, sigB, msgB, "https://op/B")
 	s.Require().NoError(err)
-	s.Require().True(resultB.Applied)
+	s.Require().Equal(keeper.RegisterStatusApplied, resultB.Status)
 	s.Require().NotEqual(resultA.Did, resultB.Did)
 	s.Require().Equal(0, s.mockSourcehub.calls(), "no ICA while ACP is bypassed")
 
@@ -524,10 +523,10 @@ func (s *KeeperTestSuite) TestRegisterIndexer_IdempotentNoICA() {
 	s.mockSourcehub.setAndDelCalls = 0
 
 	// Same node identity key + same connection string while row is Registered:
-	// keeper returns Pending=false and skips the ICA.
+	// keeper reports Unchanged and skips the ICA.
 	second, err := s.keeper.RegisterIndexer(s.ctx, op, pub, sig, msg, "https://op/9090")
 	s.Require().NoError(err)
-	s.Require().False(second.Pending)
+	s.Require().Equal(keeper.RegisterStatusUnchanged, second.Status)
 	s.Require().Equal(first.Did, second.Did)
 	s.Require().Equal(0, s.mockSourcehub.calls())
 }
