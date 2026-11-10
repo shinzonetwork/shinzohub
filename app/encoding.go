@@ -28,7 +28,7 @@ func MakeEncodingConfig(t testing.TB) params.EncodingConfig {
 		nil,
 		true,
 		simtestutil.NewAppOptionsWithFlagHome(t.TempDir()),
-		ChainID18Decimals,
+		DefaultEVMChainID,
 		EVMAppOptions,
 	)
 	return makeEncodingConfig(tempApp)

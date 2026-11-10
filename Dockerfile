@@ -22,8 +22,9 @@ RUN useradd --create-home --home-dir /home/node node && mkdir /shinzohub && chow
 
 # MONIKER sets the node moniker
 ENV MONIKER="node"
-# CHAIN_ID sets the id for the chain which will be initialized
-ENV CHAIN_ID="shinzohub-dev"
+# CHAIN_ID sets the id for the chain which will be initialized. It must be a
+# number, since it is also the EVM chain id.
+ENV CHAIN_ID="91273002"
 
 # GENESIS_PATH is an optional variable which if set must point to a genesis file mounted in the container.
 # The file is copied to the configuration directory during the first container initialization

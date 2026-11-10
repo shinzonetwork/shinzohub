@@ -63,7 +63,7 @@ type CustomAppConfig struct {
 
 // initAppConfig helps to override default appConfig template and configs.
 // return "", nil if no custom configuration is required for the application.
-func initAppConfig() (string, interface{}) {
+func initAppConfig(evmChainID uint64) (string, interface{}) {
 	// The following code snippet is just for reference.
 
 	// Optionally allow the chain developer to overwrite the SDK's default
@@ -95,7 +95,10 @@ func initAppConfig() (string, interface{}) {
 
 	customAppTemplate += evmosserverconfig.DefaultEVMConfigTemplate
 
-	// customAppConfig.EVM.EVMChainID = app.ChainID18Decimals // TODO: This may be a good idea if the config/app.toml evm-chain-id is a pain. Question is for a testnet.
+	// evm-chain-id must match the id the node runs, or evmChainID refuses to
+	// start it. Write the id this process sealed, which for init is the
+	// --chain-id it was given.
+	customAppConfig.EVM.EVMChainID = evmChainID
 
 	return customAppTemplate, customAppConfig
 }
@@ -231,13 +234,24 @@ func newApp(
 	if cast.ToBool(appOpts.Get("telemetry.enabled")) {
 	}
 
-	return app.NewChainApp(
+	chainID, err := evmChainID(appOpts)
+	if err != nil {
+		panic(err)
+	}
+
+	chainApp := app.NewChainApp(
 		logger, db, traceStore, true,
 		appOpts,
-		app.ChainID18Decimals,
+		chainID,
 		app.EVMAppOptions,
 		baseappOptions...,
 	)
+
+	if err := checkSealedChainID(chainID); err != nil {
+		panic(err)
+	}
+
+	return chainApp
 }
 
 func appExport(
@@ -267,15 +281,24 @@ func appExport(
 	viperAppOpts.Set(server.FlagInvCheckPeriod, 1)
 	appOpts = viperAppOpts
 
+	chainID, err := evmChainID(appOpts)
+	if err != nil {
+		return servertypes.ExportedApp{}, err
+	}
+
 	chainApp = app.NewChainApp(
 		logger,
 		db,
 		traceStore,
 		height == -1,
 		appOpts,
-		app.ChainID18Decimals,
+		chainID,
 		app.EVMAppOptions,
 	)
+
+	if err := checkSealedChainID(chainID); err != nil {
+		return servertypes.ExportedApp{}, err
+	}
 
 	if height != -1 {
 		if err := chainApp.LoadHeight(height); err != nil {

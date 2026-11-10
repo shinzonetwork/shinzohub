@@ -14,6 +14,7 @@ set -euo pipefail
 #   6. Waits for IBC connection
 #   7. Registers ICA
 #   8. Registers Shinzo policy
+#   9. Registers Shinzo objects (resources plus the host and indexer groups)
 #
 # Usage:
 #   sh scripts/demo/start_all.sh
@@ -118,6 +119,13 @@ sleep 5  # wait for ICA channel to open via Hermes
 # ── 8. Register Shinzo policy ──
 echo "==> Registering Shinzo policy..."
 sh "$ICA_DIR/register_shinzo_policy.sh"
+sleep 5  # wait for IBC relay
+
+# ── 9. Register Shinzo objects ──
+# Host and indexer registration set relationships on the host and indexer
+# group objects, so they must exist on SourceHub first.
+echo "==> Registering Shinzo objects..."
+bash "$ICA_DIR/register_shinzo_objects.sh"
 sleep 5  # wait for IBC relay
 
 # ── Done ──

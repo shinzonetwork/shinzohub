@@ -2,7 +2,8 @@
 
 set -e 
 
-DEFAULT_CHAIN_ID="shinzohub"
+# The chain id must be a number, it is also the EVM chain id.
+DEFAULT_CHAIN_ID="91273002"
 DEFAULT_MONIKER="node"
 
 if [ ! -f /shinzohub/config/genesis.json ]; then
