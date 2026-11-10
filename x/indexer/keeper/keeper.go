@@ -423,6 +423,7 @@ func (k Keeper) RegisterIndexer(
 	}
 
 	if row.Registered && row.Did == did && row.ConnectionString == connectionString {
+		k.deletePendingClaimsByOperator(ctx, operatorAddress)
 		out.Status = RegisterStatusUnchanged
 		return out, nil
 	}
@@ -465,13 +466,15 @@ func (k Keeper) RegisterIndexer(
 }
 
 // promoteIndexer applies the registration to the row, the same state the ack
-// callback wrote on success. It also drops the pending claim, so a stale ack
-// cannot reapply an old value.
+// callback wrote on success. It also drops every pending claim the operator
+// has, not only the one under this DID. A claim left from the old ICA flow
+// under an earlier DID would otherwise apply on its late ack, rolling the row
+// back to that DID and dropping the index of the current one.
 func (k Keeper) promoteIndexer(ctx sdk.Context, operatorAddress, did, connectionString string) error {
 	if err := k.ApplyRegistration(ctx, operatorAddress, did, connectionString); err != nil {
 		return err
 	}
-	k.DeletePendingClaim(ctx, did)
+	k.deletePendingClaimsByOperator(ctx, operatorAddress)
 	return nil
 }
 

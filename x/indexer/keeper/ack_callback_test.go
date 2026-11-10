@@ -167,3 +167,104 @@ func (s *KeeperTestSuite) TestAckCallback_NonIndexerGroupIsIgnored() {
 	})
 	s.Require().NoError(err) // silently ignored, no error
 }
+
+// ackSuccess delivers a SUCCESS ack for a set-relationship on did.
+func (s *KeeperTestSuite) ackSuccess(did string) {
+	meta := &sourcehubtypes.SetRelationshipMeta{Did: did, Group: "indexer"}
+	metaBz, err := s.cdc().Marshal(meta)
+	s.Require().NoError(err)
+	err = keeper.NewAckCallback(s.keeper).OnPacketAck(s.ctx, sourcehubtypes.PendingICARequest{
+		Kind:   sourcehubtypes.RequestKind_REQUEST_KIND_SET_RELATIONSHIP,
+		Meta:   metaBz,
+		Status: sourcehubtypes.RequestStatus_REQUEST_STATUS_SUCCESS,
+	})
+	s.Require().NoError(err)
+}
+
+// A claim left by the old ICA flow under an earlier DID must not survive a
+// registration under a new DID. Its late SUCCESS ack would otherwise roll the
+// row back to the earlier DID and drop the index of the current one.
+func (s *KeeperTestSuite) TestAckCallback_StaleClaimUnderOldDID_DoesNotRollBack() {
+	op := addr(0x01)
+	s.Require().NoError(s.keeper.UpsertAssertion(s.ctx, baseAssertion(op, addr(0x02))))
+
+	// Registered on did A, then a re-registration on A was stranded mid ICA.
+	const oldDID = "did:op-A"
+	s.claimAndConfirm(op, oldDID, "https://op/A")
+	s.Require().NoError(s.keeper.SetPendingClaim(s.ctx, oldDID, indexertypes.PendingClaim{
+		OperatorAddress:  op,
+		ConnectionString: "https://op/A-stale",
+	}))
+
+	// Another operator's claim must be left alone.
+	const otherDID = "did:other-op"
+	s.Require().NoError(s.keeper.SetPendingClaim(s.ctx, otherDID, indexertypes.PendingClaim{
+		OperatorAddress:  addr(0x07),
+		ConnectionString: "https://other/9090",
+	}))
+
+	// The operator rotates their node key and registers on a new DID.
+	msg := []byte("op-claim")
+	pub, sig := nodeIdentityKey(s.T(), msg)
+	res, err := s.keeper.RegisterIndexer(s.ctx, op, pub, sig, msg, "https://op/B")
+	s.Require().NoError(err)
+	newDID := res.Did
+	s.Require().NotEqual(oldDID, newDID)
+
+	_, found, err := s.keeper.GetPendingClaim(s.ctx, oldDID)
+	s.Require().NoError(err)
+	s.Require().False(found, "registration clears the operator's claim under the old DID")
+	_, found, err = s.keeper.GetPendingClaim(s.ctx, otherDID)
+	s.Require().NoError(err)
+	s.Require().True(found, "other operators' claims survive")
+
+	// The stranded ICA finally acks.
+	s.ackSuccess(oldDID)
+
+	row, _, err := s.keeper.GetIndexerByAddress(s.ctx, op)
+	s.Require().NoError(err)
+	s.Require().True(row.Registered)
+	s.Require().Equal(newDID, row.Did, "row stays on the new DID")
+	s.Require().Equal("https://op/B", row.ConnectionString)
+
+	byDID, found, err := s.keeper.GetIndexerByDID(s.ctx, newDID)
+	s.Require().NoError(err)
+	s.Require().True(found, "the new DID index survives")
+	s.Require().Equal(op, byDID.OperatorAddress)
+	_, found, err = s.keeper.GetIndexerByDID(s.ctx, oldDID)
+	s.Require().NoError(err)
+	s.Require().False(found, "the old DID index stays gone")
+}
+
+// The unchanged path must clear stale claims too: re-registering the row's
+// current values after the upgrade still disarms a stranded ICA.
+func (s *KeeperTestSuite) TestAckCallback_StaleClaim_ClearedOnUnchangedRegister() {
+	op := addr(0x01)
+	s.Require().NoError(s.keeper.UpsertAssertion(s.ctx, baseAssertion(op, addr(0x02))))
+
+	msg := []byte("op-claim")
+	pub, sig := nodeIdentityKey(s.T(), msg)
+	first, err := s.keeper.RegisterIndexer(s.ctx, op, pub, sig, msg, "https://op/B")
+	s.Require().NoError(err)
+
+	// A claim under an earlier DID, as the old flow could have left behind.
+	const oldDID = "did:op-A"
+	s.Require().NoError(s.keeper.SetPendingClaim(s.ctx, oldDID, indexertypes.PendingClaim{
+		OperatorAddress:  op,
+		ConnectionString: "https://op/A-stale",
+	}))
+
+	again, err := s.keeper.RegisterIndexer(s.ctx, op, pub, sig, msg, "https://op/B")
+	s.Require().NoError(err)
+	s.Require().Equal(keeper.RegisterStatusUnchanged, again.Status)
+
+	_, found, err := s.keeper.GetPendingClaim(s.ctx, oldDID)
+	s.Require().NoError(err)
+	s.Require().False(found)
+
+	s.ackSuccess(oldDID)
+	row, _, err := s.keeper.GetIndexerByAddress(s.ctx, op)
+	s.Require().NoError(err)
+	s.Require().Equal(first.Did, row.Did)
+	s.Require().Equal("https://op/B", row.ConnectionString)
+}
