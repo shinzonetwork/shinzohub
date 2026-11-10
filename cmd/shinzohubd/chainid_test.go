@@ -83,6 +83,21 @@ func TestEVMChainID(t *testing.T) {
 			want:       91273002,
 		},
 		{
+			// network-operator writes evm-chain-id as a quoted string
+			name:       "app.toml agrees as a string",
+			genesis:    "91273002",
+			evmChainID: `"91273002"`,
+			args:       func(home string) []string { return []string{"--home", home} },
+			want:       91273002,
+		},
+		{
+			name:       "app.toml disagrees as a string",
+			genesis:    "91273002",
+			evmChainID: `"91273001"`,
+			args:       func(home string) []string { return []string{"--home", home} },
+			wantErr:    "evm-chain-id in app.toml is 91273001",
+		},
+		{
 			name:       "app.toml disagrees",
 			genesis:    "91273002",
 			evmChainID: "262144",
