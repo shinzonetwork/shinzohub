@@ -213,9 +213,9 @@ func (p Precompile) RegisterDemandForView(
 	}
 
 	if created {
-		emitPoolCreated(stateDB, contract.Address(), poolAddr, viewAddress, cfg)
+		emitPoolCreated(ctx, stateDB, contract.Address(), poolAddr, viewAddress, cfg)
 	}
-	emitDemandRegistered(stateDB, contract.Address(), poolAddr, registrant, bond)
+	emitDemandRegistered(ctx, stateDB, contract.Address(), poolAddr, registrant, bond)
 
 	out := poolOutput{
 		PoolAddress: poolAddr,
@@ -429,6 +429,7 @@ func (p Precompile) LeavePool(
 }
 
 func emitPoolCreated(
+	ctx sdk.Context,
 	stateDB vm.StateDB,
 	precompileAddr common.Address,
 	poolAddr, viewAddr common.Address,
@@ -447,11 +448,13 @@ func emitPoolCreated(
 			common.BytesToHash(poolAddr.Bytes()),
 			common.BytesToHash(viewAddr.Bytes()),
 		},
-		Data: data,
+		Data:        data,
+		BlockNumber: uint64(ctx.BlockHeight()), //nolint:gosec // block height is non-negative
 	})
 }
 
 func emitDemandRegistered(
+	ctx sdk.Context,
 	stateDB vm.StateDB,
 	precompileAddr common.Address,
 	poolAddr, registrant common.Address,
@@ -469,7 +472,8 @@ func emitDemandRegistered(
 			common.BytesToHash(poolAddr.Bytes()),
 			common.BytesToHash(registrant.Bytes()),
 		},
-		Data: data,
+		Data:        data,
+		BlockNumber: uint64(ctx.BlockHeight()), //nolint:gosec // block height is non-negative
 	})
 }
 

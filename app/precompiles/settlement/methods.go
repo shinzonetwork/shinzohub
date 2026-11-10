@@ -48,7 +48,7 @@ func (p Precompile) Claim(
 
 	remaining := p.settlementKeeper.GetBalance(ctx, claimer)
 
-	if err := p.emitClaimed(stateDB, contract.Address(), claimerEVM, amountBig, remaining.BigInt()); err != nil {
+	if err := p.emitClaimed(ctx, stateDB, contract.Address(), claimerEVM, amountBig, remaining.BigInt()); err != nil {
 		return nil, err
 	}
 
@@ -73,6 +73,7 @@ func (p Precompile) BalanceOf(
 // non-indexed data layout from the ABI. A pack failure is surfaced rather than
 // silently emitting a zero-amount log.
 func (p Precompile) emitClaimed(
+	ctx sdk.Context,
 	stateDB vm.StateDB,
 	precompileAddr common.Address,
 	claimer common.Address,
@@ -90,7 +91,8 @@ func (p Precompile) emitClaimed(
 			event.ID,
 			common.BytesToHash(claimer.Bytes()),
 		},
-		Data: data,
+		Data:        data,
+		BlockNumber: uint64(ctx.BlockHeight()), //nolint:gosec // block height is non-negative
 	})
 	return nil
 }
