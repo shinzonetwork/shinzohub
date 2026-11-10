@@ -29,9 +29,12 @@ import (
 func NewRootCmd() *cobra.Command {
 	// we "pre"-instantiate the application for getting the injected/configured encoding configuration
 	// note, this is not necessary when using app wiring, as depinject can be directly used (see root_v2.go)
+	// This app seals the global EVM config, so its id is the one the process
+	// runs with. A new app.toml gets the same id.
+	evmChainID := evmChainIDFromArgs()
 	tempApp := app.NewChainApp(
 		log.NewNopLogger(), dbm.NewMemDB(), nil, false, simtestutil.NewAppOptionsWithFlagHome(tempDir()),
-		evmChainIDFromArgs(),
+		evmChainID,
 		app.EVMAppOptions,
 	)
 	encodingConfig := params.EncodingConfig{
@@ -98,7 +101,7 @@ func NewRootCmd() *cobra.Command {
 				return err
 			}
 
-			customAppTemplate, customAppConfig := initAppConfig()
+			customAppTemplate, customAppConfig := initAppConfig(evmChainID)
 			customCMTConfig := initCometBFTConfig()
 
 			return server.InterceptConfigsPreRunHandler(cmd, customAppTemplate, customAppConfig, customCMTConfig)

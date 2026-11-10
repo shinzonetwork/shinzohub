@@ -289,7 +289,7 @@ require (
 	github.com/sourcenetwork/raccoondb/v2 v2.0.0 // indirect
 	github.com/sourcenetwork/zanzi v0.3.1-0.20251104182341-4b1bd0f7be5a // indirect
 	github.com/spf13/afero v1.12.0 // indirect
-	github.com/spf13/pflag v1.0.10 // indirect
+	github.com/spf13/pflag v1.0.10
 	github.com/spiffe/go-spiffe/v2 v2.5.0 // indirect
 	github.com/subosito/gotenv v1.6.0 // indirect
 	github.com/supranational/blst v0.3.14 // indirect

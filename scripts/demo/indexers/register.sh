@@ -27,37 +27,31 @@ $BINARY tx bank send "$FUNDER" "$BECH32_ADDR" 1000000000000000000ushinzo \
   --yes > /dev/null 2>&1
 sleep 2
 
-DIGEST_HEX=$(cast keccak "shinzo-indexer-assertion-delegate")
-DIGEST_RAW="${DIGEST_HEX#0x}"
-
-SIG_HEX=$(cast wallet sign --private-key "$PRIVATE_KEY" --no-hash "$DIGEST_HEX")
-SIG_RAW="${SIG_HEX#0x}"
-
-V_BYTE="${SIG_RAW: -2}"
-if [ "$V_BYTE" = "1b" ]; then
-  SIG_RAW="${SIG_RAW:0:128}00"
-elif [ "$V_BYTE" = "1c" ]; then
-  SIG_RAW="${SIG_RAW:0:128}01"
-fi
-
 SOURCE_CHAIN="ethereum"
 SOURCE_CHAIN_ID=1
 CONNECTION_STRING="${CONNECTION_STRING:-192.168.1.1:8080}"
 
+# Stand-ins for what the source-chain outpost would report: the validator's
+# consensus key and the authority that asserted it.
+VALIDATOR_PUBKEY=$(openssl rand -hex 32)
+ASSERTION_AUTHORITY=$(openssl rand -hex 20)
+NONCE=$(date +%s)
+
 echo ""
 echo "=== Step 1: IndexerAssertion ==="
-echo "Admin:    $ADMIN_KEY"
-echo "Delegate: $BECH32_ADDR ($FROM_ADDR)"
+echo "Admin:     $ADMIN_KEY"
+echo "Operator:  $BECH32_ADDR ($FROM_ADDR)"
+echo "Validator: $VALIDATOR_PUBKEY"
 echo ""
 
 $BINARY tx indexer add-indexer-assertion \
-  --delegate-address "$BECH32_ADDR" \
-  --consensus-pub-key "consensus-$(echo "$FROM_ADDR" | cut -c3-12)" \
   --source-chain "$SOURCE_CHAIN" \
   --source-chain-id "$SOURCE_CHAIN_ID" \
-  --assertion-id "assertion-$(date +%s)" \
-  --delegate-digest "$DIGEST_RAW" \
-  --delegate-signature "$SIG_RAW" \
+  --validator-pubkey "$VALIDATOR_PUBKEY" \
+  --assertion-authority "$ASSERTION_AUTHORITY" \
+  --nonce "$NONCE" \
+  --operator-address "$BECH32_ADDR" \
+  --payout-address "$BECH32_ADDR" \
   --from $ADMIN_KEY \
   --keyring-backend test \
   --chain-id "$CHAIN_ID" \
@@ -81,14 +75,11 @@ echo ""
 echo "=== Step 2: Register Indexer ==="
 echo "Address:           $FROM_ADDR"
 echo "Connection String: $CONNECTION_STRING"
-echo "Source chain:      $SOURCE_CHAIN"
-echo "Source chain ID:   $SOURCE_CHAIN_ID"
 echo ""
 
 cast send "$INDEXER_REGISTRY" \
-  "register(bytes,bytes,bytes,string,string,uint64)" \
-  "$NODE_PUB" "$NODE_SIG" "$MESSAGE" \
-  "$CONNECTION_STRING" "$SOURCE_CHAIN" "$SOURCE_CHAIN_ID" \
+  "register(bytes,bytes,bytes,string)" \
+  "$NODE_PUB" "$NODE_SIG" "$MESSAGE" "$CONNECTION_STRING" \
   --private-key "$PRIVATE_KEY" \
   --rpc-url "$RPC_URL" \
   --gas-limit 1000000

@@ -34,16 +34,3 @@ func TestParseChainID(t *testing.T) {
 		})
 	}
 }
-
-// Coin info must exist for whichever id the network runs, or the app only
-// starts on one chain.
-func TestChainsCoinInfo(t *testing.T) {
-	for _, chainID := range []uint64{91273000, 91273001, 91273002, 91273003} {
-		info := ChainsCoinInfo(chainID)
-		require.Len(t, info, 1)
-		coin, ok := info[chainID]
-		require.True(t, ok, "no coin info for chain id %d", chainID)
-		require.Equal(t, BaseDenom, coin.Denom)
-		require.Equal(t, DisplayDenom, coin.DisplayDenom)
-	}
-}

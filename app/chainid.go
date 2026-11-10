@@ -14,7 +14,7 @@ const DefaultEVMChainID uint64 = 91273001
 func ParseChainID(chainID string) (uint64, error) {
 	id, err := strconv.ParseUint(chainID, 10, 64)
 	if err != nil {
-		return 0, fmt.Errorf("chain id %q is not a number, %w", chainID, err)
+		return 0, fmt.Errorf("chain id %q is not a number: %w", chainID, err)
 	}
 	if id == 0 {
 		return 0, fmt.Errorf("chain id %q resolves to zero", chainID)

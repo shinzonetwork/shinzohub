@@ -37,7 +37,7 @@ Set `STANDALONE=1` at time of container creation to force standalone mode, all r
 
 
 - `MONIKER` sets the node moniker
-- `CHAIN_ID` sets the id for the chain which will be initialized
+- `CHAIN_ID` sets the id for the chain which will be initialized. It must be a number, since it is also the EVM chain id (default `91273002`)
 - `GENESIS_PATH` is an optional variable which if set must point to a genesis file mounted in the container.
   The file is copied to the configuration directory during the first container initialization
   If empty, the entrypoint will generate a new genesis
