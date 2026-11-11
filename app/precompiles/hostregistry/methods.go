@@ -51,9 +51,12 @@ func (p *Precompile) Register(
 		return nil, fmt.Errorf("invalid endpointAddress")
 	}
 
-	if err := p.sourcehubKeeper.CheckICAReady(ctx); err != nil {
-		return nil, err
-	}
+	// ACP is bypassed so there is no ICA to be ready. Restore this with the
+	// ICA call
+	//
+	//	if err := p.sourcehubKeeper.CheckICAReady(ctx); err != nil {
+	//		return nil, err
+	//	}
 
 	callerEVM := contract.Caller()
 	caller := sdk.AccAddress(callerEVM.Bytes())

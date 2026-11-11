@@ -176,7 +176,8 @@ func (s *PrecompileTestSuite) fireAck(viewAddr common.Address, status sourcehubt
 }
 
 // Happy path: returns (viewAddr, name), emits ViewCreated log, view is PENDING.
-func (s *PrecompileTestSuite) TestRegister_HappyPath_ViewIsPending() {
+// A registered view is final right away.
+func (s *PrecompileTestSuite) TestRegister_HappyPath_ViewIsRegistered() {
 	caller := common.HexToAddress("0xabCDef1234567890abcdEF1234567890ABCDEF12")
 	bundle := buildBundle("ViewHappy")
 
@@ -189,9 +190,9 @@ func (s *PrecompileTestSuite) TestRegister_HappyPath_ViewIsPending() {
 	s.Equal(common.BytesToHash(viewAddr.Bytes()), log.Topics[1])
 	s.Equal(common.BytesToHash(caller.Bytes()), log.Topics[2])
 
-	s.Equal(1, s.mockSourcehub.calls)
+	s.Equal(0, s.mockSourcehub.calls, "no ICA while ACP is bypassed")
 	got := s.getView(viewAddr)
-	s.Equal(statusPending, got.Status)
+	s.Equal(statusRegistered, got.Status)
 	s.Equal("ViewHappy", got.Name)
 	s.Equal(caller.Hex(), got.Creator, "creator must be EVM hex, not bech32")
 	s.Equal(uint64(11), got.Height)
@@ -243,10 +244,16 @@ func (s *PrecompileTestSuite) TestGetView_UnknownAddress_ReturnsNone() {
 // listViews hides pending views; they remain reachable via getView only.
 func (s *PrecompileTestSuite) TestListViews_ExcludesPending() {
 	caller := common.HexToAddress("0x2222222222222222222222222222222222222222")
-	pendingAddr := s.register(caller, buildBundle("ViewPending"))
 	registeredAddr := s.register(caller, buildBundle("ViewRegistered"))
-	s.fireAck(registeredAddr, sourcehubtypes.RequestStatus_REQUEST_STATUS_SUCCESS)
 
+	// Registration no longer stages pending views, so stage one directly to
+	// prove listViews still filters them out.
+	pendingAddr := common.HexToAddress("0x9999999999999999999999999999999999999999")
+	s.Require().NoError(s.viewKeeper.SetPendingView(s.ctx, viewtypes.View{
+		Name:    "ViewPending",
+		Creator: caller.Hex(),
+		Address: pendingAddr.Hex(),
+	}))
 	s.Equal(statusPending, s.getView(pendingAddr).Status)
 
 	method := s.precompile.ABI.Methods["listViews"]
@@ -303,7 +310,8 @@ func (s *PrecompileTestSuite) TestRegister_SDLMissingTypeName_Errors() {
 }
 
 // Sourcehub ICA error surfaces to the EVM caller; no log emitted.
-func (s *PrecompileTestSuite) TestRegister_SourcehubFailure_RevertsCleanly() {
+// A broken ICA no longer blocks registration.
+func (s *PrecompileTestSuite) TestRegister_SourcehubFailure_Ignored() {
 	s.mockSourcehub.err = fmt.Errorf("no active ICA channel")
 
 	caller := common.HexToAddress("0x5555555555555555555555555555555555555555")
@@ -313,9 +321,9 @@ func (s *PrecompileTestSuite) TestRegister_SourcehubFailure_RevertsCleanly() {
 	_, err := s.precompile.Register(s.ctx, contract, s.stateDB, &method, []interface{}{
 		buildBundle("ViewICAFail"),
 	})
-	s.Require().Error(err)
-	s.Contains(err.Error(), "no active ICA channel")
-	s.Empty(s.stateDB.logs)
+	s.Require().NoError(err)
+	s.Equal(0, s.mockSourcehub.calls)
+	s.Require().Len(s.stateDB.logs, 1)
 }
 
 // viewAddr = keccak256("shinzo.view.v1" || caller || bundle)[12:] — different

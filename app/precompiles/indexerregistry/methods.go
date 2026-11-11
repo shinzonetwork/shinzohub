@@ -9,6 +9,8 @@ import (
 	gethtypes "github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/core/vm"
 	"github.com/ethereum/go-ethereum/crypto"
+
+	indexerkeeper "github.com/shinzonetwork/shinzohub/x/indexer/keeper"
 )
 
 const (
@@ -43,9 +45,12 @@ func (p *Precompile) Register(
 		return nil, fmt.Errorf("invalid connectionString")
 	}
 
-	if err := p.sourcehubKeeper.CheckICAReady(ctx); err != nil {
-		return nil, err
-	}
+	// ACP is bypassed so there is no ICA to be ready. Restore this with the
+	// ICA call
+	//
+	//	if err := p.sourcehubKeeper.CheckICAReady(ctx); err != nil {
+	//		return nil, err
+	//	}
 
 	caller := contract.Caller().Bytes()
 	callerBech32 := sdk.AccAddress(caller).String()
@@ -61,7 +66,9 @@ func (p *Precompile) Register(
 		return nil, err
 	}
 
-	if result.Pending {
+	// Fires unless the row already held this registration. Pending is unused
+	// while ACP is bypassed.
+	if result.Status != indexerkeeper.RegisterStatusUnchanged {
 		topic0 := crypto.Keccak256Hash([]byte("Registered(address,bytes,string,string,uint64)"))
 		event := p.ABI.Events["Registered"]
 		data, perr := event.Inputs.NonIndexed().Pack(

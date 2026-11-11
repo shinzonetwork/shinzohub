@@ -88,6 +88,8 @@ func TestKeeperTestSuite(t *testing.T) {
 	suite.Run(t, new(KeeperTestSuite))
 }
 
+// simulateHostAck fires a success ack for a staged host. Nothing stages hosts
+// now that ACP is bypassed, so the ack path is only covered here.
 func (s *KeeperTestSuite) simulateHostAck(callerAddr sdk.AccAddress) {
 	did, found := s.keeper.GetDIDForPendingAddress(s.ctx, callerAddr)
 	s.Require().True(found, "pending host did not land in state")
@@ -112,10 +114,10 @@ func (s *KeeperTestSuite) TestRegisterHost_Success() {
 	s.Require().NoError(err)
 	s.Require().NotEmpty(did)
 
-	s.Require().True(s.mockSourcehub.called)
-	s.Require().Equal("host", s.mockSourcehub.lastGroup)
-
-	s.simulateHostAck(callerAddr)
+	// No ICA, and the host is registered on return rather than staged.
+	s.Require().False(s.mockSourcehub.called)
+	_, stillPending := s.keeper.GetDIDForPendingAddress(s.ctx, callerAddr)
+	s.Require().False(stillPending)
 
 	s.Require().True(s.keeper.IsRegisteredHost(s.ctx, callerAddr))
 
@@ -182,16 +184,19 @@ func (s *KeeperTestSuite) TestRegisterHost_SameAddrDifferentDID_Fails() {
 	s.Require().Contains(err.Error(), "address already registered")
 }
 
-func (s *KeeperTestSuite) TestRegisterHost_ICAFailure_Propagates() {
+// A broken ICA no longer blocks registration.
+func (s *KeeperTestSuite) TestRegisterHost_ICAFailure_Ignored() {
 	s.mockSourcehub.err = errICAChannelNotOpen
 
 	message := []byte("test-nonce")
 	nodePub, nodeSig := generateNodeIdentityKey(s.T(), message)
 	callerAddr := sdk.AccAddress([]byte{0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f, 0x10, 0x11, 0x12, 0x13, 0x14})
 
-	_, err := s.keeper.RegisterHost(s.ctx, nodePub, nodeSig, message, "192.168.1.1:8080", "https://192.168.1.1:8443/api/v0/graphql", callerAddr)
-	s.Require().Error(err)
-	s.Require().Contains(err.Error(), "ICA channel not open")
+	did, err := s.keeper.RegisterHost(s.ctx, nodePub, nodeSig, message, "192.168.1.1:8080", "https://192.168.1.1:8443/api/v0/graphql", callerAddr)
+	s.Require().NoError(err)
+	s.Require().NotEmpty(did)
+	s.Require().False(s.mockSourcehub.called)
+	s.Require().True(s.keeper.IsRegisteredHost(s.ctx, callerAddr))
 }
 
 func (s *KeeperTestSuite) TestIsRegisteredHost_NotRegistered() {
